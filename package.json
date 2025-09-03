@@ -1,0 +1,76 @@
+{
+  "name": "albadil-platform",
+  "version": "2.0.0",
+  "description": "منصة الباديل لاستخراج الأوراق الرسمية - نظام متكامل مع قاعدة بيانات PostgreSQL",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force",
+    "db:deploy": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:restart": "docker-compose restart",
+    "docker:clean": "docker-compose down -v && docker-compose up -d",
+    "setup:dev": "npm run docker:up && npm run db:generate && npm run db:push && npm run db:seed",
+    "setup:prod": "npm run docker:up && npm run db:generate && npm run db:deploy && npm run db:seed",
+    "production:start": "npm run build && npm run start"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "bcryptjs": "^2.4.3",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.0.4",
+    "next": "14.0.4",
+    "next-auth": "^4.24.11",
+    "nodemailer": "^6.9.7",
+    "postcss": "^8.4.32",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.8.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/nodemailer": "^6.4.14",
+    "prisma": "^5.7.1",
+    "tsx": "^4.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "keywords": [
+    "albadil",
+    "egypt",
+    "government-services",
+    "document-extraction",
+    "postgresql",
+    "nextjs",
+    "typescript"
+  ],
+  "author": "Albadil Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/albadil-platform"
+  }
+}

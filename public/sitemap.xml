@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- الصفحة الرئيسية -->
+  <url>
+    <loc>https://albadil.com/</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/" />
+  </url>
+  
+  <!-- صفحة الخدمات -->
+  <url>
+    <loc>https://albadil.com/services</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/services" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/services" />
+  </url>
+  
+  <!-- صفحة الأسئلة الشائعة -->
+  <url>
+    <loc>https://albadil.com/faq</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/faq" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/faq" />
+  </url>
+  
+  <!-- صفحة إنشاء حساب -->
+  <url>
+    <loc>https://albadil.com/register</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/register" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/register" />
+  </url>
+  
+  <!-- صفحة تسجيل الدخول -->
+  <url>
+    <loc>https://albadil.com/login</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/login" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/login" />
+  </url>
+  
+  <!-- صفحة طلباتي (للمستخدمين المسجلين) -->
+  <url>
+    <loc>https://albadil.com/orders</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/orders" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/orders" />
+  </url>
+  
+  <!-- صفحة لوحة التحكم (للمديرين) -->
+  <url>
+    <loc>https://albadil.com/admin</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/admin" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/admin" />
+  </url>
+  
+</urlset>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الأزرار</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button-test {
+            margin: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .primary { background: #007bff; color: white; }
+        .secondary { background: #6c757d; color: white; }
+        .success { background: #28a745; color: white; }
+        .danger { background: #dc3545; color: white; }
+        .button-test:hover { opacity: 0.8; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>اختبار الأزرار - تأكد من عملها في الـ PC</h1>
+        
+        <div class="result" id="result">اضغط على أي زر لاختبار عمله</div>
+        
+        <button class="button-test primary" onclick="testButton('زر أساسي')">زر أساسي</button>
+        <button class="button-test secondary" onclick="testButton('زر ثانوي')">زر ثانوي</button>
+        <button class="button-test success" onclick="testButton('زر نجاح')">زر نجاح</button>
+        <button class="button-test danger" onclick="testButton('زر خطر')">زر خطر</button>
+        
+        <h2>أزرار النموذج</h2>
+        <form onsubmit="testForm(event)">
+            <input type="text" placeholder="اكتب نص هنا" style="padding: 10px; margin: 5px; border: 1px solid #ccc; border-radius: 5px;">
+            <button type="submit" class="button-test primary">إرسال النموذج</button>
+        </form>
+        
+        <h2>أزرار التنقل</h2>
+        <button class="button-test secondary" onclick="testNavigation('السابق')">السابق</button>
+        <span style="margin: 0 10px;">صفحة 1 من 5</span>
+        <button class="button-test secondary" onclick="testNavigation('التالي')">التالي</button>
+    </div>
+
+    <script>
+        function testButton(buttonName) {
+            const result = document.getElementById('result');
+            result.innerHTML = `تم الضغط على: ${buttonName} - الوقت: ${new Date().toLocaleTimeString('ar-EG')}`;
+            result.style.background = '#d4edda';
+            result.style.color = '#155724';
+        }
+        
+        function testForm(event) {
+            event.preventDefault();
+            const result = document.getElementById('result');
+            result.innerHTML = `تم إرسال النموذج بنجاح - الوقت: ${new Date().toLocaleTimeString('ar-EG')}`;
+            result.style.background = '#d1ecf1';
+            result.style.color = '#0c5460';
+        }
+        
+        function testNavigation(direction) {
+            const result = document.getElementById('result');
+            result.innerHTML = `تم الضغط على: ${direction} - الوقت: ${new Date().toLocaleTimeString('ar-EG')}`;
+            result.style.background = '#fff3cd';
+            result.style.color = '#856404';
+        }
+        
+        // اختبار إضافي للأزرار
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('تم تحميل الصفحة - الأزرار جاهزة للاختبار');
+        });
+    </script>
+</body>
+</html>

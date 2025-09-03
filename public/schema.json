@@ -1,0 +1,110 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "الباديل",
+  "alternateName": "منصة البديل",
+  "description": "منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية",
+  "url": "https://albadil.com",
+  "logo": "https://albadil.com/logo.jpg",
+  "image": "https://albadil.com/og-image.jpg",
+  "sameAs": [
+    "https://wa.me/201021606893"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+20-10-2160-6893",
+    "contactType": "customer service",
+    "areaServed": "EG",
+    "availableLanguage": "Arabic"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "فيصل",
+    "addressRegion": "جيزة",
+    "addressCountry": "EG"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 30.0444,
+    "longitude": 31.2357
+  },
+  "foundingDate": "2000",
+  "numberOfEmployees": "10-50",
+  "serviceArea": {
+    "@type": "Country",
+    "name": "مصر"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "خدمات استخراج الأوراق الرسمية",
+    "itemListElement": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "استخراج شهادات",
+          "description": "خدمة استخراج الشهادات الرسمية بسرعة وجودة عالية"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "استخراج رخص",
+          "description": "خدمة استخراج الرخص الرسمية باحترافية عالية"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "استخراج مستندات حكومية",
+          "description": "خدمة استخراج جميع أنواع المستندات الحكومية"
+        }
+      }
+    ]
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "reviewCount": "150",
+    "bestRating": "5",
+    "worstRating": "1"
+  },
+  "review": [
+    {
+      "@type": "Review",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "5",
+        "bestRating": "5"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "أحمد محمد"
+      },
+      "reviewBody": "خدمة ممتازة وسريعة، أنجزوا طلبي في أقل من يومين. أنصح الجميع بالتجربة!"
+    },
+    {
+      "@type": "Review",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "5",
+        "bestRating": "5"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "فاطمة علي"
+      },
+      "reviewBody": "تجربة رائعة من البداية للنهاية. الفريق متعاون جداً والأسعار منافسة."
+    }
+  ],
+  "areaServed": {
+    "@type": "Country",
+    "name": "مصر"
+  },
+  "serviceType": "خدمات حكومية",
+  "priceRange": "$$",
+  "paymentAccepted": "Cash, Credit Card, Bank Transfer",
+  "currenciesAccepted": "EGP"
+}
