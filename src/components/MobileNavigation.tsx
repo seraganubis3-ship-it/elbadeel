@@ -1,178 +1,352 @@
-"use client";
+'use client';
 
-import { useSession, signOut } from "next-auth/react";
-import Link from "next/link";
-import { useState } from "react";
+import { useSession, signOut } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 export default function MobileNavigation() {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const toggleMenu = () => setIsOpen(!isOpen);
-  const closeMenu = () => setIsOpen(false);
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
-  return (
-    <div className="md:hidden">
-             {/* Hamburger Button */}
-       <button
-         onClick={toggleMenu}
-         className="text-white hover:text-green-300 p-2 rounded-lg hover:bg-white/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50"
-         aria-label="فتح القائمة"
-       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
-             {/* Overlay */}
-       {isOpen && (
-         <div 
-           className="fixed inset-0 bg-black bg-opacity-50 z-40"
-           onClick={closeMenu}
-         />
-       )}
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
-       {/* Menu */}
-       <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl border-l border-gray-200 overflow-hidden transition-all duration-300 ease-in-out transform ${
-         isOpen ? 'translate-x-0' : 'translate-x-full'
-       } z-50`}>
-        
-                 {/* Header */}
-         <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4 text-white border-b border-green-500">
-           <div className="flex items-center justify-between">
-             <h3 className="text-lg font-bold">القائمة</h3>
-             <button
-               onClick={closeMenu}
-               className="text-white hover:text-green-100 p-2 rounded-lg hover:bg-white/20 transition-all duration-200"
-               aria-label="إغلاق القائمة"
-             >
-               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-               </svg>
-             </button>
-           </div>
-         </div>
+  const navigation = [
+    {
+      name: 'الرئيسية',
+      href: '/',
+      icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+      emoji: '🏠',
+    },
+    {
+      name: 'الخدمات',
+      href: '/services',
+      icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+      emoji: '📋',
+    },
+    {
+      name: 'من نحن',
+      href: '/about',
+      icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+      emoji: 'ℹ️',
+    },
+    {
+      name: 'طلباتي',
+      href: '/orders',
+      icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+      requireAuth: true,
+      emoji: '📦',
+    },
+    {
+      name: 'الملف الشخصي',
+      href: '/profile',
+      icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+      requireAuth: true,
+      emoji: '👤',
+    },
+  ];
 
-                 {/* Navigation Links */}
-         <nav className="p-4 space-y-2 overflow-y-auto h-full">
-          {/* Services Link */}
-          <Link 
-            href="/services" 
-            onClick={closeMenu}
-            className="flex items-center gap-3 px-4 py-3 text-gray-800 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 rounded-xl transition-all duration-200 group"
-          >
-            <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 transition-colors duration-200">
-              <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
-            </div>
-            <span className="font-medium">الخدمات</span>
-          </Link>
-          
+  const quickActions = [
+    {
+      name: 'واتساب',
+      href: 'https://wa.me/201021606893',
+      icon: '💬',
+      color: 'from-green-500 to-green-600',
+      external: true,
+    },
+    {
+      name: 'اتصل بنا',
+      href: 'tel:+201000000000',
+      icon: '📞',
+      color: 'from-blue-500 to-blue-600',
+      external: true,
+    },
+  ];
 
+  const MobileSidebar = () => (
+    <>
+      {/* Backdrop */}
+      <div
+        className='fixed inset-0 bg-black/70 backdrop-blur-md z-[9998]'
+        onClick={() => setIsOpen(false)}
+        style={{ animation: 'fadeIn 0.2s ease-out' }}
+      />
 
-          {session?.user ? (
-            <>
-              {/* Orders Link */}
-              <Link 
-                href="/orders" 
-                onClick={closeMenu}
-                className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 rounded-xl transition-all duration-200 group"
-              >
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-200">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+      {/* Slide-in Panel */}
+      <div
+        className='fixed top-0 right-0 h-full w-80 bg-gradient-to-b from-slate-900 via-slate-900 to-emerald-950 shadow-2xl z-[9999]'
+        style={{ animation: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+      >
+        <div className='flex flex-col h-full'>
+          {/* Header with Logo */}
+          <div className='relative p-6 pb-4'>
+            {/* Decorative Glow */}
+            <div className='absolute top-0 right-0 w-40 h-40 bg-emerald-500/20 rounded-full blur-[80px]'></div>
+
+            <div className='relative flex items-center justify-between'>
+              {/* Logo */}
+              <div className='flex items-center gap-3'>
+                <div className='w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30'>
+                  <span className='text-white font-black text-lg'>ب</span>
                 </div>
-                <span className="font-medium">طلباتي</span>
-              </Link>
+                <div>
+                  <h2 className='text-lg font-black text-white'>البديل</h2>
+                  <p className='text-emerald-400/70 text-[10px] font-medium'>للخدمات الحكومية</p>
+                </div>
+              </div>
 
-
-
-              {/* Admin Panel Link */}
-              {session.user.role === "ADMIN" && (
-                <Link 
-                  href="/admin" 
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 rounded-xl transition-all duration-200 group"
-                >
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors duration-200">
-                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <span className="font-medium">لوحة التحكم</span>
-                </Link>
-              )}
-
-              {/* User Info */}
-              <Link 
-                href="/profile" 
-                onClick={closeMenu}
-                className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:from-gray-100 hover:to-gray-200 transition-all duration-200 group"
+              {/* Close Button */}
+              <button
+                onClick={() => setIsOpen(false)}
+                className='w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all'
+                aria-label='إغلاق'
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                    <span className="text-white font-bold text-lg">
-                      {session.user.name?.charAt(0) || session.user.email?.charAt(0)}
+                <svg
+                  className='w-5 h-5 text-white/70'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M6 18L18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* User Info Card */}
+          {session?.user ? (
+            <div className='mx-4 mb-4 p-4 bg-gradient-to-br from-emerald-500/20 to-teal-500/10 rounded-2xl border border-emerald-500/20'>
+              <div className='flex items-center gap-4'>
+                <div className='w-14 h-14 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-500/30'>
+                  {session.user.name?.charAt(0) || session.user.email?.charAt(0) || '؟'}
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <p className='text-white font-bold truncate text-lg'>
+                    {session.user.name || session.user.email?.split('@')[0]}
+                  </p>
+                  <div className='flex items-center gap-2 mt-1'>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        session.user.role === 'ADMIN'
+                          ? 'bg-purple-500/20 text-purple-400'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      }`}
+                    >
+                      {session.user.role === 'ADMIN' ? '👑 مدير' : '✓ عميل'}
                     </span>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 group-hover:text-green-600 transition-colors duration-200">{session.user.name || session.user.email}</p>
-                    <p className="text-sm text-gray-600">{session.user.role === 'ADMIN' ? 'مدير النظام' : 'مستخدم'}</p>
-                  </div>
                 </div>
+              </div>
+            </div>
+          ) : (
+            <div className='mx-4 mb-4 p-4 bg-white/5 rounded-2xl border border-white/10'>
+              <p className='text-white/60 text-sm text-center mb-3'>مرحباً بك في البديل</p>
+              <Link
+                href='/login'
+                onClick={() => setIsOpen(false)}
+                className='w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all'
+              >
+                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1'
+                  />
+                </svg>
+                تسجيل الدخول
               </Link>
+            </div>
+          )}
 
-              {/* Logout Button */}
+          {/* Navigation Links */}
+          <div className='flex-1 px-4 overflow-y-auto'>
+            <p className='text-white/40 text-xs font-bold uppercase tracking-wider mb-3 px-2'>
+              القائمة الرئيسية
+            </p>
+            <div className='space-y-1'>
+              {navigation.map(item => {
+                if (item.requireAuth && !session?.user) return null;
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 group ${
+                      isActive(item.href)
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-white border border-emerald-500/20'
+                        : 'text-white/70 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <span
+                      className={`text-xl ${isActive(item.href) ? '' : 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100'} transition-all`}
+                    >
+                      {item.emoji}
+                    </span>
+                    <span className='font-semibold'>{item.name}</span>
+                    {isActive(item.href) && (
+                      <span className='mr-auto w-2 h-2 bg-emerald-400 rounded-full animate-pulse'></span>
+                    )}
+                  </Link>
+                );
+              })}
+
+              {/* Admin Link */}
+              {session?.user?.role === 'ADMIN' && (
+                <>
+                  <div className='h-px bg-white/10 my-3'></div>
+                  <Link
+                    href='/admin'
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 ${
+                      isActive('/admin')
+                        ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/10 text-white border border-purple-500/20'
+                        : 'text-white/70 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <span className='text-xl'>⚙️</span>
+                    <span className='font-semibold'>لوحة التحكم</span>
+                    {isActive('/admin') && (
+                      <span className='mr-auto w-2 h-2 bg-purple-400 rounded-full animate-pulse'></span>
+                    )}
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className='mt-6'>
+              <p className='text-white/40 text-xs font-bold uppercase tracking-wider mb-3 px-2'>
+                تواصل معنا
+              </p>
+              <div className='grid grid-cols-2 gap-2'>
+                {quickActions.map(action => (
+                  <a
+                    key={action.name}
+                    href={action.href}
+                    target={action.external ? '_blank' : undefined}
+                    rel={action.external ? 'noopener noreferrer' : undefined}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-br ${action.color} shadow-lg hover:scale-105 transition-transform`}
+                  >
+                    <span className='text-2xl'>{action.icon}</span>
+                    <span className='text-white font-bold text-sm'>{action.name}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className='p-4 border-t border-white/10'>
+            {session?.user ? (
               <button
                 onClick={() => {
-                  closeMenu();
-                  signOut({ callbackUrl: "/" });
+                  setIsOpen(false);
+                  signOut({ callbackUrl: '/' });
                 }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 group"
+                className='w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all duration-200'
               >
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors duration-200">
-                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </div>
-                <span className="font-medium">تسجيل الخروج</span>
+                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1'
+                  />
+                </svg>
+                <span className='font-bold'>تسجيل الخروج</span>
               </button>
-            </>
-          ) : (
-            <>
-              {/* Register Link */}
-              <Link 
-                href="/register" 
-                onClick={closeMenu}
-                className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 rounded-xl transition-all duration-200 group"
+            ) : (
+              <Link
+                href='/register'
+                onClick={() => setIsOpen(false)}
+                className='w-full flex items-center justify-center gap-2 px-4 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 transition-all duration-200'
               >
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-200">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                  </svg>
-                </div>
-                <span className="font-medium">إنشاء حساب</span>
+                إنشاء حساب جديد
               </Link>
+            )}
 
-              {/* Login Link */}
-              <Link 
-                href="/login" 
-                onClick={closeMenu}
-                className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-green-600 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-xl transition-all duration-200 group"
-              >
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors duration-200">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                  </svg>
-                </div>
-                <span className="font-medium">تسجيل الدخول</span>
-              </Link>
-            </>
-          )}
-        </nav>
+            {/* Version */}
+            <p className='text-center text-white/20 text-xs mt-4'>البديل v2.0 © 2025</p>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <style jsx>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
+    </>
+  );
+
+  return (
+    <>
+      {/* Hamburger Button - Premium Design */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className='relative flex items-center justify-center w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all duration-200 group'
+        aria-label='القائمة'
+      >
+        <div className='flex flex-col items-center justify-center w-5 h-5 space-y-1.5'>
+          <span
+            className={`block w-5 h-0.5 bg-white rounded-full transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-2' : ''}`}
+          />
+          <span
+            className={`block w-3 h-0.5 bg-white rounded-full transition-all duration-300 ${isOpen ? 'opacity-0 scale-0' : ''}`}
+          />
+          <span
+            className={`block w-5 h-0.5 bg-white rounded-full transition-all duration-300 ${isOpen ? '-rotate-45 -translate-y-2' : ''}`}
+          />
+        </div>
+
+        {/* Notification Dot */}
+        <span className='absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse'></span>
+      </button>
+
+      {/* Portal */}
+      {mounted && isOpen && createPortal(<MobileSidebar />, document.body)}
+    </>
   );
 }

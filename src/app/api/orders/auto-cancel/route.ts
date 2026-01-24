@@ -1,50 +1,51 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // البحث عن الطلبات التي لم يتم دفعها خلال 30 دقيقة
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
-    
+
     const pendingOrders = await prisma.order.findMany({
       where: {
-        status: "PENDING",
+        status: 'PENDING',
         createdAt: {
-          lt: thirtyMinutesAgo
-        }
+          lt: thirtyMinutesAgo,
+        },
       },
       include: {
-        payment: true
-      }
+        payment: true,
+      },
     });
 
     let cancelledCount = 0;
 
     for (const order of pendingOrders) {
-      // التحقق من عدم وجود دفع
-      if (!order.payment || order.payment.status === "PENDING") {
+      // التحقق من عدم وجود دفع أو أن الدفع معلق
+      if (!order.payment || order.payment.status === 'PENDING') {
         // إلغاء الطلب
         await prisma.order.update({
           where: { id: order.id },
-          data: { 
-            status: "CANCELLED",
-            notes: order.notes ? `${order.notes}\n\n[تم إلغاء الطلب تلقائياً - انتهت مهلة الدفع (30 دقيقة)]` : "[تم إلغاء الطلب تلقائياً - انتهت مهلة الدفع (30 دقيقة)]"
-          }
+          data: {
+            status: 'CANCELLED',
+            notes: order.notes
+              ? `${order.notes}\n\n[تم إلغاء الطلب تلقائياً - انتهت مهلة الدفع (30 دقيقة)]`
+              : '[تم إلغاء الطلب تلقائياً - انتهت مهلة الدفع (30 دقيقة)]',
+          },
         });
 
         // إذا كان هناك دفع معلق، تحديث حالته
         if (order.payment) {
           await prisma.payment.update({
             where: { id: order.payment.id },
-            data: { 
-              status: "CANCELLED",
-              notes: "تم إلغاء الدفع تلقائياً - انتهت مهلة الدفع"
-            }
+            data: {
+              status: 'CANCELLED',
+              notes: 'تم إلغاء الدفع تلقائياً - انتهت مهلة الدفع',
+            },
           });
         }
 
         cancelledCount++;
-        console.log(`Order ${order.id} auto-cancelled due to payment timeout`);
       }
     }
 
@@ -52,15 +53,11 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `تم إلغاء ${cancelledCount} طلب تلقائياً`,
       cancelledCount,
-      processedAt: new Date().toISOString()
+      processedAt: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error("Auto-cancel error:", error);
-    return NextResponse.json(
-      { error: "حدث خطأ أثناء الإلغاء التلقائي" },
-      { status: 500 }
-    );
+    //
+    return NextResponse.json({ error: 'حدث خطأ أثناء الإلغاء التلقائي' }, { status: 500 });
   }
 }
 
@@ -68,35 +65,33 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
-    
+
     const pendingOrders = await prisma.order.findMany({
       where: {
-        status: "PENDING",
+        status: 'PENDING',
         createdAt: {
-          lt: thirtyMinutesAgo
-        }
+          lt: thirtyMinutesAgo,
+        },
       },
       select: {
         id: true,
         createdAt: true,
         customerName: true,
-        totalCents: true
-      }
+        totalCents: true,
+      },
     });
 
     return NextResponse.json({
       success: true,
       orders: pendingOrders.map(order => ({
         ...order,
-        minutesSinceCreation: Math.floor((Date.now() - new Date(order.createdAt).getTime()) / (1000 * 60))
-      }))
+        minutesSinceCreation: Math.floor(
+          (Date.now() - new Date(order.createdAt).getTime()) / (1000 * 60)
+        ),
+      })),
     });
-
   } catch (error) {
-    console.error("Get pending orders error:", error);
-    return NextResponse.json(
-      { error: "حدث خطأ أثناء جلب الطلبات" },
-      { status: 500 }
-    );
+    //
+    return NextResponse.json({ error: 'حدث خطأ أثناء جلب الطلبات' }, { status: 500 });
   }
 }

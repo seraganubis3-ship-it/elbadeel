@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run linting
+echo "🔍 Running ESLint..."
+npm run lint
+
+# Run type checking
+echo "🔍 Running TypeScript check..."
+npx tsc --noEmit
+
+# Run Prettier check
+echo "🔍 Running Prettier check..."
+npx prettier --check .
+
+# Run tests (if available)
+if [ -f "package.json" ] && grep -q '"test"' package.json; then
+  echo "🧪 Running tests..."
+  npm test
+fi
+
+echo "✅ Pre-commit checks passed!"

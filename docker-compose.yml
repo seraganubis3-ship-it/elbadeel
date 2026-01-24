@@ -1,65 +1,16 @@
 services:
-  postgres:
+  db:
     image: postgres:15-alpine
-    container_name: albadil_postgres
-    restart: unless-stopped
+    container_name: haiba-postgres
+    restart: always
     environment:
-      POSTGRES_DB: albadil_prod
-      POSTGRES_USER: albadil_user
-      POSTGRES_PASSWORD: albadil_password_2024
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: haiba_platform
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
-    networks:
-      - albadil_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U albadil_user -d albadil_prod"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: albadil_pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@albadil.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    networks:
-      - albadil_network
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  redis:
-    image: redis:7-alpine
-    container_name: albadil_redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - albadil_network
-    command: redis-server --appendonly yes
 
 volumes:
   postgres_data:
-    driver: local
-  pgadmin_data:
-    driver: local
-  redis_data:
-    driver: local
-
-networks:
-  albadil_network:
-    driver: bridge

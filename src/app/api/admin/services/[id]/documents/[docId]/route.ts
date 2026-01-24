@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export async function PUT(
   request: NextRequest,
@@ -8,38 +8,37 @@ export async function PUT(
 ) {
   try {
     const session = await requireAuth();
-    
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "غير مصرح لك بالوصول لهذه الصفحة" }, { status: 403 });
+
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذه الصفحة' }, { status: 403 });
     }
 
     const resolvedParams = await params;
     const body = await request.json();
-    
+
     const { title, description, required, active, orderIndex } = body;
 
     if (!title) {
-      return NextResponse.json({ error: "عنوان المستند مطلوب" }, { status: 400 });
+      return NextResponse.json({ error: 'عنوان المستند مطلوب' }, { status: 400 });
     }
 
     const document = await prisma.serviceDocument.update({
-      where: { 
+      where: {
         id: resolvedParams.docId,
-        serviceId: resolvedParams.id 
+        serviceId: resolvedParams.id,
       },
       data: {
         title,
         description,
         required,
         active,
-        orderIndex: orderIndex !== undefined ? orderIndex : undefined
-      }
+        orderIndex: orderIndex !== undefined ? orderIndex : undefined,
+      },
     });
 
     return NextResponse.json({ success: true, document });
   } catch (error) {
-    console.error('Error updating service document:', error);
-    return NextResponse.json({ error: "حدث خطأ أثناء تحديث مستند الخدمة" }, { status: 500 });
+    return NextResponse.json({ error: 'حدث خطأ أثناء تحديث مستند الخدمة' }, { status: 500 });
   }
 }
 
@@ -49,23 +48,22 @@ export async function DELETE(
 ) {
   try {
     const session = await requireAuth();
-    
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "غير مصرح لك بالوصول لهذه الصفحة" }, { status: 403 });
+
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذه الصفحة' }, { status: 403 });
     }
 
     const resolvedParams = await params;
 
     await prisma.serviceDocument.delete({
-      where: { 
+      where: {
         id: resolvedParams.docId,
-        serviceId: resolvedParams.id 
-      }
+        serviceId: resolvedParams.id,
+      },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting service document:', error);
-    return NextResponse.json({ error: "حدث خطأ أثناء حذف مستند الخدمة" }, { status: 500 });
+    return NextResponse.json({ error: 'حدث خطأ أثناء حذف مستند الخدمة' }, { status: 500 });
   }
 }

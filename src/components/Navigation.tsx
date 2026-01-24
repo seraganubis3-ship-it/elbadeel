@@ -1,111 +1,170 @@
-"use client";
+'use client';
 
-import { useSession, signOut } from "next-auth/react";
-import Link from "next/link";
+import { useSession, signOut } from 'next-auth/react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Navigation() {
   const { data: session } = useSession();
+  const pathname = usePathname();
+
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
+
+  const NavLink = ({
+    href,
+    children,
+    icon,
+  }: {
+    href: string;
+    children: React.ReactNode;
+    icon?: React.ReactNode;
+  }) => (
+    <Link
+      href={href}
+      className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+        isActive(href)
+          ? 'text-white bg-white/15'
+          : 'text-white/70 hover:text-white hover:bg-white/10'
+      }`}
+    >
+      {icon && <span className='w-4 h-4'>{icon}</span>}
+      {children}
+    </Link>
+  );
 
   return (
-    <div className="flex items-center gap-2 lg:gap-4 xl:gap-6">
+    <div className='flex items-center gap-1'>
       {/* Services Link */}
-      <Link 
-        href="/services" 
-        className="group relative text-white/90 hover:text-white transition-all duration-300 font-medium px-3 lg:px-4 py-2 rounded-lg hover:bg-white/10 backdrop-blur-sm border border-transparent hover:border-white/20 whitespace-nowrap"
-      >
-        <span className="flex items-center gap-2">
-          <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+      <NavLink
+        href='/services'
+        icon={
+          <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={1.5}
+              d='M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10'
+            />
           </svg>
-          <span className="text-sm lg:text-base">الخدمات</span>
-        </span>
-      </Link>
-      
+        }
+      >
+        الخدمات
+      </NavLink>
+
+      {/* About Link */}
+      <NavLink
+        href='/about'
+        icon={
+          <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={1.5}
+              d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+            />
+          </svg>
+        }
+      >
+        من نحن
+      </NavLink>
+
       {session?.user ? (
         <>
           {/* Orders Link */}
-          <Link 
-            href="/orders" 
-            className="group relative text-white/90 hover:text-white transition-all duration-300 font-medium px-3 lg:px-4 py-2 rounded-lg hover:bg-white/10 backdrop-blur-sm border border-transparent hover:border-white/20 whitespace-nowrap"
-          >
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <NavLink
+            href='/orders'
+            icon={
+              <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={1.5}
+                  d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                />
               </svg>
-              <span className="text-sm lg:text-base">طلباتي</span>
+            }
+          >
+            طلباتي
+          </NavLink>
+
+          {/* Admin Panel Link */}
+          {session.user.role === 'ADMIN' && (
+            <NavLink
+              href='/admin'
+              icon={
+                <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={1.5}
+                    d='M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'
+                  />
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={1.5}
+                    d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                  />
+                </svg>
+              }
+            >
+              لوحة التحكم
+            </NavLink>
+          )}
+
+          {/* Divider */}
+          <div className='w-px h-6 bg-white/20 mx-2'></div>
+
+          {/* User Profile */}
+          <Link
+            href='/profile'
+            className={`flex items-center gap-3 px-3 py-1.5 rounded-full transition-all duration-200 ${
+              isActive('/profile') ? 'bg-white/15' : 'hover:bg-white/10'
+            }`}
+          >
+            <div className='w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg'>
+              {session.user.name?.charAt(0) || session.user.email?.charAt(0) || '؟'}
+            </div>
+            <span className='text-white/90 text-sm font-medium hidden xl:block'>
+              {session.user.name || session.user.email?.split('@')[0]}
             </span>
           </Link>
-          
-          {/* Admin Panel Link */}
-          {session.user.role === "ADMIN" && (
-            <Link 
-              href="/admin" 
-              className="group relative text-white/90 hover:text-white transition-all duration-300 font-medium px-3 lg:px-4 py-2 rounded-lg hover:bg-white/10 backdrop-blur-sm border border-transparent hover:border-white/20 whitespace-nowrap"
-            >
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span className="text-sm lg:text-base hidden lg:block">لوحة التحكم</span>
-              </span>
-            </Link>
-          )}
-          
-          {/* User Info & Logout */}
-          <div className="flex items-center gap-2 lg:gap-3">
-            <Link 
-              href="/profile" 
-              className="flex items-center gap-2 px-3 lg:px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 whitespace-nowrap hover:bg-white/25 transition-all duration-300 group"
-            >
-              <div className="w-8 h-8 bg-gradient-to-br from-white/20 to-white/10 rounded-full flex items-center justify-center border border-white/30 flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-                <span className="text-white font-bold text-sm">
-                  {session.user.name?.charAt(0) || session.user.email?.charAt(0)}
-                </span>
-              </div>
-              <span className="text-white/90 text-sm font-medium hidden xl:block group-hover:text-white transition-colors duration-300">
-                مرحباً، {session.user.name || session.user.email}
-              </span>
-            </Link>
-            
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="group bg-red-500/90 hover:bg-red-600 text-white px-3 lg:px-4 py-2 rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl backdrop-blur-sm border border-red-400/30 whitespace-nowrap"
-            >
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span className="hidden lg:block">تسجيل الخروج</span>
-              </span>
-            </button>
-          </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className='flex items-center gap-2 px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full transition-all duration-200 text-sm font-medium'
+          >
+            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={1.5}
+                d='M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1'
+              />
+            </svg>
+            <span className='hidden xl:block'>خروج</span>
+          </button>
         </>
       ) : (
         <>
           {/* Register Link */}
-          <Link 
-            href="/register" 
-            className="group relative text-white/90 hover:text-white transition-all duration-300 font-medium px-3 lg:px-4 py-2 rounded-lg hover:bg-white/10 backdrop-blur-sm border border-transparent hover:border-white/20 whitespace-nowrap"
+          <NavLink href='/register'>إنشاء حساب</NavLink>
+
+          {/* Login Button - Primary CTA */}
+          <Link
+            href='/login'
+            className='flex items-center gap-2 px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full transition-all duration-200 text-sm font-semibold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-400/30'
           >
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
-              <span className="text-sm lg:text-base">إنشاء حساب</span>
-            </span>
-          </Link>
-          
-          {/* Login Button */}
-          <Link 
-            href="/login" 
-            className="group bg-white/15 hover:bg-white/25 text-white px-4 lg:px-6 py-2 rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl backdrop-blur-sm border border-white/30 whitespace-nowrap"
-          >
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-              </svg>
-              <span className="text-sm lg:text-base">تسجيل الدخول</span>
-            </span>
+            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1'
+              />
+            </svg>
+            دخول
           </Link>
         </>
       )}

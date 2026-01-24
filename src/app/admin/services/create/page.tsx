@@ -1,44 +1,45 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
-import Card from "@/components/Card";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Category {
   id: string;
   name: string;
-  slug: string;
-  orderIndex: number;
-  active: boolean;
 }
 
 export default function CreateServicePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [variants, setVariants] = useState<Array<{
-    name: string;
-    priceCents: string;
-    etaDays: string;
-    active: boolean;
-  }>>([{ name: "", priceCents: "", etaDays: "", active: true }]);
-
-  const [documents, setDocuments] = useState<Array<{
-    title: string;
-    description: string;
-    required: boolean;
-    active: boolean;
-  }>>([{ title: "", description: "", required: true, active: true }]);
+  const [activeTab, setActiveTab] = useState(0);
 
   const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    description: "",
-    categoryId: "",
+    name: '',
+    slug: '',
+    description: '',
+    categoryId: '',
     active: true,
-    image: null as File | null
+    image: null as File | null,
   });
+
+  const [variants, setVariants] = useState<
+    Array<{
+      name: string;
+      priceCents: string;
+      etaDays: string;
+      active: boolean;
+    }>
+  >([{ name: '', priceCents: '', etaDays: '', active: true }]);
+
+  const [documents, setDocuments] = useState<
+    Array<{
+      title: string;
+      description: string;
+      required: boolean;
+      active: boolean;
+    }>
+  >([{ title: '', description: '', required: true, active: true }]);
 
   useEffect(() => {
     fetchCategories();
@@ -46,55 +47,14 @@ export default function CreateServicePage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/admin/categories");
+      const response = await fetch('/api/admin/categories');
       const data = await response.json();
       if (data.success) {
         setCategories(data.categories);
       }
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error(error);
     }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value
-    }));
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setFormData(prev => ({ ...prev, image: file }));
-  };
-
-  const addVariant = () => {
-    setVariants(prev => [...prev, { name: "", priceCents: "", etaDays: "", active: true }]);
-  };
-
-  const removeVariant = (index: number) => {
-    setVariants(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const updateVariant = (index: number, field: string, value: string | boolean) => {
-    setVariants(prev => prev.map((variant, i) => 
-      i === index ? { ...variant, [field]: value } : variant
-    ));
-  };
-
-  const addDocument = () => {
-    setDocuments(prev => [...prev, { title: "", description: "", required: true, active: true }]);
-  };
-
-  const removeDocument = (index: number) => {
-    setDocuments(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const updateDocument = (index: number, field: string, value: string | boolean) => {
-    setDocuments(prev => prev.map((document, i) => 
-      i === index ? { ...document, [field]: value } : document
-    ));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,19 +63,19 @@ export default function CreateServicePage() {
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append("name", formData.name);
-      formDataToSend.append("slug", formData.slug);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("categoryId", formData.categoryId);
-      formDataToSend.append("active", formData.active.toString());
-      
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('slug', formData.slug);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('categoryId', formData.categoryId);
+      formDataToSend.append('active', formData.active.toString());
+
       if (formData.image) {
-        formDataToSend.append("image", formData.image);
+        formDataToSend.append('image', formData.image);
       }
 
-      const response = await fetch("/api/admin/services", {
-        method: "POST",
-        body: formDataToSend
+      const response = await fetch('/api/admin/services', {
+        method: 'POST',
+        body: formDataToSend,
       });
 
       const data = await response.json();
@@ -125,14 +85,14 @@ export default function CreateServicePage() {
         for (const variant of variants) {
           if (variant.name && variant.priceCents && variant.etaDays) {
             await fetch(`/api/admin/services/${data.service.id}/variants`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 name: variant.name,
-                priceCents: parseInt(variant.priceCents) * 100, // Convert to cents
+                priceCents: parseInt(variant.priceCents) * 100,
                 etaDays: parseInt(variant.etaDays),
-                active: variant.active
-              })
+                active: variant.active,
+              }),
             });
           }
         }
@@ -141,321 +101,383 @@ export default function CreateServicePage() {
         for (const document of documents) {
           if (document.title) {
             await fetch(`/api/admin/services/${data.service.id}/documents`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 title: document.title,
                 description: document.description,
                 required: document.required,
-                active: document.active
-              })
+                active: document.active,
+              }),
             });
           }
         }
 
-        router.push("/admin/services");
+        alert('✅ تم إنشاء الخدمة بنجاح!');
+        router.push('/admin/services');
       } else {
-        alert(data.error || "حدث خطأ أثناء إنشاء الخدمة");
+        alert(data.error || 'حدث خطأ أثناء إنشاء الخدمة');
       }
     } catch (error) {
-      console.error("Error creating service:", error);
-      alert("حدث خطأ أثناء إنشاء الخدمة");
+      alert('حدث خطأ أثناء إنشاء الخدمة');
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
+  const tabs = [
+    { id: 0, name: 'المعلومات الأساسية', icon: '📋' },
+    { id: 1, name: 'أنواع الخدمة', icon: '⚡' },
+    { id: 2, name: 'المستندات المطلوبة', icon: '📄' },
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">إضافة خدمة جديدة</h1>
-        <p className="text-gray-600 mt-2">أضف خدمة جديدة مع أنواعها ومتطلباتها</p>
-      </div>
-
-      <Card>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className='min-h-screen bg-gray-50 p-4 md:p-8'>
+      <div className='max-w-6xl mx-auto'>
+        {/* Header */}
+        <div className='mb-6 bg-white rounded-xl shadow-sm p-6 border border-gray-200'>
+          <div className='flex items-center justify-between'>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                اسم الخدمة *
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                placeholder="مثال: جواز السفر"
-              />
+              <h1 className='text-3xl font-bold text-gray-900'>إضافة خدمة جديدة</h1>
+              <p className='text-gray-500 mt-1'>أضف خدمة جديدة مع أنواعها ومتطلباتها</p>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                رابط الخدمة (Slug) *
-              </label>
-              <input
-                type="text"
-                name="slug"
-                value={formData.slug}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                placeholder="مثال: passport-service"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                اكتب رابط باللغة الإنجليزية (بدون مسافات أو أحرف خاصة)
-              </p>
-            </div>
+            <button
+              onClick={() => router.back()}
+              className='px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold transition-all'
+            >
+              ← رجوع
+            </button>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                الفئة *
-              </label>
-              <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+        {/* Tabs Navigation */}
+        <div className='bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden'>
+          <div className='flex overflow-x-auto'>
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 min-w-[150px] px-6 py-4 font-bold text-sm transition-all border-b-4 ${
+                  activeTab === tab.id
+                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                    : 'border-transparent hover:bg-gray-50 text-gray-600'
+                }`}
               >
-                <option value="">اختر الفئة</option>
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <span className='text-2xl block mb-1'>{tab.icon}</span>
+                {tab.name}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              وصف الخدمة
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-              placeholder="اكتب وصفاً مفصلاً للخدمة..."
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          {/* Tab Content */}
+          <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-8 min-h-[400px]'>
+            {/* Tab 0: Basic Info */}
+            {activeTab === 0 && (
+              <div className='space-y-6'>
+                <h2 className='text-xl font-bold text-gray-900 mb-4'>📋 المعلومات الأساسية</h2>
 
-          {/* Service Documents */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">مستندات الخدمة المطلوبة</h3>
-              <Button
-                type="button"
-                onClick={addDocument}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                إضافة مستند
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {documents.map((document, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        عنوان المستند *
-                      </label>
-                      <input
-                        type="text"
-                        value={document.title}
-                        onChange={(e) => updateDocument(index, "title", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        placeholder="مثال: صورة شخصية"
-                      />
-                    </div>
-
-                    <div className="flex items-end space-x-4 space-x-reverse">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={document.required}
-                          onChange={(e) => updateDocument(index, "required", e.target.checked)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label className="mr-2 text-sm text-gray-700">مطلوب</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={document.active}
-                          onChange={(e) => updateDocument(index, "active", e.target.checked)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label className="mr-2 text-sm text-gray-700">مفعل</label>
-                      </div>
-                      {documents.length > 1 && (
-                        <Button
-                          type="button"
-                          onClick={() => removeDocument(index)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          حذف
-                        </Button>
-                      )}
-                    </div>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  <div>
+                    <label className='block text-sm font-bold text-gray-700 mb-2'>
+                      اسم الخدمة *
+                    </label>
+                    <input
+                      type='text'
+                      value={formData.name}
+                      onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      required
+                      className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none font-medium'
+                      placeholder='مثال: تجديد جواز السفر'
+                    />
                   </div>
 
-                  <div className="mt-3">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      وصف المستند (اختياري)
+                  <div>
+                    <label className='block text-sm font-bold text-gray-700 mb-2'>
+                      رابط الخدمة (Slug) *
                     </label>
-                    <textarea
-                      value={document.description}
-                      onChange={(e) => updateDocument(index, "description", e.target.value)}
-                      rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                      placeholder="اكتب وصفاً للمستند المطلوب..."
+                    <input
+                      type='text'
+                      value={formData.slug}
+                      onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                      required
+                      className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none font-medium'
+                      placeholder='passport-renewal'
                     />
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              صورة الخدمة
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-            />
-            {formData.image && (
-              <p className="text-sm text-gray-600 mt-1">
-                الملف المحدد: {formData.image.name}
-              </p>
+                <div>
+                  <label className='block text-sm font-bold text-gray-700 mb-2'>الفئة *</label>
+                  <select
+                    value={formData.categoryId}
+                    onChange={e => setFormData(prev => ({ ...prev, categoryId: e.target.value }))}
+                    required
+                    className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none font-medium'
+                  >
+                    <option value=''>اختر الفئة</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className='block text-sm font-bold text-gray-700 mb-2'>وصف الخدمة</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    rows={4}
+                    className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none font-medium'
+                    placeholder='اكتب وصفاً مفصلاً للخدمة...'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-bold text-gray-700 mb-2'>صورة الخدمة</label>
+                  <input
+                    type='file'
+                    accept='image/*'
+                    onChange={e =>
+                      setFormData(prev => ({ ...prev, image: e.target.files?.[0] || null }))
+                    }
+                    className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 outline-none'
+                  />
+                </div>
+
+                <div className='flex items-center gap-3 p-4 bg-gray-50 rounded-lg'>
+                  <input
+                    type='checkbox'
+                    checked={formData.active}
+                    onChange={e => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                    className='w-5 h-5 rounded border-gray-300 text-indigo-600'
+                  />
+                  <label className='font-bold text-gray-700'>تفعيل الخدمة</label>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 1: Variants */}
+            {activeTab === 1 && (
+              <div className='space-y-6'>
+                <div className='flex items-center justify-between'>
+                  <h2 className='text-xl font-bold text-gray-900'>⚡ أنواع الخدمة</h2>
+                  <button
+                    type='button'
+                    onClick={() =>
+                      setVariants(prev => [
+                        ...prev,
+                        { name: '', priceCents: '', etaDays: '', active: true },
+                      ])
+                    }
+                    className='px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm'
+                  >
+                    + إضافة نوع
+                  </button>
+                </div>
+
+                <div className='space-y-4'>
+                  {variants.map((v, i) => (
+                    <div key={i} className='p-4 bg-gray-50 border-2 border-gray-200 rounded-lg'>
+                      <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+                        <div>
+                          <label className='block text-xs font-bold text-gray-600 mb-1'>
+                            اسم النوع
+                          </label>
+                          <input
+                            value={v.name}
+                            onChange={e =>
+                              setVariants(prev =>
+                                prev.map((variant, idx) =>
+                                  idx === i ? { ...variant, name: e.target.value } : variant
+                                )
+                              )
+                            }
+                            className='w-full px-3 py-2 bg-white border border-gray-300 rounded-lg outline-none'
+                            placeholder='عادي'
+                          />
+                        </div>
+                        <div>
+                          <label className='block text-xs font-bold text-gray-600 mb-1'>
+                            السعر (ج.م)
+                          </label>
+                          <input
+                            type='number'
+                            value={v.priceCents}
+                            onChange={e =>
+                              setVariants(prev =>
+                                prev.map((variant, idx) =>
+                                  idx === i ? { ...variant, priceCents: e.target.value } : variant
+                                )
+                              )
+                            }
+                            className='w-full px-3 py-2 bg-white border border-gray-300 rounded-lg outline-none'
+                          />
+                        </div>
+                        <div>
+                          <label className='block text-xs font-bold text-gray-600 mb-1'>
+                            الأيام
+                          </label>
+                          <input
+                            type='number'
+                            value={v.etaDays}
+                            onChange={e =>
+                              setVariants(prev =>
+                                prev.map((variant, idx) =>
+                                  idx === i ? { ...variant, etaDays: e.target.value } : variant
+                                )
+                              )
+                            }
+                            className='w-full px-3 py-2 bg-white border border-gray-300 rounded-lg outline-none'
+                          />
+                        </div>
+                        <div className='flex items-end'>
+                          <button
+                            type='button'
+                            onClick={() => setVariants(variants.filter((_, idx) => idx !== i))}
+                            className='w-full px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold'
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2: Documents */}
+            {activeTab === 2 && (
+              <div className='space-y-6'>
+                <div className='flex items-center justify-between'>
+                  <h2 className='text-xl font-bold text-gray-900'>📄 المستندات المطلوبة</h2>
+                  <button
+                    type='button'
+                    onClick={() =>
+                      setDocuments(prev => [
+                        ...prev,
+                        { title: '', description: '', required: true, active: true },
+                      ])
+                    }
+                    className='px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm'
+                  >
+                    + إضافة مستند
+                  </button>
+                </div>
+
+                <div className='space-y-4'>
+                  {documents.map((doc, i) => (
+                    <div key={i} className='p-4 bg-gray-50 border-2 border-gray-200 rounded-lg'>
+                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-3'>
+                        <div>
+                          <label className='block text-xs font-bold text-gray-600 mb-1'>
+                            عنوان المستند
+                          </label>
+                          <input
+                            value={doc.title}
+                            onChange={e =>
+                              setDocuments(prev =>
+                                prev.map((d, idx) =>
+                                  idx === i ? { ...d, title: e.target.value } : d
+                                )
+                              )
+                            }
+                            className='w-full px-3 py-2 bg-white border border-gray-300 rounded-lg outline-none'
+                            placeholder='صورة شخصية'
+                          />
+                        </div>
+                        <div className='flex items-end gap-2'>
+                          <label className='flex items-center gap-2'>
+                            <input
+                              type='checkbox'
+                              checked={doc.required}
+                              onChange={e =>
+                                setDocuments(prev =>
+                                  prev.map((d, idx) =>
+                                    idx === i ? { ...d, required: e.target.checked } : d
+                                  )
+                                )
+                              }
+                              className='w-4 h-4'
+                            />
+                            <span className='text-sm'>مطلوب</span>
+                          </label>
+                          <button
+                            type='button'
+                            onClick={() => setDocuments(documents.filter((_, idx) => idx !== i))}
+                            className='px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold text-sm'
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className='block text-xs font-bold text-gray-600 mb-1'>
+                          وصف المستند
+                        </label>
+                        <textarea
+                          value={doc.description}
+                          onChange={e =>
+                            setDocuments(prev =>
+                              prev.map((d, idx) =>
+                                idx === i ? { ...d, description: e.target.value } : d
+                              )
+                            )
+                          }
+                          rows={2}
+                          className='w-full px-3 py-2 bg-white border border-gray-300 rounded-lg outline-none'
+                          placeholder='وصف تفصيلي...'
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Service Variants */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">أنواع الخدمة</h3>
-              <Button
-                type="button"
-                onClick={addVariant}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                إضافة نوع
-              </Button>
+          {/* Footer */}
+          <div className='mt-6 flex justify-between items-center bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
+            <div className='text-sm text-gray-500'>
+              التبويب {activeTab + 1} من {tabs.length}
             </div>
-
-            <div className="space-y-4">
-              {variants.map((variant, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        اسم النوع
-                      </label>
-                      <input
-                        type="text"
-                        value={variant.name}
-                        onChange={(e) => updateVariant(index, "name", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        placeholder="مثال: عادي"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        السعر (جنيه)
-                      </label>
-                      <input
-                        type="number"
-                        value={variant.priceCents}
-                        onChange={(e) => updateVariant(index, "priceCents", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        placeholder="100"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        عدد الأيام
-                      </label>
-                      <input
-                        type="number"
-                        value={variant.etaDays}
-                        onChange={(e) => updateVariant(index, "etaDays", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        placeholder="7"
-                      />
-                    </div>
-
-                    <div className="flex items-end">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={variant.active}
-                          onChange={(e) => updateVariant(index, "active", e.target.checked)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label className="mr-2 text-sm text-gray-700">مفعل</label>
-                      </div>
-                      {variants.length > 1 && (
-                        <Button
-                          type="button"
-                          onClick={() => removeVariant(index)}
-                          className="bg-red-600 hover:bg-red-700 mr-2"
-                        >
-                          حذف
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className='flex gap-3'>
+              {activeTab > 0 && (
+                <button
+                  type='button'
+                  onClick={() => setActiveTab(activeTab - 1)}
+                  className='px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold'
+                >
+                  ← السابق
+                </button>
+              )}
+              {activeTab < tabs.length - 1 && (
+                <button
+                  type='button'
+                  onClick={() => setActiveTab(activeTab + 1)}
+                  className='px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold'
+                >
+                  التالي →
+                </button>
+              )}
+              {activeTab === tabs.length - 1 && (
+                <button
+                  type='submit'
+                  disabled={loading}
+                  className='px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold disabled:opacity-50'
+                >
+                  {loading ? '⏳ جاري الحفظ...' : '💾 حفظ الخدمة'}
+                </button>
+              )}
             </div>
-          </div>
-
-          {/* Active Status */}
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="active"
-              checked={formData.active}
-              onChange={handleInputChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label className="mr-2 text-sm text-gray-700">تفعيل الخدمة</label>
-          </div>
-
-          {/* Submit Buttons */}
-          <div className="flex justify-end space-x-4 space-x-reverse">
-            <Button
-              type="button"
-              onClick={() => router.back()}
-              className="bg-gray-600 hover:bg-gray-700"
-            >
-              إلغاء
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {loading ? "جاري الحفظ..." : "حفظ الخدمة"}
-            </Button>
           </div>
         </form>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import Button from "@/components/Button";
-import Card from "@/components/Card";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 interface ServiceVariant {
   id: string;
@@ -21,297 +20,394 @@ interface Service {
   icon?: string;
   active: boolean;
   categoryId: string;
+  category?: { name: string };
   variants: ServiceVariant[];
   documents: Array<{
     id: string;
     title: string;
-    description?: string;
-    required: boolean;
   }>;
 }
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  orderIndex: number;
-  active: boolean;
-  services: Service[];
-}
-
 export default function AdminServices() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
 
   useEffect(() => {
-    fetchServices();
+    fetchData();
   }, []);
 
-  const fetchServices = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch("/api/admin/services");
-      const data = await response.json();
-      if (data.success) {
-        // Group services by category
-        const categoriesMap = new Map<string, Category>();
-        
-        data.services.forEach((service: Service) => {
-          if (!categoriesMap.has(service.categoryId)) {
-            categoriesMap.set(service.categoryId, {
-              id: service.categoryId,
-              name: "فئة غير محددة", // Will be updated when we get category data
-              slug: "",
-              orderIndex: 0,
-              active: true,
-              services: []
-            });
-          }
-          categoriesMap.get(service.categoryId)!.services.push(service);
-        });
+      const [servicesRes, categoriesRes] = await Promise.all([
+        fetch('/api/admin/services'),
+        fetch('/api/admin/categories'),
+      ]);
 
-        // Fetch categories to get names
-        const categoriesResponse = await fetch("/api/admin/categories");
-        const categoriesData = await categoriesResponse.json();
-        
-        if (categoriesData.success) {
-          categoriesData.categories.forEach((cat: Category) => {
-            if (categoriesMap.has(cat.id)) {
-              categoriesMap.get(cat.id)!.name = cat.name;
-              categoriesMap.get(cat.id)!.slug = cat.slug;
-              categoriesMap.get(cat.id)!.orderIndex = cat.orderIndex;
-              categoriesMap.get(cat.id)!.active = cat.active;
-            }
-          });
-        }
+      const servicesData = await servicesRes.json();
+      const categoriesData = await categoriesRes.json();
 
-        const sortedCategories = Array.from(categoriesMap.values())
-          .sort((a, b) => a.orderIndex - b.orderIndex);
-        
-        setCategories(sortedCategories);
-        
-        // Expand first category by default
-        if (sortedCategories.length > 0) {
-          setExpandedCategories(new Set([sortedCategories[0].id]));
-        }
+      if (servicesData.success) {
+        setServices(servicesData.services);
+      }
+
+      if (categoriesData.success) {
+        setCategories(categoriesData.categories);
       }
     } catch (error) {
-      console.error("Error fetching services:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleCategory = (categoryId: string) => {
-    setExpandedCategories(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(categoryId)) {
-        newSet.delete(categoryId);
-      } else {
-        newSet.add(categoryId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleDeleteService = async (serviceId: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذه الخدمة؟")) return;
+  const handleDelete = async (serviceId: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذه الخدمة؟')) return;
 
     try {
       const response = await fetch(`/api/admin/services/${serviceId}`, {
-        method: "DELETE"
+        method: 'DELETE',
       });
 
       const data = await response.json();
 
       if (data.success) {
-        await fetchServices();
+        alert('✅ تم حذف الخدمة بنجاح!');
+        fetchData();
       } else {
-        alert(data.error || "حدث خطأ أثناء حذف الخدمة");
+        alert(data.error || 'حدث خطأ');
       }
     } catch (error) {
-      console.error("Error deleting service:", error);
-      alert("حدث خطأ أثناء حذف الخدمة");
+      alert('حدث خطأ أثناء الحذف');
     }
+  };
+
+  const filteredServices = services.filter(service => {
+    const matchesSearch =
+      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !filterCategory || service.categoryId === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const stats = {
+    total: services.length,
+    active: services.filter(s => s.active).length,
+    inactive: services.filter(s => !s.active).length,
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">جاري التحميل...</div>
+      <div className='flex justify-center items-center min-h-screen'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto'></div>
+          <p className='mt-4 text-lg font-bold text-gray-700'>جاري التحميل...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
+    <div className='min-h-screen bg-gray-50 p-6'>
+      <div className='max-w-7xl mx-auto space-y-6'>
+        {/* Header */}
+        <div className='flex items-center justify-between'>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">إدارة الخدمات</h1>
-            <p className="text-gray-600 mt-2">إدارة الخدمات وأنواعها ومتطلباتها</p>
+            <h1 className='text-3xl font-bold text-gray-900'>الخدمات</h1>
+            <p className='text-gray-500 mt-1'>إدارة جميع خدمات المنصة</p>
           </div>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/admin/categories">
-              <Button className="bg-green-600 hover:bg-green-700">
-                إدارة الفئات
-              </Button>
+          <div className='flex gap-3'>
+            <Link href='/admin/categories'>
+              <button className='px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-all'>
+                الفئات
+              </button>
             </Link>
-            <Link href="/admin/services/wizard">
-              <Button className="bg-purple-600 hover:bg-purple-700">
-                معالج الخدمات
-              </Button>
-            </Link>
-            <Link href="/admin/services/create">
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                إضافة خدمة جديدة
-              </Button>
-            </Link>
-            <Link href="/admin/services/how-it-works">
-              <Button className="bg-gray-600 hover:bg-gray-700">
-                كيف يعمل النظام
-              </Button>
+            <Link href='/admin/services/create'>
+              <button className='px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all'>
+                + إضافة خدمة
+              </button>
             </Link>
           </div>
         </div>
-      </div>
 
-      <div className="space-y-6">
-        {categories.map((category) => (
-          <Card key={category.id}>
-            <div 
-              className="flex items-center justify-between cursor-pointer p-4 border-b border-gray-200"
-              onClick={() => toggleCategory(category.id)}
-            >
-              <div className="flex items-center space-x-4 space-x-reverse">
-                <div className={`transform transition-transform ${
-                  expandedCategories.has(category.id) ? 'rotate-90' : ''
-                }`}>
-                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{category.name}</h2>
-                  <p className="text-sm text-gray-600">
-                    {category.services.length} خدمة
-                  </p>
-                </div>
+        {/* Stats */}
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <div className='bg-white border border-gray-200 rounded-lg p-4'>
+            <div className='flex items-center justify-between'>
+              <div>
+                <p className='text-sm text-gray-500 mb-1'>إجمالي الخدمات</p>
+                <p className='text-2xl font-bold text-gray-900'>{stats.total}</p>
               </div>
-              <span className={`text-xs px-2 py-1 rounded ${
-                category.active 
-                  ? "bg-green-100 text-green-800" 
-                  : "bg-red-100 text-red-800"
-              }`}>
-                {category.active ? "مفعّل" : "موقّف"}
-              </span>
+              <div className='w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center'>
+                <svg
+                  className='w-6 h-6 text-blue-600'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10'
+                  />
+                </svg>
+              </div>
             </div>
+          </div>
 
-            {expandedCategories.has(category.id) && (
-              <div className="p-4">
-                {category.services.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {category.services.map((service) => (
-                      <div key={service.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 space-x-reverse mb-2">
-                              {service.icon && (
-                                <img 
-                                  src={service.icon} 
+          <div className='bg-white border border-gray-200 rounded-lg p-4'>
+            <div className='flex items-center justify-between'>
+              <div>
+                <p className='text-sm text-gray-500 mb-1'>الخدمات النشطة</p>
+                <p className='text-2xl font-bold text-green-600'>{stats.active}</p>
+              </div>
+              <div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center'>
+                <svg
+                  className='w-6 h-6 text-green-600'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className='bg-white border border-gray-200 rounded-lg p-4'>
+            <div className='flex items-center justify-between'>
+              <div>
+                <p className='text-sm text-gray-500 mb-1'>الخدمات الموقوفة</p>
+                <p className='text-2xl font-bold text-red-600'>{stats.inactive}</p>
+              </div>
+              <div className='w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center'>
+                <svg
+                  className='w-6 h-6 text-red-600'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className='bg-white border border-gray-200 rounded-lg p-4'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div>
+              <input
+                type='text'
+                placeholder='🔍 ابحث عن خدمة...'
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none'
+              />
+            </div>
+            <div>
+              <select
+                value={filterCategory}
+                onChange={e => setFilterCategory(e.target.value)}
+                className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none'
+              >
+                <option value=''>كل الفئات</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Services Table */}
+        <div className='bg-white border border-gray-200 rounded-lg overflow-hidden'>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-gray-50 border-b border-gray-200'>
+                <tr>
+                  <th className='px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase'>
+                    الخدمة
+                  </th>
+                  <th className='px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase'>
+                    الفئة
+                  </th>
+                  <th className='px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase'>
+                    الأنواع
+                  </th>
+                  <th className='px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase'>
+                    المستندات
+                  </th>
+                  <th className='px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase'>
+                    الحالة
+                  </th>
+                  <th className='px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase'>
+                    إجراءات
+                  </th>
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-200'>
+                {filteredServices.length > 0 ? (
+                  filteredServices.map(service => (
+                    <tr key={service.id} className='hover:bg-gray-50 transition-colors'>
+                      <td className='px-6 py-4'>
+                        <div className='flex items-center gap-3'>
+                          {service.icon &&
+                            (service.icon.startsWith('/') || service.icon.startsWith('http')) && (
+                              <div className='w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0'>
+                                <Image
+                                  src={service.icon}
                                   alt={service.name}
-                                  className="w-8 h-8 rounded object-cover"
+                                  width={24}
+                                  height={24}
+                                  className='w-6 h-6 rounded object-cover'
                                 />
-                              )}
-                              <h3 className="font-semibold text-gray-900">{service.name}</h3>
-                            </div>
+                              </div>
+                            )}
+                          <div>
+                            <p className='font-medium text-gray-900'>{service.name}</p>
                             {service.description && (
-                              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                              <p className='text-sm text-gray-500 line-clamp-1'>
                                 {service.description}
                               </p>
                             )}
-                            {service.documents.length > 0 && (
-                              <div className="text-xs text-blue-600 mb-2">
-                                متطلبات: {service.documents.map(d => d.title).join("، ")}
-                              </div>
-                            )}
-                          </div>
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            service.active 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-red-100 text-red-800"
-                          }`}>
-                            {service.active ? "مفعّل" : "موقّف"}
-                          </span>
-                        </div>
-
-                        <div className="mb-3">
-                          <p className="text-xs text-gray-500 mb-1">أنواع الخدمة:</p>
-                          <div className="space-y-1">
-                            {service.variants.map((variant) => (
-                              <div key={variant.id} className="flex justify-between text-xs">
-                                <span className="text-gray-700">{variant.name}</span>
-                                <span className="text-gray-600">
-                                  {(variant.priceCents / 100).toFixed(0)} جنيه - {variant.etaDays} يوم
-                                </span>
-                              </div>
-                            ))}
                           </div>
                         </div>
-
-                        <div className="flex justify-end space-x-2 space-x-reverse">
+                      </td>
+                      <td className='px-6 py-4'>
+                        <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800'>
+                          {service.category?.name || 'غير محدد'}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4'>
+                        <div className='flex flex-col gap-1'>
+                          {service.variants.slice(0, 2).map((v, i) => (
+                            <div key={v.id} className='text-xs text-gray-600'>
+                              <span className='font-medium'>{v.name}:</span> {v.priceCents / 100}{' '}
+                              ج.م
+                            </div>
+                          ))}
+                          {service.variants.length > 2 && (
+                            <span className='text-xs text-gray-400'>
+                              +{service.variants.length - 2} أخرى
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className='px-6 py-4'>
+                        <span className='text-sm text-gray-600'>
+                          {service.documents.length} مستند
+                        </span>
+                      </td>
+                      <td className='px-6 py-4'>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            service.active
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {service.active ? 'نشط' : 'موقوف'}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4'>
+                        <div className='flex items-center gap-2'>
                           <Link href={`/admin/services/edit/${service.id}`}>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-xs">
-                              تعديل
-                            </Button>
+                            <button
+                              className='p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors'
+                              title='تعديل'
+                            >
+                              <svg
+                                className='w-4 h-4'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'
+                              >
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2}
+                                  d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
+                                />
+                              </svg>
+                            </button>
                           </Link>
-                          <Button
-                            onClick={() => handleDeleteService(service.id)}
-                            className="bg-red-600 hover:bg-red-700 text-xs"
+                          <button
+                            onClick={() => handleDelete(service.id)}
+                            className='p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors'
+                            title='حذف'
                           >
-                            حذف
-                          </Button>
+                            <svg
+                              className='w-4 h-4'
+                              fill='none'
+                              stroke='currentColor'
+                              viewBox='0 0 24 24'
+                            >
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                strokeWidth={2}
+                                d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                              />
+                            </svg>
+                          </button>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      </td>
+                    </tr>
+                  ))
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>لا توجد خدمات في هذه الفئة</p>
-                    <Link href="/admin/services/create">
-                      <Button className="mt-4 bg-blue-600 hover:bg-blue-700">
-                        إضافة خدمة جديدة
-                      </Button>
-                    </Link>
-                  </div>
+                  <tr>
+                    <td colSpan={6} className='px-6 py-12 text-center'>
+                      <div className='text-gray-400'>
+                        <svg
+                          className='w-12 h-12 mx-auto mb-4'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                          />
+                        </svg>
+                        <p className='text-lg font-medium'>لا توجد خدمات</p>
+                        <p className='text-sm mt-1'>
+                          جرب البحث بكلمات أخرى أو قم بإضافة خدمة جديدة
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
                 )}
-              </div>
-            )}
-          </Card>
-        ))}
-      </div>
-
-      {categories.length === 0 && (
-        <Card>
-          <div className="text-center py-8">
-            <p className="text-gray-600 mb-4">لا توجد خدمات بعد</p>
-            <div className="flex justify-center space-x-4 space-x-reverse">
-              <Link href="/admin/categories">
-                <Button className="bg-green-600 hover:bg-green-700">
-                  إدارة الفئات
-                </Button>
-              </Link>
-              <Link href="/admin/services/create">
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  إضافة خدمة جديدة
-                </Button>
-              </Link>
-            </div>
+              </tbody>
+            </table>
           </div>
-        </Card>
-      )}
+        </div>
+
+        {/* Results Count */}
+        {filteredServices.length > 0 && (
+          <div className='text-sm text-gray-500 text-center'>
+            عرض {filteredServices.length} من أصل {services.length} خدمة
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
-

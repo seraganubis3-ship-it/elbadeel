@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { z } from "zod";
-import { sendVerificationCodeEmail, generateVerificationCode } from "@/lib/email";
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+import { sendVerificationCodeEmail, generateVerificationCode } from '@/lib/email';
 
 const resendCodeSchema = z.object({
-  email: z.string().email("بريد إلكتروني غير صحيح"),
+  email: z.string().min(1, 'البريد الإلكتروني مطلوب').email('بريد إلكتروني غير صحيح'),
   userId: z.string().optional(),
   action: z.string().optional(),
 });
@@ -14,8 +14,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, userId, action } = resendCodeSchema.parse(body);
 
+    // التحقق من وجود البيانات المطلوبة
+    if (!email || email.trim() === '') {
+      return NextResponse.json({ error: 'البريد الإلكتروني مطلوب' }, { status: 400 });
+    }
+
     // تحديد نوع العملية
-    const isVerifyingExisting = action === "verify_existing";
+    const isVerifyingExisting = action === 'verify_existing';
 
     // البحث عن المستخدم
     let user;
@@ -32,17 +37,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (!user) {
-      return NextResponse.json(
-        { error: "البريد الإلكتروني غير موجود" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'البريد الإلكتروني غير موجود' }, { status: 404 });
     }
 
     if (user.emailVerified) {
-      return NextResponse.json(
-        { error: "البريد الإلكتروني مؤكد بالفعل" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'البريد الإلكتروني مؤكد بالفعل' }, { status: 400 });
     }
 
     // Generate new verification code
@@ -60,20 +59,17 @@ export async function POST(request: NextRequest) {
 
     // Send new verification code email
     try {
-      await sendVerificationCodeEmail(email, user.name || "المستخدم", newVerificationCode);
+      await sendVerificationCodeEmail(email, user.name || 'المستخدم', newVerificationCode);
     } catch (emailError) {
-      console.error("Error sending verification code email:", emailError);
-      return NextResponse.json(
-        { error: "فشل في إرسال كود التفعيل" },
-        { status: 500 }
-      );
+      //
+      return NextResponse.json({ error: 'فشل في إرسال كود التفعيل' }, { status: 500 });
     }
 
     return NextResponse.json(
-      { 
-        message: isVerifyingExisting 
-          ? "تم إرسال كود جديد إلى بريدك الإلكتروني لتفعيل الحساب الموجود"
-          : "تم إرسال كود جديد إلى بريدك الإلكتروني",
+      {
+        message: isVerifyingExisting
+          ? 'تم إرسال كود جديد إلى بريدك الإلكتروني لتفعيل الحساب الموجود'
+          : 'تم إرسال كود جديد إلى بريدك الإلكتروني',
       },
       { status: 200 }
     );
@@ -81,15 +77,12 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       const firstError = error.issues[0];
       return NextResponse.json(
-        { error: firstError?.message || "بيانات غير صحيحة" },
+        { error: firstError?.message || 'بيانات غير صحيحة' },
         { status: 400 }
       );
     }
 
-    console.error("Resend code error:", error);
-    return NextResponse.json(
-      { error: "حدث خطأ في إعادة إرسال الكود" },
-      { status: 500 }
-    );
+    //
+    return NextResponse.json({ error: 'حدث خطأ في إعادة إرسال الكود' }, { status: 500 });
   }
 }

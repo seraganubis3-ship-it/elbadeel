@@ -1,92 +1,101 @@
-import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { z } from "zod";
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminOrStaff, getWorkDate } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
 
 const statusUpdateSchema = z.object({
-  status: z.enum(["pending", "payment_pending", "reviewing", "processing", "completed", "cancelled"]),
+  status: z.string(),
   adminNotes: z.string().optional(),
+  workDate: z.string().optional(),
 });
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // Check authentication and admin role
-    const session = await requireAuth();
-    
-    // Check if user is admin
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "غير مصرح لك بالوصول لهذه الصفحة" }, { status: 403 });
+    const session = await requireAdminOrStaff();
+    const { id } = params;
+    const body = await request.json();
+    const { status, adminNotes, workDate: clientWorkDate } = statusUpdateSchema.parse(body);
+
+    let workDate = getWorkDate(session);
+    if (clientWorkDate && (session.user.role === 'ADMIN' || session.user.role === 'STAFF')) {
+      try {
+        if (clientWorkDate.includes('/')) {
+          const dateParts = clientWorkDate.split('/');
+          const day = dateParts[0]!;
+          const month = dateParts[1]!;
+          const year = dateParts[2]!;
+          const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          if (!isNaN(parsedDate.getTime())) {
+            workDate = parsedDate;
+          }
+        }
+      } catch (error) {}
     }
 
-    const { id } = await params;
-
-    // Parse request body
-    const body = await request.json();
-    const { status, adminNotes } = statusUpdateSchema.parse(body);
-
-    // Get order
     const order = await prisma.order.findUnique({
       where: { id },
-      include: { payment: true }
+      include: { payment: true },
     });
 
     if (!order) {
-      return NextResponse.json({ error: "الطلب غير موجود" }, { status: 404 });
+      return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 });
     }
 
-    // Update order status
     const updatedOrder = await prisma.order.update({
       where: { id },
-      data: { 
+      data: {
         status,
         adminNotes: adminNotes || order.adminNotes,
-        updatedAt: new Date()
       },
     });
 
-    // If order is cancelled, also cancel payment if exists
-    if (status === "cancelled" && order.payment) {
+    if (status === 'cancelled' && order.payment) {
       await prisma.payment.update({
         where: { id: order.payment.id },
-        data: { 
-          status: "CANCELLED",
-          notes: order.payment.notes ? `${order.payment.notes}\n\n[تم إلغاء الدفع من قبل الإدارة]` : "[تم إلغاء الدفع من قبل الإدارة]"
+        data: {
+          status: 'CANCELLED',
+          notes: order.payment.notes
+            ? `${order.payment.notes}\n\n[تم إلغاء الدفع من قبل الإدارة]`
+            : '[تم إلغاء الدفع من قبل الإدارة]',
         },
       });
     }
 
-    // If order is completed, set completedAt
-    if (status === "completed") {
+    if (status === 'delivery') {
       await prisma.order.update({
         where: { id },
-        data: { completedAt: new Date() },
+        data: { completedAt: workDate },
       });
+    }
+
+    if (status === 'settlement') {
+      const orderWithVariant = await prisma.order.findUnique({
+        where: { id },
+        include: { variant: true },
+      });
+
+      if (orderWithVariant?.variant?.etaDays) {
+        const estimatedCompletion = new Date(workDate);
+        estimatedCompletion.setDate(
+          estimatedCompletion.getDate() + orderWithVariant.variant.etaDays
+        );
+
+        await prisma.order.update({
+          where: { id },
+          data: {
+            estimatedCompletionDate: estimatedCompletion,
+          },
+        });
+      }
     }
 
     return NextResponse.json({
       success: true,
-      message: "تم تحديث حالة الطلب بنجاح",
-      order: updatedOrder
+      message: 'تم تحديث حالة الطلب بنجاح',
+      order: updatedOrder,
     });
-
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const firstError = error.issues[0];
-      return NextResponse.json(
-        { error: firstError?.message || "بيانات غير صحيحة" },
-        { status: 400 }
-      );
-    }
-
-    console.error("Status update error:", error);
-    return NextResponse.json(
-      { error: "حدث خطأ أثناء تحديث حالة الطلب" },
-      { status: 500 }
-    );
+    console.error('Status Update Error:', error);
+    return NextResponse.json({ error: 'حدث خطأ أثناء تحديث حالة الطلب' }, { status: 500 });
   }
 }
-
-

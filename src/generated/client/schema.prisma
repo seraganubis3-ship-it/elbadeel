@@ -1,0 +1,496 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id                      String       @id @default(cuid())
+  name                    String?
+  email                   String?      @unique
+  emailVerified           DateTime?
+  image                   String?
+  passwordHash            String?
+  phone                   String?
+  additionalPhone         String?
+  role                    String       @default("USER")
+  createdByAdminId        String?
+  createdByAdmin          User?        @relation("UserCreatedByAdmin", fields: [createdByAdminId], references: [id])
+  createdUsers            User[]       @relation("UserCreatedByAdmin")
+  createdOrders           Order[]      @relation("OrderCreatedByAdmin")
+  orders                  Order[]      @relation("OrderUser")
+  resetToken              String?
+  resetTokenExpiry        DateTime?
+  verificationToken       String?
+  verificationTokenExpiry DateTime?
+  verificationCode        String?
+  verificationCodeExpiry  DateTime?
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+  address                 String?
+  governorate             String?
+  city                    String?
+  district                String?
+  street                  String?
+  buildingNumber          String?
+  apartmentNumber         String?
+  landmark                String?
+  birthDate               DateTime?
+  fatherName              String?
+  idNumber                String?
+  motherName              String?
+  nationality             String?
+  wifeName                String?
+  wifeMotherName          String?
+  accounts                Account[]
+  auditLogs               AuditLog[]
+  // orders moved above with explicit relation name
+  sessions                Session[]
+  // FormSerial audit relations
+  addedFormSerials        FormSerial[] @relation("FormSerialAddedBy")
+  consumedFormSerials     FormSerial[] @relation("FormSerialConsumedBy")
+  // Dependent relations
+  createdDependents       Dependent[]  @relation("DependentCreatedBy")
+
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
+  @@index([resetToken])
+  @@index([verificationToken])
+  @@index([verificationCode])
+  @@index([idNumber])
+  @@index([name])
+  @@index([createdByAdminId])
+}
+
+model Category {
+  id         String    @id @default(cuid())
+  name       String
+  slug       String    @unique
+  orderIndex Int       @default(0)
+  active     Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  icon       String?
+  services   Service[]
+
+  @@index([slug])
+  @@index([orderIndex])
+  @@index([active])
+}
+
+model Service {
+  id          String            @id @default(cuid())
+  name        String
+  slug        String            @unique
+  description String?
+  icon        String?
+  active      Boolean           @default(true)
+  categoryId  String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  orders      Order[]
+  category    Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  documents   ServiceDocument[]
+  variants    ServiceVariant[]
+  fields      ServiceField[] // Custom dynamic fields for this service
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([active])
+  @@index([createdAt])
+}
+
+// Dynamic form fields for services
+model ServiceField {
+  id          String  @id @default(cuid())
+  serviceId   String
+  name        String // Field identifier (e.g., "request_type", "old_status")
+  label       String // Display label (e.g., "نوع الطلب", "الحالة القديمة")
+  type        String // text, select, radio, checkbox, textarea, file
+  placeholder String? // Placeholder text
+  required    Boolean @default(false)
+  orderIndex  Int     @default(0)
+  active      Boolean @default(true)
+
+  // Conditional visibility
+  showIf String? // JSON: {"fieldName": "request_type", "value": "renewal_change"}
+
+  // Validation
+  validation String? // JSON: {"minLength": 3, "maxLength": 100, "pattern": "regex"}
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service Service              @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  options ServiceFieldOption[] // For select/radio fields
+
+  @@index([serviceId])
+  @@index([orderIndex])
+  @@index([active])
+}
+
+// Options for select/radio fields
+model ServiceFieldOption {
+  id         String @id @default(cuid())
+  fieldId    String
+  value      String // Option value
+  label      String // Display label
+  orderIndex Int    @default(0)
+
+  // This option may require additional documents
+  requiredDocs String? // JSON array: ["doc_id_1", "doc_id_2"]
+
+  // This option may show additional fields
+  showFields String? // JSON array: ["field_name_1", "field_name_2"]
+
+  createdAt DateTime @default(now())
+
+  field ServiceField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@index([fieldId])
+  @@index([orderIndex])
+}
+
+model ServiceVariant {
+  id            String            @id @default(cuid())
+  name          String
+  priceCents    Int
+  etaDays       Int
+  serviceId     String
+  active        Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  orders        Order[]
+  service       Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  formTypeLinks FormTypeVariant[]
+
+  @@index([serviceId])
+  @@index([priceCents])
+  @@index([active])
+}
+
+model Order {
+  id                      String          @id @default(cuid())
+  userId                  String
+  serviceId               String
+  variantId               String
+  status                  String          @default("PENDING")
+  totalPrice              Int
+  totalCents              Int
+  customerName            String
+  customerPhone           String
+  additionalPhone         String?
+  customerEmail           String
+  address                 String?
+  governorate             String?
+  city                    String?
+  district                String?
+  street                  String?
+  buildingNumber          String?
+  apartmentNumber         String?
+  landmark                String?
+  notes                   String?
+  adminNotes              String?
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+  completedAt             DateTime?
+  estimatedCompletionDate DateTime?
+  deliveryFee             Int             @default(0)
+  deliveryType            String          @default("OFFICE")
+  createdByAdminId        String?
+  createdByAdmin          User?           @relation("OrderCreatedByAdmin", fields: [createdByAdminId], references: [id])
+  birthDate               DateTime?
+  fatherName              String?
+  idNumber                String?
+  motherName              String?
+  nationality             String?
+  wifeName                String?
+  photographyLocation     String?
+  photographyDate         DateTime?
+  marriageDate            DateTime?
+  divorceDate             DateTime?
+  wifeMotherName          String?
+  quantity                Int             @default(1)
+  serviceDetails          String?
+  otherFees               Int             @default(0)
+  discount                Int             @default(0)
+  gender                  String?
+  policeStation           String?
+  pickupLocation          String?
+  originalDocuments       String?
+  attachedDocuments       String? // JSON array of attachment names
+  hasAttachments          Boolean         @default(false)
+  selectedFines           String? // JSON array of selected fine IDs
+  finesDetails            String? // JSON array of fine details
+  servicesDetails         String? // JSON object of services details
+  customerFollowUp        String? // Customer follow-up/dependent name
+  documents               Document[]
+  service                 Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user                    User            @relation("OrderUser", fields: [userId], references: [id], onDelete: Cascade)
+  variant                 ServiceVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  orderDocuments          OrderDocument[]
+  payment                 Payment?
+  formSerials             FormSerial[]
+
+  // Promo Code Relations
+  promoCodeId    String?
+  promoCode      PromoCode? @relation(fields: [promoCodeId], references: [id])
+  discountAmount Int        @default(0) // Discount amount in cents
+
+  @@index([userId])
+  @@index([serviceId])
+  @@index([variantId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([completedAt])
+  @@index([deliveryType])
+  @@index([idNumber])
+  @@index([createdByAdminId])
+  @@index([customerPhone])
+  @@index([promoCodeId])
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  orderId           String   @unique
+  amount            Int
+  currency          String   @default("EGP")
+  method            String
+  status            String   @default("PENDING")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  paymentScreenshot String?
+  senderPhone       String?
+  notes             String?
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([senderPhone])
+  @@index([status])
+  @@index([createdAt])
+  @@index([method])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  oldValues  String?
+  newValues  String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+model FAQ {
+  id         String   @id @default(cuid())
+  question   String   @unique
+  answer     String
+  orderIndex Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([orderIndex])
+  @@index([active])
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  orderId    String
+  fileName   String
+  filePath   String
+  fileType   String
+  fileSize   Int
+  uploadedAt DateTime @default(now())
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([uploadedAt])
+}
+
+model OrderDocument {
+  id           String   @id @default(cuid())
+  orderId      String
+  fileName     String
+  filePath     String
+  fileSize     Int
+  fileType     String
+  documentType String
+  uploadedAt   DateTime @default(now())
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([uploadedAt])
+  @@index([documentType])
+}
+
+model ServiceDocument {
+  id          String   @id @default(cuid())
+  serviceId   String
+  title       String
+  description String?
+  required    Boolean  @default(true)
+  showIf      String? // JSON: {"field": "request_type", "value": "renewal_status"}
+  orderIndex  Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@index([orderIndex])
+  @@index([active])
+}
+
+model SystemSettings {
+  id              String   @id @default("main")
+  siteName        String   @default("البديل")
+  siteDescription String?
+  contactEmail    String?
+  contactPhone    String?
+  address         String?
+  workingHours    String?
+  socialLinks     String?
+  seoSettings     String?
+  updatedAt       DateTime @updatedAt
+}
+
+/// Forms inventory ("العهدة")
+model FormType {
+  id           String            @id @default(cuid())
+  name         String            @unique // عادي، سريع، فوري
+  description  String?
+  active       Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  // Which variants this form type can be used for
+  variantLinks FormTypeVariant[]
+  // Serial numbers belonging to this form type
+  serials      FormSerial[]
+
+  @@index([active])
+}
+
+// Many-to-many between form types and service variants
+model FormTypeVariant {
+  id               String         @id @default(cuid())
+  formTypeId       String
+  serviceVariantId String
+  createdAt        DateTime       @default(now())
+  formType         FormType       @relation(fields: [formTypeId], references: [id], onDelete: Cascade)
+  serviceVariant   ServiceVariant @relation(fields: [serviceVariantId], references: [id], onDelete: Cascade)
+
+  @@unique([formTypeId, serviceVariantId])
+  @@index([formTypeId])
+  @@index([serviceVariantId])
+}
+
+// Individual serial numbers for forms. Admin enters serials manually.
+model FormSerial {
+  id                String    @id @default(cuid())
+  formTypeId        String
+  serialNumber      String
+  // Optional: link to order when consumed
+  orderId           String?
+  consumed          Boolean   @default(false)
+  consumedAt        DateTime?
+  // Audit
+  addedByAdminId    String?
+  consumedByAdminId String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  formType          FormType  @relation(fields: [formTypeId], references: [id], onDelete: Cascade)
+  order             Order?    @relation(fields: [orderId], references: [id])
+  addedByAdmin      User?     @relation("FormSerialAddedBy", fields: [addedByAdminId], references: [id])
+  consumedByAdmin   User?     @relation("FormSerialConsumedBy", fields: [consumedByAdminId], references: [id])
+
+  @@unique([formTypeId, serialNumber])
+  @@index([formTypeId])
+  @@index([orderId])
+  @@index([consumed])
+  @@index([addedByAdminId])
+  @@index([consumedByAdminId])
+}
+
+model Dependent {
+  id               String   @id @default(cuid())
+  name             String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdByAdminId String?
+  createdByAdmin   User?    @relation("DependentCreatedBy", fields: [createdByAdminId], references: [id])
+
+  @@index([name])
+  @@index([createdByAdminId])
+}
+
+// Promo Code Model
+model PromoCode {
+  id             String    @id @default(cuid())
+  code           String    @unique // The code users enter (e.g. WELCOME10)
+  type           String    @default("FIXED") // FIXED or PERCENTAGE
+  value          Int // Amount in cents or percentage (e.g. 10 for 10%)
+  minOrderAmount Int? // Minimum order amount in cents
+  maxDiscount    Int? // Max discount amount in cents (for percentage codes)
+  startDate      DateTime?
+  endDate        DateTime?
+  usageLimit     Int? // Max usage count overall
+  currentUsage   Int       @default(0)
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  orders         Order[]
+
+  @@index([code])
+  @@index([isActive])
+}

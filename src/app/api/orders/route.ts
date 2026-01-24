@@ -1,39 +1,33 @@
-import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { generateOrderNumber } from '@/lib/orderNumbering';
+import { sendWhatsAppMessage, NotificationTemplates, checkWhatsAppStatus } from '@/lib/whatsapp';
+import { logger } from '@/lib/logger';
 
-export async function GET(request: NextRequest) {
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
+import { existsSync } from 'fs';
+
+export const dynamic = 'force-dynamic';
+
+// ================== GET ==================
+export async function GET() {
   try {
-    // Check authentication
     const session = await requireAuth();
 
-    // Get user's orders
     const orders = await prisma.order.findMany({
       where: { userId: session.user.id },
       include: {
-        service: {
-          select: {
-            name: true,
-            slug: true,
-          }
-        },
-        variant: {
-          select: {
-            name: true,
-            priceCents: true,
-            etaDays: true,
-          }
-        },
-        payment: true
+        service: { select: { name: true, slug: true } },
+        variant: { select: { name: true, priceCents: true, etaDays: true } },
+        payment: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       orders: orders.map(order => ({
         id: order.id,
         service: order.service,
@@ -48,257 +42,279 @@ export async function GET(request: NextRequest) {
         customerEmail: order.customerEmail,
         address: order.address,
         notes: order.notes,
-        payment: order.payment ? {
-          method: order.payment.method,
-          status: order.payment.status,
-          senderPhone: order.payment.senderPhone,
-        } : undefined,
-      }))
+        payment: order.payment
+          ? {
+              method: order.payment.method,
+              status: order.payment.status,
+              senderPhone: order.payment.senderPhone,
+            }
+          : undefined,
+      })),
     });
-
   } catch (error) {
-    console.error('Error fetching orders:', error);
-    return NextResponse.json({ 
-      error: "حدث خطأ أثناء جلب الطلبات" 
-    }, { status: 500 });
+    logger.error('GET Orders Error', error);
+    return NextResponse.json(
+      { success: false, error: 'حدث خطأ أثناء جلب الطلبات' },
+      { status: 500 }
+    );
   }
 }
 
+// ================== POST ==================
 export async function POST(request: NextRequest) {
   try {
-    console.log('=== API Route Called ===');
-    
-    // Check authentication
     const session = await requireAuth();
-    console.log('Session:', session);
-    console.log('Session user:', session.user);
-    
-    console.log('User authenticated:', session.user.id, session.user.email);
-    console.log('User ID type:', typeof session.user.id);
-    console.log('User ID length:', session.user.id.length);
-    
-    // Verify user exists in database
-    const userExists = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    });
-    console.log('User exists in DB:', !!userExists);
-    console.log('User from DB:', userExists?.email);
-
-    // Parse form data
     const formData = await request.formData();
-    
-    // Log all form data for debugging
-    console.log('=== Form Data Debug ===');
-    const formEntries = Array.from(formData.entries());
-    console.log('Form data entries count:', formEntries.length);
-    for (const [key, value] of formEntries) {
-      if (value instanceof File) {
-        console.log(`${key}: File - ${value.name} (${value.size} bytes)`);
-      } else {
-        console.log(`${key}: "${value}" (type: ${typeof value}, length: ${value?.length})`);
+
+    const serviceId = formData.get('serviceId')?.toString() || '';
+    const variantId = formData.get('variantId')?.toString() || '';
+    const notes = formData.get('notes')?.toString() || '';
+    const deliveryType = formData.get('deliveryType')?.toString() || 'OFFICE';
+    const deliveryFee = parseInt(formData.get('deliveryFee') as string) || 0;
+
+    // بيانات إضافية
+    const wifeName = formData.get('wifeName')?.toString() || null;
+    const fatherName = formData.get('fatherName')?.toString() || null;
+    const motherName = formData.get('motherName')?.toString() || null;
+    const birthDateRaw = formData.get('birthDate')?.toString() || null;
+    const nationality = formData.get('nationality')?.toString() || null;
+    const idNumber = formData.get('idNumber')?.toString() || null;
+    const policeStation = formData.get('policeStation')?.toString() || null;
+    const pickupLocation = formData.get('pickupLocation')?.toString() || null;
+    const promoCode = formData.get('promoCode')?.toString() || null;
+    const serviceDetailsRaw = formData.get('serviceDetails')?.toString() || null;
+    const marriageDateRaw = formData.get('marriageDate')?.toString() || null;
+    const wifeMotherName = formData.get('wifeMotherName')?.toString() || null;
+
+    // Process Dynamic Answers into serviceDetails if provided
+    let finalServiceDetails = '';
+    if (serviceDetailsRaw && serviceId) {
+      try {
+        const dynamicAnswers = JSON.parse(serviceDetailsRaw);
+        if (typeof dynamicAnswers === 'object' && dynamicAnswers !== null) {
+          // Get service fields to match labels
+          const serviceObj = await prisma.service.findUnique({
+            where: { id: serviceId },
+            include: {
+              fields: {
+                include: { options: true },
+              },
+            },
+          });
+
+          const answersList = Object.entries(dynamicAnswers)
+            .map(([key, value]) => {
+              const field = serviceObj?.fields.find(f => f.name === key || f.id === key);
+              const displayLabel = field?.label || key;
+
+              // Try to find option label if it's a value
+              const option = field?.options.find(o => o.value === value || o.label === value);
+              const displayValue = option?.label || value;
+
+              return `• ${displayLabel}: ${displayValue}`;
+            })
+            .join('\n');
+
+          if (answersList) {
+            finalServiceDetails = `📋 تفاصيل الخدمة:\n${answersList}`.trim();
+          }
+        }
+      } catch (e) {
+        // If not JSON, use as raw string
+        finalServiceDetails = serviceDetailsRaw;
       }
     }
-    
-    // Extract basic order data
-    const serviceId = formData.get("serviceId") as string;
-    const variantId = formData.get("variantId") as string;
-    const notes = formData.get("notes") as string;
-    const deliveryType = formData.get("deliveryType") as string;
-    const deliveryFee = parseInt(formData.get("deliveryFee") as string) || 0;
-    
-    // Extract personal information
-    const wifeName = formData.get("wifeName") as string;
-    const fatherName = formData.get("fatherName") as string;
-    const motherName = formData.get("motherName") as string;
-    const birthDate = formData.get("birthDate") as string;
-    const nationality = formData.get("nationality") as string;
-    const idNumber = formData.get("idNumber") as string;
 
-    console.log('=== Extracted Data ===');
-    console.log('Form data received:', { serviceId, variantId });
-    console.log('Service ID type:', typeof serviceId, 'length:', serviceId?.length);
-    console.log('Variant ID type:', typeof variantId, 'length:', variantId?.length);
-    console.log('All form data keys:', Array.from(formData.keys()));
-    
-    // Validate that IDs are not empty
-    if (!serviceId || serviceId.trim() === '') {
-      console.log('❌ Service ID is empty or undefined');
-      return NextResponse.json({ error: "معرف الخدمة مطلوب" }, { status: 400 });
-    }
-    
-    if (!variantId || variantId.trim() === '') {
-      console.log('❌ Variant ID is empty or undefined');
-      return NextResponse.json({ error: "معرف نوع الخدمة مطلوب" }, { status: 400 });
-    }
-    
-    console.log('✅ IDs validation passed');
-
-    // Validate required fields
-    if (!serviceId || !variantId) {
-      return NextResponse.json({ error: "معرف الخدمة ونوع الخدمة مطلوبان" }, { status: 400 });
+    let marriageDate: Date | null = null;
+    if (marriageDateRaw) {
+      const date = new Date(marriageDateRaw);
+      if (!isNaN(date.getTime()) && date.getFullYear() > 1900) {
+        marriageDate = date;
+      }
     }
 
-    // Test Prisma connection
-    try {
-      console.log('Testing Prisma connection...');
-      const testQuery = await prisma.service.findFirst();
-      console.log('Prisma test query result:', testQuery);
-    } catch (prismaError) {
-      console.error('Prisma connection error:', prismaError);
-      return NextResponse.json({ 
-        error: "مشكلة في الاتصال بقاعدة البيانات" 
-      }, { status: 500 });
+    let birthDate: Date | null = null;
+    if (birthDateRaw) {
+      const date = new Date(birthDateRaw);
+      if (!isNaN(date.getTime()) && date.getFullYear() > 1900) {
+        birthDate = date;
+      }
     }
 
-    // Get service and variant to calculate total
-    console.log('Looking for service with ID:', serviceId);
-    console.log('Service ID to search:', `"${serviceId}"`);
-    
     const service = await prisma.service.findUnique({
       where: { id: serviceId },
-      include: { variants: true }
+      include: { variants: true },
     });
 
-    console.log('Service found:', service);
-    console.log('Service ID from DB:', service?.id);
-    console.log('Service variants count:', service?.variants?.length);
-
     if (!service) {
-      console.log('Service not found for ID:', serviceId);
-      return NextResponse.json({ error: "الخدمة غير موجودة" }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'الخدمة غير موجودة' }, { status: 404 });
     }
 
-    console.log('Looking for variant with ID:', variantId);
-    console.log('Variant ID to search:', `"${variantId}"`);
-    console.log('Available variant IDs:', service.variants.map((v: any) => v.id));
-    
-    const variant = service.variants.find((v: any) => v.id === variantId);
-    console.log('Variant found:', variant);
-    console.log('Variant ID from DB:', variant?.id);
-    
+    const variant = service.variants.find(v => v.id === variantId);
     if (!variant) {
-      console.log('Variant not found for ID:', variantId);
-      return NextResponse.json({ error: "نوع الخدمة غير صحيح" }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'نوع الخدمة غير صحيح' }, { status: 400 });
     }
 
-    // Create order
+    // Calculate Initial Total
+    let totalCents = variant.priceCents + deliveryFee;
+    let discountAmount = 0;
+    let promoCodeId: string | null = null;
+
+    // Handle Promo Code
+    if (promoCode) {
+      const promo = await prisma.promoCode.findUnique({
+        where: { code: promoCode },
+      });
+
+      if (promo) {
+        // Validate Promo Code
+        const now = new Date();
+        let isValid = true;
+
+        if (!promo.isActive) isValid = false;
+        if (promo.startDate && now < promo.startDate) isValid = false;
+        if (promo.endDate && now > promo.endDate) isValid = false;
+        if (promo.usageLimit && promo.currentUsage >= promo.usageLimit) isValid = false;
+        if (promo.minOrderAmount && totalCents < promo.minOrderAmount) isValid = false;
+
+        if (isValid) {
+          // Calculate Discount
+          if (promo.type === 'FIXED') {
+            discountAmount = promo.value;
+          } else if (promo.type === 'PERCENTAGE') {
+            discountAmount = Math.round((totalCents * promo.value) / 100);
+            if (promo.maxDiscount && discountAmount > promo.maxDiscount) {
+              discountAmount = promo.maxDiscount;
+            }
+          }
+
+          // Ensure discount doesn't exceed total
+          if (discountAmount > totalCents) {
+            discountAmount = totalCents;
+          }
+
+          promoCodeId = promo.id;
+
+          // Increment Usage
+          await prisma.promoCode.update({
+            where: { id: promo.id },
+            data: { currentUsage: { increment: 1 } },
+          });
+        }
+      }
+    }
+
+    // Apply Discount
+    totalCents = totalCents - discountAmount;
+
     const orderData = {
       serviceId,
       variantId,
       notes,
-      totalPrice: variant.priceCents + deliveryFee,
-      totalCents: variant.priceCents + deliveryFee, // Add totalCents for compatibility
-      customerName: session.user.name || "Unknown",
-      customerPhone: (session.user as any).phone || "Unknown",
-      customerEmail: session.user.email || "Unknown",
+      totalPrice: totalCents, // Legacy field support if needed
+      totalCents: totalCents,
+      customerName: session.user.name || 'Unknown',
+      customerPhone: (session.user as any).phone || 'Unknown',
+      customerEmail: session.user.email || 'Unknown',
       userId: session.user.id,
       deliveryType,
       deliveryFee,
-      // Add personal information
-      wifeName: wifeName || null,
-      fatherName: fatherName || null,
-      motherName: motherName || null,
-      birthDate: birthDate ? new Date(birthDate) : null,
-      nationality: nationality || null,
-      idNumber: idNumber || null,
+      discount: 0, // Manual discount field
+      discountAmount, // System/Promo discount field
+      promoCodeId,
+      wifeName,
+      wifeMotherName,
+      birthDate, // Use validated date
+      marriageDate,
+      nationality,
+      idNumber,
+      policeStation,
+      pickupLocation,
+      serviceDetails: finalServiceDetails,
     };
-    
-    console.log('Creating order with data:', orderData);
-    console.log('User ID type:', typeof session.user.id);
-    console.log('User ID value:', session.user.id);
-    
-    // Double-check all foreign keys exist before creating order
-    console.log('=== Final Validation ===');
-    
-    // Check if service exists
-    const serviceCheck = await prisma.service.findUnique({
-      where: { id: serviceId }
-    });
-    console.log('Service check:', !!serviceCheck, serviceCheck?.id);
-    
-    // Check if variant exists
-    const variantCheck = await prisma.serviceVariant.findUnique({
-      where: { id: variantId }
-    });
-    console.log('Variant check:', !!variantCheck, variantCheck?.id);
-    
-    // Check if user exists
-    const userCheck = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    });
-    console.log('User check:', !!userCheck, userCheck?.id);
-    
-    if (!serviceCheck || !variantCheck || !userCheck) {
-      console.log('❌ Foreign key validation failed');
-      return NextResponse.json({ 
-        error: "بيانات غير صحيحة - يرجى المحاولة مرة أخرى" 
-      }, { status: 400 });
-    }
-    
-    console.log('✅ All foreign keys validated successfully');
-    
-    const order = await prisma.order.create({
-      data: orderData,
-    });
-    
-    console.log('Order created successfully:', order);
 
-    // Update user profile with personal information if provided
-    if (wifeName || fatherName || motherName || birthDate || nationality || idNumber) {
+    let attempts = 0;
+    const maxAttempts = 5;
+    let order;
+
+    while (attempts < maxAttempts) {
       try {
-        const userUpdateData: any = {};
-        if (wifeName) userUpdateData.wifeName = wifeName;
-        if (fatherName) userUpdateData.fatherName = fatherName;
-        if (motherName) userUpdateData.motherName = motherName;
-        if (birthDate) userUpdateData.birthDate = new Date(birthDate);
-        if (nationality) userUpdateData.nationality = nationality;
-        if (idNumber) userUpdateData.idNumber = idNumber;
+        let orderId;
 
-        await prisma.user.update({
-          where: { id: session.user.id },
-          data: userUpdateData
-        });
-        
-        console.log('User profile updated with personal information');
-      } catch (userUpdateError) {
-        console.error('Error updating user profile:', userUpdateError);
-        // Don't fail the order creation if user update fails
+        // On last attempt, force timestamp to ensure creation
+        if (attempts === maxAttempts - 1) {
+          orderId = `${new Date().getFullYear()}${Date.now().toString().slice(-6)}`;
+        } else {
+          orderId = await generateOrderNumber();
+        }
+
+        const orderDataWithId = { ...orderData, id: orderId };
+
+        order = await prisma.order.create({ data: orderDataWithId });
+        break; // Success
+      } catch (error: any) {
+        if (error.code === 'P2002') {
+          // Catch any unique constraint violation to be safe, assuming ID is the main unique field being generated
+          attempts++;
+          // Random jitter wait to prevent lockstep retries
+          const waitTime = Math.floor(Math.random() * 200) + 100 * attempts;
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          continue;
+        }
+        throw error; // Other errors
       }
     }
 
-    // Handle file uploads
+    if (!order) throw new Error('Failed to create order after multiple attempts');
+
+    // تحديث بيانات المستخدم لو فيه حاجة ناقصة
+    if (wifeName || fatherName || motherName || birthDate || nationality || idNumber) {
+      const userUpdateData: Record<string, any> = {};
+      if (wifeName) userUpdateData.wifeName = wifeName;
+      if (fatherName) userUpdateData.fatherName = fatherName;
+      if (motherName) userUpdateData.motherName = motherName;
+      if (birthDate) userUpdateData.birthDate = birthDate;
+      if (marriageDate) (userUpdateData as any).marriageDate = marriageDate;
+      if (wifeMotherName) (userUpdateData as any).wifeMotherName = wifeMotherName;
+      if (nationality) userUpdateData.nationality = nationality;
+      if (idNumber) userUpdateData.idNumber = idNumber;
+
+      try {
+        await prisma.user.update({
+          where: { id: session.user.id },
+          data: userUpdateData,
+        });
+      } catch {
+        // تجاهل لو حصل خطأ
+      }
+    }
+
+    // رفع الملفات
     const uploadedFiles: any[] = [];
-    
-    // Get all form data entries to find files
     for (const [key, value] of formData.entries()) {
       if (value instanceof File && value.size > 0) {
         try {
-          // Create uploads directory if it doesn't exist
           const uploadsDir = join(process.cwd(), 'public', 'uploads', 'orders', order.id);
           if (!existsSync(uploadsDir)) {
             await mkdir(uploadsDir, { recursive: true });
           }
 
-          // Generate unique filename
           const timestamp = Date.now();
           const fileExtension = value.name.split('.').pop();
           const fileName = `${key}_${timestamp}.${fileExtension}`;
           const filePath = join(uploadsDir, fileName);
 
-          // Convert file to buffer and save
-          const bytes = await value.arrayBuffer();
-          const buffer = Buffer.from(bytes);
+          const buffer = Buffer.from(await value.arrayBuffer());
           await writeFile(filePath, buffer);
 
-          // Save file metadata to database
-          const orderDocument = await prisma.orderDocument.create({
+          await prisma.orderDocument.create({
             data: {
               orderId: order.id,
               fileName: value.name,
               filePath: `/uploads/orders/${order.id}/${fileName}`,
               fileSize: value.size,
               fileType: value.type,
-              documentType: key, // This will be the field name (e.g., "idDocument", "contract", etc.)
+              documentType: key,
             },
           });
 
@@ -308,32 +324,44 @@ export async function POST(request: NextRequest) {
             size: value.size,
             type: value.type,
           });
-
-          console.log(`File uploaded successfully: ${value.name} -> ${fileName}`);
-        } catch (fileError) {
-          console.error(`Error uploading file ${value.name}:`, fileError);
-          // Continue with other files even if one fails
+        } catch {
+          // تجاهل لو فيه مشكلة في رفع ملف
         }
       }
     }
 
-    console.log(`Total files uploaded: ${uploadedFiles.length}`);
+    // 📱 إرسال رسالة واتساب للعميل
+    try {
+      const whatsappStatus = await checkWhatsAppStatus();
+      if (
+        whatsappStatus.status === 'connected' &&
+        orderData.customerPhone &&
+        orderData.customerPhone !== 'Unknown'
+      ) {
+        const notification = NotificationTemplates.newOrder(
+          orderData.customerName,
+          order.id,
+          service.name,
+          orderData.totalCents
+        );
 
-    return NextResponse.json({ 
-      success: true, 
+        await sendWhatsAppMessage({
+          phone: orderData.customerPhone,
+          message: notification.message,
+        });
+      }
+    } catch {
+      // WhatsApp notification failed silently
+    }
+
+    return NextResponse.json({
+      success: true,
       orderId: order.id,
       filesUploaded: uploadedFiles.length,
-      message: "تم إنشاء الطلب بنجاح",
-      redirectUrl: `/order-success?orderId=${order.id}&filesUploaded=${uploadedFiles.length}`
+      message: 'تم إنشاء الطلب بنجاح',
+      redirectUrl: `/order-success?orderId=${order.id}&filesUploaded=${uploadedFiles.length}`,
     });
-
   } catch (error) {
-    console.error('Error creating order:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-    return NextResponse.json({ 
-      error: "حدث خطأ أثناء إنشاء الطلب" 
-    }, { status: 500 });
+    return NextResponse.json({ error: 'حدث خطأ أثناء إنشاء الطلب' }, { status: 500 });
   }
 }
-
-

@@ -1,7 +1,7 @@
-"use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface PaymentFormProps {
   orderId: string;
@@ -9,255 +9,298 @@ interface PaymentFormProps {
 }
 
 export default function PaymentForm({ orderId, totalAmount }: PaymentFormProps) {
-  const [paymentMethod, setPaymentMethod] = useState<"VODAFONE_CASH" | "INSTA_PAY" | null>(null);
-  const [senderPhone, setSenderPhone] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<'VODAFONE_CASH' | 'INSTA_PAY'>(
+    'VODAFONE_CASH'
+  );
+  const [senderPhone, setSenderPhone] = useState('');
   const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
 
-  // أرقام الدفع الفعلية (يمكن تغييرها حسب الحاجة)
   const PAYMENT_NUMBERS = {
-    VODAFONE_CASH: "01012345678",
-    INSTA_PAY: "01087654321"
+    VODAFONE_CASH: '01021484439',
+    INSTA_PAY: '01021484439@instapay',
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!paymentMethod) {
-      setError("يرجى اختيار طريقة الدفع");
-      return;
-    }
-    
     if (!senderPhone.trim()) {
-      setError("يرجى إدخال رقم الهاتف المحول منه");
+      setError('يرجى إدخال رقم الهاتف المحول منه');
       return;
     }
-    
+
     setIsSubmitting(true);
-    setError("");
-    
+    setError('');
+
     try {
-      // Handle file upload first if screenshot is provided
-      let screenshotPath = "";
+      let screenshotPath = '';
       if (paymentScreenshot) {
         const formData = new FormData();
-        formData.append("file", paymentScreenshot);
-        
-        const uploadResponse = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        
+        formData.append('file', paymentScreenshot);
+        const uploadResponse = await fetch('/api/upload', { method: 'POST', body: formData });
         if (uploadResponse.ok) {
           const uploadResult = await uploadResponse.json();
           screenshotPath = uploadResult.filePath;
         }
       }
-      
-      // Submit payment
+
       const response = await fetch(`/api/orders/${orderId}/payment`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           method: paymentMethod,
           senderPhone,
           paymentScreenshot: screenshotPath,
         }),
       });
-      
+
       const result = await response.json();
-      
       if (response.ok && result.success) {
-        // Redirect to success page
         router.push(`/order-success?orderId=${orderId}&paymentSubmitted=true`);
       } else {
-        setError(result.error || "حدث خطأ أثناء إرسال بيانات الدفع");
+        setError(result.error || 'حدث خطأ أثناء إرسال بيانات الدفع');
       }
     } catch (error) {
-      console.error("Payment error:", error);
-      setError("حدث خطأ أثناء إرسال بيانات الدفع");
+      setError('حدث خطأ في الاتصال بالخادم');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setPaymentScreenshot(file);
-  };
-
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">طريقة الدفع</h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Payment Method Selection */}
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            اختر طريقة الدفع *
-          </label>
-          
-          {/* Vodafone Cash */}
-          <div 
-            className={`border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 ${
-              paymentMethod === "VODAFONE_CASH"
-                ? 'border-green-500 bg-green-50'
-                : 'border-gray-200 hover:border-green-300 bg-gray-50'
-            }`}
-            onClick={() => setPaymentMethod("VODAFONE_CASH")}
-          >
-            <div className="flex items-center">
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-3 transition-all duration-300 ${
-                paymentMethod === "VODAFONE_CASH"
-                  ? 'border-green-500 bg-green-500'
-                  : 'border-gray-300'
-              }`}>
-                {paymentMethod === "VODAFONE_CASH" && (
-                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">فودافون كاش</h4>
-                <p className="text-sm text-gray-600">ادفع عبر فودافون كاش</p>
-              </div>
-            </div>
-          </div>
+    <div className='bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-6 sm:p-10 border border-white relative overflow-hidden'>
+      {/* Decorative Background Glow */}
+      <div className='absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[100px] -translate-y-1/2 translate-x-1/2 rounded-full'></div>
 
-          {/* Insta Pay */}
-          <div 
-            className={`border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 ${
-              paymentMethod === "INSTA_PAY"
-                ? 'border-green-500 bg-green-50'
-                : 'border-gray-200 hover:border-green-300 bg-gray-50'
-            }`}
-            onClick={() => setPaymentMethod("INSTA_PAY")}
-          >
-            <div className="flex items-center">
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-3 transition-all duration-300 ${
-                paymentMethod === "INSTA_PAY"
-                  ? 'border-green-500 bg-green-500'
-                  : 'border-gray-300'
-              }`}>
-                {paymentMethod === "INSTA_PAY" && (
-                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">انستا باي</h4>
-                <p className="text-sm text-gray-600">ادفع عبر انستا باي</p>
-              </div>
-            </div>
-          </div>
+      <div className='relative z-10'>
+        <div className='mb-10'>
+          <h2 className='text-3xl font-black text-slate-900 mb-2'>طريقة الدفع</h2>
+          <p className='text-slate-500 font-medium'>اختر الوسيلة المفضلة وأكد عملية التحويل</p>
         </div>
 
-        {/* Payment Instructions */}
-        {paymentMethod && (
-          <div className="bg-blue-50 rounded-xl p-6 border border-blue-200">
-            <h4 className="font-semibold text-blue-900 mb-3">تعليمات الدفع</h4>
-            
-            {paymentMethod === "VODAFONE_CASH" ? (
-              <div className="space-y-3 text-sm text-blue-800">
-                <p>1. قم بتحويل المبلغ {(totalAmount / 100).toFixed(2)} جنيه إلى رقم فودافون كاش:</p>
-                <div className="bg-white rounded-lg p-3 border border-blue-300">
-                  <p className="font-mono text-lg font-bold text-center text-blue-600">{PAYMENT_NUMBERS.VODAFONE_CASH}</p>
+        <form onSubmit={handleSubmit} className='space-y-8'>
+          {/* Method Selector Tabs */}
+          <div className='p-1.5 bg-slate-100/80 rounded-2xl flex gap-1.5'>
+            <button
+              type='button'
+              onClick={() => setPaymentMethod('VODAFONE_CASH')}
+              className={`flex-1 py-4 rounded-xl font-black text-sm transition-all flex items-center justify-center gap-3 ${
+                paymentMethod === 'VODAFONE_CASH'
+                  ? 'bg-white text-rose-600 shadow-md ring-1 ring-rose-100'
+                  : 'text-slate-500 hover:bg-white/50'
+              }`}
+            >
+              <div
+                className={`w-2.5 h-2.5 rounded-full ${paymentMethod === 'VODAFONE_CASH' ? 'bg-rose-600 animate-pulse' : 'bg-slate-300'}`}
+              ></div>
+              فودافون كاش
+            </button>
+            <button
+              type='button'
+              onClick={() => setPaymentMethod('INSTA_PAY')}
+              className={`flex-1 py-4 rounded-xl font-black text-sm transition-all flex items-center justify-center gap-3 ${
+                paymentMethod === 'INSTA_PAY'
+                  ? 'bg-white text-emerald-600 shadow-md ring-1 ring-emerald-100'
+                  : 'text-slate-500 hover:bg-white/50'
+              }`}
+            >
+              <div
+                className={`w-2.5 h-2.5 rounded-full ${paymentMethod === 'INSTA_PAY' ? 'bg-emerald-600 animate-pulse' : 'bg-slate-300'}`}
+              ></div>
+              انستا باي
+            </button>
+          </div>
+
+          {/* Dynamic Payment Card */}
+          <AnimatePresence mode='wait'>
+            <motion.div
+              key={paymentMethod}
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className={`p-8 rounded-[2rem] border-2 border-dashed relative overflow-hidden ${
+                paymentMethod === 'VODAFONE_CASH'
+                  ? 'border-rose-100 bg-rose-50/30'
+                  : 'border-emerald-100 bg-emerald-50/30'
+              }`}
+            >
+              <div className='relative z-10 flex flex-col items-center text-center'>
+                <div
+                  className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-sm ${
+                    paymentMethod === 'VODAFONE_CASH'
+                      ? 'bg-rose-100 text-rose-600'
+                      : 'bg-emerald-100 text-emerald-600'
+                  }`}
+                >
+                  {paymentMethod === 'VODAFONE_CASH' ? '🔴' : '💎'}
                 </div>
-                <p>2. احتفظ بسكرين شوت للتحويل</p>
-                <p>3. أدخل رقم الهاتف المحول منه</p>
-                <p>4. ارفع سكرين شوت التحويل</p>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3">
-                  <p className="text-yellow-800 text-xs font-medium">
-                    ⚠️ تنبيه: يجب إتمام الدفع خلال 30 دقيقة وإلا سيتم إلغاء الطلب تلقائياً
-                  </p>
+
+                <h4 className='text-slate-500 font-bold text-sm mb-4 uppercase tracking-widest'>
+                  حول المبلغ التالي
+                </h4>
+                <div className='flex items-baseline gap-2 mb-6'>
+                  <span className='text-5xl font-black text-slate-900 tracking-tighter'>
+                    {(totalAmount / 100).toFixed(2)}
+                  </span>
+                  <span className='text-lg font-black text-slate-400'>ج.م</span>
+                </div>
+
+                <div className='w-full max-w-sm bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-3'>
+                  <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest block'>
+                    رقم التحويل
+                  </span>
+                  <div className='flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3 border border-slate-100'>
+                    <code className='text-xl font-black text-slate-800 tracking-wider'>
+                      {PAYMENT_NUMBERS[paymentMethod]}
+                    </code>
+                    <button
+                      type='button'
+                      onClick={() => copyToClipboard(PAYMENT_NUMBERS[paymentMethod])}
+                      className='p-2 hover:bg-slate-200 rounded-lg transition-colors text-slate-400 hover:text-slate-600'
+                      title='نسخ الرقم'
+                    >
+                      {copied ? (
+                        <span className='text-xs font-bold text-emerald-600'>تم النسخ!</span>
+                      ) : (
+                        <svg
+                          className='w-5 h-5'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3'
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className='mt-8 flex gap-4 text-[11px] font-black text-slate-400 uppercase tracking-widest'>
+                  <span className='flex items-center gap-1.5'>
+                    <div className='w-1.5 h-1.5 rounded-full bg-emerald-500'></div> تحويل فوري
+                  </span>
+                  <span className='flex items-center gap-1.5'>
+                    <div className='w-1.5 h-1.5 rounded-full bg-emerald-500'></div> أمان تام
+                  </span>
                 </div>
               </div>
-            ) : (
-              <div className="space-y-3 text-sm text-blue-800">
-                <p>1. قم بتحويل المبلغ {(totalAmount / 100).toFixed(2)} جنيه عبر انستا باي إلى:</p>
-                <div className="bg-white rounded-lg p-3 border border-blue-300">
-                  <p className="font-mono text-lg font-bold text-center text-blue-600">{PAYMENT_NUMBERS.INSTA_PAY}</p>
-                </div>
-                <p>2. احتفظ بسكرين شوت للتحويل</p>
-                <p>3. أدخل رقم الهاتف المحول منه</p>
-                <p>4. ارفع سكرين شوت التحويل</p>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3">
-                  <p className="text-yellow-800 text-xs font-medium">
-                    ⚠️ تنبيه: يجب إتمام الدفع خلال 30 دقيقة وإلا سيتم إلغاء الطلب تلقائياً
-                  </p>
-                </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Form Fields */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <div className='space-y-3'>
+              <label className='text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1'>
+                رقم الهاتف المحول منه
+              </label>
+              <div className='relative group'>
+                <input
+                  type='tel'
+                  value={senderPhone}
+                  onChange={e => setSenderPhone(e.target.value)}
+                  required
+                  className='w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-slate-300 outline-none transition-all font-bold text-slate-800 group-hover:bg-white'
+                  placeholder='01xxxxxxxxx'
+                />
+                <div className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-300'>📱</div>
               </div>
+            </div>
+
+            <div className='space-y-3'>
+              <label className='text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1'>
+                تأكيد العملية (سكرين شوت)
+              </label>
+              <div className='relative group'>
+                <input
+                  type='file'
+                  id='screenshot'
+                  accept='image/*'
+                  onChange={e => setPaymentScreenshot(e.target.files?.[0] || null)}
+                  className='hidden'
+                />
+                <label
+                  htmlFor='screenshot'
+                  className='flex items-center justify-between w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl cursor-pointer hover:border-emerald-300 hover:bg-emerald-50/20 transition-all group'
+                >
+                  <span
+                    className={`text-sm font-bold truncate max-w-[150px] ${paymentScreenshot ? 'text-emerald-600' : 'text-slate-400'}`}
+                  >
+                    {paymentScreenshot ? paymentScreenshot.name : 'ارفع السكرين شوت هنا'}
+                  </span>
+                  <div className='w-8 h-8 bg-slate-200 rounded-lg flex items-center justify-center text-slate-500 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors'>
+                    📸
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Alerts & Submission */}
+          <div className='space-y-6'>
+            <div className='p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-4 items-start'>
+              <span className='text-xl'>⚠️</span>
+              <p className='text-[11px] leading-relaxed text-amber-800 font-bold uppercase tracking-tight'>
+                يرجى التأكد من إتمام الدفع قبل إرسال البيانات. يتم مراجعة العمليات يدوياً خلال
+                دقائق. <br />
+                تنبيه: العمليات غير الصحيحة تؤدي لحظر الحساب.
+              </p>
+            </div>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className='p-4 bg-rose-50 rounded-2xl border border-rose-100 flex items-center gap-3 text-rose-600 text-sm font-bold'
+              >
+                <span>❌</span> {error}
+              </motion.div>
             )}
+
+            <button
+              type='submit'
+              disabled={isSubmitting || !senderPhone.trim()}
+              className={`w-full py-5 px-6 rounded-[1.5rem] font-black transition-all transform active:scale-[0.98] shadow-xl flex items-center justify-center gap-4 ${
+                isSubmitting || !senderPhone.trim()
+                  ? 'bg-slate-100 text-slate-400 shadow-none'
+                  : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
+                  <span>جاري تسجيل الطلب...</span>
+                </>
+              ) : (
+                <>
+                  <span>تأكيد إرسال بيانات الدفع</span>
+                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2.5}
+                      d='M14 5l7 7m0 0l-7 7m7-7H3'
+                    />
+                  </svg>
+                </>
+              )}
+            </button>
           </div>
-        )}
-
-        {/* Sender Phone */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            رقم الهاتف المحول منه *
-          </label>
-          <input
-            type="tel"
-            value={senderPhone}
-            onChange={(e) => setSenderPhone(e.target.value)}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-            placeholder="01xxxxxxxxx"
-          />
-        </div>
-
-        {/* Payment Screenshot Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            سكرين شوت التحويل
-          </label>
-          <input
-            type="file"
-            accept="image/*,.pdf"
-            onChange={handleFileChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            يمكنك رفع صورة أو ملف PDF لسكرين شوت التحويل
-          </p>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-            <p className="text-red-800 text-sm">{error}</p>
-          </div>
-        )}
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isSubmitting || !paymentMethod || !senderPhone.trim()}
-          className={`w-full py-3 px-6 rounded-xl font-medium transition-all duration-200 ${
-            isSubmitting || !paymentMethod || !senderPhone.trim()
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-green-600 text-white hover:bg-green-700'
-          }`}
-        >
-          {isSubmitting ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              جاري الإرسال...
-            </>
-          ) : (
-            'إرسال بيانات الدفع'
-          )}
-        </button>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

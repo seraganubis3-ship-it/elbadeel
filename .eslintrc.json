@@ -1,0 +1,11 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "no-console": "warn",
+    "no-debugger": "error",
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off",
+    "@next/next/no-img-element": "error",
+    "@next/next/no-html-link-for-pages": "error"
+  }
+}

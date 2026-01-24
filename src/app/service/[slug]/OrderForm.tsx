@@ -1,793 +1,494 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from 'react';
+import { useToast, ToastContainer } from '@/components/Toast';
+import StepIndicator from '@/components/order/StepIndicator';
+import VariantSelection from '@/components/order/VariantSelection';
+import PersonalDataForm from '@/components/order/PersonalDataForm';
+import DocumentUploader from '@/components/order/DocumentUploader';
+import DeliverySelection from '@/components/order/DeliverySelection';
+import OrderReview from '@/components/order/OrderReview';
+import DynamicFields from '@/components/order/DynamicFields';
+import { AnimatePresence, motion } from 'framer-motion';
 
-export default function OrderForm({ 
-  serviceId, 
-  serviceName, 
+interface DynamicField {
+  id: string;
+  name: string;
+  label: string;
+  type: string;
+  placeholder?: string;
+  required: boolean;
+  showIf?: string;
+  options: { id: string; value: string; label: string }[];
+}
+
+export default function OrderForm({
+  serviceId,
+  serviceSlug,
+  serviceName,
   variants,
   user,
-  requiredDocuments = []
-}: { 
-  serviceId: string; 
+  requiredDocuments = [],
+  dynamicFields = [],
+}: {
+  serviceId: string;
+  serviceSlug: string;
   serviceName: string;
   variants: any[];
   user: any;
   requiredDocuments?: any[];
+  dynamicFields?: DynamicField[];
 }) {
-  const [selectedFiles, setSelectedFiles] = useState<{[key: string]: File | null}>({});
+  // --- State Management ---
   const [currentStep, setCurrentStep] = useState(1);
+  // Adjust total steps based on whether we have dynamic fields
+  const hasDynamicFields = dynamicFields.length > 0;
+  const totalSteps = hasDynamicFields ? 6 : 5;
+
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File | null }>({});
+
+  // Dynamic field values
+  const [dynamicValues, setDynamicValues] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState({
-    customerName: user.name || "",
-    customerPhone: user.phone || "",
-    customerEmail: user.email || "",
-    address: "",
-    notes: "",
-    deliveryType: "OFFICE", // OFFICE or ADDRESS
-    // معلومات شخصية إضافية
-    wifeName: user.wifeName || "",
-    fatherName: user.fatherName || "",
-    motherName: user.motherName || "",
-    birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : "",
-    nationality: user.nationality || "",
-    idNumber: user.idNumber || ""
+    customerName: user.name || '',
+    customerPhone: user.phone || '',
+    customerEmail: user.email || '',
+    address: '',
+    notes: '',
+    deliveryType: 'OFFICE',
+    wifeName: '',
+    wifeMotherName: '',
+    marriageDate: '',
+    fatherName: '',
+    motherName: user.motherName || '',
+    birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : '',
+    nationality: user.nationality || 'مصري',
+    idNumber: user.idNumber || '',
   });
+
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discountAmount: number;
+    id: string;
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showSuccess, showError, showWarning, toasts, removeToast } = useToast();
 
-  // Delivery fee in cents (50 EGP = 5000 cents)
-  const DELIVERY_FEE = 5000;
+  const DELIVERY_FEE = 5000; // 50 EGP
 
-  const totalSteps = 5; // Increased to 5 steps
+  // --- Handlers ---
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDynamicChange = (name: string, value: string) => {
+    setDynamicValues(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleFileSelect = (docId: string, file: File | null) => {
-    setSelectedFiles(prev => ({
-      ...prev,
-      [docId]: file
-    }));
+    setSelectedFiles(prev => ({ ...prev, [docId]: file }));
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+  const handlePromoApply = async (code: string) => {
+    const orderTotal =
+      selectedVariant.priceCents + (formData.deliveryType === 'ADDRESS' ? DELIVERY_FEE : 0);
 
-  const handleVariantSelect = (variant: any) => {
-    setSelectedVariant(variant);
-  };
-
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const canProceedToNext = () => {
-    switch (currentStep) {
-      case 1: return selectedVariant;
-      case 2: return formData.customerName && formData.customerPhone && formData.customerEmail;
-      case 3: return requiredDocuments.length === 0 || Object.keys(selectedFiles).length === requiredDocuments.length;
-      case 4: return formData.deliveryType === "OFFICE" || (formData.deliveryType === "ADDRESS" && formData.address.trim());
-      default: return true;
-    }
-  };
-
-  const getFilePreview = (file: File): string | null => {
-    if (file.type.startsWith('image/')) {
-      return URL.createObjectURL(file);
-    }
-    return null;
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    // Validate required data
-    if (!selectedVariant) {
-      alert('يرجى اختيار نوع الخدمة أولاً');
-      return;
-    }
-    
-    if (!formData.customerName || !formData.customerPhone || !formData.customerEmail) {
-      alert('يرجى ملء جميع الحقول المطلوبة');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    const formDataToSubmit = new FormData();
-    
-    // Add all form data
-    formDataToSubmit.append("serviceId", serviceId);
-    formDataToSubmit.append("variantId", selectedVariant.id);
-    formDataToSubmit.append("customerName", formData.customerName);
-    formDataToSubmit.append("customerPhone", formData.customerPhone);
-    formDataToSubmit.append("customerEmail", formData.customerEmail);
-    formDataToSubmit.append("address", formData.address);
-    formDataToSubmit.append("notes", formData.notes);
-    formDataToSubmit.append("deliveryType", formData.deliveryType);
-    formDataToSubmit.append("deliveryFee", formData.deliveryType === "ADDRESS" ? DELIVERY_FEE.toString() : "0");
-    
-    // Add personal information
-    formDataToSubmit.append("wifeName", formData.wifeName);
-    formDataToSubmit.append("fatherName", formData.fatherName);
-    formDataToSubmit.append("motherName", formData.motherName);
-    formDataToSubmit.append("birthDate", formData.birthDate);
-    formDataToSubmit.append("nationality", formData.nationality);
-    formDataToSubmit.append("idNumber", formData.idNumber);
-    
-    // Add files
-    Object.entries(selectedFiles).forEach(([docId, file]) => {
-      if (file) {
-        formDataToSubmit.append(`document_${docId}`, file);
-      }
-    });
-    
     try {
-      console.log('Submitting order with data:', {
-        serviceId,
-        variantId: selectedVariant.id,
-        customerName: formData.customerName,
-        customerPhone: formData.customerPhone,
-        customerEmail: formData.customerEmail,
-        address: formData.address,
-        notes: formData.notes
-      });
-      
-      const response = await fetch('/api/orders', {
+      const response = await fetch('/api/promo-codes/validate', {
         method: 'POST',
-        body: formDataToSubmit,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, orderTotal }),
       });
-      
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      let result;
-             const responseText = await response.text();
-       console.log('Raw response text:', responseText);
-       
-       try {
-         result = JSON.parse(responseText);
-       } catch (parseError) {
-         console.error('Failed to parse response as JSON:', parseError);
-         console.log('Response was:', responseText);
-         throw new Error('خطأ في تحليل الاستجابة من الخادم');
-       }
-      
-      console.log('Response body:', result);
-      
-      if (response.ok && result.success) {
-        // Redirect to payment page
-        window.location.href = `/order/${result.orderId}/payment-simple`;
+      const data = await response.json();
+
+      if (response.ok && data.valid) {
+        setAppliedPromo({ code: data.code, discountAmount: data.discountAmount, id: data.id });
+        return { success: true, message: `تم خصم ${(data.discountAmount / 100).toFixed(2)} جنيه` };
       } else {
-        const errorMessage = result.error || `خطأ HTTP ${response.status}: حدث خطأ أثناء تقديم الطلب. يرجى المحاولة مرة أخرى.`;
-        alert(errorMessage);
-        console.error('Error submitting order:', result);
-        console.error('Response status:', response.status);
+        return { success: false, message: data.error || 'الكود غير صالح' };
       }
-    } catch (error) {
-      console.error('Error submitting order:', error);
-      alert('حدث خطأ أثناء تقديم الطلب. يرجى المحاولة مرة أخرى.');
+    } catch {
+      return { success: false, message: 'خطأ في الاتصال' };
+    }
+  };
+
+  const handlePromoRemove = () => setAppliedPromo(null);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    const formDataToSubmit = new FormData();
+
+    // Append standard fields
+    formDataToSubmit.append('serviceId', serviceId);
+    formDataToSubmit.append('variantId', selectedVariant.id);
+    Object.entries(formData).forEach(([key, value]) => {
+      formDataToSubmit.append(key, value);
+    });
+
+    // Append dynamic field values
+    formDataToSubmit.append('serviceDetails', JSON.stringify(dynamicValues));
+
+    // Address check
+    formDataToSubmit.append(
+      'deliveryFee',
+      formData.deliveryType === 'ADDRESS' ? DELIVERY_FEE.toString() : '0'
+    );
+
+    // Files
+    Object.entries(selectedFiles).forEach(([docId, file]) => {
+      if (file) formDataToSubmit.append(`document_${docId}`, file);
+    });
+
+    // Promo
+    if (appliedPromo) formDataToSubmit.append('promoCode', appliedPromo.code);
+
+    try {
+      const response = await fetch('/api/orders', { method: 'POST', body: formDataToSubmit });
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        window.location.href = `/order/${result.orderId}/payment`;
+      } else {
+        showError('فشل الطلب', result.error || 'حدث خطأ ما');
+      }
+    } catch (e) {
+      showError('خطأ', 'فشل الاتصال بالخادم');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // --- Check if field is visible based on conditions ---
+  const isFieldVisible = (field: DynamicField): boolean => {
+    if (!field.showIf) return true;
+    try {
+      const condition = JSON.parse(field.showIf);
+      return dynamicValues[condition.field] === condition.value;
+    } catch {
+      return true;
+    }
+  };
+
+  // --- Check if document is visible based on conditions ---
+  const isDocumentVisible = (doc: any): boolean => {
+    if (!doc.showIf) return true;
+    try {
+      const condition = JSON.parse(doc.showIf);
+      // Check if the field exists in dynamicValues and matches
+      return dynamicValues[condition.field] === condition.value;
+    } catch {
+      return true;
+    }
+  };
+
+  // Filter visible documents
+  const visibleDocuments = requiredDocuments.filter(isDocumentVisible);
+
+  // --- Navigation Guards ---
+  const canProceed = () => {
+    switch (currentStep) {
+      case 1:
+        return !!selectedVariant;
+      case 2:
+        // Check dynamic fields if present
+        if (hasDynamicFields) {
+          const requiredFields = dynamicFields.filter(f => f.required && isFieldVisible(f));
+          return requiredFields.every(f => !!dynamicValues[f.name]);
+        }
+        return true;
+      case 3:
+        // Personal data (was step 2)
+        return !!(formData.customerName && formData.customerPhone && formData.idNumber);
+      case 4:
+        // Documents (was step 3)
+        // Only validate visible documents
+        return (
+          visibleDocuments.length === 0 ||
+          visibleDocuments.filter(d => d.required).every(d => !!selectedFiles[d.id])
+        );
+      case 5:
+        // Delivery (was step 4)
+        return (
+          formData.deliveryType === 'OFFICE' ||
+          (formData.deliveryType === 'ADDRESS' && formData.address.length > 5)
+        );
+      default:
+        return true;
+    }
+  };
+
+  // Adjust step numbers when no dynamic fields
+  const getActualStep = (step: number) => {
+    if (!hasDynamicFields && step >= 2) {
+      return step - 1;
+    }
+    return step;
+  };
+
+  // --- Render Steps ---
+  const renderStepContent = () => {
+    if (hasDynamicFields) {
+      switch (currentStep) {
+        case 1:
+          return (
+            <VariantSelection
+              variants={variants}
+              selectedVariant={selectedVariant}
+              onSelect={setSelectedVariant}
+            />
+          );
+        case 2:
+          return (
+            <DynamicFields
+              fields={dynamicFields}
+              values={dynamicValues}
+              onChange={handleDynamicChange}
+            />
+          );
+        case 3:
+          return (
+            <PersonalDataForm
+              formData={formData}
+              onChange={handleInputChange}
+              serviceSlug={serviceSlug}
+              serviceName={serviceName}
+            />
+          );
+        case 4:
+          return (
+            <DocumentUploader
+              requiredDocuments={visibleDocuments}
+              selectedFiles={selectedFiles}
+              onFileSelect={handleFileSelect}
+            />
+          );
+        case 5:
+          return (
+            <DeliverySelection
+              formData={formData}
+              onChange={handleInputChange}
+              deliveryFee={DELIVERY_FEE}
+            />
+          );
+        case 6:
+          return (
+            <OrderReview
+              selectedVariant={selectedVariant}
+              deliveryType={formData.deliveryType}
+              deliveryFee={DELIVERY_FEE}
+              onApplyPromo={handlePromoApply}
+              onRemovePromo={handlePromoRemove}
+              appliedPromo={appliedPromo}
+              dynamicFields={dynamicFields}
+              dynamicValues={dynamicValues}
+            />
+          );
+        default:
+          return null;
+      }
+    } else {
+      // Original 5-step flow
+      switch (currentStep) {
+        case 1:
+          return (
+            <VariantSelection
+              variants={variants}
+              selectedVariant={selectedVariant}
+              onSelect={setSelectedVariant}
+            />
+          );
+        case 2:
+          return (
+            <PersonalDataForm
+              formData={formData}
+              onChange={handleInputChange}
+              serviceSlug={serviceSlug}
+              serviceName={serviceName}
+            />
+          );
+        case 3:
+          return (
+            <DocumentUploader
+              requiredDocuments={visibleDocuments}
+              selectedFiles={selectedFiles}
+              onFileSelect={handleFileSelect}
+            />
+          );
+        case 4:
+          return (
+            <DeliverySelection
+              formData={formData}
+              onChange={handleInputChange}
+              deliveryFee={DELIVERY_FEE}
+            />
+          );
+        case 5:
+          return (
+            <OrderReview
+              selectedVariant={selectedVariant}
+              deliveryType={formData.deliveryType}
+              deliveryFee={DELIVERY_FEE}
+              onApplyPromo={handlePromoApply}
+              onRemovePromo={handlePromoRemove}
+              appliedPromo={appliedPromo}
+            />
+          );
+        default:
+          return null;
+      }
+    }
+  };
+
+  const stepsLabels = hasDynamicFields
+    ? [
+        'نوع الخدمة',
+        'تفاصيل الخدمة',
+        'بيانات مقدم الطلب',
+        'المستندات',
+        'طريقة الاستلام',
+        'تأكيد الطلب',
+      ]
+    : ['تفاصيل الخدمة', 'بيانات مقدم الطلب', 'المستندات', 'طريقة الاستلام', 'تأكيد الطلب'];
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-gray-100">
-      {/* Progress Steps */}
-      <div className="flex items-center justify-center mb-8 px-4">
-        <div className="flex items-center w-full max-w-md">
-          {[1, 2, 3, 4, 5].map((step) => (
-            <div key={step} className="flex items-center flex-1">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                currentStep >= step 
-                  ? 'bg-green-600 text-white' 
-                  : 'bg-gray-200 text-gray-500'
-              }`}>
-                {step}
-              </div>
-              {step < 5 && (
-                <div className={`h-1 flex-1 mx-2 transition-all duration-300 ${
-                  currentStep > step ? 'bg-green-600' : 'bg-gray-200'
-                }`}></div>
-              )}
-            </div>
-          ))}
+    <div className='relative'>
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
+
+      {/* Top Gradient Banner */}
+      <div className='h-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500' />
+
+      {/* Header Section */}
+      <div className='bg-gradient-to-b from-slate-50 to-white px-6 sm:px-10 pt-8 pb-6 border-b border-slate-100'>
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6'>
+          <div>
+            <h2 className='text-xl sm:text-2xl font-black text-slate-900'>إتمام الطلب</h2>
+            <p className='text-slate-500 text-sm mt-1'>أكمل الخطوات التالية لإرسال طلبك</p>
+          </div>
+          <div className='flex items-center gap-2 text-sm'>
+            <span className='px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full font-bold'>
+              الخطوة {currentStep} من {totalSteps}
+            </span>
+          </div>
         </div>
+
+        <StepIndicator currentStep={currentStep} totalSteps={totalSteps} steps={stepsLabels} />
       </div>
 
-      <form onSubmit={handleSubmit}>
-        {/* Step 1: Service Selection */}
-        {currentStep === 1 && (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">اختر نوع الخدمة</h3>
-              <p className="text-gray-600 text-sm">حدد النوع المناسب لاحتياجاتك</p>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-4">
-              {variants.map((variant: any, index: number) => (
-                <div 
-                  key={variant.id}
-                  className={`group border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 ${
-                    selectedVariant?.id === variant.id
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-green-300 bg-gray-50'
-                  }`}
-                  onClick={() => handleVariantSelect(variant)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-3 transition-all duration-300 ${
-                        selectedVariant?.id === variant.id
-                          ? 'border-green-500 bg-green-500'
-                          : 'border-gray-300'
-                      }`}>
-                        {selectedVariant?.id === variant.id && (
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{variant.name}</h4>
-                        <p className="text-sm text-gray-600">المدة المتوقعة: {variant.etaDays} يوم</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-green-600 text-lg">
-                        {(variant.priceCents / 100).toFixed(2)} جنيه
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Customer Information */}
-        {currentStep === 2 && (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">معلومات العميل</h3>
-              <p className="text-gray-600 text-sm">أدخل بياناتك الشخصية</p>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الاسم الكامل *
-                </label>
-                <input
-                  type="text"
-                  value={formData.customerName}
-                  onChange={(e) => handleInputChange('customerName', e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                  placeholder="أدخل اسمك الكامل"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  رقم الهاتف *
-                </label>
-                <input
-                  type="tel"
-                  value={formData.customerPhone}
-                  onChange={(e) => handleInputChange('customerPhone', e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                  placeholder="01xxxxxxxxx"
-                />
-              </div>
-              
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  البريد الإلكتروني *
-                </label>
-                <input
-                  type="email"
-                  value={formData.customerEmail}
-                  onChange={(e) => handleInputChange('customerEmail', e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                  placeholder="example@email.com"
-                />
-              </div>
-              
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  العنوان
-                </label>
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                  placeholder="أدخل عنوانك (اختياري)"
-                />
-              </div>
-              
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ملاحظات إضافية
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => handleInputChange('notes', e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 resize-none text-black"
-                  placeholder="أي ملاحظات أو متطلبات خاصة"
-                />
-              </div>
-            </div>
-
-            {/* معلومات شخصية إضافية */}
-            <div className="border-t pt-6 mt-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">معلومات شخصية إضافية</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    اسم الزوجة
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.wifeName}
-                    onChange={(e) => handleInputChange('wifeName', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                    placeholder="اسم الزوجة (اختياري)"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    اسم الأب
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.fatherName}
-                    onChange={(e) => handleInputChange('fatherName', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                    placeholder="اسم الأب (اختياري)"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    اسم الأم
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.motherName}
-                    onChange={(e) => handleInputChange('motherName', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                    placeholder="اسم الأم (اختياري)"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    تاريخ الميلاد
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.birthDate}
-                    onChange={(e) => handleInputChange('birthDate', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    الجنسية
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nationality}
-                    onChange={(e) => handleInputChange('nationality', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                    placeholder="الجنسية (اختياري)"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    رقم الهوية
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.idNumber}
-                    onChange={(e) => handleInputChange('idNumber', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-black"
-                    placeholder="رقم الهوية (اختياري)"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Document Upload */}
-        {currentStep === 3 && (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">رفع المستندات</h3>
-              <p className="text-gray-600 text-sm">
-                {requiredDocuments.length > 0 
-                  ? "أرفع جميع المستندات المطلوبة" 
-                  : "لا توجد مستندات مطلوبة لهذه الخدمة"
-                }
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              {requiredDocuments.length > 0 ? (
-                requiredDocuments.map((doc: any, index: number) => (
-                  <div key={doc.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                          <span className="text-sm font-bold text-blue-600">{index + 1}</span>
-                        </div>
-                        <div>
-                          <h5 className="font-medium text-gray-900">{doc.title}</h5>
-                          {doc.note && (
-                            <p className="text-sm text-gray-600 mt-1">{doc.note}</p>
-                          )}
-                        </div>
-                      </div>
-                      <span className="text-xs text-red-500 font-medium">مطلوب</span>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      {/* File Upload Input */}
-                      <div className="relative">
-                        <input
-                          type="file"
-                          name={`document_${doc.id}`}
-                          id={`file-${doc.id}`}
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          required
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            handleFileSelect(doc.id, file);
-                          }}
-                        />
-                        
-                        <label
-                          htmlFor={`file-${doc.id}`}
-                          className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-400 transition-colors duration-200 cursor-pointer bg-white"
-                        >
-                          <div className="text-center">
-                            <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
-                            <p className="text-sm text-gray-600">
-                              اضغط لاختيار الملف
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              PDF, JPG, PNG - حد أقصى 10 ميجابايت
-                            </p>
-                          </div>
-                        </label>
-                      </div>
-                      
-                      {/* File Preview and Name Display */}
-                      {selectedFiles[doc.id] && (
-                        <div className="space-y-3">
-                          {/* File Name Display */}
-                          <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                            <div className="flex items-center">
-                              <svg className="w-4 h-4 text-green-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              <span className="text-green-700 font-medium">{selectedFiles[doc.id]?.name}</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleFileSelect(doc.id, null)}
-                              className="text-red-500 hover:text-red-700 text-xs"
-                            >
-                              إزالة
-                            </button>
-                          </div>
-                          
-                          {/* File Preview for Images */}
-                          {selectedFiles[doc.id] && getFilePreview(selectedFiles[doc.id]!) && (
-                            <div className="relative">
-                              <img 
-                                src={getFilePreview(selectedFiles[doc.id]!)!} 
-                                alt="Preview" 
-                                className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <p className="text-gray-600">لا توجد مستندات مطلوبة لهذه الخدمة</p>
-                  <p className="text-sm text-gray-500 mt-1">يمكنك المتابعة للخطوة التالية</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Step 4: Delivery Options */}
-        {currentStep === 4 && (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">خيارات التوصيل</h3>
-              <p className="text-gray-600 text-sm">اختر طريقة استلام الخدمة</p>
-            </div>
-            
-            <div className="space-y-4">
-              {/* Office Pickup Option */}
-              <div 
-                className={`border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 ${
-                  formData.deliveryType === "OFFICE"
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-gray-200 hover:border-green-300 bg-gray-50'
-                }`}
-                onClick={() => handleInputChange('deliveryType', 'OFFICE')}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-3 transition-all duration-300 ${
-                      formData.deliveryType === "OFFICE"
-                        ? 'border-green-500 bg-green-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {formData.deliveryType === "OFFICE" && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">استلام من المكتب</h4>
-                      <p className="text-sm text-gray-600">استلم الخدمة من مكتبنا</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-green-600 text-lg">مجاناً</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Address Delivery Option */}
-              <div 
-                className={`border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 ${
-                  formData.deliveryType === "ADDRESS"
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-gray-200 hover:border-green-300 bg-gray-50'
-                }`}
-                onClick={() => handleInputChange('deliveryType', 'ADDRESS')}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-3 transition-all duration-300 ${
-                      formData.deliveryType === "ADDRESS"
-                        ? 'border-green-500 bg-green-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {formData.deliveryType === "ADDRESS" && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">توصيل على العنوان</h4>
-                      <p className="text-sm text-gray-600">نقوم بتوصيل الخدمة إلى عنوانك</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-green-600 text-lg">+50 جنيه</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Address Input for Delivery */}
-              {formData.deliveryType === "ADDRESS" && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    عنوان التوصيل *
-                  </label>
-                  <textarea
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    required
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                    placeholder="أدخل عنوانك بالتفصيل (المحافظة، المدينة، الحي، الشارع، رقم المنزل)"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Step 5: Review and Submit */}
-        {currentStep === 5 && (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">مراجعة الطلب</h3>
-              <p className="text-gray-600 text-sm">راجع جميع البيانات قبل التأكيد</p>
-            </div>
-            
-            {/* Order Summary */}
-            <div className="bg-gray-50 rounded-xl p-6 space-y-4">
-              <h4 className="font-semibold text-gray-900 mb-4">ملخص الطلب</h4>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600">الخدمة:</span>
-                  <div className="font-medium text-gray-900">{serviceName}</div>
-                </div>
-                <div>
-                  <span className="text-gray-600">النوع:</span>
-                  <div className="font-medium text-gray-900">{selectedVariant?.name}</div>
-                </div>
-                <div>
-                  <span className="text-gray-600">السعر:</span>
-                  <div className="font-bold text-green-600 text-lg">
-                    {(selectedVariant?.priceCents / 100).toFixed(2)} جنيه
-                  </div>
-                </div>
-                <div>
-                  <span className="text-gray-600">المدة:</span>
-                  <div className="font-medium text-gray-900">{selectedVariant?.etaDays} يوم</div>
-                </div>
-                <div>
-                  <span className="text-gray-600">التوصيل:</span>
-                  <div className="font-medium text-gray-900">
-                    {formData.deliveryType === "OFFICE" ? "استلام من المكتب" : "توصيل على العنوان"}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-gray-600">رسوم التوصيل:</span>
-                  <div className="font-medium text-gray-900">
-                    {formData.deliveryType === "ADDRESS" ? "+50.00 جنيه" : "مجاناً"}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Total Price */}
-              <div className="border-t pt-4 mt-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-900">الإجمالي:</span>
-                  <div className="font-bold text-green-600 text-xl">
-                    {((selectedVariant?.priceCents + (formData.deliveryType === "ADDRESS" ? DELIVERY_FEE : 0)) / 100).toFixed(2)} جنيه
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Customer Information Review */}
-            <div className="bg-gray-50 rounded-xl p-6 space-y-4">
-              <h4 className="font-semibold text-gray-900 mb-4">معلومات العميل</h4>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600">الاسم:</span>
-                  <div className="font-medium text-gray-900">{formData.customerName}</div>
-                </div>
-                <div>
-                  <span className="text-gray-600">الهاتف:</span>
-                  <div className="font-medium text-gray-900">{formData.customerPhone}</div>
-                </div>
-                <div>
-                  <span className="text-gray-600">البريد الإلكتروني:</span>
-                  <div className="font-medium text-gray-900">{formData.customerEmail}</div>
-                </div>
-                <div>
-                  <span className="text-gray-600">العنوان:</span>
-                  <div className="font-medium text-gray-900">{formData.address || "غير محدد"}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Documents Review */}
-            {requiredDocuments.length > 0 && (
-              <div className="bg-gray-50 rounded-xl p-6 space-y-4">
-                <h4 className="font-semibold text-gray-900 mb-4">المستندات المرفوعة</h4>
-                
-                <div className="space-y-2">
-                  {requiredDocuments.map((doc: any) => (
-                    <div key={doc.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                      <div className="flex items-center">
-                        <svg className="w-4 h-4 text-green-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="font-medium text-gray-900">{doc.title}</span>
-                      </div>
-                      <span className="text-sm text-green-600">✓ مرفوع</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Notes */}
-            {formData.notes && (
-              <div className="bg-gray-50 rounded-xl p-6">
-                <h4 className="font-semibold text-gray-900 mb-2">ملاحظات إضافية</h4>
-                <p className="text-gray-700">{formData.notes}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-between pt-6">
-          {currentStep > 1 && (
-            <button
-              type="button"
-              onClick={prevStep}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
+      {/* Content Area */}
+      <div className='p-6 sm:p-10'>
+        <div className='min-h-[380px] sm:min-h-[420px]'>
+          <AnimatePresence mode='wait'>
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
             >
-              السابق
-            </button>
-          )}
-          
-          {currentStep < totalSteps ? (
+              {renderStepContent()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Footer Navigation */}
+        <div className='flex flex-col-reverse sm:flex-row items-center justify-between gap-4 mt-10 pt-6 border-t border-slate-100'>
+          {/* Back Button */}
+          {currentStep > 1 ? (
             <button
-              type="button"
-              onClick={nextStep}
-              disabled={!canProceedToNext()}
-              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
-                canProceedToNext()
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              } ${currentStep === 1 ? 'ml-auto' : ''}`}
+              onClick={() => setCurrentStep(c => c - 1)}
+              className='w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all flex items-center justify-center gap-2'
             >
-              التالي
+              <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M15 19l-7-7 7-7'
+                />
+              </svg>
+              رجوع
             </button>
           ) : (
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 font-medium transition-all duration-200 flex items-center ${
-                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  جاري التأكيد...
-                </>
-              ) : (
-                'تأكيد الطلب'
-              )}
-            </button>
+            <div className='hidden sm:block' />
           )}
+
+          {/* Progress Bar (Mobile) */}
+          <div className='w-full sm:hidden bg-slate-100 rounded-full h-2 mb-2'>
+            <div
+              className='bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-500'
+              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+            />
+          </div>
+
+          {/* Next/Submit Button */}
+          <button
+            onClick={() =>
+              currentStep === totalSteps ? handleSubmit() : setCurrentStep(c => c + 1)
+            }
+            disabled={!canProceed() || isSubmitting}
+            className={`
+              w-full sm:w-auto px-8 sm:px-10 py-4 rounded-xl font-black text-white shadow-lg transition-all transform active:scale-[0.98] flex items-center justify-center gap-3
+              ${
+                !canProceed() || isSubmitting
+                  ? 'bg-slate-200 text-slate-400 shadow-none cursor-not-allowed'
+                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-200 hover:shadow-xl'
+              }
+            `}
+          >
+            {isSubmitting ? (
+              <>
+                <svg className='w-5 h-5 animate-spin' fill='none' viewBox='0 0 24 24'>
+                  <circle
+                    className='opacity-25'
+                    cx='12'
+                    cy='12'
+                    r='10'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                  ></circle>
+                  <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                  ></path>
+                </svg>
+                جاري الإرسال...
+              </>
+            ) : currentStep === totalSteps ? (
+              <>
+                <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
+                </svg>
+                تأكيد ودفع
+              </>
+            ) : (
+              <>
+                متابعة
+                <svg
+                  className='w-5 h-5 rtl:rotate-180'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 5l7 7-7 7'
+                  />
+                </svg>
+              </>
+            )}
+          </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

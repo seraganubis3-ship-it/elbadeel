@@ -1,69 +1,74 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import Providers from "@/components/Providers";
-import { CrispChat } from "./page.client";
-import AdminLayoutWrapper from "@/components/AdminLayoutWrapper";
-import AdminFooterWrapper from "@/components/AdminFooterWrapper";
+import type { Metadata } from 'next';
+import './globals.css';
+import Providers from '@/components/Providers';
+import AdminLayoutWrapper from '@/components/AdminLayoutWrapper';
+import AdminFooterWrapper from '@/components/AdminFooterWrapper';
+import AIChatWidget from '@/components/AIChatWidget';
 
 export const metadata: Metadata = {
   title: {
-    default: "خدمات استخراج الأوراق الرسمية - منصة موثوقة وسريعة | الباديل",
-    template: "%s | الباديل - خدمات استخراج الأوراق الرسمية"
+    default: 'البديل للخدمات الحكومية - منصة موثوقة وسريعة لاستخراج الأوراق الرسمية',
+    template: '%s | البديل للخدمات الحكومية',
   },
-  description: "منصة الباديل لاستخراج جميع أنواع الأوراق الرسمية باحترافية عالية. خبرة أكثر من 24 سنة في مجال الخدمات. أسعار منافسة وجودة مضمونة. اطلب الآن واحصل على خدمتك في أسرع وقت.",
+  description:
+    'البديل للخدمات الحكومية - منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية باحترافية عالية. خبرة أكثر من 24 سنة في مجال الخدمات الحكومية. أسعار منافسة وجودة مضمونة.',
   keywords: [
-    "استخراج الأوراق الرسمية",
-    "خدمات حكومية",
-    "أوراق رسمية",
-    "مستندات حكومية",
-    "خدمات مصر",
-    "استخراج شهادات",
-    "استخراج رخص",
-    "خدمات سريعة",
-    "منصة موثوقة",
-    "الباديل",
-    "خدمات استخراج",
-    "أوراق مصرية",
-    "مستندات رسمية",
-    "خدمات حكومية مصر",
-    "استخراج أوراق"
+    'البديل للخدمات الحكومية',
+    'استخراج الأوراق الرسمية',
+    'خدمات حكومية',
+    'أوراق رسمية',
+    'مستندات حكومية',
+    'خدمات مصر',
+    'استخراج شهادات',
+    'استخراج رخص',
+    'خدمات سريعة',
+    'منصة موثوقة',
+    'البديل',
+    'البديل للخدمات الحكومية',
+    'منصة البديل',
+    'خدمات استخراج',
+    'أوراق مصرية',
+    'مستندات رسمية',
+    'خدمات حكومية مصر',
+    'استخراج أوراق',
   ],
-  authors: [{ name: "الباديل", url: "https://albadil.com" }],
-  creator: "الباديل",
-  publisher: "الباديل",
+  authors: [{ name: 'البديل', url: 'https://haiba.shop' }],
+  creator: 'البديل',
+  publisher: 'البديل',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://albadil.com'),
+  metadataBase: new URL('https://haiba.shop'),
   alternates: {
     canonical: '/',
     languages: {
-      'ar': '/',
+      ar: '/',
       'ar-EG': '/',
     },
   },
   openGraph: {
     type: 'website',
     locale: 'ar_EG',
-    url: 'https://albadil.com',
-    siteName: 'الباديل - خدمات استخراج الأوراق الرسمية',
-    title: 'خدمات استخراج الأوراق الرسمية - منصة موثوقة وسريعة',
-    description: 'منصة الباديل لاستخراج جميع أنواع الأوراق الرسمية باحترافية عالية. خبرة أكثر من 24 سنة في مجال الخدمات.',
+    url: 'https://haiba.shop',
+    siteName: 'البديل للخدمات الحكومية',
+    title: 'البديل للخدمات الحكومية - منصة موثوقة وسريعة',
+    description:
+      'البديل للخدمات الحكومية - منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية.',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'الباديل - خدمات استخراج الأوراق الرسمية',
+        alt: 'البديل للخدمات الحكومية',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'خدمات استخراج الأوراق الرسمية - الباديل',
-    description: 'منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية',
+    title: 'البديل للخدمات الحكومية - منصة موثوقة وسريعة',
+    description: 'البديل للخدمات الحكومية - منصة موثوقة وسريعة لاستخراج الأوراق الرسمية',
     images: ['/og-image.jpg'],
   },
   robots: {
@@ -78,27 +83,27 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'your-google-verification-code',
+    google: 'koDjEJPIQLr8pn6D6kB38eWHm0tv-jSJNqR_popxUJc',
     yandex: 'your-yandex-verification-code',
     yahoo: 'your-yahoo-verification-code',
   },
   category: 'خدمات حكومية',
-  classification: 'خدمات استخراج الأوراق الرسمية',
+  classification: 'البديل للخدمات الحكومية',
   other: {
     'geo.region': 'EG',
     'geo.placename': 'مصر',
     'geo.position': '30.0444;31.2357',
-    'ICBM': '30.0444, 31.2357',
-    'DC.title': 'خدمات استخراج الأوراق الرسمية - الباديل',
-    'DC.creator': 'الباديل',
+    ICBM: '30.0444, 31.2357',
+    'DC.title': 'البديل للخدمات الحكومية - منصة موثوقة وسريعة',
+    'DC.creator': 'البديل',
     'DC.subject': 'خدمات حكومية، استخراج أوراق، مستندات رسمية',
-    'DC.description': 'منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية',
-    'DC.publisher': 'الباديل',
-    'DC.contributor': 'الباديل',
+    'DC.description': 'البديل للخدمات الحكومية - منصة موثوقة وسريعة لاستخراج الأوراق الرسمية',
+    'DC.publisher': 'البديل',
+    'DC.contributor': 'البديل',
     'DC.date': '2024',
     'DC.type': 'خدمات',
     'DC.format': 'موقع إلكتروني',
-    'DC.identifier': 'https://albadil.com',
+    'DC.identifier': 'https://haiba.shop',
     'DC.language': 'ar',
     'DC.coverage': 'مصر',
   },
@@ -110,48 +115,47 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang='ar' dir='rtl' suppressHydrationWarning>
       <head>
         <script
-          type="application/ld+json"
+          type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "الباديل",
-              "alternateName": "منصة البديل",
-              "description": "منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية",
-              "url": "https://albadil.com",
-              "logo": "https://albadil.com/logo.jpg",
-              "foundingDate": "2000",
-              "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "فيصل",
-                "addressRegion": "جيزة",
-                "addressCountry": "EG"
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'البديل',
+              alternateName: 'البديل للخدمات الحكومية',
+              description:
+                'البديل للخدمات الحكومية - منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية',
+              url: 'https://haiba.shop',
+              logo: 'https://haiba.shop/logo.jpg',
+              foundingDate: '2000',
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: 'فيصل',
+                addressRegion: 'جيزة',
+                addressCountry: 'EG',
               },
-              "contactPoint": {
-                "@type": "ContactPoint",
-                "telephone": "+20-10-2160-6893",
-                "contactType": "customer service"
-              }
-            })
+              contactPoint: {
+                '@type': 'ContactPoint',
+                telephone: '+20-10-2160-6893',
+              },
+            }),
           }}
         />
       </head>
-      <body className="antialiased min-h-screen font-sans">
+      <body className='antialiased min-h-screen font-sans bg-white'>
         <Providers>
           <AdminLayoutWrapper>
-            <main className="w-full">
-              {children}
-            </main>
-            
-            <CrispChat />
+            <main className='w-full'>{children}</main>
           </AdminLayoutWrapper>
-          
+
           <AdminFooterWrapper>
             <div></div>
           </AdminFooterWrapper>
+
+          {/* AI Chat Widget */}
+          <AIChatWidget />
         </Providers>
       </body>
     </html>

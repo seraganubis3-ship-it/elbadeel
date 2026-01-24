@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authConfig } from "@/auth.config";
-import { prisma } from "@/lib/prisma";
-import { z } from "zod";
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authConfig } from '@/auth.config';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 // Schema للتحقق من صحة البيانات
 const profileUpdateSchema = z.object({
-  name: z.string().min(1, "الاسم مطلوب").max(100, "الاسم طويل جداً"),
+  name: z.string().min(1, 'الاسم مطلوب').max(100, 'الاسم طويل جداً'),
   phone: z.string().optional(),
   wifeName: z.string().optional(),
   fatherName: z.string().optional(),
@@ -20,9 +21,9 @@ const profileUpdateSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authConfig);
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -42,18 +43,18 @@ export async function GET(request: NextRequest) {
         address: true,
         createdAt: true,
         updatedAt: true,
-      }
+      },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'المستخدم غير موجود' }, { status: 404 });
     }
 
     return NextResponse.json({ user });
   } catch (error) {
-    console.error("Error fetching user profile:", error);
+    logger.error('GET Profile Error', error);
     return NextResponse.json(
-      { error: "حدث خطأ في جلب بيانات البروفايل" },
+      { success: false, error: 'حدث خطأ في جلب بيانات البروفايل' },
       { status: 500 }
     );
   }
@@ -62,20 +63,21 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authConfig);
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
     }
 
     const body = await request.json();
-    
+
     // التحقق من صحة البيانات
     const validationResult = profileUpdateSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
-        { 
-          error: "بيانات غير صحيحة",
-          details: validationResult.error.issues
+        {
+          success: false,
+          error: 'بيانات غير صحيحة',
+          details: validationResult.error.issues,
         },
         { status: 400 }
       );
@@ -118,20 +120,17 @@ export async function PUT(request: NextRequest) {
         idNumber: true,
         address: true,
         updatedAt: true,
-      }
+      },
     });
-
-    console.log("User profile updated successfully:", updatedUser);
 
     return NextResponse.json({
-      message: "تم تحديث البروفايل بنجاح",
-      user: updatedUser
+      message: 'تم تحديث البروفايل بنجاح',
+      user: updatedUser,
     });
-
   } catch (error) {
-    console.error("Error updating user profile:", error);
+    logger.error('PUT Profile Error', error);
     return NextResponse.json(
-      { error: "حدث خطأ في تحديث البروفايل" },
+      { success: false, error: 'حدث خطأ في تحديث البروفايل' },
       { status: 500 }
     );
   }

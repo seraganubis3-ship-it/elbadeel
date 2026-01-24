@@ -1,21 +1,18 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { randomBytes } from "crypto";
-import { sendEmailSafe } from "@/lib/email";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { randomBytes } from 'crypto';
+import { sendEmailSafe } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
     const { email, userId, action } = await request.json();
 
     if (!email) {
-      return NextResponse.json(
-        { error: "البريد الإلكتروني مطلوب" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'البريد الإلكتروني مطلوب' }, { status: 400 });
     }
 
     // تحديد نوع العملية
-    const isVerifyingExisting = action === "verify_existing";
+    const isVerifyingExisting = action === 'verify_existing';
 
     // البحث عن المستخدم
     let user;
@@ -33,16 +30,14 @@ export async function POST(request: Request) {
 
     if (!user) {
       // Don't reveal if user exists or not for security
-      return NextResponse.json(
-        { success: true, message: "إذا كان البريد الإلكتروني مسجل، سيتم إرسال رسالة التأكيد" }
-      );
+      return NextResponse.json({
+        success: true,
+        message: 'إذا كان البريد الإلكتروني مسجل، سيتم إرسال رسالة التأكيد',
+      });
     }
 
     if (user.emailVerified) {
-      return NextResponse.json(
-        { error: "البريد الإلكتروني مؤكد بالفعل" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'البريد الإلكتروني مؤكد بالفعل' }, { status: 400 });
     }
 
     // Generate verification code (6 digits) instead of token
@@ -61,7 +56,7 @@ export async function POST(request: Request) {
     // Send verification code email
     await sendEmailSafe({
       to: email,
-      subject: "كود تأكيد البريد الإلكتروني - منصة البديل",
+      subject: 'كود تأكيد البريد الإلكتروني - منصة البديل',
       html: `
         <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #059669, #10b981); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -69,12 +64,13 @@ export async function POST(request: Request) {
           </div>
           <div style="padding: 30px; background: #f9fafb; border-radius: 0 0 10px 10px;">
             <p style="color: #000000; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-              مرحباً ${user.name || "عزيزي المستخدم"}،
+              مرحباً ${user.name || 'عزيزي المستخدم'}،
             </p>
             <p style="color: #000000; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-              ${isVerifyingExisting 
-                ? "هذا البريد الإلكتروني مسجل بالفعل لكن لم يتم تفعيله. يرجى استخدام الكود التالي لتأكيد بريدك الإلكتروني:"
-                : "شكراً لك على التسجيل في منصة البديل. يرجى استخدام الكود التالي لتأكيد بريدك الإلكتروني:"
+              ${
+                isVerifyingExisting
+                  ? 'هذا البريد الإلكتروني مسجل بالفعل لكن لم يتم تفعيله. يرجى استخدام الكود التالي لتأكيد بريدك الإلكتروني:'
+                  : 'شكراً لك على التسجيل في منصة البديل. يرجى استخدام الكود التالي لتأكيد بريدك الإلكتروني:'
               }
             </p>
             <div style="text-align: center; margin: 30px 0;">
@@ -103,16 +99,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: isVerifyingExisting 
-        ? "تم إرسال كود التأكيد إلى بريدك الإلكتروني لتفعيل الحساب الموجود"
-        : "تم إرسال رسالة التأكيد إلى بريدك الإلكتروني",
+      message: isVerifyingExisting
+        ? 'تم إرسال كود التأكيد إلى بريدك الإلكتروني لتفعيل الحساب الموجود'
+        : 'تم إرسال رسالة التأكيد إلى بريدك الإلكتروني',
     });
-
   } catch (error) {
-    console.error("Error in resend verification:", error);
-    return NextResponse.json(
-      { error: "حدث خطأ أثناء إرسال رسالة التأكيد" },
-      { status: 500 }
-    );
+    //
+    return NextResponse.json({ error: 'حدث خطأ أثناء إرسال رسالة التأكيد' }, { status: 500 });
   }
 }

@@ -117,3 +117,12 @@ jspm_packages/
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+
+# Uploads
+public/uploads/
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Electron build
+electron-app/dist/
+electron-app/node_modules/

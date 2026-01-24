@@ -1,63 +1,58 @@
-import Credentials from "next-auth/providers/credentials";
-import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { compare } from "bcryptjs";
+import Credentials from 'next-auth/providers/credentials';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+import { compare } from 'bcryptjs';
 
 const credentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
+  workDate: z.string().optional(), // تاريخ العمل بصيغة DD/MM/YYYY
 });
 
 export const authConfig = {
-  session: { strategy: "jwt" as const, maxAge: 60 * 60 * 24 * 30 },
+  session: { strategy: 'jwt' as const, maxAge: 60 * 60 * 24 * 30 },
   providers: [
     Credentials({
-      id: "credentials",
-      name: "credentials",
+      id: 'credentials',
+      name: 'credentials',
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
-      authorize: async (credentials) => {
+      authorize: async credentials => {
         try {
           if (!credentials?.email || !credentials?.password) {
-            console.error("Missing credentials");
             return null;
           }
-          
+
           const parsed = credentialsSchema.safeParse(credentials);
           if (!parsed.success) {
-            console.error("Invalid credentials format");
             return null;
           }
-          
-          const { email, password } = parsed.data;
+
+          const { email, password, workDate } = parsed.data;
           const user = await prisma.user.findUnique({ where: { email } });
           if (!user) {
-            console.error("User not found:", email);
             return null;
           }
-          
+
           if (!user.passwordHash) {
-            console.error("User has no password hash");
             return null;
           }
-          
+
           const isValid = await compare(password, user.passwordHash);
           if (!isValid) {
-            console.error("Invalid password for:", email);
             return null;
           }
-          
-          console.log("Auth successful for:", email);
+
           return {
             id: user.id,
             name: user.name,
             email: user.email,
             role: user.role,
+            workDate: workDate || undefined, // تمرير تاريخ العمل إن وُجد
           };
         } catch (error) {
-          console.error("Auth error:", error);
           return null;
         }
       },
@@ -66,28 +61,37 @@ export const authConfig = {
   callbacks: {
     async jwt({ token, user }: any) {
       if (user) {
+        token.id = user.id;
         token.role = user.role;
+        // حفظ تاريخ العمل للأدمن فقط
+        if (user.role === 'ADMIN' && user.workDate) {
+          token.workDate = user.workDate;
+        }
       }
       return token;
     },
     async session({ session, token }: any) {
       if (session.user && token) {
-        session.user.id = token.sub!;
+        session.user.id = token.id || token.sub!;
         session.user.role = token.role as string;
+        // تمرير تاريخ العمل للأدمن فقط
+        if (token.role === 'ADMIN' && token.workDate) {
+          session.user.workDate = token.workDate;
+        }
       }
       return session;
     },
     async redirect({ url, baseUrl }: any) {
-      // لا توجيه تلقائي - اترك المستخدم في الصفحة الحالية
+      if (url.includes('/admin')) {
+        return `${baseUrl}/admin/login`;
+      }
       return baseUrl;
     },
   },
   pages: {
-    signIn: "/login",
-    error: "/login", // إعادة توجيه الأخطاء للوجين
+    signIn: '/login',
+    error: '/login',
   },
-  debug: false, // إغلاق debug logs
-  trustHost: true, // للـ development
+  debug: false,
+  trustHost: true,
 };
-
-

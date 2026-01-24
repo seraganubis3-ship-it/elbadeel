@@ -1,15 +1,13 @@
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "الباديل",
+  "name": "البديل",
   "alternateName": "منصة البديل",
   "description": "منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية",
   "url": "https://albadil.com",
   "logo": "https://albadil.com/logo.jpg",
   "image": "https://albadil.com/og-image.jpg",
-  "sameAs": [
-    "https://wa.me/201021606893"
-  ],
+  "sameAs": ["https://wa.me/201021606893"],
   "contactPoint": {
     "@type": "ContactPoint",
     "telephone": "+20-10-2160-6893",

@@ -4,72 +4,82 @@
   
   <!-- الصفحة الرئيسية -->
   <url>
-    <loc>https://albadil.com/</loc>
+    <loc>https://haiba.shop/</loc>
     <lastmod>2024-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/" />
-    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://haiba.shop/" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://haiba.shop/" />
   </url>
   
   <!-- صفحة الخدمات -->
   <url>
-    <loc>https://albadil.com/services</loc>
+    <loc>https://haiba.shop/services</loc>
     <lastmod>2024-12-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/services" />
-    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/services" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://haiba.shop/services" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://haiba.shop/services" />
+  </url>
+  
+  <!-- صفحة عن البديل للخدمات الحكومية -->
+  <url>
+    <loc>https://haiba.shop/about</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://haiba.shop/about" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://haiba.shop/about" />
   </url>
   
   <!-- صفحة الأسئلة الشائعة -->
   <url>
-    <loc>https://albadil.com/faq</loc>
+    <loc>https://haiba.shop/faq</loc>
     <lastmod>2024-12-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/faq" />
-    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/faq" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://haiba.shop/faq" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://haiba.shop/faq" />
   </url>
   
   <!-- صفحة إنشاء حساب -->
   <url>
-    <loc>https://albadil.com/register</loc>
+    <loc>https://haiba.shop/register</loc>
     <lastmod>2024-12-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/register" />
-    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/register" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://haiba.shop/register" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://haiba.shop/register" />
   </url>
   
   <!-- صفحة تسجيل الدخول -->
   <url>
-    <loc>https://albadil.com/login</loc>
+    <loc>https://haiba.shop/login</loc>
     <lastmod>2024-12-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/login" />
-    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/login" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://haiba.shop/login" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://haiba.shop/login" />
   </url>
   
   <!-- صفحة طلباتي (للمستخدمين المسجلين) -->
   <url>
-    <loc>https://albadil.com/orders</loc>
+    <loc>https://haiba.shop/orders</loc>
     <lastmod>2024-12-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/orders" />
-    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/orders" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://haiba.shop/orders" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://haiba.shop/orders" />
   </url>
   
   <!-- صفحة لوحة التحكم (للمديرين) -->
   <url>
-    <loc>https://albadil.com/admin</loc>
+    <loc>https://haiba.shop/admin</loc>
     <lastmod>2024-12-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.5</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://albadil.com/admin" />
-    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://albadil.com/admin" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://haiba.shop/admin" />
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="https://haiba.shop/admin" />
   </url>
   
 </urlset>

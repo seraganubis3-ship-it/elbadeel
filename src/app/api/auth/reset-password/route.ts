@@ -1,21 +1,18 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
     const { token, password } = await request.json();
 
     if (!token || !password) {
-      return NextResponse.json(
-        { error: "التوكن وكلمة المرور مطلوبان" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'التوكن وكلمة المرور مطلوبان' }, { status: 400 });
     }
 
     if (password.length < 6) {
       return NextResponse.json(
-        { error: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" },
+        { error: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' },
         { status: 400 }
       );
     }
@@ -32,7 +29,7 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "رابط إعادة تعيين كلمة المرور غير صحيح أو منتهي الصلاحية" },
+        { error: 'رابط إعادة تعيين كلمة المرور غير صحيح أو منتهي الصلاحية' },
         { status: 400 }
       );
     }
@@ -52,14 +49,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "تم إعادة تعيين كلمة المرور بنجاح",
+      message: 'تم إعادة تعيين كلمة المرور بنجاح',
     });
-
   } catch (error) {
-    console.error("Error in reset password:", error);
-    return NextResponse.json(
-      { error: "حدث خطأ أثناء إعادة تعيين كلمة المرور" },
-      { status: 500 }
-    );
+    //
+    return NextResponse.json({ error: 'حدث خطأ أثناء إعادة تعيين كلمة المرور' }, { status: 500 });
   }
 }

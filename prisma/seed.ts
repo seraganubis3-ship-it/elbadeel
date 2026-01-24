@@ -4,11 +4,9 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
-
   // Create admin user
   const adminPassword = await bcrypt.hash('admin123', 12);
-  
+
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@albadil.com' },
     update: {},
@@ -18,14 +16,12 @@ async function main() {
       email: 'admin@albadil.com',
       passwordHash: adminPassword,
       role: 'ADMIN',
-      phone: '+20 10 2160 6893'
+      phone: '+20 10 2160 6893',
     },
   });
 
-  console.log('✅ Admin user created:', adminUser.email);
-
   // Create categories
-  const categories = await Promise.all([
+  await Promise.all([
     prisma.category.upsert({
       where: { slug: 'certificates' },
       update: {},
@@ -34,7 +30,7 @@ async function main() {
         name: 'شهادات',
         slug: 'certificates',
         orderIndex: 1,
-        active: true
+        active: true,
       },
     }),
     prisma.category.upsert({
@@ -45,7 +41,7 @@ async function main() {
         name: 'رخص',
         slug: 'licenses',
         orderIndex: 2,
-        active: true
+        active: true,
       },
     }),
     prisma.category.upsert({
@@ -56,7 +52,7 @@ async function main() {
         name: 'مستندات حكومية',
         slug: 'government-documents',
         orderIndex: 3,
-        active: true
+        active: true,
       },
     }),
     prisma.category.upsert({
@@ -67,15 +63,13 @@ async function main() {
         name: 'أوراق رسمية',
         slug: 'official-papers',
         orderIndex: 4,
-        active: true
+        active: true,
       },
     }),
   ]);
 
-  console.log('✅ Categories created:', categories.length);
-
   // Create services
-  const services = await Promise.all([
+  await Promise.all([
     prisma.service.upsert({
       where: { slug: 'birth-certificate' },
       update: {},
@@ -86,7 +80,7 @@ async function main() {
         description: 'استخراج شهادة الميلاد الرسمية من مكتب السجل المدني',
         icon: '📄',
         active: true,
-        categoryId: 'cat_001'
+        categoryId: 'cat_001',
       },
     }),
     prisma.service.upsert({
@@ -99,7 +93,7 @@ async function main() {
         description: 'استخراج شهادة الوفاة الرسمية',
         icon: '📄',
         active: true,
-        categoryId: 'cat_001'
+        categoryId: 'cat_001',
       },
     }),
     prisma.service.upsert({
@@ -112,7 +106,7 @@ async function main() {
         description: 'استخراج رخصة القيادة من إدارة المرور',
         icon: '🚗',
         active: true,
-        categoryId: 'cat_002'
+        categoryId: 'cat_002',
       },
     }),
     prisma.service.upsert({
@@ -125,7 +119,7 @@ async function main() {
         description: 'استخراج جواز السفر من وزارة الداخلية',
         icon: '📘',
         active: true,
-        categoryId: 'cat_003'
+        categoryId: 'cat_003',
       },
     }),
     prisma.service.upsert({
@@ -138,7 +132,7 @@ async function main() {
         description: 'استخراج أو تجديد بطاقة الهوية الوطنية',
         icon: '🆔',
         active: true,
-        categoryId: 'cat_003'
+        categoryId: 'cat_003',
       },
     }),
     prisma.service.upsert({
@@ -151,15 +145,13 @@ async function main() {
         description: 'إجراء عقد الزواج الرسمي',
         icon: '💒',
         active: true,
-        categoryId: 'cat_004'
+        categoryId: 'cat_004',
       },
     }),
   ]);
 
-  console.log('✅ Services created:', services.length);
-
   // Create required documents for services
-  const serviceDocuments = await Promise.all([
+  await Promise.all([
     // Birth Certificate documents
     prisma.serviceDocument.upsert({
       where: { id: 'sdoc_001' },
@@ -171,7 +163,7 @@ async function main() {
         description: 'صورة واضحة لبطاقة الهوية الوطنية لولي الأمر',
         required: true,
         orderIndex: 1,
-        active: true
+        active: true,
       },
     }),
     prisma.serviceDocument.upsert({
@@ -184,15 +176,13 @@ async function main() {
         description: 'شهادة تبليغ المولود من المستشفى أو القابلة',
         required: true,
         orderIndex: 2,
-        active: true
+        active: true,
       },
     }),
   ]);
 
-  console.log('✅ Required service documents created:', serviceDocuments.length);
-
   // Create service variants
-  const variants = await Promise.all([
+  await Promise.all([
     // Birth Certificate variants
     prisma.serviceVariant.upsert({
       where: { id: 'var_001' },
@@ -203,7 +193,7 @@ async function main() {
         priceCents: 5000, // 50 جنيه
         etaDays: 7,
         serviceId: 'svc_001',
-        active: true
+        active: true,
       },
     }),
     prisma.serviceVariant.upsert({
@@ -215,7 +205,7 @@ async function main() {
         priceCents: 8000, // 80 جنيه
         etaDays: 3,
         serviceId: 'svc_001',
-        active: true
+        active: true,
       },
     }),
     prisma.serviceVariant.upsert({
@@ -227,10 +217,10 @@ async function main() {
         priceCents: 12000, // 120 جنيه
         etaDays: 1,
         serviceId: 'svc_001',
-        active: true
+        active: true,
       },
     }),
-    
+
     // Driving License variants
     prisma.serviceVariant.upsert({
       where: { id: 'var_004' },
@@ -241,7 +231,7 @@ async function main() {
         priceCents: 15000, // 150 جنيه
         etaDays: 14,
         serviceId: 'svc_003',
-        active: true
+        active: true,
       },
     }),
     prisma.serviceVariant.upsert({
@@ -253,10 +243,10 @@ async function main() {
         priceCents: 25000, // 250 جنيه
         etaDays: 7,
         serviceId: 'svc_003',
-        active: true
+        active: true,
       },
     }),
-    
+
     // Passport variants
     prisma.serviceVariant.upsert({
       where: { id: 'var_006' },
@@ -267,7 +257,7 @@ async function main() {
         priceCents: 30000, // 300 جنيه
         etaDays: 21,
         serviceId: 'svc_004',
-        active: true
+        active: true,
       },
     }),
     prisma.serviceVariant.upsert({
@@ -279,20 +269,18 @@ async function main() {
         priceCents: 50000, // 500 جنيه
         etaDays: 10,
         serviceId: 'svc_004',
-        active: true
+        active: true,
       },
     }),
   ]);
 
-  console.log('✅ Service variants created:', variants.length);
-
   // Create system settings
-  const systemSettings = await prisma.systemSettings.upsert({
+  await prisma.systemSettings.upsert({
     where: { id: 'main' },
     update: {},
     create: {
       id: 'main',
-      siteName: 'الباديل',
+      siteName: 'البديل',
       siteDescription: 'منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية',
       contactEmail: 'info@albadil.com',
       contactPhone: '+20 10 2160 6893',
@@ -302,20 +290,18 @@ async function main() {
         whatsapp: 'https://wa.me/201021606893',
         facebook: '',
         twitter: '',
-        instagram: ''
+        instagram: '',
       }),
       seoSettings: JSON.stringify({
         title: 'خدمات استخراج الأوراق الرسمية',
-        description: 'منصة الباديل لاستخراج جميع أنواع الأوراق الرسمية',
-        keywords: 'استخراج أوراق, خدمات حكومية, مصر, الباديل'
-      })
+        description: 'منصة البديل لاستخراج جميع أنواع الأوراق الرسمية',
+        keywords: 'استخراج أوراق, خدمات حكومية, مصر, البديل',
+      }),
     },
   });
 
-  console.log('✅ System settings created');
-
   // Create FAQ data
-  const faqs = await Promise.all([
+  await Promise.all([
     prisma.fAQ.upsert({
       where: { question: 'ما هي المستندات المطلوبة؟' },
       update: {},
@@ -323,7 +309,7 @@ async function main() {
         question: 'ما هي المستندات المطلوبة؟',
         answer: 'تختلف حسب الخدمة، وستظهر في صفحة الخدمة.',
         orderIndex: 1,
-        active: true
+        active: true,
       },
     }),
     prisma.fAQ.upsert({
@@ -333,15 +319,13 @@ async function main() {
         question: 'كم يستغرق وقت تنفيذ الخدمة؟',
         answer: 'يعتمد على نوع الخدمة (عادي/سريع/عاجل).',
         orderIndex: 2,
-        active: true
+        active: true,
       },
     }),
   ]);
 
-  console.log('✅ FAQ data created:', faqs.length);
-
   // Create sample orders for testing
-  const sampleOrders = await Promise.all([
+  await Promise.all([
     prisma.order.create({
       data: {
         userId: adminUser.id,
@@ -355,7 +339,7 @@ async function main() {
         customerEmail: 'admin@albadil.com',
         notes: 'طلب تجريبي للاختبار',
         adminNotes: 'تم إنجاز الطلب بنجاح',
-        completedAt: new Date()
+        completedAt: new Date(),
       },
     }),
     prisma.order.create({
@@ -370,39 +354,35 @@ async function main() {
         customerPhone: '+201021606893',
         customerEmail: 'admin@albadil.com',
         notes: 'طلب تجريبي آخر',
-        adminNotes: 'قيد المعالجة'
+        adminNotes: 'قيد المعالجة',
       },
     }),
   ]);
 
-  console.log('✅ Sample orders created:', sampleOrders.length);
-
-  console.log('🎉 Database seeding completed successfully!');
-  console.log('');
-  console.log('📊 Summary:');
-  console.log(`   👤 Users: 1 (Admin: ${adminUser.email})`);
-  console.log(`   📁 Categories: ${categories.length}`);
-  console.log(`   🔧 Services: ${services.length}`);
-  console.log(`   💰 Variants: ${variants.length}`);
-  console.log(`   ⚙️  System Settings: 1`);
-  console.log(`   ❓ FAQ: ${faqs.length}`);
-  console.log(`   📋 Sample Orders: ${sampleOrders.length}`);
-  console.log(`   📄 Required Service Documents: ${serviceDocuments.length}`);
-  console.log('');
-  console.log('🔑 Admin Login:');
-  console.log(`   Email: ${adminUser.email}`);
-  console.log(`   Password: admin123`);
-  console.log('');
-  console.log('🚀 You can now start the application!');
+  // Seed initial form types (inventory)
+  await Promise.all([
+    prisma.formType.upsert({
+      where: { name: 'عادي' },
+      update: {},
+      create: { name: 'عادي', description: 'استمارة عادية' },
+    }),
+    prisma.formType.upsert({
+      where: { name: 'سريع' },
+      update: {},
+      create: { name: 'سريع', description: 'استمارة سريعة' },
+    }),
+    prisma.formType.upsert({
+      where: { name: 'فوري' },
+      update: {},
+      create: { name: 'فوري', description: 'استمارة فورية' },
+    }),
+  ]);
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Error during seeding:', e);
+  .catch(_e => {
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
   });
-
-
