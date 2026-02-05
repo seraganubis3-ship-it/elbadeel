@@ -43,7 +43,7 @@ export function PrintClient({ workOrderNumber, orders }: Props) {
         orders.reduce((acc, order) => {
           const serviceName = order.service.name;
           if (!acc[serviceName]) acc[serviceName] = [];
-          acc[serviceName].push(order);
+          acc[serviceName]!.push(order);
           return acc;
         }, {} as Record<string, typeof orders>)
       ).map(([serviceName, serviceOrders]) => (
