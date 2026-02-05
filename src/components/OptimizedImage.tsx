@@ -54,6 +54,17 @@ export default function OptimizedImage({
     );
   }
 
+  // Check if src is a valid URL for next/image
+  const isValidUrl = src && (src.startsWith('/') || src.startsWith('http'));
+
+  if (!isValidUrl) {
+    return (
+      <div className={`relative overflow-hidden flex items-center justify-center bg-gray-50 ${className}`} style={{ width, height }}>
+         <span style={{ fontSize: width ? Math.min(width, height || width) * 0.6 : '2rem' }}>{src || '🖼️'}</span>
+      </div>
+    );
+  }
+
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {isLoading && (

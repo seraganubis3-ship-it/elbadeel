@@ -19,7 +19,7 @@ export default function PromoCodesPage() {
         setPromoCodes(data.promoCodes);
       }
     } catch (error) {
-      console.error('Failed to fetch promo codes', error);
+      // console.error('Failed to fetch promo codes', error);
     } finally {
       setIsLoading(false);
     }

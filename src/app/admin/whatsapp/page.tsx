@@ -29,7 +29,7 @@ export default function WhatsAppPage() {
   const [testMessage, setTestMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  const WHATSAPP_API_URL = process.env.NEXT_PUBLIC_WHATSAPP_API_URL || 'http://localhost:3001';
+  const WHATSAPP_API_URL = process.env.NEXT_PUBLIC_WHATSAPP_API_URL || 'http://127.0.0.1:3001';
 
   // Fetch WhatsApp status
   const fetchStatus = useCallback(async () => {
@@ -40,10 +40,12 @@ export default function WhatsAppPage() {
       });
       const data = await response.json();
       setStatus(data);
-    } catch {
+      setStatus(data);
+    } catch (error) {
+      // console.error('WhatsApp Fetch Error:', error);
       setStatus({
         status: 'disconnected',
-        message: 'البوت غير متصل - تأكد من تشغيل npm run whatsapp',
+        message: `فشل الاتصال: ${(error as Error).message} (URL: ${WHATSAPP_API_URL})`,
       });
     } finally {
       setIsLoading(false);

@@ -42,10 +42,10 @@ interface UseOrdersReturn {
   // Bulk actions
   bulkStatus: string;
   setBulkStatus: (status: string) => void;
-  updateBulkStatus: () => Promise<void>;
+  updateBulkStatus: (workOrderNumber?: string) => Promise<void>;
 
   // Order actions
-  updateOrderStatus: (orderId: string, newStatus: string) => Promise<void>;
+  updateOrderStatus: (orderId: string, newStatus: string, workOrderNumber?: string) => Promise<void>;
 
   // Helpers
   hasFilter: boolean;
@@ -153,7 +153,7 @@ export function useOrders(
         setOrders(data.orders || []);
       }
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      // console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
     }
@@ -238,7 +238,6 @@ export function useOrders(
     dateFrom,
     dateTo,
     deliveryTodayFilter,
-    orderSourceFilter,
   ]);
 
   // Fetch services
@@ -314,7 +313,7 @@ export function useOrders(
   };
 
   // Update single order status
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateOrderStatus = async (orderId: string, newStatus: string, workOrderNumber?: string) => {
     if (!newStatus) return;
     setUpdatingStatus(orderId);
 
@@ -322,7 +321,7 @@ export function useOrders(
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus, workOrderNumber }),
       });
 
       if (response.ok) {
@@ -336,14 +335,14 @@ export function useOrders(
         showError('فشل في تحديث حالة الطلب', errorData.error || 'حدث خطأ غير متوقع');
       }
     } catch (error) {
-      console.error('Error updating status:', error);
+      // console.error('Error updating status:', error);
     } finally {
       setUpdatingStatus(null);
     }
   };
 
   // Update bulk status
-  const updateBulkStatus = async () => {
+  const updateBulkStatus = async (workOrderNumber?: string) => {
     if (!bulkStatus || selectedOrders.length === 0) return;
     setUpdatingBulk(true);
 
@@ -351,7 +350,7 @@ export function useOrders(
       const response = await fetch('/api/admin/orders/bulk-status', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderIds: selectedOrders, status: bulkStatus }),
+        body: JSON.stringify({ orderIds: selectedOrders, status: bulkStatus, workOrderNumber }),
       });
 
       if (response.ok) {
@@ -372,7 +371,7 @@ export function useOrders(
         showError('فشل في تحديث الطلبات', errorData.error || 'حدث خطأ غير متوقع');
       }
     } catch (error) {
-      console.error('Error updating bulk status:', error);
+      // console.error('Error updating bulk status:', error);
     } finally {
       setUpdatingBulk(false);
     }

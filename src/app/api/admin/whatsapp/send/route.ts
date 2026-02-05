@@ -3,7 +3,7 @@ import { requireAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || 'http://localhost:3001';
+const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || process.env.NEXT_PUBLIC_WHATSAPP_API_URL || 'http://127.0.0.1:4000';
 
 export async function POST(request: NextRequest) {
   try {

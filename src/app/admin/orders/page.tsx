@@ -12,6 +12,8 @@ import {
   WhatsAppModal,
   Pagination,
   OrdersLoading,
+  PhoneReportModal,
+  WorkOrderModal,
 } from './components';
 import { printOrdersReport } from './utils/printReport';
 
@@ -116,6 +118,90 @@ export default function AdminOrdersPage() {
     });
   };
 
+  // Phone Report Logic
+  const [showPhoneReportModal, setShowPhoneReportModal] = useState(false);
+
+  const handleOpenPhoneReport = () => {
+    if (selectedOrders.length === 0) {
+      showError('تنبيه', 'برجاء تحديد طلبات أولاً لطباعة الكشف');
+      return;
+    }
+    setShowPhoneReportModal(true);
+  };
+
+  const handlePrintPhoneReport = (ordersWithNotes: { orderId: string; note: string }[]) => {
+    // 1. Enrich data with names and phones
+    const reportData = ordersWithNotes.map(item => {
+      const order = currentOrders.find(o => o.id === item.orderId);
+      return {
+        name: order?.customerName || '',
+        phone: order?.customerPhone || '',
+        note: item.note,
+      };
+    });
+
+    // 2. Save to localStorage to pass to new window
+    localStorage.setItem('temp_phone_report_data', JSON.stringify(reportData));
+
+    // 3. Open print page
+    const printWindow = window.open('/admin/orders/print-phone-report', '_blank');
+    
+    // 4. Close modal
+    setShowPhoneReportModal(false);
+  };
+
+  // Work Order Logic
+  const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
+  const [pendingWorkOrder, setPendingWorkOrder] = useState<{
+    type: 'single' | 'bulk';
+    orderId?: string;
+    newStatus?: string;
+  } | null>(null);
+
+  const isNationalIdOrder = (order: Order) => {
+    const serviceName = order.service?.name || '';
+    const serviceSlug = order.service?.slug || '';
+    return serviceSlug === 'national-id' || serviceName.includes('بطاقة') || serviceName.includes('قومي');
+  };
+
+  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (newStatus === 'settlement' && order && isNationalIdOrder(order)) {
+      setPendingWorkOrder({ type: 'single', orderId, newStatus });
+      setShowWorkOrderModal(true);
+      return;
+    }
+    await updateOrderStatus(orderId, newStatus);
+  };
+
+  const handleApplyBulkStatus = async () => {
+    if (bulkStatus === 'settlement') {
+      const hasNationalID = currentOrders
+        .filter(o => selectedOrders.includes(o.id))
+        .some(isNationalIdOrder);
+      
+      if (hasNationalID) {
+        setPendingWorkOrder({ type: 'bulk' });
+        setShowWorkOrderModal(true);
+        return;
+      }
+    }
+    await updateBulkStatus();
+  };
+
+  const handleWorkOrderSubmit = async (workOrderNumber: string) => {
+    if (!pendingWorkOrder) return;
+
+    if (pendingWorkOrder.type === 'single' && pendingWorkOrder.orderId && pendingWorkOrder.newStatus) {
+      await updateOrderStatus(pendingWorkOrder.orderId, pendingWorkOrder.newStatus, workOrderNumber);
+    } else if (pendingWorkOrder.type === 'bulk') {
+      await updateBulkStatus(workOrderNumber);
+    }
+
+    setShowWorkOrderModal(false);
+    setPendingWorkOrder(null);
+  };
+
   // Calculate stats
   const activeOrdersCount = filteredOrders.filter(
     o => o.status !== 'completed' && o.status !== 'cancelled'
@@ -173,8 +259,9 @@ export default function AdminOrdersPage() {
               updating={updatingBulk}
               onSelectAll={selectAllOrders}
               onBulkStatusChange={setBulkStatus}
-              onApplyBulkStatus={updateBulkStatus}
+              onApplyBulkStatus={handleApplyBulkStatus}
               onPrintReport={printReport}
+              onOpenPhoneReport={handleOpenPhoneReport}
               hasOrders={filteredOrders.length > 0}
             />
           )}
@@ -202,7 +289,7 @@ export default function AdminOrdersPage() {
                     isSelected={selectedOrders.includes(order.id)}
                     isUpdating={updatingStatus === order.id}
                     onSelect={toggleOrderSelection}
-                    onStatusChange={updateOrderStatus}
+                    onStatusChange={handleStatusUpdate}
                     onWhatsAppClick={handleWhatsAppClick}
                   />
                 ))}
@@ -235,6 +322,30 @@ export default function AdminOrdersPage() {
         onMessageChange={setWhatsappMessage}
         onTemplateSelect={setSelectedTemplate}
         onSend={sendWhatsApp}
+      />
+
+      {/* Phone Report Modal */}
+      <PhoneReportModal
+        isOpen={showPhoneReportModal}
+        selectedOrders={selectedOrders}
+        orders={currentOrders}
+        onClose={() => setShowPhoneReportModal(false)}
+        onPrint={handlePrintPhoneReport}
+      />
+
+      {/* Work Order Modal */}
+      <WorkOrderModal
+        isOpen={showWorkOrderModal}
+        onClose={() => {
+          setShowWorkOrderModal(false);
+          setPendingWorkOrder(null);
+        }}
+        onSubmit={handleWorkOrderSubmit}
+        count={
+          pendingWorkOrder?.type === 'single'
+            ? 1
+            : selectedOrders.length
+        }
       />
 
       {/* Toast Container */}

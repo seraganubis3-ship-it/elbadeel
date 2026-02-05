@@ -3,11 +3,63 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import OrderForm from './OrderForm';
-import { requireAuth } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
+import Image from 'next/image';
+import type { Metadata, ResolvingMetadata } from 'next';
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> },
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const resolvedParams = await params;
+  const slug = decodeURIComponent(resolvedParams.slug);
+
+  const service = await prisma.service.findUnique({
+    where: { slug },
+    include: { category: true },
+  });
+
+  if (!service) {
+    return {
+      title: 'الخدمة غير موجودة | البديل',
+      description: 'عذراً، هذه الخدمة غير متوفرة حالياً.',
+    };
+  }
+
+  const title = `${service.name} | البديل للخدمات الحكومية`;
+  const description = service.description || `استخراج ${service.name} بسرعة وسهولة من منصة البديل.`;
+
+  return {
+    title,
+    description,
+    keywords: [
+      service.name,
+      `سعر ${service.name}`,
+      `تكلفة ${service.name}`,
+      `اجراءات ${service.name}`,
+      `استخراج ${service.name}`,
+      `اوراق ${service.name}`,
+      'خدمات حكومية',
+      'البديل',
+    ],
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      siteName: 'البديل للخدمات الحكومية',
+    },
+    alternates: {
+      canonical: `/service/${service.slug}`,
+    },
+  };
+}
 
 export default async function ServiceDetail({ params }: { params: Promise<{ slug: string }> }) {
   // Check if user is authenticated
-  const session = await requireAuth();
+  const session = await getSession();
+  if (!session?.user) {
+    redirect('/register');
+  }
 
   const resolvedParams = await params;
   const slug = decodeURIComponent(resolvedParams.slug);
@@ -27,7 +79,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
 
   if (!service) return notFound();
 
-  // Fetch dynamic fields separately to avoid schema sync issues
+  // Fetch dynamic fields separately
   const fields = await prisma.serviceField.findMany({
     where: {
       serviceId: service.id,
@@ -41,13 +93,45 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
     },
   });
 
-  if (!service) return notFound();
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: service.name,
+    provider: {
+      '@type': 'Organization',
+      name: 'البديل للخدمات الحكومية',
+      url: 'https://albadel.com.eg',
+    },
+    description: service.description || `خدمة ${service.name} من مكتب البديل`,
+    areaServed: {
+      '@type': 'Country',
+      name: 'Egypt',
+    },
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'باقات الخدمة',
+      itemListElement: service.variants.map((variant) => ({
+        '@type': 'Offer',
+        itemOffered: {
+          '@type': 'Service',
+          name: variant.name,
+        },
+        price: (variant.priceCents / 100).toString(),
+        priceCurrency: 'EGP',
+      })),
+    },
+  };
 
   return (
     <div
       className='min-h-screen w-full bg-[#F8FAFC] text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900'
       dir='rtl'
     >
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      
       {/* Hero Section - Matching Services Page Style */}
       <div className='relative w-full pt-24 sm:pt-28 pb-32 sm:pb-40 overflow-hidden'>
         {/* Background Gradient */}
@@ -57,7 +141,15 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
         <div className='absolute inset-0 overflow-hidden'>
           <div className='absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4'></div>
           <div className='absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-400/15 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4'></div>
-          <div className="absolute inset-0 bg-[url('/images/government-services-bg.jpg')] bg-cover bg-center bg-no-repeat opacity-[0.08]"></div>
+          <div className="absolute inset-0 opacity-[0.08]">
+             <Image 
+                src="/images/government-services-bg.jpg" 
+                alt="خلفية الخدمات الحكومية" 
+                fill 
+                className="object-cover object-center"
+                priority
+             />
+          </div>
         </div>
 
         <div className='relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center'>

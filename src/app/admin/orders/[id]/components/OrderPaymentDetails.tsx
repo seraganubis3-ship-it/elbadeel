@@ -151,15 +151,19 @@ export default function OrderPaymentDetails({
               <span className='text-gray-900 font-bold'>
                 {order.payment.method === 'CASH'
                   ? 'كاش'
-                  : order.payment.method === 'VODAFONE_CASH'
-                    ? 'فودافون كاش'
-                    : order.payment.method === 'ORANGE_MONEY'
-                      ? 'أورانج موني'
-                      : order.payment.method === 'ETISALAT_CASH'
-                        ? 'اتصالات كاش'
-                        : order.payment.method === 'BANK_TRANSFER'
-                          ? 'تحويل بنكي'
-                          : order.payment.method}
+                  : order.payment.method === 'INSTAPAY'
+                    ? 'إنستا باي'
+                    : order.payment.method === 'WALLET'
+                      ? 'محفظة'
+                      : order.payment.method === 'VODAFONE_CASH'
+                        ? 'فودافون كاش'
+                        : order.payment.method === 'ORANGE_MONEY'
+                          ? 'أورانج موني'
+                          : order.payment.method === 'ETISALAT_CASH'
+                            ? 'اتصالات كاش'
+                            : order.payment.method === 'BANK_TRANSFER'
+                              ? 'تحويل بنكي'
+                              : order.payment.method}
               </span>
             </div>
             <div className='flex justify-between items-center'>
@@ -227,10 +231,8 @@ export default function OrderPaymentDetails({
                 className='w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
               >
                 <option value='CASH'>كاش</option>
-                <option value='VODAFONE_CASH'>فودافون كاش</option>
-                <option value='ORANGE_MONEY'>أورانج موني</option>
-                <option value='ETISALAT_CASH'>اتصالات كاش</option>
-                <option value='BANK_TRANSFER'>تحويل بنكي</option>
+                <option value='INSTAPAY'>إنستا باي</option>
+                <option value='WALLET'>محفظة</option>
               </select>
             </div>
             <div>

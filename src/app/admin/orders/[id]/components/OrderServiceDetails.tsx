@@ -47,7 +47,9 @@ export default function OrderServiceDetails({
   };
 
   const isPassport =
-    order.service?.slug === 'passports' || (order.service?.name || '').includes('جواز');
+    order.service?.slug?.toLowerCase().includes('passport') || 
+    (order.service?.name || '').toLowerCase().includes('passport') || 
+    (order.service?.name || '').includes('جواز');
 
   return (
     <div className='group relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/60 p-8 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(245,158,11,0.1)]'>
@@ -158,36 +160,50 @@ export default function OrderServiceDetails({
                 بيانات الجوازات
               </h2>
               <div className='space-y-5'>
-                {[
-                  {
-                    label: 'قسم الشرطة',
-                    value: order.policeStation,
-                    key: 'policeStation',
-                    type: 'text',
-                  },
-                  {
-                    label: 'مكان الاستلام',
-                    value: order.pickupLocation,
-                    key: 'pickupLocation',
-                    type: 'text',
-                  },
-                ].map(item => (
-                  <div key={item.key} className='flex justify-between items-center group/field'>
-                    <span className='text-slate-500 font-bold text-sm'>{item.label}:</span>
-                    {isEditing ? (
+                <div className='flex justify-between items-center group/field'>
+                  <span className='text-slate-500 font-bold text-sm'>قسم الجوازات:</span>
+                  {isEditing ? (
+                    <div className="relative">
+                      <select
+                        value={formData.policeStation}
+                        onChange={e => setFormData({ ...formData, policeStation: e.target.value })}
+                        className='bg-white/80 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 font-bold text-sm outline-none focus:ring-2 focus:ring-amber-500 appearance-none pr-8'
+                      >
+                        <option value="">اختر القسم...</option>
+                        <option value="الجيزة">الجيزة</option>
+                        <option value="بولاق الدكرور">بولاق الدكرور</option>
+                        <option value="6 أكتوبر">6 أكتوبر</option>
+                        <option value="الشيخ زايد">الشيخ زايد</option>
+                        <option value="العباسية">العباسية</option>
+                        <option value="العجوزة">العجوزة</option>
+                      </select>
+                      <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">▼</div>
+                    </div>
+                  ) : (
+                    <span className='text-slate-800 font-black group-hover/field:text-emerald-600 transition-colors'>
+                      {order.policeStation || '----'}
+                    </span>
+                  )}
+                </div>
+
+                <div className='flex justify-between items-center group/field'>
+                  <span className='text-slate-500 font-bold text-sm'>مكان الاستلام:</span>
+                  {isEditing ? (
+                    <div className="relative">
                       <input
-                        type='text'
-                        value={(formData as any)[item.key]}
-                        onChange={e => setFormData({ ...formData, [item.key]: e.target.value })}
-                        className='bg-white/80 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 font-bold text-sm outline-none focus:ring-2 focus:ring-amber-500'
+                        type="text"
+                        value={formData.pickupLocation}
+                        onChange={e => setFormData({ ...formData, pickupLocation: e.target.value })}
+                        className='bg-white/80 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 font-bold text-sm outline-none focus:ring-2 focus:ring-amber-500 w-full'
+                        placeholder="مكان الاستلام"
                       />
-                    ) : (
-                      <span className='text-slate-800 font-black group-hover/field:text-emerald-600 transition-colors'>
-                        {item.value || '----'}
-                      </span>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ) : (
+                    <span className='text-slate-800 font-black group-hover/field:text-emerald-600 transition-colors'>
+                      {order.pickupLocation || '----'}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import ServiceFieldsManager from './components/ServiceFieldsManager';
 import ServiceDocumentsManager from './components/ServiceDocumentsManager';
 import { Category, ServiceVariant, ServiceDocument, ServiceField } from './types';
+import Image from 'next/image';
 
 export default function EditServicePage() {
   const router = useRouter();
@@ -25,6 +26,9 @@ export default function EditServicePage() {
     categoryId: '',
     active: true,
   });
+  
+  const [currentIcon, setCurrentIcon] = useState<string | null>(null);
+  const [newImage, setNewImage] = useState<File | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -48,12 +52,13 @@ export default function EditServicePage() {
           categoryId: service.categoryId,
           active: service.active,
         });
+        setCurrentIcon(service.icon);
         setVariants(service.variants || []);
         setDocuments(service.documents || []);
         setFields(service.fields || []);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      // console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -78,15 +83,24 @@ export default function EditServicePage() {
     setSaving(true);
 
     try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('categoryId', formData.categoryId);
+      formDataToSend.append('active', formData.active.toString());
+      
+      if (newImage) {
+        formDataToSend.append('image', newImage);
+      }
+      
+      // Append complex objects as JSON strings
+      formDataToSend.append('variants', JSON.stringify(variants));
+      formDataToSend.append('documents', JSON.stringify(documents));
+      formDataToSend.append('fields', JSON.stringify(fields));
+
       const response = await fetch(`/api/admin/services/${serviceId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          variants,
-          documents,
-          fields,
-        }),
+        body: formDataToSend,
       });
 
       const data = await response.json();
@@ -99,7 +113,7 @@ export default function EditServicePage() {
       }
     } catch (error) {
       alert('حدث خطأ أثناء تحديث الخدمة');
-      console.error(error);
+      // console.error(error);
     } finally {
       setSaving(false);
     }
@@ -229,6 +243,48 @@ export default function EditServicePage() {
                     className='w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500'
                   />
                   <label className='font-bold text-gray-700'>تفعيل الخدمة</label>
+                </div>
+
+                {/* Image Upload */}
+                <div className='p-6 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl'>
+                    <h3 className='font-bold text-gray-700 mb-4'>صورة الخدمة (أيقونة)</h3>
+                    
+                    <div className='flex items-center gap-6'>
+                        {/* Current/New Image Preview */}
+                        <div className='w-24 h-24 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center overflow-hidden relative'>
+                             {/* Debug currentIcon */}
+
+                             {newImage ? (
+                                <Image src={URL.createObjectURL(newImage)} alt="Preview New" fill className='object-cover' />
+                             ) : currentIcon && (currentIcon.startsWith('/') || currentIcon.startsWith('http')) ? (
+                                <Image src={currentIcon} alt="Current Service Icon" fill className='object-cover' />
+                             ) : currentIcon ? (
+                                <span className='text-4xl'>{currentIcon}</span>
+                             ) : (
+                                <span className='text-4xl text-gray-300'>🖼️</span>
+                             )}
+                        </div>
+                        
+                        <div className='flex-1'>
+                             <input 
+                                type="file" 
+                                accept="image/*"
+                                onChange={(e) => {
+                                    if(e.target.files?.[0]) {
+                                        setNewImage(e.target.files[0]);
+                                    }
+                                }}
+                                className='block w-full text-sm text-slate-500
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-full file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-indigo-50 file:text-indigo-700
+                                  hover:file:bg-indigo-100
+                                '
+                             />
+                             <p className='text-xs text-gray-500 mt-2'>يفضل صورة مربعة بخلفية شفافة (PNG) أو بيضاء.</p>
+                        </div>
+                    </div>
                 </div>
               </div>
             )}

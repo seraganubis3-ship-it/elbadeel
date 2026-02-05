@@ -11,7 +11,7 @@ function LoginInner() {
   const params = useSearchParams();
   const [remember, setRemember] = useState(false);
   const callbackUrl = params.get('callbackUrl') || '/';
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -39,7 +39,7 @@ function LoginInner() {
       localStorage.setItem('remember_login', remember ? 'true' : 'false');
 
       const res = await signIn('credentials', {
-        email,
+        phone,
         password,
         redirect: false,
         callbackUrl,
@@ -49,13 +49,7 @@ function LoginInner() {
         router.push('/');
         router.refresh();
       } else {
-        if ((res as any)?.error === 'EMAIL_NOT_VERIFIED') {
-          setError('يرجى تأكيد بريدك الإلكتروني أولاً');
-        } else if ((res as any)?.error === 'ACCOUNT_NOT_VERIFIED') {
-          router.push(`/verify-email?email=${encodeURIComponent(email)}&action=verify_existing`);
-        } else {
-          setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
-        }
+        setError('رقم الهاتف أو كلمة المرور غير صحيحة');
       }
     } catch (err) {
       setError('فشل تسجيل الدخول. حاول مرة أخرى.');
@@ -69,20 +63,9 @@ function LoginInner() {
       {/* Left Side - Form */}
       <div className='flex-1 flex items-center justify-center px-4 sm:px-8 lg:px-16 py-12 bg-white relative'>
         {/* Decorative Elements */}
-        <div className='absolute top-0 left-0 w-64 h-64 bg-emerald-100/50 rounded-full blur-[100px]'></div>
-        <div className='absolute bottom-0 right-0 w-48 h-48 bg-teal-100/50 rounded-full blur-[80px]'></div>
 
         <div className='relative z-10 w-full max-w-md'>
           {/* Logo */}
-          <Link href='/' className='inline-flex items-center gap-3 mb-10 group'>
-            <div className='w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform'>
-              <span className='text-white font-black text-xl'>ب</span>
-            </div>
-            <div>
-              <h2 className='font-black text-slate-900 text-xl'>البديل</h2>
-              <p className='text-emerald-600 text-xs font-medium'>للخدمات الحكومية</p>
-            </div>
-          </Link>
 
           {/* Header */}
           <div className='mb-8'>
@@ -93,26 +76,8 @@ function LoginInner() {
           </div>
 
           {/* Callback Notice */}
-          {callbackUrl.includes('/service/') && (
-            <div className='mb-6 p-4 bg-blue-50 border border-blue-100 rounded-2xl'>
-              <div className='flex items-center gap-3'>
-                <span className='text-2xl'>💡</span>
-                <p className='text-blue-700 text-sm font-medium'>
-                  تحتاج لحساب لإتمام طلب هذه الخدمة
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Success Message */}
-          {success && (
-            <div className='mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl'>
-              <div className='flex items-center gap-3'>
-                <span className='text-2xl'>✅</span>
-                <p className='text-emerald-700 text-sm font-medium'>{success}</p>
-              </div>
-            </div>
-          )}
 
           {/* Error Message */}
           {error && (
@@ -121,14 +86,6 @@ function LoginInner() {
                 <span className='text-2xl'>❌</span>
                 <div>
                   <p className='text-red-700 text-sm font-medium'>{error}</p>
-                  {error === 'يرجى تأكيد بريدك الإلكتروني أولاً' && (
-                    <Link
-                      href={`/verify-email?email=${encodeURIComponent(email)}`}
-                      className='text-emerald-600 hover:text-emerald-700 text-sm font-bold underline mt-1 inline-block'
-                    >
-                      إعادة إرسال رسالة التأكيد
-                    </Link>
-                  )}
                 </div>
               </div>
             </div>
@@ -136,20 +93,20 @@ function LoginInner() {
 
           {/* Form */}
           <form onSubmit={onSubmit} className='space-y-5'>
-            {/* Email */}
+            {/* Phone */}
             <div>
-              <label htmlFor='email' className='block text-sm font-bold text-slate-700 mb-2'>
-                البريد الإلكتروني
+              <label htmlFor='phone' className='block text-sm font-bold text-slate-700 mb-2'>
+                رقم الهاتف
               </label>
               <div className='relative'>
                 <input
-                  id='email'
-                  type='email'
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  id='phone'
+                  type='tel'
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
                   required
                   className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
-                  placeholder='example@email.com'
+                  placeholder='01xxxxxxxxx'
                 />
                 <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
                   <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
@@ -157,7 +114,7 @@ function LoginInner() {
                       strokeLinecap='round'
                       strokeLinejoin='round'
                       strokeWidth={2}
-                      d='M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'
+                      d='M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z'
                     />
                   </svg>
                 </div>

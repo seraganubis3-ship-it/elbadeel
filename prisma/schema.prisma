@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/client"
 }
 
 datasource db {
@@ -85,12 +84,9 @@ model User {
   wifeMotherName          String?
   accounts                Account[]
   auditLogs               AuditLog[]
-  // orders moved above with explicit relation name
   sessions                Session[]
-  // FormSerial audit relations
   addedFormSerials        FormSerial[] @relation("FormSerialAddedBy")
   consumedFormSerials     FormSerial[] @relation("FormSerialConsumedBy")
-  // Dependent relations
   createdDependents       Dependent[]  @relation("DependentCreatedBy")
 
   @@index([email])
@@ -127,6 +123,8 @@ model Service {
   description String?
   icon        String?
   active      Boolean           @default(true)
+  isHidden    Boolean           @default(false)
+  orderIndex  Int               @default(0)
   categoryId  String
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -134,65 +132,53 @@ model Service {
   category    Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   documents   ServiceDocument[]
   variants    ServiceVariant[]
-  fields      ServiceField[]    // Custom dynamic fields for this service
+  fields      ServiceField[]
 
   @@index([slug])
   @@index([categoryId])
   @@index([active])
+  @@index([orderIndex])
   @@index([createdAt])
 }
 
-// Dynamic form fields for services
 model ServiceField {
-  id              String               @id @default(cuid())
-  serviceId       String
-  name            String               // Field identifier (e.g., "request_type", "old_status")
-  label           String               // Display label (e.g., "نوع الطلب", "الحالة القديمة")
-  type            String               // text, select, radio, checkbox, textarea, file
-  placeholder     String?              // Placeholder text
-  required        Boolean              @default(false)
-  orderIndex      Int                  @default(0)
-  active          Boolean              @default(true)
-  
-  // Conditional visibility
-  showIf          String?              // JSON: {"fieldName": "request_type", "value": "renewal_change"}
-  
-  // Validation
-  validation      String?              // JSON: {"minLength": 3, "maxLength": 100, "pattern": "regex"}
-  
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  
-  service         Service              @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  options         ServiceFieldOption[] // For select/radio fields
+  id          String  @id @default(cuid())
+  serviceId   String
+  name        String
+  label       String
+  type        String
+  placeholder String?
+  required    Boolean @default(false)
+  orderIndex  Int     @default(0)
+  active      Boolean @default(true)
+  showIf      String?
+  validation  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  service Service              @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  options ServiceFieldOption[]
 
   @@index([serviceId])
   @@index([orderIndex])
   @@index([active])
 }
 
-// Options for select/radio fields
 model ServiceFieldOption {
-  id              String        @id @default(cuid())
-  fieldId         String
-  value           String        // Option value
-  label           String        // Display label
-  orderIndex      Int           @default(0)
-  
-  // This option may require additional documents
-  requiredDocs    String?       // JSON array: ["doc_id_1", "doc_id_2"]
-  
-  // This option may show additional fields
-  showFields      String?       // JSON array: ["field_name_1", "field_name_2"]
-  
-  createdAt       DateTime      @default(now())
-  
-  field           ServiceField  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  id         String @id @default(cuid())
+  fieldId    String
+  value      String
+  label      String
+  orderIndex Int    @default(0)
+  requiredDocs String?
+  showFields String?
+  createdAt DateTime @default(now())
+
+  field ServiceField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 
   @@index([fieldId])
   @@index([orderIndex])
 }
-
 
 model ServiceVariant {
   id            String            @id @default(cuid())
@@ -261,12 +247,13 @@ model Order {
   policeStation           String?
   pickupLocation          String?
   originalDocuments       String?
-  attachedDocuments       String? // JSON array of attachment names
+  attachedDocuments       String?
+  workOrderNumber         Int?
   hasAttachments          Boolean         @default(false)
-  selectedFines           String? // JSON array of selected fine IDs
-  finesDetails            String? // JSON array of fine details
-  servicesDetails         String? // JSON object of services details
-  customerFollowUp        String? // Customer follow-up/dependent name
+  selectedFines           String?
+  finesDetails            String?
+  servicesDetails         String?
+  customerFollowUp        String?
   documents               Document[]
   service                 Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   user                    User            @relation("OrderUser", fields: [userId], references: [id], onDelete: Cascade)
@@ -274,11 +261,9 @@ model Order {
   orderDocuments          OrderDocument[]
   payment                 Payment?
   formSerials             FormSerial[]
-
-  // Promo Code Relations
-  promoCodeId             String?
-  promoCode               PromoCode?      @relation(fields: [promoCodeId], references: [id])
-  discountAmount          Int             @default(0) // Discount amount in cents
+  promoCodeId    String?
+  promoCode      PromoCode? @relation(fields: [promoCodeId], references: [id])
+  discountAmount Int        @default(0)
 
   @@index([userId])
   @@index([serviceId])
@@ -381,7 +366,7 @@ model ServiceDocument {
   title       String
   description String?
   required    Boolean  @default(true)
-  showIf      String?  // JSON: {"field": "request_type", "value": "renewal_status"}
+  showIf      String?
   orderIndex  Int      @default(0)
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -406,23 +391,19 @@ model SystemSettings {
   updatedAt       DateTime @updatedAt
 }
 
-/// Forms inventory ("العهدة")
 model FormType {
   id           String            @id @default(cuid())
-  name         String            @unique // عادي، سريع، فوري
+  name         String            @unique
   description  String?
   active       Boolean           @default(true)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
-  // Which variants this form type can be used for
   variantLinks FormTypeVariant[]
-  // Serial numbers belonging to this form type
   serials      FormSerial[]
 
   @@index([active])
 }
 
-// Many-to-many between form types and service variants
 model FormTypeVariant {
   id               String         @id @default(cuid())
   formTypeId       String
@@ -436,16 +417,13 @@ model FormTypeVariant {
   @@index([serviceVariantId])
 }
 
-// Individual serial numbers for forms. Admin enters serials manually.
 model FormSerial {
   id                String    @id @default(cuid())
   formTypeId        String
   serialNumber      String
-  // Optional: link to order when consumed
   orderId           String?
   consumed          Boolean   @default(false)
   consumedAt        DateTime?
-  // Audit
   addedByAdminId    String?
   consumedByAdminId String?
   createdAt         DateTime  @default(now())
@@ -475,21 +453,20 @@ model Dependent {
   @@index([createdByAdminId])
 }
 
-// Promo Code Model
 model PromoCode {
-  id             String   @id @default(cuid())
-  code           String   @unique // The code users enter (e.g. WELCOME10)
-  type           String   @default("FIXED") // FIXED or PERCENTAGE
-  value          Int      // Amount in cents or percentage (e.g. 10 for 10%)
-  minOrderAmount Int?     // Minimum order amount in cents
-  maxDiscount    Int?     // Max discount amount in cents (for percentage codes)
-  startDate      DateTime? 
+  id             String    @id @default(cuid())
+  code           String    @unique
+  type           String    @default("FIXED")
+  value          Int
+  minOrderAmount Int?
+  maxDiscount    Int?
+  startDate      DateTime?
   endDate        DateTime?
-  usageLimit     Int?     // Max usage count overall
-  currentUsage   Int      @default(0)
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  usageLimit     Int?
+  currentUsage   Int       @default(0)
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   orders         Order[]
 
   @@index([code])

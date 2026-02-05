@@ -7,6 +7,7 @@ const statusUpdateSchema = z.object({
   status: z.string(),
   adminNotes: z.string().optional(),
   workDate: z.string().optional(),
+  workOrderNumber: z.string().optional(),
 });
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
@@ -14,7 +15,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const session = await requireAdminOrStaff();
     const { id } = params;
     const body = await request.json();
-    const { status, adminNotes, workDate: clientWorkDate } = statusUpdateSchema.parse(body);
+    const { status, adminNotes, workDate: clientWorkDate, workOrderNumber } = statusUpdateSchema.parse(body);
 
     let workDate = getWorkDate(session);
     if (clientWorkDate && (session.user.role === 'ADMIN' || session.user.role === 'STAFF')) {
@@ -46,6 +47,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       data: {
         status,
         adminNotes: adminNotes || order.adminNotes,
+        ...(workOrderNumber && { workOrderNumber: parseInt(workOrderNumber) }),
       },
     });
 
@@ -95,7 +97,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       order: updatedOrder,
     });
   } catch (error) {
-    console.error('Status Update Error:', error);
+    // console.error('Status Update Error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء تحديث حالة الطلب' }, { status: 500 });
   }
 }

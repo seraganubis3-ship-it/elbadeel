@@ -1,0 +1,287 @@
+import React, { useRef, useEffect } from 'react';
+import { FormData, Service, ServiceVariant } from '../../types';
+
+interface ServiceSelectionSectionProps {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+
+  serviceSearchTerm: string;
+  setServiceSearchTerm: (term: string) => void;
+  showServiceDropdown: boolean;
+  setShowServiceDropdown: (show: boolean) => void;
+  filteredServices: Service[];
+  selectedService: Service | null;
+  selectedVariant: ServiceVariant | null;
+  handleVariantChange: (variantId: string) => void;
+  formSerialNumber: string;
+  serialValid: { ok: boolean; msg: string; } | null;
+  validateSerialLive: (serial: string) => void;
+  selectService: (service: Service) => void;
+  calculateTotal: () => number;
+}
+
+export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = ({
+  formData,
+  setFormData,
+  serviceSearchTerm,
+  setServiceSearchTerm,
+  showServiceDropdown,
+  setShowServiceDropdown,
+  filteredServices,
+  selectedService,
+  selectedVariant,
+  handleVariantChange,
+  formSerialNumber,
+  serialValid,
+  validateSerialLive,
+  selectService,
+  calculateTotal,
+}) => {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowServiceDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [setShowServiceDropdown]);
+
+  // Calculate delivery date based on work days (Fri/Sat off)
+  const calculateWorkDays = (days: number) => {
+    let date = new Date();
+    let added = 0;
+    while (added < days) {
+      date.setDate(date.getDate() + 1);
+      const day = date.getDay();
+      if (day !== 5 && day !== 6) { // 5=Fri, 6=Sat
+        added++;
+      }
+    }
+    return date;
+  };
+
+  const deliveryDate = selectedVariant?.etaDays 
+    ? calculateWorkDays(selectedVariant.etaDays)
+    : null;
+
+  // Update formData when date changes
+  useEffect(() => {
+    if (deliveryDate) {
+      const formatted = deliveryDate.toISOString().split('T')[0];
+      if (formData.deliveryDate !== formatted) {
+         setFormData(prev => ({ ...prev, deliveryDate: formatted ?? '' }));
+      }
+    }
+  }, [deliveryDate, setFormData, formData.deliveryDate]);
+
+  const isNationalId = selectedService?.name?.includes('قومي') || selectedService?.name?.includes('بطاقة');
+
+  return (
+    <div className='bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-visible relative transition-all duration-500'>
+       {/* Header */}
+       <div className='bg-slate-50/50 border-b border-slate-100 p-6 lg:p-4 flex items-center gap-4'>
+         <div className='w-12 h-12 lg:w-10 lg:h-10 bg-cyan-600 rounded-2xl lg:rounded-xl flex items-center justify-center text-white text-2xl lg:text-xl shadow-lg shadow-cyan-100'>
+           🛠️
+         </div>
+         <div>
+           <h2 className='text-lg lg:text-base font-black text-slate-900'>تفاصيل الخدمة</h2>
+           <p className='text-xs lg:text-[10px] text-slate-400 font-bold uppercase tracking-widest'>نوع الخدمة والتوقيت</p>
+         </div>
+       </div>
+
+       <div className='p-6 lg:p-4 space-y-4 lg:space-y-3'>
+          {/* Service Search */}
+          <div className='relative space-y-2' ref={dropdownRef}>
+             <label className='text-sm lg:text-xs font-black text-black uppercase tracking-widest mr-1'>اختيار الخدمة</label>
+             <div className="relative z-50">
+                <input
+                  type='text'
+                  value={serviceSearchTerm}
+                  onChange={e => {
+                     setServiceSearchTerm(e.target.value);
+                     if (!showServiceDropdown) setShowServiceDropdown(true);
+                  }}
+                  onFocus={() => setShowServiceDropdown(true)}
+                  placeholder='ابحث عن الخدمة...'
+                  className='w-full bg-white border-2 border-slate-100 rounded-xl px-4 py-3 lg:py-2 text-black font-bold focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 transition-all outline-none text-lg lg:text-sm'
+                />
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">▼</div>
+             </div>
+
+             {/* Dropdown */}
+             {showServiceDropdown && (
+                <div className='absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto z-[100] custom-scrollbar'>
+                   {filteredServices.length > 0 ? (
+                      filteredServices.slice(0, 50).map(service => (
+                         <div
+                           key={service.id}
+                           onMouseDown={(e) => {
+                              // Use onMouseDown instead of onClick to fire before blur
+                              e.preventDefault();
+                              selectService(service);
+                              setShowServiceDropdown(false);
+                           }}
+                           className='p-3 hover:bg-cyan-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors flex items-center justify-between group'
+                         >
+                            <span className="text-sm font-bold text-slate-800 group-hover:text-cyan-700">{service.name}</span>
+                            <span className="text-xs text-slate-400 group-hover:text-cyan-600 bg-slate-50 group-hover:bg-cyan-100 px-2 py-1 rounded-lg">اختيار</span>
+                         </div>
+                      ))
+                   ) : (
+                      <div className='p-4 text-center text-slate-400 text-sm font-bold'>
+                         لا توجد خدمات مطابقة
+                      </div>
+                   )}
+                </div>
+             )}
+          </div>
+
+          {/* Variants Grid */}
+          {selectedService && selectedService.variants.length > 0 && (
+             <div className="space-y-2 animate-in slide-in-from-top-4 duration-300">
+                <div className="flex items-center justify-between">
+                   <label className='text-xs font-black text-black uppercase tracking-widest mr-1'>نوع الطلب</label>
+                   <span className="text-[10px] text-cyan-600 font-bold bg-cyan-50 px-2 py-1 rounded-lg border border-cyan-100">
+                      {selectedService.variants.length} خيارات
+                   </span>
+                </div>
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3'>
+                   {selectedService.variants.map(variant => {
+                      const isSelected = selectedVariant?.id === variant.id;
+                      return (
+                         <div
+                           key={variant.id}
+                           onClick={() => handleVariantChange(variant.id)}
+                           className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 group overflow-hidden ${
+                              isSelected 
+                                 ? 'bg-cyan-500 border-cyan-500 text-white shadow-lg shadow-cyan-500/20' 
+                                 : 'bg-white border-slate-100 hover:border-cyan-200 hover:bg-cyan-50/30'
+                           }`}
+                         >
+                            <div className="relative z-10 flex flex-col h-full justify-between gap-3">
+                               <div className="flex justify-between items-start">
+                                  <span className={`text-sm font-black ${isSelected ? 'text-white' : 'text-slate-700'}`}>
+                                     {variant.name}
+                                  </span>
+                                  {isSelected && <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-bold">✓</span>}
+                               </div>
+                               
+                               <div className={`flex items-end justify-between border-t pts-2 mt-auto ${isSelected ? 'border-white/10' : 'border-slate-100'}`}>
+                                  <div className="flex flex-col">
+                                     <span className={`text-[9px] font-bold uppercase tracking-wider ${isSelected ? 'text-cyan-100' : 'text-slate-400'}`}>المدة</span>
+                                     <span className={`text-xs font-black ${isSelected ? 'text-white' : 'text-slate-600'}`}>{variant.etaDays} أيام</span>
+                                  </div>
+                                  <div className="text-base font-black tracking-tight">
+                                     {(variant.priceCents / 100).toLocaleString('en-US')} <span className={`text-[9px] ${isSelected ? 'opacity-80' : 'text-slate-400'}`}>ج.م</span>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                      );
+                   })}
+                </div>
+             </div>
+          )}
+
+          {/* Secondary Inputs Grid */}
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+             {/* Quantity */}
+             <div className='space-y-1'>
+                <label className='text-sm font-black text-black uppercase tracking-widest mr-1'>العدد المطلوب</label>
+                <div className="relative">
+                   <input
+                     type='number'
+                     min='1'
+                     value={formData.quantity}
+                     onChange={e => setFormData(p => ({ ...p, quantity: parseInt(e.target.value) || 1 }))}
+                     className='w-full bg-white border-2 border-slate-100 rounded-xl px-4 py-3 text-black font-black focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 transition-all outline-none text-center text-lg'
+                   />
+                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">نسخة</div>
+                </div>
+             </div>
+
+             {/* Calculated Delivery Date */}
+             <div className='space-y-1'>
+                <label className='text-sm font-black text-black uppercase tracking-widest mr-1'>موعـد الاستلام</label>
+                <div className='relative w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-2 flex flex-col justify-center h-[54px]'>
+                   {selectedVariant ? (
+                      <div className="flex items-center justify-between">
+                         <div className="flex flex-col">
+                            <span className="text-[10px] text-slate-400 font-bold">المدة: {selectedVariant.etaDays} أيام عمل</span>
+                            <span className="text-sm font-black text-cyan-700">
+                               {deliveryDate?.toLocaleDateString('ar-EG', { weekday: 'short', day: 'numeric', month: 'long' })}
+                            </span>
+                         </div>
+                         <div className="w-8 h-8 rounded-lg bg-cyan-100 text-cyan-600 flex items-center justify-center text-lg">
+                            📅
+                         </div>
+                      </div>
+                   ) : (
+                      <span className="text-xs font-bold text-slate-400">يرجى اختيار الخدمة أولاً</span>
+                   )}
+                </div>
+             </div>
+
+             {/* Passport Specific Fields */}
+             {selectedService?.name.includes('جواز سفر') && (
+                <>
+                  <div className='space-y-1'>
+                    <label className='text-sm font-black text-black uppercase tracking-widest mr-1'>قسم الشرطة</label>
+                    <input
+                      type='text'
+                      value={formData.policeStation}
+                      onChange={e => setFormData(p => ({ ...p, policeStation: e.target.value }))}
+                      placeholder='مثال: قسم شرطة العجوزة'
+                      className='w-full bg-white border-2 border-slate-100 rounded-xl px-4 py-3 text-black font-bold focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 transition-all outline-none text-right'
+                    />
+                  </div>
+                  <div className='space-y-1'>
+                    <label className='text-sm font-black text-black uppercase tracking-widest mr-1'>مكان الاستلام</label>
+                    <input
+                      type='text'
+                      value={formData.pickupLocation}
+                      onChange={e => setFormData(p => ({ ...p, pickupLocation: e.target.value }))}
+                      placeholder=''
+                      className='w-full bg-white border-2 border-slate-100 rounded-xl px-4 py-3 text-black font-bold focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 transition-all outline-none text-right'
+                    />
+                  </div>
+                </>
+             )}
+
+             {/* Form Serial Number - Show Only for National ID */}
+             {isNationalId && (
+               <div className='space-y-1 md:col-span-2 animate-in slide-in-from-top-2'>
+                  <label className='text-sm font-black text-black uppercase tracking-widest mr-1 flex items-center gap-2'>
+                     رقم الاستمارة
+                     {serialValid?.ok && <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 rounded-full">متاح</span>}
+                     {serialValid?.ok === false && <span className="text-[10px] text-rose-600 bg-rose-50 px-2 rounded-full">غير صالح</span>}
+                  </label>
+                  <div className="relative">
+                     <input
+                       type='text'
+                       value={formSerialNumber}
+                       onChange={e => validateSerialLive(e.target.value)}
+                       className={`w-full bg-white border-2 rounded-xl px-4 py-3 text-black font-black outline-none transition-all ${
+                          serialValid?.ok ? 'border-emerald-400 focus:ring-4 focus:ring-emerald-400/10' : 
+                          serialValid?.ok === false ? 'border-rose-400 focus:ring-4 focus:ring-rose-400/10' : 
+                          'border-slate-100 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10'
+                       }`}
+                       placeholder='أدخل رقم الاستمارة المربوطة...'
+                     />
+                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">
+                        {serialValid?.ok ? '✅' : serialValid?.ok === false ? '❌' : '#️⃣'}
+                     </div>
+                  </div>
+               </div>
+             )}
+           </div>
+          
+       </div>
+    </div>
+  );
+};
+

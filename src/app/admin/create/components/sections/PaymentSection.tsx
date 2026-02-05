@@ -44,213 +44,131 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
   return (
     <div
       id='payment-section'
-      className='bg-white/70 backdrop-blur-xl rounded-[2rem] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden transition-all duration-500 hover:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.12)] group'
+      className='bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden'
     >
-      <div className='bg-gradient-to-r from-emerald-50/50 to-white/50 border-b border-emerald-100/50 p-8 flex items-center gap-5 relative overflow-hidden'>
-        <div className='absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2'></div>
-        <div className='w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-[0_8px_16px_-4px_rgba(16,185,129,0.15)] border border-emerald-100/50 text-3xl relative z-10 group-hover:scale-110 transition-transform duration-500'>
+      <div className='bg-slate-50 border-b border-slate-100 p-6 lg:p-4 flex items-center gap-4'>
+        <div className='w-12 h-12 lg:w-10 lg:h-10 bg-emerald-500 rounded-2xl lg:rounded-xl flex items-center justify-center text-2xl lg:text-xl text-white shadow-lg shadow-emerald-200'>
           💳
         </div>
-        <div className='relative z-10'>
-          <h2 className='text-2xl font-black text-slate-900 leading-none mb-1.5 tracking-tight'>
-            الحساب والدفع
-          </h2>
-          <p className='text-emerald-500 text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2'>
-            <span className='w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse'></span>
-            التسعير وتفاصيل السداد
-          </p>
+        <div>
+          <h2 className='text-lg lg:text-base font-black text-slate-900'>الحساب والدفع</h2>
+          <p className='text-slate-500 text-[10px] font-bold uppercase tracking-widest'>التفاصيل المالية</p>
         </div>
       </div>
 
-      <div className='p-8 space-y-8'>
-        {/* Fines & Extra Services Buttons */}
-        <div className='grid grid-cols-2 gap-4'>
+      <div className='p-6 lg:p-4 space-y-6 lg:space-y-4'>
+        {/* Buttons Grid */}
+        <div className='grid grid-cols-2 gap-3 lg:gap-2'>
           <button
             type='button'
             onClick={() => setShowFinesDropdown(!showFinesDropdown)}
-            className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl transition-all group relative overflow-hidden ${
+            className={`flex flex-col items-center justify-center p-4 lg:p-3 border rounded-xl transition-all ${
               showFinesDropdown
-                ? 'bg-rose-50 border-rose-200 shadow-inner'
-                : 'bg-white border-rose-50 hover:border-rose-200 hover:bg-rose-50/50 hover:shadow-lg hover:shadow-rose-100/50'
+                ? 'bg-rose-50 border-rose-200 text-rose-700'
+                : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50'
             }`}
           >
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3 transition-all ${
-                showFinesDropdown
-                  ? 'bg-rose-200 text-rose-700 rotate-12'
-                  : 'bg-rose-100 text-rose-600 group-hover:scale-110'
-              }`}
-            >
-              ⚖️
-            </div>
-            <span className='text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1'>
-              إضافة غرامات
+            <span className='text-xl lg:text-lg mb-1'>⚖️</span>
+            <span className='text-[10px] lg:text-[9px] font-black uppercase tracking-widest'>غرامات</span>
+            <span className='text-xs lg:text-[10px] font-bold mt-1 text-rose-500'>
+              {selectedFines.filter(id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'غرامات').length} محدد
             </span>
-            <div className='flex items-center gap-1'>
-              <span className='text-lg font-black text-rose-700'>
-                {
-                  selectedFines.filter(
-                    id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'غرامات'
-                  ).length
-                }
-              </span>
-              <span className='text-[10px] font-bold text-rose-400'>محددة</span>
-            </div>
           </button>
 
           <button
             type='button'
             onClick={() => setShowServicesDropdown(!showServicesDropdown)}
-            className={`flex flex-col items-center justify-center p-6 border-2 rounded-2xl transition-all group relative overflow-hidden ${
+            className={`flex flex-col items-center justify-center p-4 lg:p-3 border rounded-xl transition-all ${
               showServicesDropdown
-                ? 'bg-sky-50 border-sky-200 shadow-inner'
-                : 'bg-white border-sky-50 hover:border-sky-200 hover:bg-sky-50/50 hover:shadow-lg hover:shadow-sky-100/50'
+                ? 'bg-sky-50 border-sky-200 text-sky-700'
+                : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50'
             }`}
           >
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3 transition-all ${
-                showServicesDropdown
-                  ? 'bg-sky-200 text-sky-700 rotate-12'
-                  : 'bg-sky-100 text-sky-600 group-hover:scale-110'
-              }`}
-            >
-              ➕
-            </div>
-            <span className='text-[10px] font-black text-sky-400 uppercase tracking-widest mb-1'>
-              خدمات إضافية
+            <span className='text-xl lg:text-lg mb-1'>➕</span>
+            <span className='text-[10px] lg:text-[9px] font-black uppercase tracking-widest'>خدمات إضافية</span>
+            <span className='text-xs lg:text-[10px] font-bold mt-1 text-sky-500'>
+              {selectedFines.filter(id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'خدمات اضافية').length} محدد
             </span>
-            <div className='flex items-center gap-1'>
-              <span className='text-lg font-black text-sky-700'>
-                {
-                  selectedFines.filter(
-                    id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'خدمات اضافية'
-                  ).length
-                }
-              </span>
-              <span className='text-[10px] font-bold text-sky-400'>محددة</span>
-            </div>
           </button>
         </div>
 
-        {/* Floating Dropdowns Management */}
+        {/* Dropdowns logic remains the same, just simplified container */}
         {(showFinesDropdown || showServicesDropdown) && (
-          <div
-            className='p-5 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300 shadow-2xl relative z-20 fines-dropdown-container services-dropdown-container'
-            onClick={e => e.stopPropagation()}
-          >
+          <div className='p-4 bg-slate-50 border border-slate-200 rounded-2xl animate-in slide-in-from-top-2'>
             {showFinesDropdown && (
-              <div className='space-y-4'>
-                <div className='flex items-center gap-2 pb-2 border-b border-slate-100'>
-                  <span className='text-xs font-black text-rose-500 uppercase tracking-widest'>
-                    قائمة الغرامات
-                  </span>
-                </div>
-                <div className='relative'>
-                  <input
-                    type='text'
-                    placeholder='ابحث في الغرامات...'
-                    value={finesSearchTerm}
-                    onChange={e => setFinesSearchTerm(e.target.value)}
-                    className='w-full pl-3 pr-10 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold focus:border-rose-300 focus:bg-white transition-all outline-none'
-                    autoFocus
-                  />
-                  <span className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400'>
-                    🔍
-                  </span>
-                </div>
-                <div className='max-h-48 overflow-y-auto space-y-2 pr-1 custom-scrollbar'>
+              <div className='space-y-3 fines-dropdown-container'>
+                <input
+                  type='text'
+                  placeholder='ابحث في الغرامات...'
+                  value={finesSearchTerm}
+                  onChange={e => setFinesSearchTerm(e.target.value)}
+                  className='w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-rose-400 outline-none'
+                  autoFocus
+                />
+                <div className='max-h-40 overflow-y-auto space-y-1 custom-scrollbar'>
                   {PREDEFINED_FINES.filter(
                     f => f.category === 'غرامات' && f.name.includes(finesSearchTerm)
-                  ).map(f => (
+                  ).slice(0, 50).map(f => (
                     <div
                       key={f.id}
-                      onClick={() => handleFineToggle(f.id)}
-                      className={`p-3 rounded-xl cursor-pointer flex justify-between items-center transition-all group ${
+                      onMouseDown={(e) => {
+                         e.preventDefault();
+                         handleFineToggle(f.id);
+                      }}
+                      className={`p-2 rounded-lg cursor-pointer flex justify-between items-center transition-all ${
                         selectedFines.includes(f.id)
-                          ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20 transform scale-[1.02]'
-                          : 'bg-white hover:bg-rose-50 hover:border-rose-100 border border-transparent'
+                          ? 'bg-rose-500 text-white'
+                          : 'bg-white hover:bg-slate-100 text-slate-700'
                       }`}
                     >
-                      <span className='text-xs font-bold'>{f.name}</span>
-                      <span
-                        className={`text-[10px] font-black px-2 py-1 rounded-lg ${
-                          selectedFines.includes(f.id) ? 'bg-white/20' : 'bg-slate-100'
-                        }`}
-                      >
-                        {(f.amountCents / 100).toFixed(0)} ج.م
+                      <span className='text-[11px] font-bold'>{f.name}</span>
+                      <span className='text-[10px] font-black bg-black/10 px-1.5 py-0.5 rounded'>
+                        {(f.amountCents / 100).toFixed(0)}
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
-            {showServicesDropdown && (
-              <div className='space-y-4'>
-                <div className='flex items-center gap-2 pb-2 border-b border-slate-100'>
-                  <span className='text-xs font-black text-sky-500 uppercase tracking-widest'>
-                    الخدمات الإضافية
-                  </span>
-                </div>
-                <div className='relative'>
-                  <input
-                    type='text'
-                    placeholder='ابحث في الخدمات...'
-                    value={servicesSearchTerm}
-                    onChange={e => setServicesSearchTerm(e.target.value)}
-                    className='w-full pl-3 pr-10 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold focus:border-sky-300 focus:bg-white transition-all outline-none'
-                    autoFocus
-                  />
-                  <span className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400'>
-                    🔍
-                  </span>
-                </div>
-                <div className='max-h-48 overflow-y-auto space-y-2 pr-1'>
+             {showServicesDropdown && (
+              <div className='space-y-3 services-dropdown-container'>
+                <input
+                  type='text'
+                  placeholder='ابحث في الخدمات...'
+                  value={servicesSearchTerm}
+                  onChange={e => setServicesSearchTerm(e.target.value)}
+                  className='w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-sky-400 outline-none'
+                  autoFocus
+                />
+                <div className='max-h-40 overflow-y-auto space-y-1 custom-scrollbar'>
                   {PREDEFINED_FINES.filter(
-                    f => f.category === 'خدمات اضافية' && f.name.includes(servicesSearchTerm)
-                  ).map(s => (
-                    <div
-                      key={s.id}
-                      className={`p-3 border rounded-xl bg-white transition-all ${
-                        selectedFines.includes(s.id)
-                          ? 'border-sky-500 ring-2 ring-sky-500/10'
-                          : 'border-slate-100'
-                      }`}
-                    >
-                      <div
-                        className='flex justify-between items-center cursor-pointer'
-                        onClick={() => handleFineToggle(s.id)}
-                      >
-                        <span
-                          className={`text-xs font-bold transition-colors ${selectedFines.includes(s.id) ? 'text-sky-700' : 'text-slate-600'}`}
-                        >
-                          {s.name}
-                        </span>
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                            selectedFines.includes(s.id)
-                              ? 'border-sky-500 bg-sky-500'
-                              : 'border-slate-200'
-                          }`}
-                        >
-                          {selectedFines.includes(s.id) && (
-                            <span className='text-white text-[10px]'>✓</span>
-                          )}
-                        </div>
-                      </div>
-                      {selectedFines.includes(s.id) && s.id !== 'service_001' && (
-                        <div className='mt-3 animate-in slide-in-from-top-2'>
-                          <input
-                            type='number'
-                            value={manualServices[s.id] || 0}
-                            onChange={e =>
-                              handleManualServiceChange(s.id, parseFloat(e.target.value) || 0)
-                            }
-                            className='w-full px-3 py-2 bg-sky-50 border border-sky-100 rounded-lg text-xs font-bold focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none'
-                            placeholder='حدد المبلغ...'
-                            onClick={e => e.stopPropagation()}
-                          />
-                        </div>
-                      )}
+                    s => s.category === 'خدمات اضافية' && s.name.includes(servicesSearchTerm)
+                  ).slice(0, 50).map(s => (
+                    <div key={s.id} className="bg-white rounded-lg overflow-hidden border border-slate-100">
+                       <div
+                         onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleFineToggle(s.id);
+                         }}
+                         className={`p-2 cursor-pointer flex justify-between items-center transition-all ${
+                           selectedFines.includes(s.id) ? 'bg-sky-50 text-sky-700' : 'hover:bg-slate-50 text-slate-700'
+                         }`}
+                       >
+                          <span className='text-[11px] font-bold'>{s.name}</span>
+                          {selectedFines.includes(s.id) && <span className='text-xs'>✓</span>}
+                       </div>
+                       {selectedFines.includes(s.id) && s.id !== 'service_001' && (
+                          <div className="p-2 bg-slate-50 border-t border-slate-100">
+                             <input
+                               type='number'
+                               value={manualServices[s.id] || 0}
+                               onChange={e => handleManualServiceChange(s.id, parseFloat(e.target.value) || 0)}
+                               className='w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs font-bold outline-none focus:border-sky-400'
+                               placeholder='القيمة...'
+                               onClick={e => e.stopPropagation()}
+                             />
+                          </div>
+                       )}
                     </div>
                   ))}
                 </div>
@@ -276,28 +194,20 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
                 border: 'border-emerald-200',
               },
               {
-                id: 'BANK_TRANSFER',
-                icon: '🏦',
-                label: 'تحويل بنكي',
-                color: 'text-blue-600',
-                bg: 'bg-blue-50',
-                border: 'border-blue-200',
-              },
-              {
-                id: 'MOBILE_WALLET',
-                icon: '📱',
-                label: 'محفظة إلكترونية',
+                id: 'INSTAPAY',
+                icon: '📲',
+                label: 'انستا باي',
                 color: 'text-purple-600',
                 bg: 'bg-purple-50',
                 border: 'border-purple-200',
               },
               {
-                id: 'CREDIT_CARD',
-                icon: '💳',
-                label: 'بطاقة ائتمان',
-                color: 'text-indigo-600',
-                bg: 'bg-indigo-50',
-                border: 'border-indigo-200',
+                id: 'MOBILE_WALLET',
+                icon: '📱',
+                label: 'محفظة',
+                color: 'text-blue-600',
+                bg: 'bg-blue-50',
+                border: 'border-blue-200',
               },
             ].map(m => (
               <div

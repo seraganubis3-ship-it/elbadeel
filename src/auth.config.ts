@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { compare } from 'bcryptjs';
 
 const credentialsSchema = z.object({
-  email: z.string().email(),
+  phone: z.string().min(10),
   password: z.string().min(6),
   workDate: z.string().optional(), // تاريخ العمل بصيغة DD/MM/YYYY
 });
@@ -16,12 +16,12 @@ export const authConfig = {
       id: 'credentials',
       name: 'credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        phone: { label: 'Phone', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
       authorize: async credentials => {
         try {
-          if (!credentials?.email || !credentials?.password) {
+          if (!credentials?.phone || !credentials?.password) {
             return null;
           }
 
@@ -30,8 +30,8 @@ export const authConfig = {
             return null;
           }
 
-          const { email, password, workDate } = parsed.data;
-          const user = await prisma.user.findUnique({ where: { email } });
+          const { phone, password, workDate } = parsed.data;
+          const user = await prisma.user.findFirst({ where: { phone } });
           if (!user) {
             return null;
           }

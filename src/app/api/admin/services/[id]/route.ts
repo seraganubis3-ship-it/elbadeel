@@ -42,7 +42,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 
     return NextResponse.json({ success: true, service });
   } catch (error) {
-    console.error('GET Service Error:', error);
+    // console.error('GET Service Error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء جلب الخدمة' }, { status: 500 });
   }
 }
@@ -60,9 +60,38 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const { id } = params;
 
-    // Parse JSON body
-    const body = await request.json();
-    const { name, description, categoryId, active, variants, documents, fields } = body;
+    // Parse FormData
+    const formData = await request.formData();
+    
+    // Extract basic fields
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const categoryId = formData.get('categoryId') as string;
+    const active = formData.get('active') === 'true';
+    const isHidden = formData.get('isHidden') === 'true';
+    const image = formData.get('image') as File | null;
+    
+    // Extract complex fields (JSON strings)
+    let variants: any[] = [];
+    let documents: any[] = [];
+    let fields: any[] = [];
+    
+    try {
+      const variantsStr = formData.get('variants') as string;
+      if (variantsStr) variants = JSON.parse(variantsStr);
+      
+      const documentsStr = formData.get('documents') as string;
+      if (documentsStr) documents = JSON.parse(documentsStr);
+      
+      const fieldsStr = formData.get('fields') as string;
+      if (fieldsStr) fields = JSON.parse(fieldsStr);
+    } catch (e) {
+      // console.error('JSON Parse Error:', e);
+      return NextResponse.json(
+        { success: false, error: 'بيانات غير صالحة' },
+        { status: 400 }
+      );
+    }
 
     if (!name || !categoryId) {
       return NextResponse.json(
@@ -71,23 +100,52 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       );
     }
 
-    // Generate slug from name
-    const slug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9\u0600-\u06FF\s]/g, '')
-      .replace(/\s+/g, '-')
-      .trim();
+    // Handle Image Upload
+    let imagePath: string | undefined = undefined;
+    if (image && image.size > 0) {
+        const uploadsDir = join(process.cwd(), 'public', 'uploads', 'services');
+        if (!existsSync(uploadsDir)) {
+          await mkdir(uploadsDir, { recursive: true });
+        }
+
+        const timestamp = Date.now();
+        const fileName = `${timestamp}_${image.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+        const filePath = join(uploadsDir, fileName);
+
+        const bytes = await image.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        await writeFile(filePath, buffer);
+        imagePath = `/uploads/services/${fileName}`;
+    }
+
+    // Prepare update data
+    const updateData: any = {
+        name,
+        // slug, // Disable auto-slug update to keep links stable
+        description: description || '',
+        active,
+        isHidden,
+        categoryId,
+    };
+    
+    // Optional: Allow manual slug update if provided
+    const manualSlug = formData.get('slug') as string;
+    if (manualSlug) {
+        updateData.slug = manualSlug
+          .toLowerCase()
+          .replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .trim();
+    }
+    
+    if (imagePath) {
+        updateData.icon = imagePath;
+    }
 
     // Update service basic info
     await prisma.service.update({
       where: { id },
-      data: {
-        name,
-        slug,
-        description: description || '',
-        active: active !== false,
-        categoryId,
-      },
+      data: updateData,
     });
 
     // Handle Variants
@@ -201,32 +259,34 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         const field = fields[i];
         let fieldId = field.id;
 
-        if (field.id.startsWith('temp-')) {
-          const newField = await prisma.serviceField.create({
-            data: {
-              serviceId: id,
-              name: field.name || `field_${i}`,
-              label: field.label,
-              type: field.type || 'select',
-              required: field.required !== false,
-              orderIndex: i,
-              showIf: field.showIf || null,
-            },
-          });
-          fieldId = newField.id;
-        } else {
-          await prisma.serviceField.update({
-            where: { id: field.id },
-            data: {
-              name: field.name,
-              label: field.label,
-              type: field.type,
-              required: field.required !== false,
-              orderIndex: i,
-              showIf: field.showIf || null,
-            },
-          });
-        }
+          if (field.id.startsWith('temp-')) {
+            const newField = await prisma.serviceField.create({
+              data: {
+                serviceId: id,
+                name: field.name || `field_${i}`,
+                label: field.label,
+                type: field.type || 'select',
+                placeholder: field.placeholder || null,
+                required: field.required !== false,
+                orderIndex: i,
+                showIf: field.showIf || null,
+              },
+            });
+            fieldId = newField.id;
+          } else {
+            await prisma.serviceField.update({
+              where: { id: field.id },
+              data: {
+                name: field.name,
+                label: field.label,
+                type: field.type,
+                placeholder: field.placeholder || null,
+                required: field.required !== false,
+                orderIndex: i,
+                showIf: field.showIf || null,
+              },
+            });
+          }
 
         // Handle Options
         if (field.options && Array.isArray(field.options)) {
@@ -299,9 +359,45 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json({ success: true, service: updatedService });
   } catch (error) {
-    console.error('PUT Service Error:', error);
+    // console.error('PUT Service Error:', error);
     return NextResponse.json(
       { success: false, error: 'حدث خطأ أثناء تحديث الخدمة' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const session = await requireAuth();
+
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { success: false, error: 'غير مصرح لك بالوصول لهذه الصفحة' },
+        { status: 403 }
+      );
+    }
+
+    const { id } = params;
+    const body = await request.json();
+    const { active } = body;
+
+    if (typeof active !== 'boolean') {
+        return NextResponse.json(
+            { success: false, error: 'بيانات غير صالحة' },
+            { status: 400 }
+        );
+    }
+
+    const service = await prisma.service.update({
+      where: { id },
+      data: { active },
+    });
+
+    return NextResponse.json({ success: true, service });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: 'حدث خطأ أثناء تحديث حالة الخدمة' },
       { status: 500 }
     );
   }
@@ -337,7 +433,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('DELETE Service Error:', error);
+    // console.error('DELETE Service Error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء حذف الخدمة' }, { status: 500 });
   }
 }

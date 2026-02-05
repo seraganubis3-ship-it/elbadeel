@@ -58,7 +58,8 @@ export function useCreateOrder() {
   >([]);
   const [showDependentDropdown, setShowDependentDropdown] = useState(false);
   const [searchingDependent, setSearchingDependent] = useState(false);
-  const [suggestion, setSuggestion] = useState(''); // 👻 Ghost Text Suggestion
+  const [dependentSuggestion, setDependentSuggestion] = useState(''); // Ghost Text for Dependent
+  const [suggestion, setSuggestion] = useState(''); // 👻 Ghost Text Suggestion (Customer)
 
   // Service search
   const [serviceSearchTerm, setServiceSearchTerm] = useState('');
@@ -145,7 +146,7 @@ export function useCreateOrder() {
         }
       }, 400);
     },
-    [selectedVariant?.id]
+    [selectedVariant]
   );
 
   // Cleanup on unmount
@@ -171,13 +172,13 @@ export function useCreateOrder() {
             // Flatten all services from all categories
             const allServices = data.categories.flatMap((cat: Category) => cat.services || []);
             setServices(allServices);
-            console.log('✅ Loaded services:', allServices.length);
+            // console.log('✅ Loaded services:', allServices.length);
           }
         } else {
           showErrorRef.current?.('خطأ في الاتصال', 'فشل في تحميل الخدمات');
         }
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        // console.error('Error fetching categories:', error);
         showErrorRef.current?.('خطأ في الاتصال', 'فشل في الاتصال بالخادم');
       } finally {
         setLoading(false);
@@ -286,10 +287,11 @@ export function useCreateOrder() {
       apartmentNumber: cust.apartmentNumber || '',
       landmark: cust.landmark || '',
       birthDate: formattedBirthDate,
-      fatherName: (cust as any).fatherName || '',
       idNumber: (cust as any).idNumber || '',
+      fatherName: (cust as any).fatherName || '',
       motherName: (cust as any).motherName || '',
       nationality: (cust as any).nationality || '',
+      gender: (cust as any).gender || '',
       wifeName: (cust as any).wifeName || '',
       age:
         formattedBirthDate && formattedBirthDate.length === 10
@@ -360,6 +362,18 @@ export function useCreateOrder() {
     // Other fees
     total += formData.otherFees * 100;
 
+    // Passport Surcharge: 200 EGP for Agouza, Zayed, 6 October (Normal/Urgent only)
+    const isPassportService = selectedService?.slug?.toLowerCase().includes('passport') || 
+                              selectedService?.name?.toLowerCase().includes('passport') || 
+                              selectedService?.name?.includes('جواز');
+
+    if (isPassportService && selectedVariant && (selectedVariant.name.includes('عادي') || selectedVariant.name.includes('سريع'))) {
+       const station = formData.policeStation?.trim();
+       if (['العجوزة', 'الشيخ زايد', '6 أكتوبر'].includes(station)) {
+          total += 20000;
+       }
+    }
+
     // Discount
     const discountAmount = parseFloat(formData.discount) || 0;
     total -= discountAmount * 100;
@@ -375,6 +389,9 @@ export function useCreateOrder() {
     manualServices,
     formData.otherFees,
     formData.discount,
+    formData.policeStation,
+    selectedService?.slug,
+    selectedService?.name,
   ]);
 
   // Update remaining amount
@@ -535,16 +552,26 @@ export function useCreateOrder() {
             setDependentSearchResults(data.dependents);
             setSuggestedDependent(data.dependents[0]);
             setShowDependentDropdown(data.dependents.length > 1);
+
+            // Compute Ghost Text for Dependent
+            const bestMatch = data.dependents[0].name;
+            if (bestMatch.toLowerCase().startsWith(name.toLowerCase())) {
+              setDependentSuggestion(bestMatch);
+            } else {
+              setDependentSuggestion('');
+            }
           } else {
             setDependentSearchResults([]);
             setSuggestedDependent(null);
             setShowDependentDropdown(false);
+            setDependentSuggestion('');
           }
         }
       } catch {
         setDependentSearchResults([]);
         setSuggestedDependent(null);
         setShowDependentDropdown(false);
+        setDependentSuggestion('');
       } finally {
         setSearchingDependent(false);
       }
@@ -664,7 +691,32 @@ export function useCreateOrder() {
     return null;
   }, [session]);
 
-  // Handle submit
+
+  
+  // Handle form reset
+  const handleReset = useCallback(() => {
+    setFormData(initialFormData);
+    setSelectedService(null);
+    setSelectedVariant(null);
+    setCustomer(null);
+    setSuggestedUser(null);
+    setSuggestedDependent(null);
+    setDependentSearchResults([]);
+    setSearchResults([]);
+    setSelectedFines([]);
+    setManualServices({});
+    setUploadedFiles([]);
+    setAttachmentName('');
+    setAttachmentFile(null);
+    setFormSerialNumber('');
+    setSerialValid(null);
+    setServiceSearchTerm('');
+    setFinesSearchTerm('');
+    setServicesSearchTerm('');
+    setSuggestion('');
+    setDependentSuggestion('');
+  }, []);
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -672,6 +724,7 @@ export function useCreateOrder() {
         showWarning('الخدمة مطلوبة', 'يرجى اختيار الخدمة ونوعها أولاً');
         return;
       }
+      // 1. GLOBAL VALIDATION
       if (!formData.customerName.trim()) {
         showWarning('اسم العميل مطلوب', 'يرجى إدخال اسم العميل');
         return;
@@ -680,6 +733,43 @@ export function useCreateOrder() {
         showWarning('رقم الهاتف مطلوب', 'يرجى إدخال رقم الهاتف');
         return;
       }
+      
+      const hasIdNumber = formData.idNumber && formData.idNumber.length === 14;
+      const hasBirthDate = formData.birthDate && formData.birthDate.trim().length > 0;
+
+      if (!hasIdNumber && !hasBirthDate) {
+        showWarning('بيانات ناقصة', 'يرجى إدخال الرقم القومي (14 رقم) أو تاريخ الميلاد على الأقل');
+        return;
+      }
+
+      // 2. SERVICE-SPECIFIC VALIDATION
+      const serviceName = selectedService.name;
+
+      if (serviceName.includes('ميلاد')) {
+        if (!formData.motherName?.trim()) {
+           showWarning('نقص في البيانات', 'اسم الأم مطلوب لاستخراج شهادة الميلاد');
+           return;
+        }
+        if (!formData.birthDate?.trim()) {
+           showWarning('نقص في البيانات', 'تاريخ الميلاد مطلوب لاستخراج شهادة الميلاد');
+           return;
+        }
+      }
+
+      if (serviceName.includes('وفاة')) {
+        if (!formData.deathDate?.trim()) {
+           showWarning('نقص في البيانات', 'تاريخ الوفاة مطلوب لاستخراج شهادة الوفاة');
+           return;
+        }
+      }
+
+      if (serviceName.includes('زواج') || serviceName.includes('طلاق')) {
+        if (!formData.wifeName?.trim()) {
+           showWarning('نقص في البيانات', 'اسم الزوج/الزوجة مطلوب');
+           return;
+        }
+      }
+
       const phoneRegex = /^[0-9+\-\s()]+$/;
       if (!phoneRegex.test(formData.customerPhone)) {
         showWarning('رقم الهاتف غير صحيح', 'يرجى إدخال رقم هاتف صحيح');
@@ -722,6 +812,7 @@ export function useCreateOrder() {
           idNumber: formData.idNumber,
           motherName: formData.motherName,
           nationality: formData.nationality,
+          gender: formData.gender,
           wifeName: formData.wifeName,
           paymentMethod: formData.paymentMethod,
           paidAmount: (parseFloat(formData.paidAmount) || 0) * 100,
@@ -731,6 +822,7 @@ export function useCreateOrder() {
           quantity: formData.quantity,
           marriageDate: formData.marriageDate,
           divorceDate: formData.divorceDate,
+          customerFollowUp: formData.customerFollowUp,
           wifeMotherName: formData.wifeMotherName,
           serviceDetails: formData.serviceDetails,
           otherFees: formData.otherFees,
@@ -781,13 +873,19 @@ export function useCreateOrder() {
           const orderId = data.order.id;
           showSuccess('تم إنشاء الطلب بنجاح! 🎉', `تم إنشاء الطلب #${orderId} بنجاح`);
           setTimeout(() => {
+            // Check if user wants to print receipt
             const shouldPrint = window.confirm('هل تريد طباعة إيصال؟');
             if (shouldPrint) {
+              // Open receipt in new tab if possible, or redirect
+              // Usually redirecting is fine, but user wants to stay if CANCEL is clicked.
+              // If YES is clicked, we redirect to receipt page.
               router.push(`/admin/orders/${orderId}/receipt`);
             } else {
-              router.push(`/admin/orders/${orderId}`);
+              // If NO, reset form and stay on page
+              handleReset();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             }
-          }, 1500);
+          }, 500); // Reduced delay slightly
         } else {
           const errorData = await response.json();
           showError(
@@ -814,6 +912,7 @@ export function useCreateOrder() {
       showError,
       showSuccess,
       router,
+      handleReset,
     ]
   );
 
@@ -912,6 +1011,8 @@ export function useCreateOrder() {
     handleUpdateCustomerName,
     requiredDocuments,
     calculateTotal,
+    dependentSuggestion, // Exported for UI
     handleSubmit,
+    handleReset,
   };
 }

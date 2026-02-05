@@ -8,15 +8,13 @@ export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
-    phone: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -48,27 +46,17 @@ export default function RegisterPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
-          email: formData.email,
-          password: formData.password,
           phone: formData.phone,
+          password: formData.password,
         }),
       });
 
       if (res.ok) {
-        const data = await res.json();
-        if (data.verificationSent) {
-          router.push(`/verify-code?email=${encodeURIComponent(formData.email)}`);
-        } else {
-          router.push('/login?message=تم إنشاء الحساب بنجاح');
-        }
+        router.push('/login?message=تم إنشاء الحساب بنجاح');
       } else {
         const errorData = await res.json();
 
-        if (errorData.action === 'VERIFY_EXISTING') {
-          router.push(
-            `/verify-code?email=${encodeURIComponent(formData.email)}&action=verify_existing&userId=${errorData.userId}`
-          );
-        } else if (errorData.action === 'LOGIN_EXISTING') {
+        if (errorData.action === 'LOGIN_EXISTING') {
           router.push(`/login?message=${encodeURIComponent(errorData.message)}`);
         } else {
           setError(errorData.error || 'فشل في إنشاء الحساب');
@@ -80,11 +68,6 @@ export default function RegisterPage() {
 
     setLoading(false);
   }
-
-  const steps = [
-    { number: 1, label: 'البيانات الشخصية' },
-    { number: 2, label: 'بيانات الدخول' },
-  ];
 
   return (
     <div className='min-h-screen w-full flex' dir='rtl'>
@@ -114,45 +97,6 @@ export default function RegisterPage() {
             <p className='text-slate-500 text-lg'>انضم إلينا واحصل على خدماتنا المميزة</p>
           </div>
 
-          {/* Step Indicator */}
-          <div className='flex items-center gap-4 mb-8'>
-            {steps.map((step, index) => (
-              <div key={step.number} className='flex items-center gap-2'>
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
-                    currentStep >= step.number
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-slate-100 text-slate-400'
-                  }`}
-                >
-                  {currentStep > step.number ? (
-                    <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={3}
-                        d='M5 13l4 4L19 7'
-                      />
-                    </svg>
-                  ) : (
-                    step.number
-                  )}
-                </div>
-                <span
-                  className={`text-sm font-medium hidden sm:block ${currentStep >= step.number ? 'text-slate-900' : 'text-slate-400'}`}
-                >
-                  {step.label}
-                </span>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`flex-1 h-0.5 mx-2 rounded-full ${currentStep > step.number ? 'bg-emerald-500' : 'bg-slate-200'}`}
-                    style={{ width: '40px' }}
-                  ></div>
-                )}
-              </div>
-            ))}
-          </div>
-
           {/* Error Message */}
           {error && (
             <div className='mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl'>
@@ -165,89 +109,92 @@ export default function RegisterPage() {
 
           {/* Form */}
           <form onSubmit={onSubmit} className='space-y-5'>
-            {currentStep === 1 && (
-              <>
-                {/* Name */}
-                <div>
-                  <label className='block text-sm font-bold text-slate-700 mb-2'>
-                    الاسم الكامل
-                  </label>
-                  <div className='relative'>
-                    <input
-                      type='text'
-                      name='name'
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
-                      placeholder='أدخل اسمك الكامل'
+            {/* Name */}
+            <div>
+              <label className='block text-sm font-bold text-slate-700 mb-2'>
+                الاسم الكامل
+              </label>
+              <div className='relative'>
+                <input
+                  type='text'
+                  name='name'
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
+                  placeholder='أدخل اسمك الكامل'
+                />
+                <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
                     />
-                    <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
-                      <svg
-                        className='w-5 h-5'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-                        />
-                      </svg>
-                    </div>
-                  </div>
+                  </svg>
                 </div>
+              </div>
+            </div>
 
-                {/* Phone */}
-                <div>
-                  <label className='block text-sm font-bold text-slate-700 mb-2'>رقم الهاتف</label>
-                  <div className='relative'>
-                    <input
-                      type='tel'
-                      name='phone'
-                      value={formData.phone}
-                      onChange={handleChange}
-                      required
-                      className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
-                      placeholder='01xxxxxxxxx'
+            {/* Phone */}
+            <div>
+              <label className='block text-sm font-bold text-slate-700 mb-2'>رقم الهاتف</label>
+              <div className='relative'>
+                <input
+                  type='tel'
+                  name='phone'
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
+                  placeholder='01xxxxxxxxx'
+                />
+                <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z'
                     />
-                    <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
-                      <svg
-                        className='w-5 h-5'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z'
-                        />
-                      </svg>
-                    </div>
-                  </div>
+                  </svg>
                 </div>
+              </div>
+            </div>
 
-                {/* Next Button */}
+            {/* Password */}
+            <div>
+              <label className='block text-sm font-bold text-slate-700 mb-2'>كلمة المرور</label>
+              <div className='relative'>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name='password'
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  minLength={6}
+                  className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
+                  placeholder='6 أحرف على الأقل'
+                />
                 <button
                   type='button'
-                  onClick={() => {
-                    if (formData.name && formData.phone) {
-                      setCurrentStep(2);
-                      setError(null);
-                    } else {
-                      setError('يرجى ملء جميع الحقول');
-                    }
-                  }}
-                  className='w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 px-8 rounded-2xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 focus:ring-4 focus:ring-emerald-500/30 transition-all shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98]'
+                  onClick={() => setShowPassword(!showPassword)}
+                  className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors'
                 >
-                  <span className='flex items-center justify-center gap-2'>
-                    التالي
+                  {showPassword ? (
                     <svg
-                      className='w-5 h-5 rtl:rotate-180'
+                      className='w-5 h-5'
                       fill='none'
                       viewBox='0 0 24 24'
                       stroke='currentColor'
@@ -256,210 +203,111 @@ export default function RegisterPage() {
                         strokeLinecap='round'
                         strokeLinejoin='round'
                         strokeWidth={2}
-                        d='M9 5l7 7-7 7'
+                        d='M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21'
                       />
                     </svg>
-                  </span>
-                </button>
-              </>
-            )}
-
-            {currentStep === 2 && (
-              <>
-                {/* Email */}
-                <div>
-                  <label className='block text-sm font-bold text-slate-700 mb-2'>
-                    البريد الإلكتروني
-                  </label>
-                  <div className='relative'>
-                    <input
-                      type='email'
-                      name='email'
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
-                      placeholder='example@email.com'
-                    />
-                    <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
-                      <svg
-                        className='w-5 h-5'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div>
-                  <label className='block text-sm font-bold text-slate-700 mb-2'>كلمة المرور</label>
-                  <div className='relative'>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name='password'
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                      minLength={6}
-                      className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
-                      placeholder='6 أحرف على الأقل'
-                    />
-                    <button
-                      type='button'
-                      onClick={() => setShowPassword(!showPassword)}
-                      className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors'
+                  ) : (
+                    <svg
+                      className='w-5 h-5'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'
                     >
-                      {showPassword ? (
-                        <svg
-                          className='w-5 h-5'
-                          fill='none'
-                          viewBox='0 0 24 24'
-                          stroke='currentColor'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21'
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className='w-5 h-5'
-                          fill='none'
-                          viewBox='0 0 24 24'
-                          stroke='currentColor'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
-                          />
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'
-                          />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                      />
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
 
-                {/* Confirm Password */}
-                <div>
-                  <label className='block text-sm font-bold text-slate-700 mb-2'>
-                    تأكيد كلمة المرور
-                  </label>
-                  <div className='relative'>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name='confirmPassword'
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      required
-                      className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
-                      placeholder='أعد إدخال كلمة المرور'
+            {/* Confirm Password */}
+            <div>
+              <label className='block text-sm font-bold text-slate-700 mb-2'>
+                تأكيد كلمة المرور
+              </label>
+              <div className='relative'>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name='confirmPassword'
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  className='w-full px-5 py-4 pr-12 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400'
+                  placeholder='أعد إدخال كلمة المرور'
+                />
+                <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
                     />
-                    <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
-                      <svg
-                        className='w-5 h-5'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
-                        />
-                      </svg>
-                    </div>
-                  </div>
+                  </svg>
                 </div>
+              </div>
+            </div>
 
-                {/* Buttons */}
-                <div className='flex gap-3'>
-                  <button
-                    type='button'
-                    onClick={() => setCurrentStep(1)}
-                    className='flex-1 bg-slate-100 text-slate-700 py-4 px-6 rounded-2xl font-bold text-lg hover:bg-slate-200 transition-all'
+            {/* Submit Button */}
+            <button
+              type='submit'
+              disabled={loading}
+              className='w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 px-8 rounded-2xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 focus:ring-4 focus:ring-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98]'
+            >
+              {loading ? (
+                <span className='flex items-center justify-center gap-3'>
+                  <svg className='w-5 h-5 animate-spin' fill='none' viewBox='0 0 24 24'>
+                    <circle
+                      className='opacity-25'
+                      cx='12'
+                      cy='12'
+                      r='10'
+                      stroke='currentColor'
+                      strokeWidth='4'
+                    ></circle>
+                    <path
+                      className='opacity-75'
+                      fill='currentColor'
+                      d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z'
+                    ></path>
+                  </svg>
+                  جاري الإنشاء...
+                </span>
+              ) : (
+                <span className='flex items-center justify-center gap-2'>
+                  إنشاء الحساب
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
                   >
-                    <span className='flex items-center justify-center gap-2'>
-                      <svg
-                        className='w-5 h-5 rtl:rotate-180'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M15 19l-7-7 7-7'
-                        />
-                      </svg>
-                      السابق
-                    </span>
-                  </button>
-                  <button
-                    type='submit'
-                    disabled={loading}
-                    className='flex-[2] bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 px-8 rounded-2xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 focus:ring-4 focus:ring-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98]'
-                  >
-                    {loading ? (
-                      <span className='flex items-center justify-center gap-3'>
-                        <svg className='w-5 h-5 animate-spin' fill='none' viewBox='0 0 24 24'>
-                          <circle
-                            className='opacity-25'
-                            cx='12'
-                            cy='12'
-                            r='10'
-                            stroke='currentColor'
-                            strokeWidth='4'
-                          ></circle>
-                          <path
-                            className='opacity-75'
-                            fill='currentColor'
-                            d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z'
-                          ></path>
-                        </svg>
-                        جاري الإنشاء...
-                      </span>
-                    ) : (
-                      <span className='flex items-center justify-center gap-2'>
-                        إنشاء الحساب
-                        <svg
-                          className='w-5 h-5'
-                          fill='none'
-                          viewBox='0 0 24 24'
-                          stroke='currentColor'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z'
-                          />
-                        </svg>
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </>
-            )}
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z'
+                    />
+                  </svg>
+                </span>
+              )}
+            </button>
           </form>
 
           {/* Login Link */}

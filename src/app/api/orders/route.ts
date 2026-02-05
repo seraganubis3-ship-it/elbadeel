@@ -208,6 +208,7 @@ export async function POST(request: NextRequest) {
     totalCents = totalCents - discountAmount;
 
     const orderData = {
+      status: 'waiting_confirmation',
       serviceId,
       variantId,
       notes,

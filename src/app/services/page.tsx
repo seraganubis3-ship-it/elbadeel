@@ -14,7 +14,7 @@ export default async function ServicesPage() {
     include: {
       services: {
         where: { active: true },
-        orderBy: { name: 'asc' },
+        orderBy: { orderIndex: 'asc' },
         include: {
           variants: {
             where: { active: true },

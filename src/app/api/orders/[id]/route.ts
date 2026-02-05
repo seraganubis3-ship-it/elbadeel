@@ -63,6 +63,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         customerEmail: order.customerEmail,
         address: order.address,
         notes: order.notes,
+        selectedFines: order.selectedFines,
+        finesDetails: order.finesDetails,
         documents: order.documents,
       },
     });

@@ -23,8 +23,8 @@ export default async function HomePage() {
     orderBy: { orderIndex: 'asc' },
     include: {
       services: {
-        where: { active: true },
-        orderBy: { name: 'asc' },
+        where: { active: true, isHidden: false },
+        orderBy: { orderIndex: 'asc' },
         include: {
           variants: {
             where: { active: true },

@@ -102,28 +102,52 @@ export default function DocumentUploader({
 
               {/* Upload Area */}
               <div className='relative'>
+                {/* Inputs */}
                 <input
                   type='file'
-                  id={`file-${doc.id}`}
+                  id={`file-camera-${doc.id}`}
+                  className='hidden'
+                  accept='image/*'
+                  capture='environment'
+                  onChange={e => onFileSelect(doc.id, e.target.files?.[0] || null)}
+                />
+                <input
+                  type='file'
+                  id={`file-gallery-${doc.id}`}
                   className='hidden'
                   accept='image/*,.pdf'
                   onChange={e => onFileSelect(doc.id, e.target.files?.[0] || null)}
                 />
 
-                <label
-                  htmlFor={`file-${doc.id}`}
-                  className={`
-                    relative flex flex-col items-center justify-center w-full h-36 sm:h-40 
-                    rounded-2xl border-2 border-dashed cursor-pointer
-                    transition-all duration-300 overflow-hidden
-                    ${
-                      file
-                        ? 'border-emerald-400 bg-gradient-to-br from-emerald-50/50 to-teal-50/50'
-                        : 'border-slate-200 hover:border-emerald-400 hover:bg-gradient-to-br hover:from-slate-50 hover:to-emerald-50/30'
-                    }
-                  `}
-                >
-                  {file ? (
+                {!file ? (
+                   <div className="grid grid-cols-2 gap-3">
+                      {/* Camera Option */}
+                      <label
+                        htmlFor={`file-camera-${doc.id}`}
+                        className="flex flex-col items-center justify-center p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all h-36 group/camera"
+                      >
+                         <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-2 group-hover/camera:scale-110 transition-transform">📸</div>
+                         <span className="font-bold text-slate-700 text-sm">تصوير</span>
+                      </label>
+
+                      {/* Gallery Option */}
+                      <label
+                        htmlFor={`file-gallery-${doc.id}`}
+                        className="flex flex-col items-center justify-center p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all h-36 group/gallery"
+                      >
+                         <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xl mb-2 group-hover/gallery:scale-110 transition-transform">🖼️</div>
+                         <span className="font-bold text-slate-700 text-sm">ملف</span>
+                      </label>
+                   </div>
+                ) : (
+                  <div
+                    className={`
+                      relative flex flex-col items-center justify-center w-full h-36 sm:h-40 
+                      rounded-2xl border-2 border-solid
+                      transition-all duration-300 overflow-hidden
+                      border-emerald-400 bg-gradient-to-br from-emerald-50/50 to-teal-50/50
+                    `}
+                  >
                     <div className='flex items-center gap-4 w-full px-4 sm:px-6'>
                       {/* Preview Thumbnail */}
                       <div className='w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 shrink-0 overflow-hidden'>
@@ -173,48 +197,26 @@ export default function DocumentUploader({
                         </svg>
                       </div>
                     </div>
-                  ) : (
-                    <div className='text-center p-4'>
-                      <div className='w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-sm'>
-                        <svg
-                          className='w-6 h-6'
-                          fill='none'
-                          viewBox='0 0 24 24'
-                          stroke='currentColor'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12'
-                          />
-                        </svg>
-                      </div>
-                      <p className='font-bold text-slate-700 text-sm'>اضغط للرفع أو اسحب الملف</p>
-                      <p className='text-[11px] text-slate-400 mt-1'>PNG, JPG, PDF (حتى 5MB)</p>
-                    </div>
-                  )}
-                </label>
 
-                {/* Remove Button */}
-                {file && (
-                  <button
-                    onClick={e => {
-                      e.preventDefault();
-                      onFileSelect(doc.id, null);
-                    }}
-                    className='absolute top-2 left-2 p-2 bg-white rounded-xl text-rose-500 shadow-md hover:bg-rose-50 border border-slate-200 transition-all z-10 hover:scale-105'
-                    title='حذف الملف'
-                  >
-                    <svg className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M6 18L18 6M6 6l12 12'
-                      />
-                    </svg>
-                  </button>
+                    {/* Remove Button */}
+                    <button
+                      onClick={e => {
+                        e.preventDefault();
+                        onFileSelect(doc.id, null);
+                      }}
+                      className='absolute top-2 left-2 p-2 bg-white rounded-xl text-rose-500 shadow-md hover:bg-rose-50 border border-slate-200 transition-all z-10 hover:scale-105'
+                      title='حذف الملف'
+                    >
+                      <svg className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={2}
+                          d='M6 18L18 6M6 6l12 12'
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 )}
               </div>
 

@@ -53,7 +53,7 @@ export default function CreateServicePage() {
         setCategories(data.categories);
       }
     } catch (error) {
-      console.error(error);
+      // console.error(error);
     }
   };
 
@@ -120,7 +120,7 @@ export default function CreateServicePage() {
       }
     } catch (error) {
       alert('حدث خطأ أثناء إنشاء الخدمة');
-      console.error(error);
+      // console.error(error);
     } finally {
       setLoading(false);
     }

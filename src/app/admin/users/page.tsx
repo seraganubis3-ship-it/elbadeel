@@ -601,7 +601,7 @@ export default function AdminUsersPage() {
               عملاء المكتب
             </button>
             <button
-              onClick={() => onRoleChange('ADMIN')}
+              onClick={() => onRoleChange('MANAGEMENT')}
               className='px-6 py-4 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl text-purple-800 font-semibold border border-purple-200 hover:shadow-md transition-all duration-200 flex items-center gap-3'
             >
               <div className='w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center'>

@@ -207,6 +207,7 @@ export async function POST(request: NextRequest) {
       idNumber,
       motherName,
       nationality,
+      gender,
       wifeName,
       paymentMethod,
       paidAmount,
@@ -370,6 +371,7 @@ export async function POST(request: NextRequest) {
           idNumber: idNumber || undefined,
           motherName: motherName || undefined,
           nationality: nationality || undefined,
+          gender: gender || undefined,
           wifeName: wifeName || undefined,
           wifeMotherName: wifeMotherName || undefined,
           createdByAdminId: adminUserId,
@@ -406,6 +408,7 @@ export async function POST(request: NextRequest) {
       assignIfMissing('idNumber', idNumber);
       assignIfMissing('motherName', motherName);
       assignIfMissing('nationality', nationality);
+      assignIfMissing('gender', gender);
       assignIfMissing('wifeName', wifeName);
       assignIfMissing('wifeMotherName', wifeMotherName);
 
@@ -415,7 +418,7 @@ export async function POST(request: NextRequest) {
       userId = u.id;
     }
 
-    let orderStatus = 'PENDING';
+    let orderStatus = 'processing';
     const promoCode = body.promoCode as string | undefined;
     let discountAmountCents = 0;
     let promoCodeId: string | undefined = undefined;
@@ -585,6 +588,20 @@ export async function POST(request: NextRequest) {
           createdAt: workDate,
         },
       });
+    }
+
+    if (customerFollowUp) {
+      try {
+        const depName = customerFollowUp.trim();
+        if (depName) {
+           const existing = await prisma.dependent.findFirst({ where: { name: { equals: depName, mode: 'insensitive' } } });
+           if (!existing) {
+             await prisma.dependent.create({ data: { name: depName } });
+           }
+        }
+      } catch (e) {
+        // Ignore dependent save errors
+      }
     }
 
     return NextResponse.json({

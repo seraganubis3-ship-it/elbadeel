@@ -4,22 +4,24 @@
 // Order Status Values (stored in database)
 export const ORDER_STATUS = {
   // الحالات الأساسية
-  WAITING_CONFIRMATION: 'WAITING_CONFIRMATION', // انتظار التأكيد
-  WAITING_PAYMENT: 'WAITING_PAYMENT', // انتظار الدفع
-  PARTIAL_PAYMENT: 'PARTIAL_PAYMENT', // دفع جزئي
-  PAYMENT_CONFIRMED: 'PAYMENT_CONFIRMED', // تم تأكيد الدفع
-  SETTLEMENT: 'SETTLEMENT', // تسديد
-  FULFILLMENT: 'FULFILLMENT', // استيفاء
-  SUPPLY: 'SUPPLY', // توريد
-  READY: 'READY', // جاهز للتسليم
-  DELIVERED: 'DELIVERED', // تم التسليم
-  RETURNED: 'RETURNED', // مرتجع
-  CANCELLED: 'CANCELLED', // ملغي
+  WAITING_CONFIRMATION: 'waiting_confirmation', // انتظار المراجعة
+  WAITING_PAYMENT: 'waiting_payment', // تم مراجعة (في انتظار الدفع)
+  PAYMENT_REVIEW: 'payment_review', // جاري مراجعة الدفع
+  PARTIAL_PAYMENT: 'partial_payment', // دفع جزئي
+  PAYMENT_CONFIRMED: 'payment_confirmed', // تم تأكيد الدفع
+  SETTLEMENT: 'settlement', // تسديد
+  FULFILLMENT: 'fulfillment', // استيفاء
+  SUPPLY: 'supply', // ورود
+  READY: 'ready', // جاهز للتسليم
+  DELIVERED: 'delivered', // تم التسليم
+  RETURNED: 'returned', // مرتجع
+  CANCELLED: 'cancelled', // ملغي
+  PROCESSING: 'processing', // تحت التنفيذ
 
   // Aliases for backwards compatibility
-  PENDING: 'WAITING_CONFIRMATION',
-  IN_PROGRESS: 'FULFILLMENT',
-  COMPLETED: 'DELIVERED',
+  PENDING: 'waiting_confirmation',
+  IN_PROGRESS: 'fulfillment',
+  COMPLETED: 'delivered',
 } as const;
 
 export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
@@ -38,22 +40,40 @@ export const ORDER_STATUS_CONFIG: Record<
   }
 > = {
   [ORDER_STATUS.WAITING_CONFIRMATION]: {
-    label: 'انتظار التأكيد',
-    labelEn: 'Waiting Confirmation',
-    description: 'تم استلام طلبك وسيتم تأكيده قريباً',
+    label: 'انتظار المراجعة',
+    labelEn: 'Waiting Review',
+    description: 'تم استلام طلبك وسيتم مراجعته',
     icon: '⏳',
     color: 'text-yellow-800',
     bgColor: 'bg-yellow-100',
     borderColor: 'border-yellow-200',
   },
   [ORDER_STATUS.WAITING_PAYMENT]: {
-    label: 'انتظار الدفع',
-    labelEn: 'Waiting Payment',
-    description: 'في انتظار دفع المبلغ المطلوب',
+    label: 'تم مراجعة (في انتظار الدفع)',
+    labelEn: 'Reviewed (Pending Payment)',
+    description: 'تمت المراجعة، يرجى سداد الرسوم',
     icon: '💳',
     color: 'text-orange-800',
     bgColor: 'bg-orange-100',
     borderColor: 'border-orange-200',
+  },
+  'PROCESSING': {
+      label: 'تحت التنفيذ',
+      labelEn: 'Processing',
+      description: 'جاري تنفيذ الطلب',
+      icon: '⚡',
+      color: 'text-blue-800',
+      bgColor: 'bg-blue-100',
+      borderColor: 'border-blue-200',
+  },
+  [ORDER_STATUS.PAYMENT_REVIEW]: {
+    label: 'جاري مراجعة الدفع',
+    labelEn: 'Payment Review',
+    description: 'تم إرسال الدفعة وجاري مراجعتها',
+    icon: '⏳',
+    color: 'text-blue-800',
+    bgColor: 'bg-blue-100',
+    borderColor: 'border-blue-200',
   },
   [ORDER_STATUS.PARTIAL_PAYMENT]: {
     label: 'دفع جزئي',
@@ -92,7 +112,7 @@ export const ORDER_STATUS_CONFIG: Record<
     borderColor: 'border-purple-200',
   },
   [ORDER_STATUS.SUPPLY]: {
-    label: 'توريد',
+    label: 'ورود',
     labelEn: 'Supply',
     description: 'قيد التوريد والإعداد',
     icon: '📦',

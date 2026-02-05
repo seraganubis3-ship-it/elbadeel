@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 import { z } from 'zod';
 
 const paymentSchema = z.object({
   method: z.enum(['VODAFONE_CASH', 'INSTA_PAY']),
   senderPhone: z.string().min(11, 'رقم الهاتف يجب أن يكون 11 رقم على الأقل'),
-  paymentScreenshot: z.string().optional(),
 });
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -14,7 +15,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const session = await requireAuth();
     const { id } = params;
 
-    // Get order
     const order = await prisma.order.findUnique({
       where: { id },
       include: { service: true, variant: true },
@@ -28,12 +28,47 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذا الطلب' }, { status: 403 });
     }
 
-    if (order.status !== 'PENDING') {
+    if (order.status !== 'waiting_payment') {
       return NextResponse.json({ error: 'لا يمكن الدفع لهذا الطلب' }, { status: 400 });
     }
 
-    const body = await request.json();
-    const { method, senderPhone, paymentScreenshot } = paymentSchema.parse(body);
+    const formData = await request.formData();
+    const method = formData.get('method') as 'VODAFONE_CASH' | 'INSTA_PAY';
+    const senderPhone = formData.get('senderPhone') as string;
+    const file = formData.get('screenshot') as File | null;
+
+    // Validate textual data
+    paymentSchema.parse({ method, senderPhone });
+
+    let screenshotPath = null;
+
+    // Handle File Upload
+    if (file) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      // Create unique filename
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const filename = `payment-${id}-${uniqueSuffix}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+      const uploadDir = join(process.cwd(), 'public', 'uploads', 'payments');
+      
+      await mkdir(uploadDir, { recursive: true });
+      await writeFile(join(uploadDir, filename), buffer);
+      
+      screenshotPath = `/uploads/payments/${filename}`;
+
+      // Create OrderDocument for the receipt
+      await prisma.orderDocument.create({
+        data: {
+          orderId: id,
+          fileName: `إيصال دفع - ${method === 'VODAFONE_CASH' ? 'فودافون' : 'انستا'}`,
+          filePath: screenshotPath,
+          fileSize: file.size,
+          fileType: file.type || 'image/jpeg',
+          documentType: 'PAYMENT_RECEIPT',
+        },
+      });
+    }
 
     // Create or update payment
     const payment = await prisma.payment.upsert({
@@ -41,7 +76,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       update: {
         method,
         senderPhone,
-        paymentScreenshot: paymentScreenshot ?? null,
+        paymentScreenshot: screenshotPath,
         status: 'PENDING',
         updatedAt: new Date(),
       },
@@ -52,14 +87,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         method,
         status: 'PENDING',
         senderPhone,
-        paymentScreenshot: paymentScreenshot ?? null,
+        paymentScreenshot: screenshotPath,
       },
     });
 
     await prisma.order.update({
       where: { id },
-      data: { status: 'PAYMENT_PENDING' },
+      data: { status: 'payment_review' },
     });
+    
     return NextResponse.json({
       success: true,
       paymentId: payment.id,
@@ -73,6 +109,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         { status: 400 }
       );
     }
+    // console.error('Payment Error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء معالجة الدفع' }, { status: 500 });
   }
 }

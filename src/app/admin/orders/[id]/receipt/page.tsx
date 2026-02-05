@@ -120,6 +120,10 @@ export default function ReceiptPage() {
 
   const isPassport =
     order.service?.slug === 'passports' || (order.service?.name || '').includes('جواز');
+  
+  const isNationalId = 
+    order.service?.slug === 'national-id' || (order.service?.name || '').includes('بطاقة');
+
   const format = (cents?: number | null) => ((cents || 0) / 100).toFixed(2);
 
   // Parse fines and services details
@@ -354,13 +358,18 @@ export default function ReceiptPage() {
             </div>
           </div>
 
-          {/* Footer Notes & Address - Very Compact */}
+          {/* Footer Notes & Address */}
           <div className='mt-2 grid grid-cols-2 gap-4 px-4 text-[9px] leading-tight'>
             <div className='space-y-1'>
               <div className='font-black underline mb-1'>ملاحظات هامة:</div>
               <ol className='list-decimal pr-4 space-y-0.5 font-bold'>
+                {isNationalId && (
+                   <li className="font-black text-[10px]">
+                     تفاصيل التصوير: التصوير 9 صباحا فقط - سجل الهرم الدور الرابع (الدخول من اخر باب) في الشارع الجانبى للسجل - دفع ١٥ج عند التصوير. واوقت الانتظار (ساعه) لفحص ومراجعه الاستمارة من وقت وصولك للمندوب.
+                   </li>
+                )}
                 <li>التعامل في استلام الخدمة بهذا الإيصال الأصلي فقط.</li>
-                <li>المبلغ يشمل الرسوم الحكومية ومقابل أداء الخدمة.</li>
+                {!isNationalId && <li>المبلغ يشمل الرسوم الحكومية ومقابل أداء الخدمة.</li>}
                 <li>لا تحتسب الإجازات الرسمية ضمن مدة الاستلام.</li>
                 {isPassport && (
                   <li>
@@ -373,6 +382,9 @@ export default function ReceiptPage() {
             </div>
             <div className='text-center flex flex-col justify-center gap-1 border-r border-black font-bold'>
               <div>١٥ شارع صالح قناوي - تقاطع وليم ناشد - مدكور - فيصل</div>
+              <div className='text-[10px] font-black mt-1'>
+                 ٠١٠٢٢٠١١٨٧٧ / ٠١١٤٩٩٩٢٨٣٠
+              </div>
               <div className='mt-2 text-xs font-black pt-1'>
                 أمين الخزينة: {order.createdByAdmin?.name || '—'}
               </div>

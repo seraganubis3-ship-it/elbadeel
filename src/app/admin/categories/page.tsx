@@ -44,7 +44,7 @@ export default function CategoriesPage() {
         setCategories(data.categories);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      // console.error('Error fetching categories:', error);
     } finally {
       setLoading(false);
     }
@@ -229,7 +229,7 @@ export default function CategoriesPage() {
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-4'>
                     <div className='w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-lg'>
-                      {category.icon ? (
+                      {category.icon && (category.icon.startsWith('/') || category.icon.startsWith('http')) ? (
                         <Image
                           src={category.icon}
                           alt={category.name}
@@ -238,7 +238,7 @@ export default function CategoriesPage() {
                           className='w-12 h-12 object-cover rounded-xl'
                         />
                       ) : (
-                        '📁'
+                        <span className='text-3xl'>{category.icon || '📁'}</span>
                       )}
                     </div>
                     <div>

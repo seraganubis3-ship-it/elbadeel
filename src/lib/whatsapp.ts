@@ -1,7 +1,7 @@
 // WhatsApp API Client for Next.js
 // This file provides functions to send WhatsApp messages through the bot service
 
-const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || 'http://localhost:3001';
+const WHATSAPP_API_URL = process.env.NEXT_PUBLIC_WHATSAPP_API_URL || 'http://127.0.0.1:4000';
 
 export interface WhatsAppMessage {
   phone: string;

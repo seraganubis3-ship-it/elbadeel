@@ -89,10 +89,15 @@ Current Time Context: It is currently ${timeOfDay}.
 === PERSONALIZATION ===
 - If you know the user's name (from the CURRENT USER CONTEXT), greet them at the beginning of the conversation or in a friendly way (e.g., "أهلاً بك يا أستاذ {name}").
 
-=== 🧠 CORE KNOWLEDGE BASE (READ CAREFULLY) ===
+=== ⚠️ CRITICAL RULES (ZERO TOLERANCE) ===
+1. **SOURCE OF TRUTH:** You MUST retrieve "Required Documents" (الأوراق المطلوبة) and "Prices" ONLY from the **COMPANY KNOWLEDGE BASE** section below (which comes from the Database).
+2. **NO HALLUCITNATION:** If the documents are not listed in the COMPANY KNOWLEDGE BASE for a specific service, say "I don't have the exact list right now" or ask the user to contact support. **NEVER INVENT DOCUMENTS.**
+3. **PRIORITY:** The **COMPANY KNOWLEDGE BASE** (DB) overrides the **CORE KNOWLEDGE BASE** (Static) if there is a conflict regarding prices or documents.
+
+=== 🧠 CORE KNOWLEDGE BASE (STATIC INFO) ===
 ${STATIC_KNOWLEDGE_BASE}
 
-=== ⚠️ CRITICAL: LINK FORMATTING RULES ===
+=== 🔗 LINK FORMATTING RULES ===
 BASE URL: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}
 
 When providing a link to order a service, you MUST use FULL URLs with this EXACT format:
@@ -128,7 +133,7 @@ Ahmed: "تمام جداً. في الحالة دي التجديد بسيط 👌.
 - **صورة شخصية** (لو هنحتاج).
 
 تقدر تطلب الخدمة فوراً من هنا:
-[تجديد بطاقة الرقم القومي](\${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/service/national-id-renewal)"
+[تجديد بطاقة الرقم القومي](${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/service/national-id-renewal)"
 
 === HANDLING UNKNOWN ===
 If the answer isn't in the Knowledge Base or DB, say: "للتفاصيل الدقيقة دي بالذات، يا ريت تكلمنا على 01021606893 عشان نفيذك صح."
@@ -205,7 +210,7 @@ DYNAMIC FORM FIELDS:
         })
         .join('\n\n-------------------\n\n');
     } catch (error) {
-      console.error('DB Error:', error);
+      // console.error('DB Error:', error);
       return 'Service catalog temporarily unavailable.';
     }
   }
@@ -310,7 +315,7 @@ class GeminiService {
     // Try primary then fallback models
     for (const model of CONFIG.MODELS) {
       try {
-        console.log(`[AI] Trying model: ${model}`);
+        // console.log(`[AI] Trying model: ${model}`);
 
         const response = await ai.models.generateContent({
           model: model,
@@ -321,7 +326,7 @@ class GeminiService {
           },
         });
 
-        console.log(`[AI] Response received from ${model}`);
+        // console.log(`[AI] Response received from ${model}`);
 
         // Try getting text from common paths
         // @ts-ignore
@@ -330,25 +335,25 @@ class GeminiService {
         // Check for blocked response
         // @ts-ignore
         if (response?.candidates?.[0]?.finishReason === 'SAFETY') {
-          console.warn(`[AI] Response blocked by safety filter on model ${model}`);
+          // console.warn(`[AI] Response blocked by safety filter on model ${model}`);
           throw new Error('Response blocked by safety filter');
         }
 
         if (text) {
-          console.log(`[AI] Success with model: ${model}, response length: ${text.length}`);
+          // console.log(`[AI] Success with model: ${model}, response length: ${text.length}`);
           return text;
         }
 
-        console.warn(`[AI] Empty response from ${model}`);
+        // console.warn(`[AI] Empty response from ${model}`);
         throw new Error(`Empty response from ${model}`);
       } catch (e: any) {
-        console.error(`[AI] Model ${model} failed:`, e.message);
+        // console.error(`[AI] Model ${model} failed:`, e.message);
         lastError = e;
         // Continue to next model
       }
     }
 
-    console.error(`[AI] All models failed. Last error:`, lastError?.message);
+    // console.error(`[AI] All models failed. Last error:`, lastError?.message);
     throw lastError || new Error('All AI models failed');
   }
 }
@@ -385,7 +390,7 @@ export async function POST(req: NextRequest) {
     try {
       aiResponse = await GeminiService.generate(finalPrompt);
     } catch (error: any) {
-      console.error('AI Generation Error:', error);
+      // console.error('AI Generation Error:', error);
       aiResponse = `(Debug Error): ${error.message || 'Unknown error occurred'}`;
     }
 
@@ -401,7 +406,7 @@ export async function POST(req: NextRequest) {
       source: 'ai-v2',
     });
   } catch (error: any) {
-    console.error('FATAL API ERROR:', error);
+    // console.error('FATAL API ERROR:', error);
     return NextResponse.json(
       { success: false, response: `System Error: ${error.message}` },
       { status: 500 }

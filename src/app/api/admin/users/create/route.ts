@@ -11,8 +11,8 @@ import { z } from 'zod';
 
 const createUserSchema = z.object({
   name: z.string().min(2, 'الاسم يجب أن يكون على الأقل حرفين'),
-  email: z.string().email('بريد إلكتروني غير صحيح'),
-  phone: z.string().optional(),
+  // email: z.string().email('بريد إلكتروني غير صحيح'),
+  phone: z.string().min(10, 'رقم الهاتف يجب أن يكون 10 أرقام على الأقل'),
   password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
   role: z.enum(['ADMIN', 'STAFF', 'VIEWER'], 'دور غير صحيح'),
 });
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    // console.log('Create Admin Request Body:', body);
 
     // التحقق من صحة البيانات
     const validation = createUserSchema.safeParse(body);
@@ -41,17 +42,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, email, phone, password, role } = validation.data;
+    const { name, phone, password, role } = validation.data;
 
-    // التحقق من عدم وجود مستخدم بنفس البريد الإلكتروني
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    // التحقق من عدم وجود مستخدم بنفس رقم الهاتف
+    // استخدام findFirst بدلاً من findUnique لأننا قمنا بإزالة constraint من الداتابيس مؤقتاً
+    const existingUser = await prisma.user.findFirst({
+      where: { phone },
     });
 
     if (existingUser) {
       return NextResponse.json(
         {
-          error: 'البريد الإلكتروني مستخدم بالفعل',
+          error: 'رقم الهاتف مستخدم بالفعل',
         },
         { status: 400 }
       );
@@ -64,8 +66,8 @@ export async function POST(req: NextRequest) {
     const newUser = await prisma.user.create({
       data: {
         name,
-        email,
-        phone: phone || null,
+        email: null,
+        phone,
         passwordHash: hashedPassword,
         role: role as any,
         emailVerified: new Date(), // تفعيل الحساب مباشرة
@@ -74,7 +76,7 @@ export async function POST(req: NextRequest) {
       select: {
         id: true,
         name: true,
-        email: true,
+        phone: true,
         role: true,
         createdAt: true,
       },

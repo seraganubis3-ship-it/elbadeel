@@ -6,8 +6,8 @@ import { prisma } from '@/lib/prisma';
 export default async function AdminPage() {
   const session = await requireAuth();
 
-  // Check if user is admin
-  if (session.user.role !== 'ADMIN') {
+  // Check if user has admin privileges
+  if (!['ADMIN', 'STAFF', 'VIEWER'].includes(session.user.role as string)) {
     redirect('/');
   }
 

@@ -53,7 +53,9 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    if (['ADMIN', 'STAFF', 'VIEWER', 'USER'].includes(roleFilter)) {
+    if (roleFilter === 'MANAGEMENT') {
+      where.role = { in: ['ADMIN', 'STAFF', 'VIEWER'] };
+    } else if (['ADMIN', 'STAFF', 'VIEWER', 'USER'].includes(roleFilter)) {
       where.role = roleFilter as any;
     }
 

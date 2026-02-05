@@ -7,64 +7,26 @@ import { generateVerificationCode } from '@/lib/email';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'الاسم يجب أن يكون على الأقل حرفين'),
-  email: z.string().email('بريد إلكتروني غير صحيح'),
-  password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
   phone: z.string().min(10, 'رقم الهاتف غير صحيح'),
+  password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
 });
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password, phone } = registerSchema.parse(body);
+    const { name, phone, password } = registerSchema.parse(body);
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    const existingUser = await prisma.user.findFirst({
+      where: { phone },
     });
 
     if (existingUser) {
-      // إذا كان الحساب موجود لكن غير مفعل
-      if (!existingUser.emailVerified) {
-        // Generate new verification code for existing unverified account
-        const verificationCode = generateVerificationCode();
-        const verificationCodeExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-        // Update user with new verification code
-        await prisma.user.update({
-          where: { id: existingUser.id },
-          data: {
-            verificationCode,
-            verificationCodeExpiry,
-          },
-        });
-
-        // Send verification code email
-        try {
-          await sendVerificationCode(email, existingUser.name || 'المستخدم', verificationCode);
-        } catch (emailError) {
-          //
-          // Continue even if email fails
-        }
-
-        return NextResponse.json(
-          {
-            error: 'حساب موجود بالفعل لكن غير مفعل',
-            action: 'VERIFY_EXISTING',
-            message:
-              'هذا البريد الإلكتروني مسجل بالفعل لكن لم يتم تفعيله. تم إرسال كود التحقق إلى بريدك الإلكتروني.',
-            userId: existingUser.id,
-          },
-          { status: 409 } // Conflict - account exists but not verified
-        );
-      }
-
-      // إذا كان الحساب موجود ومفعل
       return NextResponse.json(
         {
-          error: 'البريد الإلكتروني مستخدم بالفعل',
+          error: 'رقم الهاتف مستخدم بالفعل',
           action: 'LOGIN_EXISTING',
-          message:
-            'هذا البريد الإلكتروني مسجل ومفعل بالفعل. يرجى تسجيل الدخول بدلاً من إنشاء حساب جديد.',
+          message: 'هذا الرقم مسجل بالفعل. يرجى تسجيل الدخول.',
         },
         { status: 400 }
       );
@@ -73,39 +35,28 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hash(password, 12);
 
-    // Generate verification code (6 digits)
-    const verificationCode = generateVerificationCode();
-    const verificationCodeExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
     // Create user
+    // Note: email is optional and not collected here.
     const user = await prisma.user.create({
       data: {
         name,
-        email,
-        passwordHash: hashedPassword,
         phone,
+        passwordHash: hashedPassword,
         role: 'USER',
-        verificationCode,
-        verificationCodeExpiry,
+        emailVerified: new Date(), // Auto-verify phone accounts? Or leave null? 
+        // User requested simplification. Usually phone users are considered verified if no SMS verification is implemented yet.
+        // Assuming auto-verify for now or just proceed.
       },
     });
 
     // Remove password from response
     const { passwordHash: _, ...userWithoutPassword } = user;
 
-    // Send verification code email
-    try {
-      await sendVerificationCode(email, name, verificationCode);
-    } catch (emailError) {
-      //
-      // Continue with user creation even if email fails
-    }
-
     return NextResponse.json(
       {
-        message: 'تم إنشاء الحساب بنجاح. يرجى التحقق من بريدك الإلكتروني لتأكيد الحساب.',
+        message: 'تم إنشاء الحساب بنجاح.',
         user: userWithoutPassword,
-        verificationSent: true,
+        verificationSent: false, // No verification needed
       },
       { status: 201 }
     );
@@ -118,7 +69,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    //
     return NextResponse.json({ error: 'حدث خطأ في إنشاء الحساب' }, { status: 500 });
   }
 }

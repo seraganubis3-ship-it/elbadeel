@@ -206,7 +206,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       order: updatedOrder,
     });
   } catch (error) {
-    console.error('Order Update Error:', error);
+    // console.error('Order Update Error:', error);
     return NextResponse.json(
       {
         error: 'حدث خطأ أثناء تحديث بيانات الطلب',

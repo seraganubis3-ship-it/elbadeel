@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import SmoothScroll from '@/components/SmoothScroll';
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
   FadeIn,
   SlideUp,
@@ -13,30 +12,10 @@ import {
   StaggerContainer,
   staggerItem,
 } from '@/components/AnimationWrappers';
+import { ServiceCard, Service, Category } from './ServiceCard';
+import ContactModal from './ContactModal';
 
-// Types matching the Prisma structure
-interface ServiceVariant {
-  id: string;
-  name: string;
-  priceCents: number;
-  etaDays: number;
-}
 
-interface Service {
-  id: string;
-  name: string;
-  description: string | null;
-  slug: string;
-  icon: string | null;
-  variants: ServiceVariant[];
-}
-
-interface Category {
-  id: string;
-  name: string;
-  icon: string | null;
-  services: Service[];
-}
 
 const PARTICLE_SIZES = ['w-3 h-3', 'w-4 h-4', 'w-5 h-5'];
 
@@ -60,8 +39,12 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
   const heroBgY = useTransform(scrollYProgress, [0, 0.2], ['0%', '20%']);
   const particleY = useTransform(scrollYProgress, [0, 0.2], ['0%', '50%']);
 
-  // Flatten services for the marquee
-  const allServices = categories.flatMap(cat => cat.services);
+  // Flatten services for the marquee and sort globally
+  const allServices = categories
+    .flatMap(cat => cat.services)
+    .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+
+  const [showContactModal, setShowContactModal] = React.useState(false);
 
   // 1. Ensure content covers screen multiple times (min 15 items to be safe)
   let marqueeServices = [...allServices];
@@ -78,7 +61,6 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
   // We ensure sufficient items for the slider
 
   return (
-    <SmoothScroll>
       <div ref={containerRef} className='min-h-screen bg-white overflow-hidden'>
         {/* ================= HERO SECTION ================= */}
         <section className='hero-section relative min-h-screen flex items-center justify-center overflow-hidden'>
@@ -88,10 +70,16 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
             style={{ y: heroBgY, scale: 1.1 }}
             className='hero-bg absolute inset-0 bg-cover bg-center bg-no-repeat'
           >
-            <div
-              className='absolute inset-0 w-full h-full bg-cover bg-center'
-              style={{ backgroundImage: "url('/images/government-services-bg.jpg')" }}
-            />
+            <div className='absolute inset-0 w-full h-full'>
+              <Image
+                src='/images/government-services-bg.jpg'
+                alt='خدمات حكومية'
+                fill
+                className='object-cover object-center'
+                priority
+                sizes="100vw"
+              />
+            </div>
             <div className='absolute inset-0 bg-gradient-to-br from-emerald-950/80 via-teal-900/70 to-emerald-950/80'></div>
           </motion.div>
 
@@ -130,7 +118,7 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
           </div>
 
           {/* Content */}
-          <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
+          <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center pb-32 sm:pb-40'>
             <StaggerContainer className='flex flex-col items-center'>
               {/* Badge */}
               <motion.div
@@ -146,7 +134,7 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
               {/* Main Title */}
               <motion.h1
                 variants={staggerItem}
-                className='hero-title text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black mb-8'
+                className='hero-title text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black mb-8'
               >
                 <span className='text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]'>البديل</span>
               </motion.h1>
@@ -154,7 +142,7 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
               {/* Subtitle */}
               <motion.p
                 variants={staggerItem}
-                className='hero-subtitle text-xl sm:text-2xl md:text-3xl text-emerald-50 mb-4 font-medium'
+                className='hero-subtitle text-lg sm:text-2xl md:text-3xl text-emerald-50 mb-4 font-medium'
               >
                 شباك واحد لجميع
               </motion.p>
@@ -170,13 +158,17 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
               {/* CTA Buttons */}
               <motion.div
                 variants={staggerItem}
-                className='hero-actions flex flex-col sm:flex-row gap-5 justify-center items-center'
+                className='hero-actions flex flex-col sm:flex-row gap-5 justify-center items-center w-full sm:w-auto'
               >
                 <Link
                   href='/services'
-                  className='group px-10 py-5 bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-black rounded-[2rem] transition-all duration-300 hover:scale-105 shadow-2xl shadow-emerald-900/50 border border-emerald-400/30'
+                  className='group relative px-8 py-4 sm:px-10 sm:py-5 w-full sm:w-auto text-center bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-black rounded-[2rem] transition-all duration-300 hover:scale-110 border border-emerald-400/50 overflow-hidden animate-glow-pulse'
                 >
-                  <span className='flex items-center gap-3'>
+                  {/* Sheen Effect - Continuous */}
+                  <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full animate-shimmer' />
+                  
+                  <span className='flex items-center justify-center gap-3 relative z-10'>
+                    <span className='animate-pulse inline-block text-yellow-300'>💡</span>
                     استعرض الخدمات
                     <svg
                       className='w-5 h-5 group-hover:-translate-x-1 transition-transform'
@@ -197,7 +189,7 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
                 {!session?.user && (
                   <Link
                     href='/register'
-                    className='px-10 py-5 bg-white/10 hover:bg-white/20 text-white text-lg font-bold rounded-[2rem] border border-white/30 hover:border-white/50 transition-all backdrop-blur-md'
+                    className='px-8 py-4 sm:px-10 sm:py-5 w-full sm:w-auto text-center bg-white/10 hover:bg-white/20 text-white text-lg font-bold rounded-[2rem] border border-white/30 hover:border-white/50 transition-all backdrop-blur-md'
                   >
                     إنشاء حساب مجاني
                   </Link>
@@ -208,7 +200,7 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
             {/* Stats Cards */}
             <StaggerContainer
               staggerDelay={0.1}
-              className='grid grid-cols-2 sm:grid-cols-4 gap-4 mt-20 max-w-5xl mx-auto'
+              className='grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-12 sm:mt-20 max-w-5xl mx-auto'
             >
               {[
                 {
@@ -241,13 +233,13 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
                   <motion.div
                     variants={staggerItem}
                     key={i}
-                    className='stat-card group bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 text-center hover:bg-white/10 transition-all duration-500 cursor-default shadow-lg'
+                    className='stat-card group bg-white/5 backdrop-blur-xl border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 text-center hover:bg-white/10 transition-all duration-500 cursor-default shadow-lg'
                   >
                     <div
-                      className={`w-12 h-12 ${style.bg} rounded-2xl flex items-center justify-center mx-auto mb-4`}
+                      className={`w-10 h-10 sm:w-12 sm:h-12 ${style.bg} rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4`}
                     >
                       <svg
-                        className={`w-6 h-6 ${style.text}`}
+                        className={`w-5 h-5 sm:w-6 sm:h-6 ${style.text}`}
                         fill='none'
                         stroke='currentColor'
                         viewBox='0 0 24 24'
@@ -260,10 +252,10 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
                         />
                       </svg>
                     </div>
-                    <p className='text-3xl sm:text-4xl font-black text-white mb-1 tracking-tighter'>
+                    <p className='text-2xl sm:text-4xl font-black text-white mb-1 tracking-tighter'>
                       {stat.val}
                     </p>
-                    <p className='text-emerald-100/50 text-[10px] font-black uppercase tracking-widest'>
+                    <p className='text-emerald-100/50 text-[9px] sm:text-[10px] font-black uppercase tracking-widest'>
                       {stat.label}
                     </p>
                   </motion.div>
@@ -272,27 +264,27 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
             </StaggerContainer>
           </div>
 
-          {/* Scroll indicator */}
-          <div className='absolute bottom-10 left-1/2 -translate-x-1/2'>
+          {/* Scroll indicator - Adjusted position */}
+          <div className='absolute bottom-24 left-1/2 -translate-x-1/2 hidden sm:block'>
             <div className='w-8 h-12 border-2 border-white/20 rounded-full flex justify-center pt-3 backdrop-blur-md'>
               <div className='w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce'></div>
             </div>
           </div>
 
-          {/* Bottom fade */}
-          <div className='absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white via-white/80 to-transparent'></div>
+          {/* Bottom fade - Reduced height */}
+          <div className='absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent z-0'></div>
         </section>
 
         {/* ================= SERVICES SECTION (MARQUEE) ================= */}
-        <section className='services-section py-32 bg-slate-50 relative z-10 overflow-hidden'>
+        <section className='services-section pt-10 sm:pt-20 pb-20 sm:pb-32 bg-slate-50 relative z-10 overflow-hidden'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
             <FadeIn>
-              <div className='text-center mb-20 services-header'>
-                <h2 className='services-title text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 mb-6'>
+              <div className='text-center mb-10 sm:mb-20 services-header'>
+                <h2 className='services-title text-3xl sm:text-5xl md:text-6xl font-black text-slate-900 mb-4 sm:mb-6'>
                   الخدمات <span className='text-emerald-600'>الحكومية</span>
                 </h2>
-                <div className='w-24 h-2 bg-emerald-500 mx-auto rounded-full mb-8'></div>
-                <p className='text-slate-500 text-xl max-w-2xl mx-auto font-medium'>
+                <div className='w-16 sm:w-24 h-2 bg-emerald-500 mx-auto rounded-full mb-4 sm:mb-8'></div>
+                <p className='text-slate-500 text-lg sm:text-xl max-w-2xl mx-auto font-medium'>
                   اسحب الشريط لرؤية المزيد من الخدمات المتاحة
                 </p>
               </div>
@@ -301,10 +293,10 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
 
           {/* INFINITE MARQUEE */}
           {/* Using LTR explicitly for the marquee container allows x: -50% logic to work consistently regardless of page direction */}
-          <div className='relative w-full overflow-hidden py-10' dir='ltr'>
+          <div className='relative w-full overflow-hidden py-5 sm:py-10' dir='ltr'>
             {/* Gradients to mask edges */}
-            <div className='absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none'></div>
-            <div className='absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none'></div>
+            <div className='absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none'></div>
+            <div className='absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none'></div>
             {/* 
                 SEAMLESS MARQUEE FIX:
                 To avoid the "half-gap glitch" where x: -50% doesn't align perfectly with flex gaps,
@@ -342,67 +334,22 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
                  Using padding-right (pr-8) prevents flex-gap sub-pixel issues.
                */}
               {[...marqueeServices, ...marqueeServices].map((service, i) => (
-                <div key={`${service.id}-${i}`} className='flex-shrink-0 w-[350px] pr-8'>
-                  <Link
-                    href={`/service/${service.slug}`}
-                    className='service-card group relative h-[420px] rounded-[3rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 block bg-white border border-slate-100 hover:border-emerald-200'
-                  >
-                    {service.icon &&
-                    (service.icon.startsWith('/') || service.icon.startsWith('http')) ? (
-                      <Image
-                        src={service.icon}
-                        alt={service.name}
-                        fill
-                        className='object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-90 group-hover:opacity-100'
-                      />
-                    ) : (
-                      <div className='absolute inset-0 bg-gradient-to-br from-emerald-50 to-white flex items-center justify-center'>
-                        {service.icon ? (
-                          <span className='text-8xl select-none filter grayscale opacity-20 group-hover:grayscale-0 group-hover:opacity-40 transition-all duration-500 scale-150 group-hover:scale-[2]'>
-                            {service.icon}
-                          </span>
-                        ) : null}
-                      </div>
-                    )}
-
-                    <div className='absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent'></div>
-
-                    <div className='absolute bottom-0 left-0 right-0 p-8 text-white z-10 text-right'>
-                      <h3 className='text-2xl font-black mb-2'>{service.name}</h3>
-                      {service.description && (
-                        <p className='text-slate-200 text-sm mb-6 line-clamp-2 opacity-90'>
-                          {service.description}
-                        </p>
-                      )}
-
-                      <div className='flex items-center justify-end gap-2 text-xs font-bold uppercase tracking-widest text-emerald-300 group-hover:text-emerald-200 transition-colors'>
-                        طلب الخدمة
-                        <svg
-                          className='w-4 h-4 group-hover:translate-x-[-4px] transition-transform rtl:rotate-180'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={3}
-                            d='M17 8l4 4m0 0l-4 4m4-4H3'
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </Link>
+                <div key={`${service.id}-${i}`} className='flex-shrink-0 w-[280px] sm:w-[350px] pr-4 sm:pr-8'>
+                    <ServiceCard 
+                        service={service} 
+                        animateInView={false} 
+                        className="h-[380px] sm:h-[420px]" 
+                    />
                 </div>
               ))}
             </motion.div>
           </div>
 
           <FadeIn delay={0.4}>
-            <div className='text-center mt-12 relative z-10'>
+            <div className='text-center mt-8 sm:mt-12 relative z-10'>
               <Link
                 href='/services'
-                className='inline-flex items-center gap-4 px-14 py-6 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-[2.5rem] transition-all duration-300 hover:scale-105 shadow-[0_20px_40px_rgba(16,185,129,0.3)]'
+                className='inline-flex items-center gap-4 px-10 sm:px-14 py-4 sm:py-6 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-[2.5rem] transition-all duration-300 hover:scale-105 shadow-[0_20px_40px_rgba(16,185,129,0.3)]'
               >
                 عرض جميع الخدمات وتفاصيلها
                 <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -483,7 +430,50 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
             </StaggerContainer>
           </div>
         </section>
+        <style jsx global>{`
+          @keyframes glow-pulse {
+            0% {
+              box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+              box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
+            }
+            100% {
+              box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+          }
+          .animate-glow-pulse {
+            animation: glow-pulse 2s infinite;
+          }
+          
+          @keyframes shimmer {
+            0% { transform: translateX(-150%); }
+            50% { transform: translateX(150%); }
+            100% { transform: translateX(150%); }
+          }
+          .animate-shimmer {
+            animation: shimmer 3s infinite;
+          }
+        `}</style>
+        
+        {/* Floating Contact Button */}
+        <motion.button
+          onClick={() => setShowContactModal(true)}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="fixed bottom-6 right-6 z-[9000] flex items-center gap-3 px-6 py-4 bg-slate-900 text-white rounded-full shadow-2xl shadow-slate-900/40 border border-slate-700 hover:bg-slate-800 transition-colors group"
+        >
+          <span className="font-black text-sm hidden sm:inline-block">تواصل معنا</span>
+          <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-slate-900 group-hover:rotate-12 transition-transform">
+             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+             </svg>
+          </div>
+        </motion.button>
+
+        <ContactModal isOpen={showContactModal} onClose={() => setShowContactModal(false)} />
       </div>
-    </SmoothScroll>
   );
 }

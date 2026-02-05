@@ -10,6 +10,18 @@ const nextConfig = {
     }
     return config;
   },
+  generateBuildId: async () => {
+    // Return the git hash as the build ID
+    try {
+      return require('child_process')
+        .execSync('git rev-parse HEAD')
+        .toString()
+        .trim();
+    } catch {
+      // Fallback to default if no git
+      return null;
+    }
+  },
 };
 
 module.exports = nextConfig;

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Order, STATUS_CONFIG, StatusKey, getDeliveryInfo } from '../types';
+import { PREDEFINED_FINES } from '@/constants/fines';
 
 interface OrderCardProps {
   order: Order;
@@ -76,7 +77,6 @@ export function OrderCard({
           <p className='text-sm text-gray-500'>{order.variant?.name || 'نوع غير محدد'}</p>
         </div>
 
-        {/* Quiz Summary Badge */}
         {order.serviceDetails && (
           <div className='mb-4 p-3 bg-purple-50/50 border border-purple-100 rounded-xl'>
             <div className='flex items-center gap-2 mb-1.5'>
@@ -84,9 +84,41 @@ export function OrderCard({
                 إجابات
               </span>
             </div>
-            <p className='text-[11px] text-purple-900 font-bold line-clamp-2 whitespace-pre-wrap leading-relaxed opacity-80'>
+            <p className='text-[11px] text-purple-900 font-bold whitespace-pre-wrap leading-relaxed opacity-80 max-h-40 overflow-y-auto custom-scrollbar'>
               {order.serviceDetails}
             </p>
+          </div>
+        )}
+
+        {/* Fines Badge */}
+        {(order.selectedFines || order.finesDetails) && (
+          <div className='mb-4 p-3 bg-rose-50/50 border border-rose-100 rounded-xl'>
+            <div className='flex items-center gap-2 mb-1.5'>
+               <span className='text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded uppercase font-black tracking-tighter'>
+                  غرامات
+               </span>
+            </div>
+            {order.selectedFines && (() => {
+               try {
+                  const fIds = JSON.parse(order.selectedFines) as string[];
+                  const fines = fIds.map(id => PREDEFINED_FINES.find(f => f.id === id)).filter(Boolean);
+                  if (fines.length === 0) return null;
+                  return (
+                     <div className="flex flex-wrap gap-1 mb-2">
+                        {fines.map(f => (
+                           <span key={f!.id} className="text-[10px] bg-white border border-rose-200 text-rose-700 px-1.5 py-0.5 rounded-md font-bold">
+                              {f!.name}
+                           </span>
+                        ))}
+                     </div>
+                  );
+               } catch (e) { return null; }
+            })()}
+            {order.finesDetails && (
+               <p className='text-[11px] text-rose-900 font-bold whitespace-pre-wrap leading-relaxed opacity-80'>
+                  {order.finesDetails.startsWith('"') ? JSON.parse(order.finesDetails) : order.finesDetails}
+               </p>
+            )}
           </div>
         )}
 
@@ -94,7 +126,14 @@ export function OrderCard({
         <div className='grid grid-cols-2 gap-3 mb-4'>
           <div className='flex items-center gap-2 text-sm'>
             <span className='text-gray-400'>👤</span>
-            <span className='text-gray-700 truncate'>{order.customerName}</span>
+            <span className='text-gray-700 truncate'>
+              {order.customerName}
+              {order.customerFollowUp && (
+                <span className='bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded mx-2 font-bold inline-block'>
+                  تابع
+                </span>
+              )}
+            </span>
           </div>
           <div className='flex items-center gap-2 text-sm'>
             <span className='text-gray-400'>📱</span>

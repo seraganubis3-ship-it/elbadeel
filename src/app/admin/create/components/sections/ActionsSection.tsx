@@ -7,6 +7,7 @@ interface ActionsSectionProps {
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   customer: Customer | null;
   submitting: boolean;
+  handleReset: () => void;
 }
 
 export const ActionsSection: React.FC<ActionsSectionProps> = ({
@@ -14,6 +15,7 @@ export const ActionsSection: React.FC<ActionsSectionProps> = ({
   setFormData,
   customer,
   submitting,
+  handleReset,
 }) => {
   return (
     <div id='actions-section' className='space-y-4'>
@@ -75,21 +77,13 @@ export const ActionsSection: React.FC<ActionsSectionProps> = ({
       </button>
 
       <div className='flex items-center justify-center gap-4 pt-2'>
-        <label className='flex items-center gap-2 cursor-pointer grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100'>
-          <input
-            type='checkbox'
-            className='w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900'
-          />
-          <span className='text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none'>
-            طباعة صورة
-          </span>
-        </label>
-        <Link
-          href='/admin/orders'
-          className='text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors'
+        <button
+          type='button'
+          onClick={handleReset}
+          className='w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-100 transition-all border border-red-200'
         >
           إلغاء العملية
-        </Link>
+        </button>
       </div>
     </div>
   );

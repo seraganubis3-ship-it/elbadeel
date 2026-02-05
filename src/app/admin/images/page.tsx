@@ -162,16 +162,21 @@ const ImageManagementPage: React.FC = () => {
                     <div className='flex items-center space-x-2'>
                       {image.exists ? (
                         <div className='flex items-center space-x-2'>
-                          <Image
-                            src={image.path || ''}
-                            alt={image.name}
-                            width={64}
-                            height={48}
-                            className='object-cover rounded border'
-                            onError={e => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
+
+                          {image.path && (image.path.startsWith('/') || image.path.startsWith('http')) ? (
+                            <Image
+                              src={image.path}
+                              alt={image.name}
+                              width={64}
+                              height={48}
+                              className='object-cover rounded border'
+                              onError={e => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                             <span className='text-xs bg-gray-100 p-2 rounded'>No Preview</span>
+                          )}
                           <a
                             href={image.path}
                             target='_blank'

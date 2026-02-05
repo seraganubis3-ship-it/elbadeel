@@ -93,7 +93,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json({ success: true, category });
   } catch (error) {
-    console.error('Error updating category:', error);
+    // console.error('Error updating category:', error);
     return NextResponse.json(
       { success: false, error: 'حدث خطأ أثناء تحديث الفئة' },
       { status: 500 }
@@ -138,7 +138,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting category:', error);
+    // console.error('Error deleting category:', error);
     return NextResponse.json({ success: false, error: 'حدث خطأ أثناء حذف الفئة' }, { status: 500 });
   }
 }

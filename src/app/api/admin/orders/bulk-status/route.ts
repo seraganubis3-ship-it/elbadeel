@@ -10,6 +10,7 @@ const bulkStatusUpdateSchema = z.object({
   status: z.string(),
   adminNotes: z.string().optional(),
   workDate: z.string().optional(),
+  workOrderNumber: z.string().optional(),
 });
 
 export async function PUT(request: NextRequest) {
@@ -22,6 +23,7 @@ export async function PUT(request: NextRequest) {
       status,
       adminNotes,
       workDate: clientWorkDate,
+      workOrderNumber,
     } = bulkStatusUpdateSchema.parse(body);
 
     let workDate = getWorkDate(session);
@@ -66,6 +68,7 @@ export async function PUT(request: NextRequest) {
           data: {
             status,
             adminNotes: adminNotes || order.adminNotes,
+            ...(workOrderNumber && { workOrderNumber: parseInt(workOrderNumber) }),
           },
         });
 
@@ -115,7 +118,7 @@ export async function PUT(request: NextRequest) {
       orders: updatedOrders,
     });
   } catch (error) {
-    console.error('Bulk Status Update Error:', error);
+    // console.error('Bulk Status Update Error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء تحديث حالات الطلبات' }, { status: 500 });
   }
 }

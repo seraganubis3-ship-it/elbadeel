@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 // Schema للتحقق من صحة البيانات
 const profileUpdateSchema = z.object({
   name: z.string().min(1, 'الاسم مطلوب').max(100, 'الاسم طويل جداً'),

@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     'خدمات حكومية مصر',
     'استخراج أوراق',
   ],
-  authors: [{ name: 'البديل', url: 'https://haiba.shop' }],
+  authors: [{ name: 'البديل', url: 'https://albadel.com.eg' }],
   creator: 'البديل',
   publisher: 'البديل',
   formatDetection: {
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://haiba.shop'),
+  metadataBase: new URL('https://albadel.com.eg'),
   alternates: {
     canonical: '/',
     languages: {
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'ar_EG',
-    url: 'https://haiba.shop',
+    url: 'https://albadel.com.eg',
     siteName: 'البديل للخدمات الحكومية',
     title: 'البديل للخدمات الحكومية - منصة موثوقة وسريعة',
     description:
@@ -103,7 +103,7 @@ export const metadata: Metadata = {
     'DC.date': '2024',
     'DC.type': 'خدمات',
     'DC.format': 'موقع إلكتروني',
-    'DC.identifier': 'https://haiba.shop',
+    'DC.identifier': 'https://albadel.com.eg',
     'DC.language': 'ar',
     'DC.coverage': 'مصر',
   },
@@ -127,8 +127,8 @@ export default function RootLayout({
               alternateName: 'البديل للخدمات الحكومية',
               description:
                 'البديل للخدمات الحكومية - منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية',
-              url: 'https://haiba.shop',
-              logo: 'https://haiba.shop/logo.jpg',
+              url: 'https://albadel.com.eg',
+              logo: 'https://albadel.com.eg/logo.jpg',
               foundingDate: '2000',
               address: {
                 '@type': 'PostalAddress',

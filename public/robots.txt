@@ -2,13 +2,15 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://haiba.shop/sitemap.xml
+Sitemap: https://albadel.com.eg/sitemap.xml
 
 # Disallow admin and API routes
 Disallow: /admin/
 Disallow: /api/
-Disallow: /_next/
-Disallow: /static/
+
+# Allow Next.js static resources and images
+Allow: /_next/static/
+Allow: /_next/image/
 
 # Allow important pages
 Allow: /

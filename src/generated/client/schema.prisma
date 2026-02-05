@@ -127,6 +127,7 @@ model Service {
   description String?
   icon        String?
   active      Boolean           @default(true)
+  orderIndex  Int               @default(0)
   categoryId  String
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -139,6 +140,7 @@ model Service {
   @@index([slug])
   @@index([categoryId])
   @@index([active])
+  @@index([orderIndex])
   @@index([createdAt])
 }
 

@@ -150,6 +150,20 @@ export default function ServiceFieldsManager({
                     </div>
                     <div>
                       <label className='block text-xs font-black text-purple-400 uppercase tracking-widest mb-2'>
+                        نوع السؤال
+                      </label>
+                      <select
+                        value={field.type}
+                        onChange={e => updateField(fIdx, 'type', e.target.value)}
+                        className='w-full px-5 py-3 bg-purple-50/50 border border-purple-100 rounded-2xl focus:border-purple-500 outline-none font-bold text-gray-800 appearance-none'
+                      >
+                         <option value="select">اختيارات (Dropdown)</option>
+                         <option value="text">نص قصير (Input)</option>
+                         <option value="textarea">نص طويل (Textarea)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className='block text-xs font-black text-purple-400 uppercase tracking-widest mb-2'>
                         الاسم البرمجي (اختياري)
                       </label>
                       <input
@@ -160,6 +174,20 @@ export default function ServiceFieldsManager({
                         placeholder='request_type'
                       />
                     </div>
+                    {(field.type === 'text' || field.type === 'textarea') && (
+                       <div>
+                          <label className='block text-xs font-black text-purple-400 uppercase tracking-widest mb-2'>
+                            نص توضيحي (Placeholder)
+                          </label>
+                          <input
+                            type='text'
+                            value={field.placeholder || ''}
+                            onChange={e => updateField(fIdx, 'placeholder', e.target.value)}
+                            className='w-full px-5 py-3 bg-purple-50/50 border border-purple-100 rounded-2xl focus:border-purple-500 outline-none font-bold text-gray-800'
+                            placeholder='مثال: اكتب اسمك هنا...'
+                          />
+                       </div>
+                    )}
                   </div>
                 </div>
                 <button
@@ -178,7 +206,8 @@ export default function ServiceFieldsManager({
                 </button>
               </div>
 
-              {/* Options Section */}
+              {/* Options Section - ONLY SHOW FOR SELECT TYPE */}
+              {field.type === 'select' && (
               <div className='space-y-4'>
                 <div className='flex items-center justify-between'>
                   <span className='text-xs font-black text-gray-400 uppercase tracking-widest'>
@@ -267,6 +296,7 @@ export default function ServiceFieldsManager({
                   )}
                 </div>
               </div>
+              )}
             </div>
           </div>
         ))}

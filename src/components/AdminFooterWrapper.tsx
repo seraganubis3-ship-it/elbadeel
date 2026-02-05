@@ -32,8 +32,8 @@ export default function AdminFooterWrapper({ children }: AdminFooterWrapperProps
             }}
           />
 
-          <div className='relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14'>
-            <div className='grid grid-cols-1 md:grid-cols-4 gap-10'>
+          <div className='relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-14'>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10'>
               {/* Brand */}
               <div className='md:col-span-1'>
                 <div className='flex items-center mb-5'>
@@ -61,11 +61,6 @@ export default function AdminFooterWrapper({ children }: AdminFooterWrapperProps
                   <li>
                     <Link href='/' className='hover:text-emerald-300 transition-colors'>
                       الصفحة الرئيسية
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href='/faq' className='hover:text-emerald-300 transition-colors'>
-                      الأسئلة الشائعة
                     </Link>
                   </li>
                   <li>
@@ -174,25 +169,6 @@ export default function AdminFooterWrapper({ children }: AdminFooterWrapperProps
                     </a>
                   </div>
                 </div>
-              </div>
-
-              {/* Newsletter (optional) */}
-              <div>
-                <h4 className='text-lg font-semibold mb-4'>النشرة البريدية</h4>
-                <p className='text-slate-200/90 text-sm mb-3'>اشترك ليصلك كل جديد عن خدماتنا.</p>
-                <form className='flex items-stretch gap-2'>
-                  <input
-                    type='email'
-                    className='flex-1 rounded-xl px-4 py-2.5 bg-white/10 border border-white/15 placeholder:text-slate-300/70 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400'
-                    placeholder='بريدك الإلكتروني'
-                  />
-                  <button
-                    type='button'
-                    className='px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 transition-colors font-semibold'
-                  >
-                    اشتراك
-                  </button>
-                </form>
               </div>
             </div>
 

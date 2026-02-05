@@ -472,12 +472,12 @@ function OrdersContent() {
                           عرض التفاصيل
                         </Link>
 
-                        {order.status === 'pending' && (
+                        {order.status === 'waiting_payment' && (
                           <Link
-                            href={`/order/${order.id}/payment`}
-                            className='px-3 sm:px-4 py-2 bg-green-600 text-white border border-green-600 rounded-lg hover:bg-green-700 transition-colors duration-200 text-xs sm:text-sm font-medium text-center'
+                            href={`/orders/${order.id}/payment`}
+                            className='px-3 sm:px-4 py-2 bg-blue-600 text-white border border-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-xs sm:text-sm font-medium text-center shadow-lg shadow-blue-200 animate-pulse'
                           >
-                            إتمام الدفع
+                            💳 ادفع الآن
                           </Link>
                         )}
 

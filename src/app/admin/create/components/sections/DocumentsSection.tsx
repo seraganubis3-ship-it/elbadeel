@@ -21,47 +21,47 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   return (
     <div
       id='documents-section'
-      className='bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden'
+      className='bg-white rounded-[1.5rem] shadow-lg border border-emerald-100 overflow-hidden mb-0'
     >
-      <div className='bg-sky-50/50 border-b border-sky-100 p-6'>
-        <div className='flex items-center gap-4'>
-          <div className='w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-sky-200 text-2xl'>
+      <div className='bg-emerald-50/50 border-b border-emerald-100 p-4'>
+        <div className='flex items-center gap-3'>
+          <div className='w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-emerald-200 text-xl'>
             📂
           </div>
           <div>
-            <h2 className='text-xl font-black text-slate-900 leading-none'>المستندات</h2>
-            <p className='text-sky-500 text-[10px] mt-1.5 font-black uppercase tracking-widest'>
-              الأوراق والملفات الرقمية
+            <h2 className='text-lg font-black text-slate-900 leading-none'>المستندات</h2>
+            <p className='text-emerald-500 text-[9px] mt-1 font-black uppercase tracking-widest'>
+              الأوراق والملفات
             </p>
           </div>
         </div>
       </div>
 
-      <div className='p-8 space-y-6'>
+      <div className='p-5 space-y-4'>
         {/* Original Documents */}
-        <div className='space-y-2'>
-          <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+        <div className='space-y-1.5'>
+          <label className='text-[9px] font-black text-black uppercase tracking-widest'>
             أصل المستندات المرفقة
           </label>
           <textarea
             value={formData.originalDocuments}
-            onChange={e => setFormData(prev => ({ ...prev, originalDocuments: e.target.value }))}
-            rows={2}
-            className='w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-sky-500 transition-all font-bold text-sm'
+            onChange={e => setFormData(p => ({ ...p, originalDocuments: e.target.value }))}
+            rows={1}
+            className='w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:border-sky-500 transition-all font-bold text-black placeholder:text-slate-400 text-xs'
             placeholder='وصف للأصول المسلمة...'
           />
         </div>
 
         {/* Attachments Management */}
-        <div className='space-y-4'>
+        <div className='space-y-3'>
           <div className='flex items-center justify-between'>
-            <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+            <label className='text-[10px] font-black text-black uppercase tracking-widest'>
               المرفقات الرقمية
             </label>
             <button
               type='button'
               onClick={() => setShowAttachmentModal(true)}
-              className='text-[10px] font-black text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors uppercase tracking-widest'
+              className='text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-full hover:bg-blue-100 transition-colors uppercase tracking-widest'
             >
               + إضافة مرفق
             </button>
@@ -69,9 +69,9 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
 
           <div className='space-y-2'>
             {formData.attachedDocuments.length === 0 ? (
-              <div className='p-10 border-2 border-dashed border-slate-100 rounded-[1.5rem] text-center'>
-                <span className='text-3xl opacity-20 filter grayscale'>📄</span>
-                <p className='text-slate-300 text-xs font-bold mt-2 uppercase tracking-widest'>
+              <div className='p-4 border-2 border-dashed border-slate-100 rounded-xl text-center'>
+                <span className='text-xl opacity-20 filter grayscale'>📄</span>
+                <p className='text-slate-300 text-[10px] font-bold mt-1 uppercase tracking-widest'>
                   لا توجد ملفات
                 </p>
               </div>
@@ -84,16 +84,16 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                   return (
                     <div
                       key={index}
-                      className='flex items-center gap-2 bg-slate-50 border border-slate-200 pl-2 pr-3 py-1.5 rounded-full group hover:border-slate-300 transition-all'
+                      className='flex items-center gap-2 bg-slate-50 border border-slate-200 pl-2 pr-2 py-1 rounded-lg group hover:border-slate-300 transition-all'
                     >
-                      <span className='text-xs'>{isUploadedFile ? '📁' : '📄'}</span>
-                      <span className='text-[11px] font-bold text-slate-600 truncate max-w-[100px]'>
+                      <span className='text-[10px]'>{isUploadedFile ? '📁' : '📄'}</span>
+                      <span className='text-[10px] font-bold text-slate-600 truncate max-w-[80px]'>
                         {doc}
                       </span>
                       <button
                         type='button'
                         onClick={() => handleRemoveAttachment(index)}
-                        className='w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-rose-500 hover:text-white transition-colors text-[8px] font-black'
+                        className='w-4 h-4 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-rose-500 hover:text-white transition-colors text-[8px] font-black'
                       >
                         ✕
                       </button>
@@ -106,10 +106,10 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
         </div>
 
         {/* Toggles */}
-        <div className='flex items-center gap-6 pt-2'>
-          <label className='flex items-center gap-2 cursor-pointer group'>
+        <div className='flex items-center gap-4 pt-1'>
+          <label className='flex items-center gap-1.5 cursor-pointer group'>
             <div
-              className={`w-4 h-4 rounded-full border-2 transition-all ${!formData.hasAttachments ? 'border-sky-500 bg-sky-500 ring-4 ring-sky-500/10' : 'border-slate-300'}`}
+              className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${!formData.hasAttachments ? 'border-sky-500 bg-sky-500 ring-2 ring-sky-500/10' : 'border-slate-300'}`}
             ></div>
             <input
               type='radio'
@@ -117,13 +117,13 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
               onChange={() => setFormData(p => ({ ...p, hasAttachments: false }))}
               className='hidden'
             />
-            <span className='text-xs font-bold text-slate-500 group-hover:text-slate-700'>
+            <span className='text-[10px] font-bold text-slate-500 group-hover:text-slate-700'>
               بدون مرفقات
             </span>
           </label>
-          <label className='flex items-center gap-2 cursor-pointer group'>
+          <label className='flex items-center gap-1.5 cursor-pointer group'>
             <div
-              className={`w-4 h-4 rounded-full border-2 transition-all ${formData.hasAttachments ? 'border-sky-500 bg-sky-500 ring-4 ring-sky-500/10' : 'border-slate-300'}`}
+              className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${formData.hasAttachments ? 'border-sky-500 bg-sky-500 ring-2 ring-sky-500/10' : 'border-slate-300'}`}
             ></div>
             <input
               type='radio'
@@ -131,7 +131,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
               onChange={() => setFormData(p => ({ ...p, hasAttachments: true }))}
               className='hidden'
             />
-            <span className='text-xs font-bold text-slate-500 group-hover:text-slate-700'>
+            <span className='text-[10px] font-bold text-slate-500 group-hover:text-slate-700'>
               بمرفقات
             </span>
           </label>

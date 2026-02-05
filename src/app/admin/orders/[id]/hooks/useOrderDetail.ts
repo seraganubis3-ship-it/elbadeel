@@ -289,7 +289,8 @@ export function useOrderDetail(orderId: string) {
         showError('فشل إرسال الرسالة', data.error || 'حدث خطأ أثناء إرسال الرسالة');
       }
     } catch (error) {
-      showError('خطأ في الاتصال', 'تأكد من أن بوت الواتساب متصل ثم حاول مرة أخرى');
+      // console.error('WhatsApp Error:', error);
+      showError('خطأ في الاتصال', 'تأكد من أن بوت الواتساب متصل. التفاصيل: ' + (error as Error).message);
     } finally {
       setSendingWhatsApp(false);
     }

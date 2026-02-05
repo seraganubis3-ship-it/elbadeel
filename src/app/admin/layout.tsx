@@ -8,10 +8,12 @@ import { signOut } from 'next-auth/react';
 import AdminWorkDateWrapper from '@/components/AdminWorkDateWrapper';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [workDate, setWorkDate] = useState<string | null>(null);
+  const [showWorkDateModal, setShowWorkDateModal] = useState(false);
+  const [tempWorkDate, setTempWorkDate] = useState('');
 
   // Get work date from session or localStorage
   useEffect(() => {
@@ -32,6 +34,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       document.body.style.overflow = '';
     };
   }, [mobileMenuOpen]);
+  // Check loading status
+  if (status === 'loading') {
+    return (
+      <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-emerald-50 to-slate-100'>
+        <div className='w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin'></div>
+      </div>
+    );
+  }
 
   // Check if user has admin privileges
   if (
@@ -241,7 +251,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </svg>
       ),
     },
+    {
+      name: 'أوامر الشغل',
+      href: '/admin/work-orders',
+      icon: (
+        <svg
+          className='w-5 h-5 sm:w-6 sm:h-6'
+          fill='none'
+          stroke='currentColor'
+          viewBox='0 0 24 24'
+        >
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10'
+          />
+        </svg>
+      ),
+    },
   ];
+
+  const filteredNavigation = navigation.filter(item => {
+    if (session?.user?.role === 'ADMIN') return true;
+    if (session?.user?.role === 'STAFF') {
+      return [
+        '/admin',
+        '/admin/create',
+        '/admin/orders',
+        '/admin/services',
+        '/admin/inventory',
+        '/admin/work-orders',
+      ].includes(item.href);
+    }
+    if (session?.user?.role === 'VIEWER') {
+      return ['/admin', '/admin/orders', '/admin/services', '/admin/reports'].includes(item.href);
+    }
+    return false;
+  });
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-slate-100 admin-panel'>
@@ -286,30 +333,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {(session.user.role === 'ADMIN' || session.user.role === 'STAFF') && workDate && (
               <button
                 onClick={() => {
-                  const newDate = prompt('أدخل تاريخ العمل الجديد (DD/MM/YYYY):', workDate);
-                  if (newDate && newDate !== workDate) {
-                    localStorage.setItem('adminWorkDate', newDate);
-                    window.location.reload();
-                  }
+                  setTempWorkDate(workDate || '');
+                  setShowWorkDateModal(true);
                 }}
-                className='hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-600/80 backdrop-blur-sm text-white text-xs font-medium rounded-lg border border-blue-400/30 hover:bg-blue-500/80 transition-colors cursor-pointer'
+                className='hidden sm:flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md text-white text-sm font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg group relative overflow-hidden'
               >
-                <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
-                  />
-                </svg>
-                <span>تاريخ العمل: {workDate}</span>
-                <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
-                  />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="p-1.5 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
+                   <svg className='w-4 h-4 text-blue-300' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
+                   </svg>
+                </div>
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-[10px] text-blue-200 uppercase tracking-wider font-medium">تاريخ العمل</span>
+                  <span className="font-mono text-base tracking-widest">{workDate}</span>
+                </div>
+                <svg className='w-4 h-4 text-blue-300 opacity-50 group-hover:translate-y-1 transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
                 </svg>
               </button>
             )}
@@ -455,7 +495,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Navigation Menu */}
           <nav className='p-4 sm:p-6 space-y-2 overflow-y-auto flex-1 pb-24 sm:pb-28'>
             <div className='grid grid-cols-1 gap-2'>
-              {navigation.map(item => {
+              {filteredNavigation.map(item => {
                 const isActive = pathname === item.href;
                 return (
                   <Link
@@ -633,6 +673,66 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <main className='flex-1 p-3 sm:p-4 md:p-6 lg:p-8 w-full'>
           <AdminWorkDateWrapper>{children}</AdminWorkDateWrapper>
         </main>
+
+        {/* Work Date Modal */}
+        {showWorkDateModal && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setShowWorkDateModal(false)} />
+             <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100 opacity-100">
+                <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-6 flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl">📅</div>
+                      <div>
+                         <h3 className="text-white font-bold text-lg">تغيير تاريخ العمل</h3>
+                         <p className="text-slate-400 text-xs text-right">سيتم تطبيق التاريخ على جميع العمليات</p>
+                      </div>
+                   </div>
+                   <button onClick={() => setShowWorkDateModal(false)} className="text-slate-400 hover:text-white transition-colors">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                   </button>
+                </div>
+                
+                <div className="p-6">
+                   <label className="block text-sm font-bold text-slate-700 mb-2">تاريخ العمل الجديد (DD/MM/YYYY)</label>
+                   <input 
+                      type="text" 
+                      value={tempWorkDate}
+                      onChange={(e) => {
+                         let v = e.target.value.replace(/[^0-9\/]/g, '');
+                         if (v.length > 2 && v.charAt(2) !== '/') v = v.slice(0, 2) + '/' + v.slice(2);
+                         if (v.length > 5 && v.charAt(5) !== '/') v = v.slice(0, 5) + '/' + v.slice(5);
+                         if (v.length > 10) v = v.slice(0, 10);
+                         setTempWorkDate(v);
+                      }}
+                      className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-mono text-lg text-center tracking-widest focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-300"
+                      placeholder="DD/MM/YYYY"
+                   />
+                   
+                   <div className="mt-8 flex gap-3">
+                      <button 
+                         onClick={() => {
+                            if (tempWorkDate) {
+                               localStorage.setItem('adminWorkDate', tempWorkDate);
+                               window.location.reload();
+                            }
+                         }}
+                         className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                      >
+                         حفظ وتطبيق
+                      </button>
+                      <button 
+                         onClick={() => setShowWorkDateModal(false)}
+                         className="px-6 bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-200 transition-colors"
+                      >
+                         إلغاء
+                      </button>
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
       </div>
     </div>
   );

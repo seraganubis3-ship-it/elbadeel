@@ -22,7 +22,10 @@ export async function GET(_request: NextRequest) {
         variants: true,
         documents: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { orderIndex: 'asc' },
+        { createdAt: 'desc' },
+      ],
     });
 
     return NextResponse.json({ success: true, services });

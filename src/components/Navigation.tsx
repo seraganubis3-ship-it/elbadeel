@@ -88,7 +88,7 @@ export default function Navigation() {
           </NavLink>
 
           {/* Admin Panel Link */}
-          {session.user.role === 'ADMIN' && (
+          {['ADMIN', 'STAFF', 'VIEWER'].includes(session.user.role as string) && (
             <NavLink
               href='/admin'
               icon={
