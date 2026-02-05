@@ -51,7 +51,7 @@ export default async function PrintWorkOrderPage({ params }: Props) {
   } else {
       orders = await prisma.order.findMany({
         where: {
-            workOrderNumber: decodedId,
+            workOrderNumber: parseInt(decodedId, 10),
         },
         include: {
             service: true,
