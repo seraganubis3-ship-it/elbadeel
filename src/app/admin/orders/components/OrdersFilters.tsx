@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Service, STATUS_CONFIG } from '../types';
+import { Service, Category, Admin, STATUS_CONFIG } from '../types';
 
 interface OrdersFiltersProps {
   // Filter values
@@ -13,6 +13,9 @@ interface OrdersFiltersProps {
   selectedServiceIds: string[];
   orderSourceFilter: string;
 
+  categoryId: string;
+  employeeId: string;
+
   // Setters
   onSearchChange: (value: string) => void;
   onStatusChange: (value: string) => void;
@@ -21,9 +24,13 @@ interface OrdersFiltersProps {
   onDateToChange: (value: string) => void;
   onServiceToggle: (serviceId: string) => void;
   onOrderSourceChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
+  onEmployeeChange: (value: string) => void;
 
   // Data
   services: Service[];
+  categories: Category[];
+  admins: Admin[];
   hasFilter: boolean;
 }
 
@@ -35,6 +42,8 @@ export function OrdersFilters({
   dateTo,
   selectedServiceIds,
   orderSourceFilter,
+  categoryId,
+  employeeId,
   onSearchChange,
   onStatusChange,
   onDeliveryChange,
@@ -42,7 +51,11 @@ export function OrdersFilters({
   onDateToChange,
   onServiceToggle,
   onOrderSourceChange,
+  onCategoryChange,
+  onEmployeeChange,
   services,
+  categories,
+  admins,
   hasFilter,
 }: OrdersFiltersProps) {
   const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
@@ -61,7 +74,7 @@ export function OrdersFilters({
   }, []);
 
   return (
-    <div className='bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 p-4 lg:p-6 mb-6'>
+    <div className='bg-white/95 rounded-2xl shadow-xl border border-gray-100/50 p-4 lg:p-6 mb-6'>
       {/* Order Source Tabs */}
       <div className='flex flex-wrap gap-2 mb-6 p-1 bg-gray-100 rounded-xl'>
         <button
@@ -136,6 +149,34 @@ export function OrdersFilters({
               {config.icon} {config.text}
             </option>
           ))}
+        </select>
+
+        {/* Category Filter */}
+        <select
+            value={categoryId}
+            onChange={e => onCategoryChange(e.target.value)}
+            className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer'
+        >
+            <option value=''>جميع الفئات</option>
+            {categories.map(category => (
+            <option key={category.id} value={category.id}>
+                📂 {category.name}
+            </option>
+            ))}
+        </select>
+
+        {/* Employee Filter */}
+        <select
+            value={employeeId}
+            onChange={e => onEmployeeChange(e.target.value)}
+            className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer'
+        >
+            <option value=''>جميع الموظفين</option>
+            {admins.map(admin => (
+            <option key={admin.id} value={admin.id}>
+                👤 {admin.name}
+            </option>
+            ))}
         </select>
 
         {/* Delivery Type Filter */}
@@ -232,6 +273,16 @@ export function OrdersFilters({
           {selectedServiceIds.length > 0 && (
             <span className='px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs'>
               {selectedServiceIds.length} خدمة
+            </span>
+          )}
+          {categoryId && (
+            <span className='px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs'>
+              فئة: {categories.find(c => c.id === categoryId)?.name}
+            </span>
+          )}
+          {employeeId && (
+            <span className='px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs'>
+              موظف: {admins.find(a => a.id === employeeId)?.name}
             </span>
           )}
           {(dateFrom || dateTo) && (

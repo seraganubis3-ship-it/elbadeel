@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
     const from = searchParams.get('from');
     const to = searchParams.get('to');
     const serviceIds = searchParams.getAll('serviceIds');
+    const categoryId = searchParams.get('categoryId');
     const createdByAdmin = searchParams.get('createdByAdmin');
 
     const page = parseInt(searchParams.get('page') || '1');
@@ -77,7 +78,8 @@ export async function GET(request: NextRequest) {
           }
         : {}),
       ...(serviceIds.length > 0 ? { serviceId: { in: serviceIds } } : {}),
-      ...(createdByAdmin === 'true' ? { createdByAdminId: { not: null } } : {}),
+      ...(categoryId ? { service: { categoryId } } : {}),
+      ...(createdByAdmin === 'true' && !createdByAdminId ? { createdByAdminId: { not: null } } : {}),
       ...(createdByAdmin === 'false' ? { createdByAdminId: null } : {}),
     };
 

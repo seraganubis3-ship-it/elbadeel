@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ToastContainer } from '@/components/Toast';
 import {
@@ -111,55 +110,13 @@ export default function CreateOrderPage() {
 
   return (
     <div className='min-h-screen bg-slate-50 text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-emerald-500/30'>
-      {/* Dynamic Background Decoration with Framer Motion */}
+      {/* Static Background Decoration - No Animations for Performance */}
       <div className='fixed inset-0 pointer-events-none overflow-hidden'>
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className='absolute top-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-gradient-to-bl from-emerald-400/30 to-green-500/30 blur-[150px] rounded-full'
-        />
-        <motion.div
-           animate={{
-            scale: [1, 1.3, 1],
-            x: [0, 50, 0],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-          className='absolute bottom-[-20%] left-[-10%] w-[900px] h-[900px] bg-gradient-to-tr from-emerald-600/20 to-teal-500/20 blur-[150px] rounded-full'
-        />
-        <motion.div
-          animate={{
-            y: [0, -30, 0],
-            opacity: [0.2, 0.3, 0.2],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className='absolute top-[40%] left-[20%] w-[600px] h-[600px] bg-emerald-300/10 blur-[120px] rounded-full'
-        />
-         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+        <div className='absolute top-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-gradient-to-bl from-emerald-400/15 to-green-500/15 rounded-full' />
+        <div className='absolute bottom-[-20%] left-[-10%] w-[900px] h-[900px] bg-gradient-to-tr from-emerald-600/10 to-teal-500/10 rounded-full' />
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className='relative z-10 max-w-[1700px] mx-auto px-4 py-4'
-      >
+      <div className='relative z-10 max-w-[1700px] mx-auto px-4 py-4'>
         {/* Header - Optimized Arabic */}
         {/* Header - Green Theme */}
         <div className='flex items-center justify-between mb-6 px-2'>
@@ -361,7 +318,7 @@ export default function CreateOrderPage() {
             </div>
           </div>
         </form>
-      </motion.div>
+      </div>
 
       <AddressModal
         isOpen={showAddressModal}

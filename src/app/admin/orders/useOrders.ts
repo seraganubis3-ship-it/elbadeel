@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Order, OrderFilters, Service, Admin, getStatusText } from './types';
+import { Order, OrderFilters, Service, Category, Admin, getStatusText } from './types';
 
 interface UseOrdersReturn {
   // Data
@@ -11,9 +11,11 @@ interface UseOrdersReturn {
   currentOrders: Order[];
   services: Service[];
   admins: Admin[];
+  categories: Category[];
 
   // Loading states
   loading: boolean;
+  isRefetching: boolean;
   updatingStatus: string | null;
   updatingBulk: boolean;
 
@@ -26,6 +28,8 @@ interface UseOrdersReturn {
   setDateTo: (date: string) => void;
   setSelectedServiceIds: (ids: string[]) => void;
   setOrderSourceFilter: (source: string) => void;
+  setCategoryId: (id: string) => void;
+  setEmployeeId: (id: string) => void;
   toggleService: (serviceId: string) => void;
 
   // Pagination
@@ -58,7 +62,7 @@ export function useOrders(
 ): UseOrdersReturn {
   const searchParams = useSearchParams();
   const userIdFilter = searchParams.get('userId') || '';
-  const createdByAdminIdFilter = searchParams.get('createdByAdminId') || '';
+  const createdByAdminIdParam = searchParams.get('createdByAdminId') || '';
   const deliveryTodayFilter = searchParams.get('delivery') === 'today';
 
   // Data state
@@ -66,9 +70,11 @@ export function useOrders(
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [admins, setAdmins] = useState<Admin[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Loading states
   const [loading, setLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [updatingBulk, setUpdatingBulk] = useState(false);
 
@@ -80,6 +86,8 @@ export function useOrders(
   const [dateTo, setDateTo] = useState('');
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [orderSourceFilter, setOrderSourceFilter] = useState('office');
+  const [categoryId, setCategoryId] = useState('');
+  const [employeeId, setEmployeeId] = useState(createdByAdminIdParam);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,7 +102,8 @@ export function useOrders(
     (dateFrom && dateTo) ||
       searchTerm ||
       userIdFilter ||
-      createdByAdminIdFilter ||
+      employeeId ||
+      categoryId ||
       selectedServiceIds.length > 0 ||
       deliveryTodayFilter ||
       orderSourceFilter // Should always fetch if we have a source defined (even "all")
@@ -118,17 +127,22 @@ export function useOrders(
   };
 
   // Fetch orders
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (isBackground = false) => {
     try {
+      if (!isBackground) setLoading(true);
+      else setIsRefetching(true);
+
       if (!hasFilter) {
         setOrders([]);
         setLoading(false);
+        setIsRefetching(false);
         return;
       }
 
       const params = new URLSearchParams();
       if (userIdFilter) params.set('userId', userIdFilter);
-      if (createdByAdminIdFilter) params.set('createdByAdminId', createdByAdminIdFilter);
+      if (employeeId) params.set('createdByAdminId', employeeId);
+      if (categoryId) params.set('categoryId', categoryId);
       if (dateFrom && dateTo) {
         params.set('from', dateFrom);
         params.set('to', dateTo);
@@ -141,6 +155,9 @@ export function useOrders(
       } else if (orderSourceFilter === 'online') {
         params.set('createdByAdmin', 'false');
       }
+
+      // Add default limits to fetch more data for client-side filtering options
+      params.set('limit', '100'); 
 
       const response = await fetch(
         `/api/admin/orders${params.toString() ? `?${params.toString()}` : ''}`,
@@ -156,11 +173,13 @@ export function useOrders(
       // console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
+      setIsRefetching(false);
     }
   }, [
     hasFilter,
     userIdFilter,
-    createdByAdminIdFilter,
+    employeeId,
+    categoryId,
     dateFrom,
     dateTo,
     selectedServiceIds,
@@ -253,32 +272,47 @@ export function useOrders(
     })();
   }, []);
 
-  // Fetch admins (limit to 1 to just find recent ones or use a dedicated endpoint)
+  // Fetch categories
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/admin/orders?limit=10');
+        const res = await fetch('/api/admin/categories');
         if (res.ok) {
           const data = await res.json();
-          const unique: Record<string, Admin> = {};
-          (data.orders || []).forEach((o: any) => {
-            if (o.createdByAdmin?.id && !unique[o.createdByAdmin.id]) {
-              unique[o.createdByAdmin.id] = {
-                id: o.createdByAdmin.id,
-                name: o.createdByAdmin.name || 'مشرف',
-              };
-            }
-          });
-          setAdmins(Object.values(unique));
+          setCategories((data.categories || []).map((c: any) => ({ id: c.id, name: c.name })));
         }
       } catch {}
     })();
   }, []);
 
-  // Fetch orders on filter change
+  // Fetch admins (employees)
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/users?role=MANAGEMENT&pageSize=100');
+        if (res.ok) {
+          const data = await res.json();
+          setAdmins(
+            (data.rows || []).map((u: any) => ({
+              id: u.id,
+              name: u.name || u.email || 'مشرف',
+            }))
+          );
+        }
+      } catch {}
+    })();
+  }, []);
+
+  // Fetch orders on filter change with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // If we already have orders, do a background fetch (no full screen loading)
+      const isBackground = orders.length > 0;
+      fetchOrders(isBackground);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [fetchOrders]); // fetchOrders depends on filter values, so this triggers on filter change
 
   // Filter orders when data changes
   useEffect(() => {
@@ -384,9 +418,11 @@ export function useOrders(
     currentOrders,
     services,
     admins,
+    categories,
 
     // Loading states
     loading,
+    isRefetching,
     updatingStatus,
     updatingBulk,
 
@@ -400,8 +436,10 @@ export function useOrders(
       selectedServiceIds,
       orderSourceFilter,
       userIdFilter,
-      createdByAdminIdFilter,
+      createdByAdminIdFilter: employeeId, // Use employeeId as the source of truth for UI
       deliveryTodayFilter,
+      categoryId,
+      employeeId,
     },
     setSearchTerm,
     setStatusFilter,
@@ -410,6 +448,8 @@ export function useOrders(
     setDateTo,
     setSelectedServiceIds,
     setOrderSourceFilter,
+    setCategoryId,
+    setEmployeeId,
     toggleService,
 
     // Pagination

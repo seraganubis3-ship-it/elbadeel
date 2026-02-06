@@ -23,12 +23,14 @@ export default function OrderCustomerDetails({
     idNumber: string;
     birthDate: string;
     customerPhone: string;
+    additionalPhone: string;
     profession: string;
   }>({
     customerName: order.customerName || '',
     idNumber: order.idNumber || '',
     birthDate: order.birthDate ? new Date(order.birthDate).toISOString().split('T')[0] || '' : '',
     customerPhone: order.customerPhone || '',
+    additionalPhone: order.additionalPhone || '',
     profession: order.profession || '',
   });
 
@@ -140,6 +142,13 @@ export default function OrderCustomerDetails({
             label: 'رقم الهاتف',
             value: order.customerPhone,
             key: 'customerPhone',
+            type: 'tel',
+          },
+          {
+            icon: 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z',
+            label: 'رقم هاتف إضافي',
+            value: order.additionalPhone,
+            key: 'additionalPhone',
             type: 'tel',
           },
           {

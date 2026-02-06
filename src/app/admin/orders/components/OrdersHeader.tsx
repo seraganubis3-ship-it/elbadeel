@@ -46,7 +46,7 @@ export function OrdersHeader({
         <div className='flex items-center justify-between mb-4 lg:mb-8'>
           {/* Logo and Title */}
           <div className='flex items-center space-x-2 lg:space-x-4 space-x-reverse'>
-            <div className='w-12 h-12 lg:w-16 lg:h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center'>
+            <div className='w-12 h-12 lg:w-16 lg:h-16 bg-white/30 rounded-2xl flex items-center justify-center'>
               <svg
                 className='w-6 h-6 lg:w-8 lg:h-8 text-white'
                 fill='none'
@@ -77,7 +77,7 @@ export function OrdersHeader({
           <div className='hidden lg:flex items-center space-x-4 space-x-reverse'>
             <Link
               href='/admin/create'
-              className='px-6 lg:px-8 py-3 lg:py-4 bg-white/20 backdrop-blur-sm text-white rounded-xl hover:bg-white/30 transition-all duration-300 border border-white/30 hover:border-white/50 flex items-center space-x-2 space-x-reverse shadow-lg hover:shadow-xl'
+              className='px-6 lg:px-8 py-3 lg:py-4 bg-white/30 text-white rounded-xl hover:bg-white/40 transition-all duration-300 border border-white/30 hover:border-white/50 flex items-center space-x-2 space-x-reverse shadow-lg hover:shadow-xl'
             >
               <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                 <path
@@ -91,7 +91,7 @@ export function OrdersHeader({
             </Link>
             <Link
               href='/admin'
-              className='px-4 lg:px-6 py-3 lg:py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 transition-all duration-300 border border-white/20 hover:border-white/40 flex items-center space-x-2 space-x-reverse'
+              className='px-4 lg:px-6 py-3 lg:py-4 bg-white/15 text-white rounded-xl hover:bg-white/25 transition-all duration-300 border border-white/20 hover:border-white/40 flex items-center space-x-2 space-x-reverse'
             >
               <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                 <path
@@ -109,7 +109,7 @@ export function OrdersHeader({
           <div className='lg:hidden'>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className='p-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-300 border border-white/30'
+              className='p-2 bg-white/30 text-white rounded-lg hover:bg-white/40 transition-all duration-300 border border-white/30'
             >
               <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                 {isMobileMenuOpen ? (
@@ -134,11 +134,11 @@ export function OrdersHeader({
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className='lg:hidden mb-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20'>
+          <div className='lg:hidden mb-4 p-4 bg-white/15 rounded-xl border border-white/20'>
             <div className='space-y-3'>
               <Link
                 href='/admin/create'
-                className='w-full px-4 py-3 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-300 border border-white/30 flex items-center space-x-2 space-x-reverse'
+                className='w-full px-4 py-3 bg-white/30 text-white rounded-lg hover:bg-white/40 transition-all duration-300 border border-white/30 flex items-center space-x-2 space-x-reverse'
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -153,7 +153,7 @@ export function OrdersHeader({
               </Link>
               <Link
                 href='/admin'
-                className='w-full px-4 py-3 bg-white/10 backdrop-blur-sm text-white rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/20 flex items-center space-x-2 space-x-reverse'
+                className='w-full px-4 py-3 bg-white/15 text-white rounded-lg hover:bg-white/25 transition-all duration-300 border border-white/20 flex items-center space-x-2 space-x-reverse'
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -253,7 +253,7 @@ function StatCard({
   bgColor: string;
 }) {
   return (
-    <div className='bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300'>
+    <div className='bg-white/15 rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300'>
       <div className='flex items-center justify-between'>
         <div>
           <p className='text-blue-100 text-sm font-medium'>{title}</p>

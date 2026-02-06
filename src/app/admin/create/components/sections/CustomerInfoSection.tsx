@@ -221,8 +221,8 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
         </div>
 
         {/* Main Inputs Grid - Adjusted Gap/Text for lg */}
-        <div className='grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-3'>
-          <div className='md:col-span-4 space-y-1 group/input'>
+        <div className='grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-3 items-end'>
+          <div className='md:col-span-3 space-y-1 group/input'>
             <MandatoryLabel label="رقم الهاتف" />
             <input
               type='tel'
@@ -237,7 +237,25 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
             />
           </div>
 
-          <div className='md:col-span-6 space-y-1'>
+          <div className='md:col-span-3 space-y-1 group/input'>
+            <label className='text-sm font-black text-black block mr-1 flex items-center justify-between'>
+               <span>رقم هاتف إضافي</span>
+               <span className="text-[10px] text-slate-400 font-normal">(اختياري)</span>
+            </label>
+            <input
+               type='tel'
+               value={formData.additionalPhone}
+               onChange={e => {
+                 const val = e.target.value;
+                 setFormData(prev => ({ ...prev, additionalPhone: val }));
+               }}
+               dir="ltr"
+               className='w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white transition-all font-black text-slate-700 text-right text-lg lg:text-base group-hover/input:bg-slate-50'
+               placeholder='01xxxxxxxx'
+            />
+          </div>
+
+          <div className='md:col-span-4 space-y-1'>
             <MandatoryLabel label="الأم" />
             <input
               type='text'

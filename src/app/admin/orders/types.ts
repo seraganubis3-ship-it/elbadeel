@@ -18,6 +18,7 @@ export interface Order {
   estimatedCompletionDate?: Date;
   customerName: string;
   customerPhone: string;
+  additionalPhone?: string;
   customerEmail: string;
   address: string;
   notes: string;
@@ -91,9 +92,16 @@ export interface OrderFilters {
   userIdFilter: string;
   createdByAdminIdFilter: string;
   deliveryTodayFilter: boolean;
+  categoryId: string;
+  employeeId: string;
 }
 
 export interface Service {
+  id: string;
+  name: string;
+}
+
+export interface Category {
   id: string;
   name: string;
 }

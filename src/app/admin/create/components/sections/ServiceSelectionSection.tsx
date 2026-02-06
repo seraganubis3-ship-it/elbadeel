@@ -265,6 +265,19 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                 </div>
              )}
 
+             {/* Service Details Textarea */}
+             {selectedService && (
+                <div className="space-y-1 pt-2 animate-in slide-in-from-top-2">
+                   <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1'>تفاصيل الخدمة</label>
+                   <textarea
+                     value={formData.serviceDetails}
+                     onChange={e => setFormData(p => ({ ...p, serviceDetails: e.target.value }))}
+                     className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none text-right text-sm min-h-[80px] resize-none'
+                     placeholder='اكتب أي تفاصيل إضافية عن الخدمة...'
+                   />
+                </div>
+             )}
+
             {/* Form Serial Number - Show Only for National ID */}
             {isNationalId && (
               <div className='space-y-1 animate-in slide-in-from-top-2 pt-2'>
@@ -296,3 +309,5 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
     </div>
   );
 };
+
+

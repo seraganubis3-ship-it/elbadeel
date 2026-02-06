@@ -252,6 +252,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ),
     },
     {
+      name: 'إدارة المندوبين',
+      href: '/admin/delegates',
+      icon: (
+        <svg
+          className='w-5 h-5 sm:w-6 sm:h-6'
+          fill='none'
+          stroke='currentColor'
+          viewBox='0 0 24 24'
+        >
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'
+          />
+        </svg>
+      ),
+    },
+    {
       name: 'أوامر الشغل',
       href: '/admin/work-orders',
       icon: (
@@ -281,6 +300,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         '/admin/orders',
         '/admin/services',
         '/admin/inventory',
+        '/admin/delegates',
         '/admin/work-orders',
       ].includes(item.href);
     }
@@ -336,7 +356,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   setTempWorkDate(workDate || '');
                   setShowWorkDateModal(true);
                 }}
-                className='hidden sm:flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md text-white text-sm font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg group relative overflow-hidden'
+                className='hidden sm:flex items-center gap-2 px-4 py-2 bg-white/15  text-white text-sm font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg group relative overflow-hidden'
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="p-1.5 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
@@ -379,7 +399,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
 
             {/* User Info - Hidden on very small screens */}
-            <div className='hidden xs:flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/20'>
+            <div className='hidden xs:flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/15  rounded-lg sm:rounded-xl border border-white/20'>
               <div className='w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center'>
                 <span className='text-white font-bold text-xs sm:text-sm'>
                   {session.user.name?.charAt(0) || session.user.email?.charAt(0)}
@@ -474,7 +494,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <h2 className='text-lg sm:text-xl font-bold text-white'>القائمة</h2>
             <button
               onClick={closeMobileMenu}
-              className='text-emerald-300 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all duration-200'
+              className='text-emerald-300 hover:text-white p-2 rounded-lg hover:bg-white/15 transition-all duration-200'
             >
               <svg
                 className='w-5 h-5 sm:w-6 sm:h-6'
@@ -505,12 +525,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     className={`group flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-4 rounded-xl transition-all duration-300 ${
                       isActive
                         ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25'
-                        : 'text-emerald-100 hover:bg-white/10 hover:text-white'
+                        : 'text-emerald-100 hover:bg-white/15 hover:text-white'
                     }`}
                   >
                     <div
                       className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-300 ${
-                        isActive ? 'bg-white/20' : 'bg-white/10 group-hover:bg-white/20'
+                        isActive ? 'bg-white/20' : 'bg-white/15 group-hover:bg-white/20'
                       }`}
                     >
                       {item.icon}
@@ -530,9 +550,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   href='/admin/orders?delivery=today'
                   onClick={closeMobileMenu}
-                  className='group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-emerald-100 hover:bg-white/10 hover:text-white'
+                  className='group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-emerald-100 hover:bg-white/15 hover:text-white'
                 >
-                  <div className='w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 group-hover:bg-white/20 transition-all duration-300'>
+                  <div className='w-8 h-8 rounded-lg flex items-center justify-center bg-white/15 group-hover:bg-white/20 transition-all duration-300'>
                     <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                       <path
                         strokeLinecap='round'
@@ -548,9 +568,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   href='/admin/orders?status=settlement'
                   onClick={closeMobileMenu}
-                  className='group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-emerald-100 hover:bg-white/10 hover:text-white'
+                  className='group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-emerald-100 hover:bg-white/15 hover:text-white'
                 >
-                  <div className='w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 group-hover:bg-white/20 transition-all duration-300'>
+                  <div className='w-8 h-8 rounded-lg flex items-center justify-center bg-white/15 group-hover:bg-white/20 transition-all duration-300'>
                     <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                       <path
                         strokeLinecap='round'
@@ -578,7 +598,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     window.location.reload();
                   }
                 }}
-                className='w-full mb-3 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600/80 backdrop-blur-sm text-white text-xs font-medium rounded-lg border border-blue-400/30 hover:bg-blue-500/80 transition-colors cursor-pointer'
+                className='w-full mb-3 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600/80  text-white text-xs font-medium rounded-lg border border-blue-400/30 hover:bg-blue-500/80 transition-colors cursor-pointer'
               >
                 <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                   <path
@@ -622,7 +642,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               العودة للموقع - {session.user.name || session.user.email}
             </Link>
 
-            <div className='flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/20'>
+            <div className='flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/15  rounded-lg sm:rounded-xl border border-white/20'>
               <div className='w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center'>
                 <span className='text-white font-bold text-xs sm:text-sm'>
                   {session.user.name?.charAt(0) || session.user.email?.charAt(0)}
@@ -677,11 +697,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Work Date Modal */}
         {showWorkDateModal && (
           <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
-             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setShowWorkDateModal(false)} />
+             <div className="absolute inset-0 bg-slate-900/80  transition-opacity" onClick={() => setShowWorkDateModal(false)} />
              <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100 opacity-100">
                 <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-6 flex items-center justify-between">
                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl">📅</div>
+                      <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-xl">📅</div>
                       <div>
                          <h3 className="text-white font-bold text-lg">تغيير تاريخ العمل</h3>
                          <p className="text-slate-400 text-xs text-right">سيتم تطبيق التاريخ على جميع العمليات</p>

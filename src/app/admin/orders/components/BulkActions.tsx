@@ -28,7 +28,7 @@ export function BulkActions({
   hasOrders,
 }: BulkActionsProps) {
   return (
-    <div className='bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100/50 p-4 mb-6'>
+    <div className='bg-white/95 rounded-2xl shadow-xl border border-gray-100/50 p-4 mb-6'>
       <div className='flex flex-wrap items-center justify-between gap-4'>
         {/* Selection Info */}
         <div className='flex items-center gap-4'>

@@ -228,7 +228,7 @@ export default function OrderServiceDetails({
               />
             </svg>
           </div>
-          <h2 className='text-xl font-black text-slate-800'>ملاحظات إضافية للطلب</h2>
+          <h2 className='text-xl font-black text-slate-800'>تفاصيل الخدمة</h2>
         </div>
         {isEditing ? (
           <textarea

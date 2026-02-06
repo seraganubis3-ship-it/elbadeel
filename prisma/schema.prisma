@@ -472,3 +472,19 @@ model PromoCode {
   @@index([code])
   @@index([isActive])
 }
+
+model Delegate {
+  id             String   @id @default(cuid())
+  name           String
+  idNumber       String
+  licenseNumber  String?
+  idCardFront    String?
+  idCardBack     String?
+  unionCardFront String?
+  unionCardBack  String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([active])
+}

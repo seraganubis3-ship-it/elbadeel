@@ -27,7 +27,10 @@ export default function AdminOrdersPage() {
     filteredOrders,
     currentOrders,
     services,
+    categories,
+    admins,
     loading,
+    isRefetching,
     updatingStatus,
     updatingBulk,
     filters,
@@ -37,6 +40,8 @@ export default function AdminOrdersPage() {
     setDateFrom,
     setDateTo,
     setOrderSourceFilter,
+    setCategoryId,
+    setEmployeeId,
     toggleService,
     currentPage,
     totalPages,
@@ -239,6 +244,8 @@ export default function AdminOrdersPage() {
             dateTo={filters.dateTo}
             selectedServiceIds={filters.selectedServiceIds}
             orderSourceFilter={filters.orderSourceFilter}
+            categoryId={filters.categoryId}
+            employeeId={filters.employeeId}
             onSearchChange={setSearchTerm}
             onStatusChange={setStatusFilter}
             onDeliveryChange={setDeliveryFilter}
@@ -246,7 +253,11 @@ export default function AdminOrdersPage() {
             onDateToChange={setDateTo}
             onServiceToggle={toggleService}
             onOrderSourceChange={setOrderSourceFilter}
+            onCategoryChange={setCategoryId}
+            onEmployeeChange={setEmployeeId}
             services={services}
+            categories={categories}
+            admins={admins}
             hasFilter={hasFilter}
           />
 
@@ -281,7 +292,16 @@ export default function AdminOrdersPage() {
             </div>
           ) : (
             <>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+              <div className={`relative transition-opacity duration-200 ${isRefetching ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                {isRefetching && (
+                  <div className='absolute inset-0 z-50 flex items-center justify-center'>
+                    <div className='bg-white/95  rounded-full px-6 py-3 shadow-lg flex items-center gap-3'>
+                      <div className='w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin' />
+                      <span className='text-blue-600 font-medium text-sm'>جاري التحديث...</span>
+                    </div>
+                  </div>
+                )}
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                 {currentOrders.map(order => (
                   <OrderCard
                     key={order.id}
@@ -293,6 +313,7 @@ export default function AdminOrdersPage() {
                     onWhatsAppClick={handleWhatsAppClick}
                   />
                 ))}
+              </div>
               </div>
 
               {/* Pagination */}

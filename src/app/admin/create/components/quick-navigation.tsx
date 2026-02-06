@@ -57,7 +57,7 @@ export function QuickNavigation({ isMobile = false }: QuickNavigationProps) {
           key={item.id}
           type='button'
           onClick={() => handleNavClick(item.id)}
-          className='flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 hover:shadow-xl hover:scale-105 transition-all duration-200'
+          className='flex items-center gap-2 px-3 py-2 bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl hover:scale-105 transition-all duration-200'
         >
           <span className='text-lg'>{item.icon}</span>
           <span className='text-xs font-semibold text-gray-700 whitespace-nowrap'>
