@@ -161,9 +161,13 @@ export default function DelegatesPage() {
                 </div>
 
                 <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     {delegate.idCardFront && <img src={delegate.idCardFront} alt="ID Card Front" className="w-full h-12 object-cover rounded-lg border" title="بطاقة أمامي" />}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     {delegate.idCardBack && <img src={delegate.idCardBack} alt="ID Card Back" className="w-full h-12 object-cover rounded-lg border" title="بطاقة خلفي" />}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     {delegate.unionCardFront && <img src={delegate.unionCardFront} alt="Union Card Front" className="w-full h-12 object-cover rounded-lg border" title="كارنيه أمامي" />}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     {delegate.unionCardBack && <img src={delegate.unionCardBack} alt="Union Card Back" className="w-full h-12 object-cover rounded-lg border" title="كارنيه خلفي" />}
                 </div>
               </div>

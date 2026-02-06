@@ -80,6 +80,7 @@ export default function PassportAuthorizationPrintPage() {
       <div className="w-[210mm] mx-auto p-[10mm]">
         {/* Header - Logo Only (Top Right) */}
         <div className="flex justify-start mb-6">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/report-header.png" alt="Header Logo" className="h-44 object-contain" />
         </div>
 
@@ -121,18 +122,22 @@ export default function PassportAuthorizationPrintPage() {
         <div className="grid grid-cols-2 gap-6 mt-6">
             <div className="space-y-3">
                  <div className="h-40 flex items-center justify-center">
+                     {/* eslint-disable-next-line @next/next/no-img-element */}
                      {delegate.idCardFront ? <img src={delegate.idCardFront} alt="ID Card Front" className="max-h-full max-w-full object-contain" /> : null}
                  </div>
                  <div className="h-40 flex items-center justify-center">
+                     {/* eslint-disable-next-line @next/next/no-img-element */}
                      {delegate.idCardBack ? <img src={delegate.idCardBack} alt="ID Card Back" className="max-h-full max-w-full object-contain" /> : null}
                  </div>
             </div>
 
             <div className="space-y-3">
                 <div className="h-40 flex items-center justify-center">
+                     {/* eslint-disable-next-line @next/next/no-img-element */}
                      {delegate.unionCardFront ? <img src={delegate.unionCardFront} alt="Union Card Front" className="max-h-full max-w-full object-contain" /> : null}
                 </div>
                  <div className="h-40 flex items-center justify-center">
+                     {/* eslint-disable-next-line @next/next/no-img-element */}
                      {delegate.unionCardBack ? <img src={delegate.unionCardBack} alt="Union Card Back" className="max-h-full max-w-full object-contain" /> : null}
                 </div>
             </div>
