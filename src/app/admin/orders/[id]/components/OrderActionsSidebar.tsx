@@ -50,7 +50,7 @@ export default function OrderActionsSidebar({
         const data = await res.json();
         setDelegates(data.delegates);
       } catch (err) {
-        console.error('Error fetching delegates', err);
+        // Error fetching delegates
       } finally {
         setLoadingDelegates(false);
       }

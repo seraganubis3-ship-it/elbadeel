@@ -43,7 +43,7 @@ export default function DelegatesPage() {
           setDelegates(data.delegates);
       }
     } catch (error) {
-      console.error('Error fetching delegates:', error);
+      // Error fetching delegates
     } finally {
       setLoading(false);
     }
@@ -161,10 +161,10 @@ export default function DelegatesPage() {
                 </div>
 
                 <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-100">
-                    {delegate.idCardFront && <img src={delegate.idCardFront} className="w-full h-12 object-cover rounded-lg border" title="بطاقة أمامي" />}
-                    {delegate.idCardBack && <img src={delegate.idCardBack} className="w-full h-12 object-cover rounded-lg border" title="بطاقة خلفي" />}
-                    {delegate.unionCardFront && <img src={delegate.unionCardFront} className="w-full h-12 object-cover rounded-lg border" title="كارنيه أمامي" />}
-                    {delegate.unionCardBack && <img src={delegate.unionCardBack} className="w-full h-12 object-cover rounded-lg border" title="كارنيه خلفي" />}
+                    {delegate.idCardFront && <img src={delegate.idCardFront} alt="ID Card Front" className="w-full h-12 object-cover rounded-lg border" title="بطاقة أمامي" />}
+                    {delegate.idCardBack && <img src={delegate.idCardBack} alt="ID Card Back" className="w-full h-12 object-cover rounded-lg border" title="بطاقة خلفي" />}
+                    {delegate.unionCardFront && <img src={delegate.unionCardFront} alt="Union Card Front" className="w-full h-12 object-cover rounded-lg border" title="كارنيه أمامي" />}
+                    {delegate.unionCardBack && <img src={delegate.unionCardBack} alt="Union Card Back" className="w-full h-12 object-cover rounded-lg border" title="كارنيه خلفي" />}
                 </div>
               </div>
             ))}

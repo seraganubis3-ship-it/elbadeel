@@ -45,9 +45,7 @@ export default function WorkPermitAuthorizationPrintPage() {
       // API returns { success: true, order: {...} }, so we need to extract the order
       const actualOrder = orderData.order || orderData;
       
-      console.log('Order Data:', actualOrder);
-      console.log('Customer Name:', actualOrder.customerName);
-      console.log('ID Number:', actualOrder.idNumber);
+      // Order data loaded successfully
 
       setOrder(actualOrder);
       setDelegate(selectedDelegate || null);
@@ -59,7 +57,7 @@ export default function WorkPermitAuthorizationPrintPage() {
           }, 1000);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      // Error fetching data
     } finally {
       setLoading(false);
     }
@@ -122,19 +120,19 @@ export default function WorkPermitAuthorizationPrintPage() {
         <div className="grid grid-cols-2 gap-6 mt-6">
             <div className="space-y-3">
                  <div className="h-40 flex items-center justify-center">
-                     {delegate.idCardFront ? <img src={delegate.idCardFront} className="max-h-full max-w-full object-contain" /> : null}
+                     {delegate.idCardFront ? <img src={delegate.idCardFront} alt="ID Card Front" className="max-h-full max-w-full object-contain" /> : null}
                  </div>
                  <div className="h-40 flex items-center justify-center">
-                     {delegate.idCardBack ? <img src={delegate.idCardBack} className="max-h-full max-w-full object-contain" /> : null}
+                     {delegate.idCardBack ? <img src={delegate.idCardBack} alt="ID Card Back" className="max-h-full max-w-full object-contain" /> : null}
                  </div>
             </div>
 
             <div className="space-y-3">
                 <div className="h-40 flex items-center justify-center">
-                     {delegate.unionCardFront ? <img src={delegate.unionCardFront} className="max-h-full max-w-full object-contain" /> : null}
+                     {delegate.unionCardFront ? <img src={delegate.unionCardFront} alt="Union Card Front" className="max-h-full max-w-full object-contain" /> : null}
                 </div>
                  <div className="h-40 flex items-center justify-center">
-                     {delegate.unionCardBack ? <img src={delegate.unionCardBack} className="max-h-full max-w-full object-contain" /> : null}
+                     {delegate.unionCardBack ? <img src={delegate.unionCardBack} alt="Union Card Back" className="max-h-full max-w-full object-contain" /> : null}
                 </div>
             </div>
         </div>
