@@ -5,6 +5,32 @@ import { getServerSession } from 'next-auth';
 import { authConfig } from '@/auth.config';
 import ServicesGrid from '@/components/ServicesGrid';
 import ServicesLayoutClient from '@/components/ServicesLayoutClient';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'الخدمات - البديل للخدمات الحكومية',
+  description: 'تصفح جميع الخدمات الحكومية المتاحة - استخراج شهادات، رخص، أوراق رسمية وأكثر. خدمات سريعة وموثوقة بأفضل الأسعار.',
+  keywords: [
+    'خدمات حكومية',
+    'استخراج شهادات',
+    'استخراج رخص',
+    'أوراق رسمية',
+    'خدمات البديل',
+    'خدمات مصر',
+    'مستندات حكومية'
+  ],
+  alternates: {
+    canonical: 'https://albadel.com.eg/services',
+  },
+  openGraph: {
+    title: 'الخدمات - البديل للخدمات الحكومية',
+    description: 'تصفح جميع الخدمات الحكومية المتاحة - استخراج شهادات، رخص، أوراق رسمية وأكثر.',
+    url: 'https://albadel.com.eg/services',
+    siteName: 'البديل للخدمات الحكومية',
+    locale: 'ar_EG',
+    type: 'website',
+  },
+};
 
 export default async function ServicesPage() {
   const session = (await getServerSession(authConfig)) as any;

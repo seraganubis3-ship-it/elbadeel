@@ -14,6 +14,17 @@ export const metadata: Metadata = {
     'استخراج أوراق رسمية',
     'خبرة 24 سنة',
   ],
+  alternates: {
+    canonical: 'https://albadel.com.eg/about',
+  },
+  openGraph: {
+    title: 'من نحن | البديل للخدمات الحكومية',
+    description: 'تعرف على البديل للخدمات الحكومية، المنصة الرائدة في مصر لاستخراج جميع أنواع الأوراق الرسمية.',
+    url: 'https://albadel.com.eg/about',
+    siteName: 'البديل للخدمات الحكومية',
+    locale: 'ar_EG',
+    type: 'website',
+  },
 };
 
 export default function AboutPage() {

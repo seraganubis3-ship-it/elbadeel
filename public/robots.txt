@@ -1,24 +1,7 @@
 User-agent: *
-Allow: /
-
-# Sitemap
-Sitemap: https://albadel.com.eg/sitemap.xml
-
-# Disallow admin and API routes
 Disallow: /admin/
 Disallow: /api/
-
-# Allow Next.js static resources and images
-Allow: /_next/static/
-Allow: /_next/image/
-
-# Allow important pages
+Disallow: /auth/
 Allow: /
-Allow: /services
-Allow: /faq
-Allow: /contact
-Allow: /register
-Allow: /login
 
-# Crawl delay (optional)
-Crawl-delay: 1
+Sitemap: https://albadel.com.eg/sitemap.xml
