@@ -92,15 +92,11 @@ export default function ContactModal({ isOpen, onClose, settings }: ContactModal
                       href={`https://wa.me/${settings?.whatsappPhone?.replace(/^0/, '2') || '201021606893'}`}
                       target='_blank'
                       rel='noreferrer'
-                      className='flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-green-50 hover:border-green-200 transition-all group'
+                      className='w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all text-white group relative'
+                      title={`واتساب: ${settings?.whatsappPhone || '01021606893'}`}
                     >
-                      <div className='w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-green-500 group-hover:scale-110 transition-transform'>
-                        <MessageCircle className='w-5 h-5' />
-                      </div>
-                      <div>
-                        <div className='font-black text-slate-800 text-lg'>{settings?.whatsappPhone || '01021606893'}</div>
-                        <div className='text-xs text-slate-500 font-bold'>واتساب 1</div>
-                      </div>
+                      <MessageCircle className='w-6 h-6' />
+                      <span className='absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>1</span>
                     </a>
                     
                     {settings?.secondaryWhatsappPhone && (
@@ -108,17 +104,18 @@ export default function ContactModal({ isOpen, onClose, settings }: ContactModal
                         href={`https://wa.me/${settings.secondaryWhatsappPhone.replace(/^0/, '2')}`}
                         target='_blank'
                         rel='noreferrer'
-                        className='flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-green-50 hover:border-green-200 transition-all group'
+                        className='w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all text-white group relative'
+                        title={`واتساب: ${settings.secondaryWhatsappPhone}`}
                       >
-                        <div className='w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-green-500 group-hover:scale-110 transition-transform'>
-                          <MessageCircle className='w-5 h-5' />
-                        </div>
-                        <div>
-                          <div className='font-black text-slate-800 text-lg'>{settings.secondaryWhatsappPhone}</div>
-                          <div className='text-xs text-slate-500 font-bold'>واتساب 2</div>
-                        </div>
+                        <MessageCircle className='w-6 h-6' />
+                        <span className='absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>2</span>
                       </a>
                     )}
+                  </div>
+                  
+                  {/* WhatsApp Numbers Label */}
+                  <div className='text-center mt-2'>
+                    <p className='text-xs text-slate-500 font-bold'>تواصل عبر واتساب</p>
                   </div>
                 </div>
 
