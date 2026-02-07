@@ -81,7 +81,7 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                 </Link>
               )}
 
-              {session?.user?.role === 'ADMIN' && (
+              {['ADMIN', 'STAFF', 'VIEWER'].includes(session?.user?.role || '') && (
                 <Link
                   href='/admin'
                   className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
@@ -115,7 +115,13 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                         {session.user.name?.split(' ')[0] || 'حسابي'}
                       </p>
                       <p className='text-xs text-white/60'>
-                        {session.user.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
+                        {session.user.role === 'ADMIN' 
+                          ? 'مدير' 
+                          : session.user.role === 'STAFF'
+                          ? 'موظف'
+                          : session.user.role === 'VIEWER'
+                          ? 'مشاهد'
+                          : 'مستخدم'}
                       </p>
                     </div>
                   </Link>

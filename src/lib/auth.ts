@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authConfig } from '@/auth.config';
 import type { Session } from 'next-auth';
 import { cookies } from 'next/headers';
+import { prisma } from '@/lib/prisma';
 
 export async function getSession(): Promise<Session | null> {
   return await getServerSession(authConfig);
@@ -14,32 +15,64 @@ export async function getCurrentUser() {
 
 export async function requireAuth() {
   const session = await getSession();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     throw new Error('Unauthorized');
   }
-  return session;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, role: true }
+  });
+
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+
+  return { ...session, user: { ...session.user, role: user.role } };
 }
 
 export async function requireAdmin() {
   const session = await getSession();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     throw new Error('Unauthorized');
   }
-  if (session.user.role !== 'ADMIN') {
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, role: true }
+  });
+
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+
+  if (user.role !== 'ADMIN') {
     throw new Error('Forbidden');
   }
-  return session;
+
+  return { ...session, user: { ...session.user, role: user.role } };
 }
 
 export async function requireAdminOrStaff() {
   const session = await getSession();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     throw new Error('Unauthorized');
   }
-  if (session.user.role !== 'ADMIN' && session.user.role !== 'STAFF') {
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, role: true }
+  });
+
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+
+  if (user.role !== 'ADMIN' && user.role !== 'STAFF') {
     throw new Error('Forbidden');
   }
-  return session;
+
+  return { ...session, user: { ...session.user, role: user.role } };
 }
 
 /**

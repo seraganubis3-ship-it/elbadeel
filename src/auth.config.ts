@@ -83,7 +83,7 @@ export const authConfig = {
     },
     async redirect({ url, baseUrl }: any) {
       if (url.includes('/admin')) {
-        return `${baseUrl}/admin/login`;
+        return `${baseUrl}/login`;
       }
       return baseUrl;
     },

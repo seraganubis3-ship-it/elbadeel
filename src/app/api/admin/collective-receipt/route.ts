@@ -10,32 +10,54 @@ export async function GET(request: NextRequest) {
     const customerId = searchParams.get('customerId')?.trim();
     const date = searchParams.get('date');
 
-    if (!customerId || !date) {
+    if (!customerId) {
       return NextResponse.json(
         {
-          error: 'معرف العميل والتاريخ مطلوبان',
+          error: 'معرف العميل مطلوب',
         },
         { status: 400 }
       );
     }
 
-    // Parse date and create date range for the day
-    const targetDate = new Date(date);
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
+    const orderIdsParam = searchParams.get('orderIds');
+    let targetDate = new Date();
+    
+    // Build where clause
+    const whereClause: any = {
+      userId: customerId,
+    };
 
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    if (date) {
+        targetDate = new Date(date);
+        const startOfDay = new Date(targetDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(targetDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        whereClause.createdAt = {
+            gte: startOfDay,
+            lte: endOfDay,
+        };
+    }
+
+    // If specific orders are requested, filter by them (Override/Refine Date)
+    if (orderIdsParam) {
+      const orderIds = orderIdsParam.split(',').map(id => id.trim()).filter(Boolean);
+      if (orderIds.length > 0) {
+        // If IDs provided, we strictly look for them, regardless of date filter unless explicitly combined?
+        // User says "All services not by date". So if we are selecting, we likely want to ignore date.
+        // But here we are deciding the API logic. 
+        // If orderIds are present, we should probably ignore the date filter that might have been set above, 
+        // OR simply rely on the fact that the Modal won't send date if it wants all.
+        // Let's force ID filter if present.
+        delete whereClause.createdAt; // Remove date filter if specific IDs are asked
+        whereClause.id = { in: orderIds };
+      }
+    }
 
     // Get all orders for the customer on the specified date
     const orders = await prisma.order.findMany({
-      where: {
-        userId: customerId,
-        createdAt: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
-      },
+      where: whereClause,
       include: {
         user: true,
         service: {
@@ -80,6 +102,7 @@ export async function GET(request: NextRequest) {
         id: order.id,
         serviceName: order.service.name,
         variantName: order.variant?.name || '',
+        priceCents: order.variant?.priceCents || 0, // Added base price
         totalCents: order.totalCents,
         paidAmount: order.payment?.amount || 0,
         remainingAmount: order.totalCents - (order.payment?.amount || 0),
@@ -121,13 +144,6 @@ export async function GET(request: NextRequest) {
         { status: 404 }
       );
     }
-
-    //   customerId: firstOrder.user?.id || '',
-    //   ordersCount: formattedOrders.length,
-    //   totalAmount,
-    //   totalPaid,
-    //   totalRemaining
-    // });
 
     return NextResponse.json({
       customer: {

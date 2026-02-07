@@ -111,7 +111,7 @@ export function OrdersFilters({
 
       {/* Filters Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-        {/* Search */}
+        {/* Search - Row 1, Col 1 */}
         <div className='relative'>
           <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
             <svg
@@ -137,7 +137,7 @@ export function OrdersFilters({
           />
         </div>
 
-        {/* Status Filter */}
+        {/* Status Filter - Row 1, Col 2 */}
         <select
           value={statusFilter}
           onChange={e => onStatusChange(e.target.value)}
@@ -151,35 +151,7 @@ export function OrdersFilters({
           ))}
         </select>
 
-        {/* Category Filter */}
-        <select
-            value={categoryId}
-            onChange={e => onCategoryChange(e.target.value)}
-            className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer'
-        >
-            <option value=''>جميع الفئات</option>
-            {categories.map(category => (
-            <option key={category.id} value={category.id}>
-                📂 {category.name}
-            </option>
-            ))}
-        </select>
-
-        {/* Employee Filter */}
-        <select
-            value={employeeId}
-            onChange={e => onEmployeeChange(e.target.value)}
-            className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer'
-        >
-            <option value=''>جميع الموظفين</option>
-            {admins.map(admin => (
-            <option key={admin.id} value={admin.id}>
-                👤 {admin.name}
-            </option>
-            ))}
-        </select>
-
-        {/* Delivery Type Filter */}
+        {/* Delivery Type Filter - Row 1, Col 3 */}
         <select
           value={deliveryFilter}
           onChange={e => onDeliveryChange(e.target.value)}
@@ -190,7 +162,7 @@ export function OrdersFilters({
           <option value='DELIVERY'>🚚 توصيل للمنزل</option>
         </select>
 
-        {/* Services Multi-Select Dropdown */}
+        {/* Services Multi-Select Dropdown - Row 1, Col 4 */}
         <div className='relative' ref={dropdownRef}>
           <button
             onClick={() => setIsServicesDropdownOpen(!isServicesDropdownOpen)}
@@ -235,6 +207,34 @@ export function OrdersFilters({
             </div>
           )}
         </div>
+
+        {/* Category Filter - Row 2, Col 1-2 (Spans 2) */}
+        <select
+            value={categoryId}
+            onChange={e => onCategoryChange(e.target.value)}
+            className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer md:col-span-2'
+        >
+            <option value=''>جميع الفئات</option>
+            {categories.map(category => (
+            <option key={category.id} value={category.id}>
+                📂 {category.name}
+            </option>
+            ))}
+        </select>
+
+        {/* Employee Filter - Row 2, Col 3-4 (Spans 2) */}
+        <select
+            value={employeeId}
+            onChange={e => onEmployeeChange(e.target.value)}
+            className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer md:col-span-2'
+        >
+            <option value=''>جميع الموظفين</option>
+            {admins.map(admin => (
+            <option key={admin.id} value={admin.id}>
+                👤 {admin.name}
+            </option>
+            ))}
+        </select>
       </div>
 
       {/* Date Range */}

@@ -8,3 +8,4 @@ export { Pagination } from './Pagination';
 export { OrdersLoading } from './OrdersLoading';
 export * from './PhoneReportModal';
 export * from './WorkOrderModal';
+export * from './SelectDelegateModal';

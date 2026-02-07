@@ -155,10 +155,18 @@ export default function MobileNavigation() {
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         session.user.role === 'ADMIN'
                           ? 'bg-purple-500/20 text-purple-400'
+                          : session.user.role === 'STAFF'
+                          ? 'bg-blue-500/20 text-blue-400'
                           : 'bg-emerald-500/20 text-emerald-400'
                       }`}
                     >
-                      {session.user.role === 'ADMIN' ? '👑 مدير' : '✓ عميل'}
+                      {session.user.role === 'ADMIN' 
+                        ? '👑 مدير' 
+                        : session.user.role === 'STAFF'
+                        ? '👔 موظف'
+                        : session.user.role === 'VIEWER'
+                        ? '👀 مشاهد'
+                        : '✓ عميل'}
                     </span>
                   </div>
                 </div>
@@ -219,7 +227,7 @@ export default function MobileNavigation() {
               })}
 
               {/* Admin Link */}
-              {session?.user?.role === 'ADMIN' && (
+              {['ADMIN', 'STAFF', 'VIEWER'].includes(session?.user?.role || '') && (
                 <>
                   <div className='h-px bg-white/10 my-3'></div>
                   <Link

@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
 
     // إذا لم يكن هناك token، أعد توجيهه لصفحة تسجيل الدخول الإدارية
     if (!token) {
-      const loginUrl = new URL('/admin/login', request.url);
+      const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(loginUrl);
     }

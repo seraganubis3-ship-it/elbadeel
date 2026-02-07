@@ -265,6 +265,28 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                 </div>
              )}
 
+             {/* Translation Specific Fields */}
+             {(selectedService?.slug?.toLowerCase().includes('translat') || 
+                 selectedService?.name?.toLowerCase().includes('translat') || 
+                 selectedService?.name?.includes('ترجم') ||
+                 selectedService?.name?.includes('مترجم')) && (
+                <div className="pt-2 animate-in slide-in-from-top-2">
+                   <div className='space-y-1'>
+                     <label htmlFor="translationLanguage" className='text-[10px] font-black text-black uppercase tracking-widest mr-1'>لغة الترجمة</label>
+                     <div className="relative">
+                       <input
+                         id="translationLanguage"
+                         type="text"
+                         value={formData.translationLanguage || ''}
+                         onChange={e => setFormData(p => ({ ...p, translationLanguage: e.target.value }))}
+                         className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-xs'
+                         placeholder="اكتب اللغة المطلوبة (مثال: إنجليزي، فرنسي)..."
+                       />
+                     </div>
+                   </div>
+                </div>
+             )}
+
              {/* Service Details Textarea */}
              {selectedService && (
                 <div className="space-y-1 pt-2 animate-in slide-in-from-top-2">

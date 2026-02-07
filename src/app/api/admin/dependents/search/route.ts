@@ -7,7 +7,7 @@ export async function GET(_request: NextRequest) {
     // Check authentication and admin role
     const session = await requireAuth();
 
-    if (session.user.role !== 'ADMIN') {
+    if (!['ADMIN', 'STAFF', 'VIEWER'].includes(session.user.role || '')) {
       return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذه الصفحة' }, { status: 403 });
     }
 

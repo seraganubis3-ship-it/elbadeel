@@ -1,0 +1,85 @@
+
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
+
+export async function GET() {
+  await requireAuth();
+
+  try {
+    let settings = await prisma.systemSettings.findFirst();
+
+    if (!settings) {
+      settings = await prisma.systemSettings.create({
+        data: {
+          id: 'main', 
+          siteName: 'البديل',
+        },
+      });
+    }
+
+    return NextResponse.json(settings);
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch settings' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const user = await requireAuth();
+    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const body = await request.json();
+
+    // Upsert ensures we only have one settings row (id='main')
+    const settings = await prisma.systemSettings.upsert({
+      where: { id: 'main' },
+      update: {
+        siteName: body.siteName,
+        siteDescription: body.siteDescription,
+        contactEmail: body.contactEmail,
+        contactPhone: body.contactPhone,
+        additionalPhone: body.additionalPhone,
+        whatsappPhone: body.whatsappPhone,
+        address: body.address,
+        workingHoوخurs: body.workingHours,
+        socialLinks: body.socialLinks,
+        defaultDeliveryFee: Number(body.defaultDeliveryFee) || 0,
+        paymentNumbers: body.paymentNumbers,
+        facebookUrl: body.facebookUrl,
+        instagramUrl: body.instagramUrl,
+        logoUrl: body.logoUrl,
+      },
+      create: {
+        id: 'main',
+        siteName: body.siteName || 'البديل',
+        siteDescription: body.siteDescription,
+        contactEmail: body.contactEmail,
+        contactPhone: body.contactPhone,
+        additionalPhone: body.additionalPhone,
+        whatsappPhone: body.whatsappPhone,
+        address: body.address,
+        workingHours: body.workingHours,
+        socialLinks: body.socialLinks,
+        defaultDeliveryFee: Number(body.defaultDeliveryFee) || 0,
+        paymentNumbers: body.paymentNumbers,
+        facebookUrl: body.facebookUrl,
+        instagramUrl: body.instagramUrl,
+        logoUrl: body.logoUrl,
+      },
+    });
+
+    return NextResponse.json(settings);
+  } catch (error) {
+    // console.error('Error fetching settings:', error);
+    return NextResponse.json(
+      { error: 'Failed to update settings' },
+      { status: 500 }
+    );
+  }
+}

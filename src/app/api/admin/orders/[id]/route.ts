@@ -7,8 +7,8 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
     // Check authentication and admin role
     const session = await requireAuth();
 
-    // Check if user is admin
-    if (session.user.role !== 'ADMIN') {
+    // Check if user is authorized
+    if (!['ADMIN', 'STAFF', 'VIEWER'].includes(session.user.role || '')) {
       return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذه الصفحة' }, { status: 403 });
     }
 
@@ -177,7 +177,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireAuth();
-    if (session.user.role !== 'ADMIN') {
+    if (!['ADMIN', 'STAFF'].includes(session.user.role || '')) {
       return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذه الصفحة' }, { status: 403 });
     }
 

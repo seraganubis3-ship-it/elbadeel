@@ -67,7 +67,7 @@ export interface Customer {
   fatherName?: string;
   idNumber?: string;
   motherName?: string;
-  nationality?: string;
+
   wifeName?: string;
 }
 
@@ -92,7 +92,7 @@ export interface FormData {
   fatherName: string;
   idNumber: string;
   motherName: string;
-  nationality: string;
+
   wifeName: string;
   wifeMotherName: string;
   marriageDate: string;
@@ -136,6 +136,7 @@ export interface FormData {
   deliveryType: string;
   deliveryFee: number;
   dynamicAnswers?: Record<string, string>;
+  translationLanguage?: string;
 }
 
 export const initialFormData: FormData = {
@@ -159,7 +160,7 @@ export const initialFormData: FormData = {
   fatherName: '',
   idNumber: '',
   motherName: '',
-  nationality: '',
+
   wifeName: '',
   wifeMotherName: '',
   marriageDate: '',
@@ -203,4 +204,5 @@ export const initialFormData: FormData = {
   deliveryType: 'OFFICE',
   deliveryFee: 0,
   dynamicAnswers: {},
+  translationLanguage: '',
 };

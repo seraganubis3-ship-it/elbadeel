@@ -379,16 +379,26 @@ model ServiceDocument {
 }
 
 model SystemSettings {
-  id              String   @id @default("main")
-  siteName        String   @default("البديل")
-  siteDescription String?
-  contactEmail    String?
-  contactPhone    String?
-  address         String?
-  workingHours    String?
-  socialLinks     String?
-  seoSettings     String?
-  updatedAt       DateTime @updatedAt
+  id                 String   @id @default("main")
+  siteName           String   @default("البديل")
+  siteDescription    String?
+  contactEmail       String?
+  contactPhone       String?
+  additionalPhone    String?
+  whatsappPhone      String?
+  address            String?
+  workingHours       String?
+  socialLinks        String?
+  seoSettings        String?
+  
+  // New Fields
+  defaultDeliveryFee Int      @default(0)
+  paymentNumbers     String?  // Text area for transfer numbers
+  facebookUrl        String?
+  instagramUrl       String?
+  logoUrl            String?
+  
+  updatedAt          DateTime @updatedAt
 }
 
 model FormType {

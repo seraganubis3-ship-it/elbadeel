@@ -70,7 +70,23 @@ export async function POST(request: NextRequest) {
     const variantId = formData.get('variantId')?.toString() || '';
     const notes = formData.get('notes')?.toString() || '';
     const deliveryType = formData.get('deliveryType')?.toString() || 'OFFICE';
-    const deliveryFee = parseInt(formData.get('deliveryFee') as string) || 0;
+    let deliveryFee = parseInt(formData.get('deliveryFee') as string) || 0;
+
+    // If no delivery fee provided and delivery type is not OFFICE, fetch from settings
+    if (deliveryFee === 0 && deliveryType !== 'OFFICE') {
+      try {
+        const settings = await prisma.systemSettings.findUnique({
+          where: { id: 'main' },
+          select: { defaultDeliveryFee: true },
+        });
+        if (settings?.defaultDeliveryFee) {
+          deliveryFee = settings.defaultDeliveryFee;
+        }
+      } catch (error) {
+        // If settings fetch fails, continue with 0
+        logger.error('Failed to fetch default delivery fee', error);
+      }
+    }
 
     // بيانات إضافية
     const wifeName = formData.get('wifeName')?.toString() || null;

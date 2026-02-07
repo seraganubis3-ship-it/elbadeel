@@ -824,7 +824,9 @@ export function useCreateOrder() {
           divorceDate: formData.divorceDate,
           customerFollowUp: formData.customerFollowUp,
           wifeMotherName: formData.wifeMotherName,
-          serviceDetails: formData.serviceDetails,
+          serviceDetails: formData.translationLanguage 
+            ? `${formData.serviceDetails || ''}\n\nلغة الترجمة: ${formData.translationLanguage}`.trim()
+            : formData.serviceDetails,
           otherFees: formData.otherFees,
           attachedDocuments: formData.attachedDocuments,
           hasAttachments: formData.hasAttachments,

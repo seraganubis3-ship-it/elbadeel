@@ -340,16 +340,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                  />
               </div>
 
-              <div className='space-y-1'>
-                 <label className='text-sm font-black text-black block mr-1'>الجنسية</label>
-                 <input
-                   type='text'
-                   value={formData.nationality}
-                   onChange={e => setFormData(prev => ({ ...prev, nationality: e.target.value }))}
-                   className='w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
-                   placeholder='مصر'
-                 />
-              </div>
+
 
               <div className='md:col-span-2 space-y-1'>
                 <label className='text-sm font-black text-black block mr-1'>العنوان المسجل</label>

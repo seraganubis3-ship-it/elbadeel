@@ -209,6 +209,16 @@ export default function OrderPaymentDetails({
       {showPaymentForm && (
         <div className='p-6 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl border border-blue-200/50 text-right'>
           <h3 className='text-lg font-bold text-blue-800 mb-4'>تعديل معلومات الدفع</h3>
+          
+          <div className="mb-4 p-3 bg-blue-100 border border-blue-200 rounded-lg text-blue-800 text-sm font-bold">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>أرقام التحويلات (فودافون كاش / انستا باي): 01001544258</span>
+            </div>
+          </div>
+
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div>
               <label className='block text-sm font-medium text-blue-700 mb-2'>المبلغ المدفوع</label>

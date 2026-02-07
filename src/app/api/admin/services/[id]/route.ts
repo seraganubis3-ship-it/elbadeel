@@ -380,9 +380,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const { id } = params;
     const body = await request.json();
-    const { active } = body;
+    const { active, isHidden } = body;
 
-    if (typeof active !== 'boolean') {
+    const updateData: any = {};
+    if (typeof active === 'boolean') updateData.active = active;
+    if (typeof isHidden === 'boolean') updateData.isHidden = isHidden;
+
+    if (Object.keys(updateData).length === 0) {
         return NextResponse.json(
             { success: false, error: 'بيانات غير صالحة' },
             { status: 400 }
@@ -391,7 +395,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const service = await prisma.service.update({
       where: { id },
-      data: { active },
+      data: updateData,
     });
 
     return NextResponse.json({ success: true, service });

@@ -14,6 +14,7 @@ import {
   OrdersLoading,
   PhoneReportModal,
   WorkOrderModal,
+  SelectDelegateModal,
 } from './components';
 import { printOrdersReport } from './utils/printReport';
 
@@ -155,6 +156,86 @@ export default function AdminOrdersPage() {
     setShowPhoneReportModal(false);
   };
 
+  // Translation Report Logic
+  const [showDelegateModal, setShowDelegateModal] = useState(false);
+
+  const handlePrintTranslationReport = () => {
+    if (selectedOrders.length === 0) {
+      showError('تنبيه', 'برجاء تحديد طلبات أولاً لطباعة الكشف');
+      return;
+    }
+    setShowDelegateModal(true);
+  };
+
+  const executePrintTranslationReport = (delegate: any) => {
+    const reportData = selectedOrders
+      .map(id => currentOrders.find(o => o.id === id))
+      .filter(o => o)
+      .map(order => {
+        // Source Logic
+        const serviceName = order?.service?.name || '';
+        let source = serviceName; // Default to service name (product name) directly
+        
+        if (serviceName.includes('ميلاد')) source = 'ميلاد';
+        else if (serviceName.includes('وفاة')) source = 'وفاة';
+        else if (serviceName.includes('زواج')) source = 'زواج';
+        else if (serviceName.includes('طلاق')) source = 'طلاق';
+        else if (serviceName.includes('قيد')) {
+            if (serviceName.includes('عائلي')) source = 'قيد عائلي';
+            else if (serviceName.includes('فردي')) source = 'قيد فردي';
+            else source = 'قيد';
+        }
+        else if (serviceName.includes('فيش')) source = 'فيش جنائي';
+        else if (serviceName.includes('رقم قومى')) source = 'رقم قومى';
+        else if (serviceName.includes('سفر')) source = 'جواز سفر';
+        else if (serviceName.includes('مترجم')) source = 'مترجم';
+
+        // Translation Language Logic
+        let language = 'غير محدد';
+        const details = order?.serviceDetails || '';
+        const langMatch = details.match(/لغة الترجمة:\s*([^\n]+)/);
+        if (langMatch && langMatch[1]) {
+           language = langMatch[1].trim();
+        }
+
+        // ID logic
+        let idNumber = order?.idNumber;
+        if (!idNumber && order?.birthDate) {
+           const date = new Date(order.birthDate);
+           if (!isNaN(date.getTime())) {
+             idNumber = date.toLocaleDateString('en-GB');
+           } else {
+             idNumber = order.birthDate;
+           }
+        }
+        idNumber = idNumber || '';
+        
+        // Quantity
+        const quantity = order?.quantity || 1;
+
+        return {
+           name: order?.customerName || '',
+           idNumber,
+           source,
+           quantity,
+           language
+        };
+      });
+
+    // Save Data + Delegate Info
+    localStorage.setItem('temp_translation_report_data', JSON.stringify({
+      orders: reportData,
+      delegate: {
+        name: delegate.name,
+        idNumber: delegate.idNumber,
+        unionCard: delegate.unionCardFront || delegate.idCardFront || '' // Fallback to ID card if Union card missing
+      }
+    }));
+    
+    setShowDelegateModal(false);
+    window.open('/admin/orders/print-translation-report', '_blank');
+  };
+
   // Work Order Logic
   const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
   const [pendingWorkOrder, setPendingWorkOrder] = useState<{
@@ -272,6 +353,7 @@ export default function AdminOrdersPage() {
               onBulkStatusChange={setBulkStatus}
               onApplyBulkStatus={handleApplyBulkStatus}
               onPrintReport={printReport}
+              onPrintTranslationReport={handlePrintTranslationReport}
               onOpenPhoneReport={handleOpenPhoneReport}
               hasOrders={filteredOrders.length > 0}
             />
@@ -367,6 +449,13 @@ export default function AdminOrdersPage() {
             ? 1
             : selectedOrders.length
         }
+      />
+
+      {/* Select Delegate Modal */}
+      <SelectDelegateModal
+        isOpen={showDelegateModal}
+        onClose={() => setShowDelegateModal(false)}
+        onConfirm={executePrintTranslationReport}
       />
 
       {/* Toast Container */}

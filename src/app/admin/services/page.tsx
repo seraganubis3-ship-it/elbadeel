@@ -8,6 +8,8 @@ interface Service {
   name: string;
   slug: string;
   active: boolean;
+  isHidden: boolean;
+  orderIndex: number;
   category: { name: string };
   variants: any[];
   _count?: {
@@ -49,6 +51,9 @@ export default function ServicesPage() {
         if (statusFilter === 'inactive') result = result.filter(s => !s.active);
     }
 
+    // Always sort by orderIndex
+    result.sort((a, b) => a.orderIndex - b.orderIndex);
+
     setFilteredServices(result);
   }, [services, query, statusFilter]);
 
@@ -72,31 +77,63 @@ export default function ServicesPage() {
     }
   };
 
-  const toggleVisibility = async (id: string, currentStatus: boolean) => {
+  const updateVisibility = async (id: string, visibility: 'PUBLIC' | 'SYSTEM' | 'INACTIVE') => {
+    // Determine target state
+    const targetState = {
+        active: visibility !== 'INACTIVE',
+        isHidden: visibility === 'SYSTEM'
+    };
+
     try {
         // Optimistic update
-        setServices(prev => prev.map(s => s.id === id ? { ...s, active: !currentStatus } : s));
+        setServices(prev => prev.map(s => s.id === id ? { ...s, ...targetState } : s));
 
         const response = await fetch(`/api/admin/services/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ active: !currentStatus })
+            body: JSON.stringify(targetState)
         });
         
         if (!response.ok) {
-            // Revert on failure
-             setServices(prev => prev.map(s => s.id === id ? { ...s, active: currentStatus } : s));
+            // Revert on failure fetches fresh data to be safe
+            fetchServices();
         } else {
-            // Update stats
-             setStats(prev => ({
-                 ...prev,
-                 active: !currentStatus ? prev.active + 1 : prev.active - 1,
-                 inactive: !currentStatus ? prev.inactive - 1 : prev.inactive + 1
-             }));
+             // Update stats logic is complex here, simpler to just re-fetch or let optimistic stand
+             // for correct stats we might want to re-calc
+             const updatedServices = services.map(s => s.id === id ? { ...s, ...targetState } : s);
+             setStats({
+                total: updatedServices.length,
+                active: updatedServices.filter((s: Service) => s.active).length,
+                inactive: updatedServices.filter((s: Service) => !s.active).length
+            });
         }
     } catch (e) {
-         setServices(prev => prev.map(s => s.id === id ? { ...s, active: currentStatus } : s));
+         fetchServices();
     }
+  };
+
+  const handleOrderChange = async (id: string, newIndex: number) => {
+      // Optimistic
+      setServices(prev => {
+          const updated = prev.map(s => s.id === id ? { ...s, orderIndex: newIndex } : s);
+          return [...updated].sort((a, b) => a.orderIndex - b.orderIndex);
+      });
+
+      try {
+          // We can use the reorder API or just update this single service
+          // Reorder API expects an array of { id, orderIndex }
+          // But here we might just want to update one. 
+          // Let's use the reorder API correctly if we were reordering list, 
+          // but for direct input, let's update single service via PATCH/PUT or just reorder API with one item?
+          // The reorder API is cleaner.
+          await fetch('/api/admin/services/reorder', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ items: [{ id, orderIndex: newIndex }] })
+          });
+      } catch (error) {
+          fetchServices();
+      }
   };
 
   return (
@@ -121,15 +158,27 @@ export default function ServicesPage() {
                </div>
              </div>
              
-             <Link
-               href='/admin/services/create'
-               className='px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2'
-             >
-               <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
-               </svg>
-               <span>إضافة خدمة جديدة</span>
-             </Link>
+             <div className="flex gap-3">
+                <Link
+                href='/admin/categories'
+                className='px-6 py-3 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-xl font-bold shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2'
+                >
+                <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 6h16M4 10h16M4 14h16M4 18h16' />
+                </svg>
+                <span>إدارة الفئات</span>
+                </Link>
+
+                <Link
+                href='/admin/services/create'
+                className='px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2'
+                >
+                <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
+                </svg>
+                <span>إضافة خدمة جديدة</span>
+                </Link>
+             </div>
            </div>
         </div>
 
@@ -222,6 +271,7 @@ export default function ServicesPage() {
              <table className="w-full text-right">
                 <thead className="bg-slate-50 text-slate-500 font-bold text-sm">
                    <tr>
+                      <th className="px-6 py-4">الترتيب</th>
                       <th className="px-6 py-4">اسم الخدمة</th>
                       <th className="px-6 py-4">الفئة</th>
                       <th className="px-6 py-4">النوع</th>
@@ -233,6 +283,7 @@ export default function ServicesPage() {
                    {loading ? (
                       [1,2,3].map(i => (
                           <tr key={i} className="animate-pulse">
+                              <td className="px-6 py-4"><div className="h-8 bg-slate-200 rounded w-12"></div></td>
                               <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-32"></div></td>
                               <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
                               <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-24"></div></td>
@@ -243,6 +294,14 @@ export default function ServicesPage() {
                    ) : filteredServices.length > 0 ? (
                        filteredServices.map(service => (
                           <tr key={service.id} className="hover:bg-slate-50/80 transition-colors group">
+                             <td className="px-6 py-4">
+                               <input 
+                                 type="number"
+                                 value={service.orderIndex}
+                                 onChange={(e) => handleOrderChange(service.id, parseInt(e.target.value))}
+                                 className="w-16 px-2 py-1 border border-gray-200 rounded-lg text-center focus:ring-2 focus:ring-blue-500 outline-none"
+                               />
+                             </td>
                              <td className="px-6 py-4">
                                 <div className="font-bold text-slate-800 text-base">{service.name}</div>
                                 <div className="text-xs text-slate-400 font-mono mt-0.5">{service.slug}</div>
@@ -258,12 +317,21 @@ export default function ServicesPage() {
                                 ) : '0 باقات'}
                              </td>
                              <td className="px-6 py-4">
-                                <button 
-                                    onClick={() => toggleVisibility(service.id, service.active)}
-                                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${service.active ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                <select
+                                   value={!service.active ? 'INACTIVE' : service.isHidden ? 'SYSTEM' : 'PUBLIC'}
+                                   onChange={(e) => updateVisibility(service.id, e.target.value as 'PUBLIC' | 'SYSTEM' | 'INACTIVE')}
+                                   className={`px-3 py-1.5 rounded-lg text-xs font-bold border border-transparent outline-none cursor-pointer transition-colors ${
+                                      !service.active 
+                                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                        : service.isHidden 
+                                          ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                          : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                                   }`}
                                 >
-                                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${service.active ? 'translate-x-5' : 'translate-x-0'}`} />
-                                </button>
+                                   <option value="PUBLIC" className="text-gray-900 bg-white">موقع</option>
+                                   <option value="SYSTEM" className="text-gray-900 bg-white">نظام فقط</option>
+                                   <option value="INACTIVE" className="text-gray-900 bg-white">غير مفعل</option>
+                                </select>
                              </td>
                              <td className="px-6 py-4">
                                 <Link 
@@ -280,7 +348,7 @@ export default function ServicesPage() {
                        ))
                    ) : (
                       <tr>
-                         <td colSpan={5} className="px-6 py-12 text-center">
+                         <td colSpan={6} className="px-6 py-12 text-center">
                             <div className="flex flex-col items-center justify-center text-slate-400">
                                 <svg className="w-16 h-16 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />

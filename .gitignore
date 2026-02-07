@@ -125,4 +125,6 @@ public/uploads/
 
 # Electron build
 electron-app/dist/
-electron-app/node_modules/
+
+# WhatsApp Baileys Auth Info
+baileys_auth_info/

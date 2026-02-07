@@ -204,8 +204,8 @@ export default function ReceiptPage() {
                   className='h-8 w-auto mb-1 grayscale'
                 />
                 <div className='text-[9px] leading-3 text-center max-w-xs font-bold'>
-                  طبقا لقرار رئيس مجلس الوزراء رقم ١٥٥١ لسنة ٢٠٠٨
-                </div>
+طبقا لقرار رئيس مجلس الوزاراء
+رقم ١٥٥١ لستة ٢٠٠٨ بتصريح و ترخيص من وزارة الدولة للتنمية الادارية                </div>
               </div>
             </div>
           </div>
