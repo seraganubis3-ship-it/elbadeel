@@ -175,166 +175,162 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
     });
   }
 
-  // 2. Birth Cert
+  // 2. Birth Cert - ALL VARIANTS IN ONE TABLE
   if (partitionedOrders.BIRTH_CERT.length > 0) {
-    const grouped = groupByVariant(partitionedOrders.BIRTH_CERT);
-    Object.entries(grouped).forEach(([variantName, groupOrders]) => {
-      const rows = groupOrders
-        .map((order, idx) => {
-          globalTotalOrders++;
-          const isSupply = order.status === 'supply';
-          const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
-          const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
+    const allOrders = partitionedOrders.BIRTH_CERT;
+    const rows = allOrders
+      .map((order, idx) => {
+        globalTotalOrders++;
+        const isSupply = order.status === 'supply';
+        const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
+        const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
 
-          const formatDate = (date: any) => {
-            if (!date) return '---';
-            const d = new Date(date);
-            if (isNaN(d.getTime())) return '---';
-            if (d.getFullYear() < 1920) return '---'; // Prevent epoch 0 or bad years
-            return d.toLocaleDateString('ar-EG');
-          };
+        const formatDate = (date: any) => {
+          if (!date) return '---';
+          const d = new Date(date);
+          if (isNaN(d.getTime())) return '---';
+          if (d.getFullYear() < 1920) return '---'; // Prevent epoch 0 or bad years
+          return d.toLocaleDateString('ar-EG');
+        };
 
-          const bDate = formatDate(order.birthDate);
-          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${order.idNumber || '---'}</td></tr>`;
-        })
-        .join('');
-      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">شهادات الميلاد - ${variantName}</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="20%">اسم العميل</th><th width="15%">تاريخ الميلاد</th><th width="25%">اسم الوالدة</th><th width="10%">العدد</th><th width="20%">الرقم القومي</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupOrders.length}</td></tr></tbody></table></div>`;
-    });
+        const bDate = formatDate(order.birthDate);
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${order.idNumber || '---'}</td></tr>`;
+      })
+      .join('');
+    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">شهادات الميلاد</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="20%">اسم العميل</th><th width="15%">تاريخ الميلاد</th><th width="25%">اسم الوالدة</th><th width="10%">العدد</th><th width="20%">الرقم القومي</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
   }
 
-  // 3. Death Cert
+  // 3. Death Cert - ALL VARIANTS IN ONE TABLE
   if (partitionedOrders.DEATH_CERT.length > 0) {
-    const grouped = groupByVariant(partitionedOrders.DEATH_CERT);
-    Object.entries(grouped).forEach(([variantName, groupOrders]) => {
-      const rows = groupOrders
-        .map((order, idx) => {
-          globalTotalOrders++;
-          const isSupply = order.status === 'supply';
-          const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
-          const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
+    const allOrders = partitionedOrders.DEATH_CERT;
+    const rows = allOrders
+      .map((order, idx) => {
+        globalTotalOrders++;
+        const isSupply = order.status === 'supply';
+        const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
+        const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
 
-          const formatDate = (date: any) => {
-            if (!date) return '---';
-            const d = new Date(date);
-            if (isNaN(d.getTime())) return '---';
-            if (d.getFullYear() < 1920) return '---';
-            return d.toLocaleDateString('ar-EG');
-          };
+        const formatDate = (date: any) => {
+          if (!date) return '---';
+          const d = new Date(date);
+          if (isNaN(d.getTime())) return '---';
+          if (d.getFullYear() < 1920) return '---';
+          return d.toLocaleDateString('ar-EG');
+        };
 
-          const dDate = formatDate(order.birthDate); // Reuse birthDate field for event date
-          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${dDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td></tr>`;
-        })
-        .join('');
-      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">شهادات الوفاة - ${variantName}</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="35%">اسم العميل</th><th width="20%">تاريخ الوفاة</th><th width="30%">اسم الوالدة</th><th width="10%">العدد</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupOrders.length}</td></tr></tbody></table></div>`;
-    });
+        const dDate = formatDate(order.birthDate); // Reuse birthDate field for event date
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${dDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td></tr>`;
+      })
+      .join('');
+    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">شهادات الوفاة</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="35%">اسم العميل</th><th width="20%">تاريخ الوفاة</th><th width="30%">اسم الوالدة</th><th width="10%">العدد</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
   }
 
-  // 4. Passport
+  // 4. Passport - ALL VARIANTS IN ONE TABLE
   if (partitionedOrders.PASSPORT.length > 0) {
-    const grouped = groupByVariant(partitionedOrders.PASSPORT);
+    const allOrders = partitionedOrders.PASSPORT;
     const stationMap: Record<string, string> = {
       FIRST_POLICE_STATION: 'قسم أول',
       SECOND_POLICE_STATION: 'قسم ثاني',
       THIRD_POLICE_STATION: 'قسم ثالث',
     };
-    Object.entries(grouped).forEach(([variantName, groupOrders]) => {
-      const rows = groupOrders
-        .map((order, idx) => {
-          globalTotalOrders++;
-          const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
-          const cellStyle = isSettlement
-            ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
-            : 'style="text-align: center;"';
-          const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
-          const station = stationMap[order.policeStation || ''] || order.policeStation || '---';
-          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${order.idNumber || '---'}</td><td style="text-align: center;">${station}</td><td style="text-align: right;">${order.pickupLocation || '---'}</td></tr>`;
-        })
-        .join('');
-      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">جوازات سفر - ${variantName}</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="30%">اسم العميل</th><th width="20%">الرقم القومي</th><th width="20%">قسم الشرطة</th><th width="25%">جوازات</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupOrders.length}</td></tr></tbody></table></div>`;
-    });
+    const rows = allOrders
+      .map((order, idx) => {
+        globalTotalOrders++;
+        const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
+        const cellStyle = isSettlement
+          ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
+          : 'style="text-align: center;"';
+        const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
+        const station = stationMap[order.policeStation || ''] || order.policeStation || '---';
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${order.idNumber || '---'}</td><td style="text-align: center;">${station}</td><td style="text-align: right;">${order.pickupLocation || '---'}</td></tr>`;
+      })
+      .join('');
+    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">جوازات سفر</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="30%">اسم العميل</th><th width="20%">الرقم القومي</th><th width="20%">قسم الشرطة</th><th width="25%">جوازات</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
   }
 
-  // 5. Marriage Cert
+  // 5. Marriage Cert - ALL VARIANTS IN ONE TABLE
   if (partitionedOrders.MARRIAGE_CERT.length > 0) {
-    const grouped = groupByVariant(partitionedOrders.MARRIAGE_CERT);
-    Object.entries(grouped).forEach(([variantName, groupOrders]) => {
-      const rows = groupOrders
-        .map((order, idx) => {
-          globalTotalOrders++;
-          const isSupply = order.status === 'supply';
-          const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important;' : ''}"`;
-          const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
+    const allOrders = partitionedOrders.MARRIAGE_CERT;
+    const rows = allOrders
+      .map((order, idx) => {
+        globalTotalOrders++;
+        const isSupply = order.status === 'supply';
+        const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important;' : ''}"`;
+        const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
 
-          const formatDate = (date: any) => {
-            if (!date) return '---';
-            const d = new Date(date);
-            if (isNaN(d.getTime())) return '---';
-            if (d.getFullYear() < 1920) return '---';
-            return d.toLocaleDateString('ar-EG');
-          };
+        const formatDate = (date: any) => {
+          if (!date) return '---';
+          const d = new Date(date);
+          if (isNaN(d.getTime())) return '---';
+          if (d.getFullYear() < 1920) return '---';
+          return d.toLocaleDateString('ar-EG');
+        };
 
-          const mDate = formatDate(order.marriageDate);
+        const mDate = formatDate(order.marriageDate);
 
-          return `
-          <tr>
-            <td ${cellStyle}>${idx + 1}</td>
-            <td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td>
-            <td style="text-align: right;">${order.motherName || '---'}</td>
-            <td style="text-align: right; font-weight: bold;">${order.wifeName || '---'}</td>
-            <td style="text-align: right;">${order.wifeMotherName || '---'}</td>
-            <td style="${mono}">${mDate}</td>
-            <td style="text-align: center;">${order.quantity || 1}</td>
-          </tr>`;
-        })
-        .join('');
+        return `
+        <tr>
+          <td ${cellStyle}>${idx + 1}</td>
+          <td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td>
+          <td style="text-align: right;">${order.motherName || '---'}</td>
+          <td style="text-align: right; font-weight: bold;">${order.wifeName || '---'}</td>
+          <td style="text-align: right;">${order.wifeMotherName || '---'}</td>
+          <td style="${mono}">${mDate}</td>
+          <td style="text-align: center;">${order.quantity || 1}</td>
+        </tr>`;
+      })
+      .join('');
 
-      contentHtml += `
-        <div class="group-section">
-          <div class="group-header"><div class="header-title">قسيمة زواج - ${variantName}</div></div>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th width="5%">م</th>
-                <th width="20%">اسم الزوج / الزوجة</th>
-                <th width="15%">الوالدة</th>
-                <th width="20%">اسم الزوجة / الزوج</th>
-                <th width="15%">الوالدة</th>
-                <th width="15%">تاريخ الزواج</th>
-                <th width="10%">العدد</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows}
-              <tr class="count-row">
-                <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td>
-                <td colspan="5" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupOrders.length}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>`;
-    });
+    contentHtml += `
+      <div class="group-section">
+        <div class="group-header"><div class="header-title">قسيمة زواج</div></div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th width="5%">م</th>
+              <th width="20%">اسم الزوج / الزوجة</th>
+              <th width="15%">الوالدة</th>
+              <th width="20%">اسم الزوجة / الزوج</th>
+              <th width="15%">الوالدة</th>
+              <th width="15%">تاريخ الزواج</th>
+              <th width="10%">العدد</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+            <tr class="count-row">
+              <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td>
+              <td colspan="5" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>`;
   }
 
-  // 5. General
+  // 6. General - ALL SERVICES IN ONE TABLE
   if (partitionedOrders.GENERAL.length > 0) {
-    const grouped = groupByServiceVariant(partitionedOrders.GENERAL);
-    Object.values(grouped).forEach(group => {
-      const rows = group.orders
-        .map((order, idx) => {
-          globalTotalOrders++;
-          const fees = order.otherFees || 0;
-          globalTotalFines += fees;
-          const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
-          const isSupply = order.status === 'supply';
-          let color = '';
-          if (isSettlement) color = 'background-color: #fca5a5';
-          else if (isSupply) color = 'background-color: #bfdbfe';
-          const cellStyle = `style="text-align: center; ${color ? color + ' !important; -webkit-print-color-adjust: exact;' : ''}"`;
-          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center;">${order.idNumber || '---'}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${order.serviceDetails || '---'}</td></tr>`;
-        })
-        .join('');
-      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">${group.serviceName} - ${group.variantName}</div></div><table class="data-table"><thead><tr><th width="5%">#</th><th width="30%">اسم العميل</th><th width="20%">رقم القومي</th><th width="15%">الغرامات</th><th width="30%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${group.orders.length}</td></tr></tbody></table></div>`;
-    });
+    const allOrders = partitionedOrders.GENERAL;
+    const rows = allOrders
+      .map((order, idx) => {
+        globalTotalOrders++;
+        const fees = order.otherFees || 0;
+        globalTotalFines += fees;
+        const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
+        const isSupply = order.status === 'supply';
+        let color = '';
+        if (isSettlement) color = 'background-color: #fca5a5';
+        else if (isSupply) color = 'background-color: #bfdbfe';
+        const cellStyle = `style="text-align: center; ${color ? color + ' !important; -webkit-print-color-adjust: exact;' : ''}"`;
+        
+        // Show service name and variant in the service column
+        const serviceName = order.service?.name || 'غير محدد';
+        const variantName = order.variant?.name ? ` (${order.variant.name})` : '';
+        const fullServiceName = serviceName + variantName;
+        
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center;">${order.idNumber || '---'}</td><td style="text-align: right; font-size: 11px;">${fullServiceName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${order.serviceDetails || '---'}</td></tr>`;
+      })
+      .join('');
+    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">خدمات أخرى</div></div><table class="data-table"><thead><tr><th width="5%">#</th><th width="25%">اسم العميل</th><th width="15%">رقم القومي</th><th width="20%">الخدمة</th><th width="10%">الغرامات</th><th width="25%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
   }
 
   const summaryHtml = `
