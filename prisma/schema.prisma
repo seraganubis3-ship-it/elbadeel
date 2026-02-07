@@ -386,6 +386,7 @@ model SystemSettings {
   contactPhone       String?
   additionalPhone    String?
   whatsappPhone      String?
+  secondaryWhatsappPhone String?
   address            String?
   workingHours       String?
   socialLinks        String?

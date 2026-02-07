@@ -10,6 +10,7 @@ interface Settings {
   contactPhone: string;
   additionalPhone: string;
   whatsappPhone: string;
+  secondaryWhatsappPhone: string;
   address: string;
   defaultDeliveryFee: number;
   paymentNumbers: string;
@@ -28,6 +29,7 @@ export default function SettingsPage() {
     contactPhone: '',
     additionalPhone: '',
     whatsappPhone: '',
+    secondaryWhatsappPhone: '',
     address: '',
     defaultDeliveryFee: 0,
     paymentNumbers: '',
@@ -191,13 +193,25 @@ export default function SettingsPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">رقم الواتساب</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">رقم الواتساب الأول</label>
                             <input
                                 type="text"
                                 value={settings.whatsappPhone || ''}
                                 onChange={(e) => setSettings({ ...settings, whatsappPhone: e.target.value })}
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
                                 dir="ltr"
+                                placeholder="01021606893"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">رقم الواتساب الثاني</label>
+                            <input
+                                type="text"
+                                value={settings.secondaryWhatsappPhone || ''}
+                                onChange={(e) => setSettings({ ...settings, secondaryWhatsappPhone: e.target.value })}
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+                                dir="ltr"
+                                placeholder="01xxxxxxxxx"
                             />
                         </div>
                         <div>

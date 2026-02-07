@@ -26,7 +26,7 @@ const STAT_STYLES: Record<string, { bg: string; text: string }> = {
   purple: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
 };
 
-export default function HomeClient({ categories }: { categories: Category[] }) {
+export default function HomeClient({ categories, settings }: { categories: Category[]; settings: any }) {
   const { data: session } = useSession();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -473,7 +473,7 @@ export default function HomeClient({ categories }: { categories: Category[] }) {
           </div>
         </motion.button>
 
-        <ContactModal isOpen={showContactModal} onClose={() => setShowContactModal(false)} />
+        <ContactModal isOpen={showContactModal} onClose={() => setShowContactModal(false)} settings={settings} />
       </div>
   );
 }

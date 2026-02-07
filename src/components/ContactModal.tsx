@@ -6,9 +6,10 @@ import { X, Phone, MapPin, Clock, MessageCircle } from 'lucide-react';
 interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
+  settings?: any;
 }
 
-export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
+export default function ContactModal({ isOpen, onClose, settings }: ContactModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -60,20 +61,35 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                   </h3>
                   <div className='grid gap-4'>
                     <a
-                      href='tel:01021606893'
+                      href={`tel:${settings?.contactPhone || '01021606893'}`}
                       className='flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-emerald-50 hover:border-emerald-200 transition-all group'
                     >
                       <div className='w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-emerald-600 group-hover:scale-110 transition-transform'>
                         <Phone className='w-5 h-5' />
                       </div>
                       <div>
-                        <div className='font-black text-slate-800 text-lg'>01021606893</div>
-                        <div className='text-xs text-slate-500 font-bold'>الخط الساخن</div>
+                        <div className='font-black text-slate-800 text-lg'>{settings?.contactPhone || '01021606893'}</div>
+                        <div className='text-xs text-slate-500 font-bold'>الخط الساخن 1</div>
                       </div>
                     </a>
+                    
+                    {settings?.additionalPhone && (
+                      <a
+                        href={`tel:${settings.additionalPhone}`}
+                        className='flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-emerald-50 hover:border-emerald-200 transition-all group'
+                      >
+                        <div className='w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-emerald-600 group-hover:scale-110 transition-transform'>
+                          <Phone className='w-5 h-5' />
+                        </div>
+                        <div>
+                          <div className='font-black text-slate-800 text-lg'>{settings.additionalPhone}</div>
+                          <div className='text-xs text-slate-500 font-bold'>الخط الساخن 2</div>
+                        </div>
+                      </a>
+                    )}
 
                     <a
-                      href='https://wa.me/201021606893'
+                      href={`https://wa.me/${settings?.whatsappPhone?.replace(/^0/, '2') || '201021606893'}`}
                       target='_blank'
                       rel='noreferrer'
                       className='flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-green-50 hover:border-green-200 transition-all group'
@@ -82,10 +98,27 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                         <MessageCircle className='w-5 h-5' />
                       </div>
                       <div>
-                        <div className='font-black text-slate-800 text-lg'>تواصل عبر واتساب</div>
-                        <div className='text-xs text-slate-500 font-bold'>رد سريع وفوري</div>
+                        <div className='font-black text-slate-800 text-lg'>{settings?.whatsappPhone || '01021606893'}</div>
+                        <div className='text-xs text-slate-500 font-bold'>واتساب 1</div>
                       </div>
                     </a>
+                    
+                    {settings?.secondaryWhatsappPhone && (
+                      <a
+                        href={`https://wa.me/${settings.secondaryWhatsappPhone.replace(/^0/, '2')}`}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-green-50 hover:border-green-200 transition-all group'
+                      >
+                        <div className='w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-green-500 group-hover:scale-110 transition-transform'>
+                          <MessageCircle className='w-5 h-5' />
+                        </div>
+                        <div>
+                          <div className='font-black text-slate-800 text-lg'>{settings.secondaryWhatsappPhone}</div>
+                          <div className='text-xs text-slate-500 font-bold'>واتساب 2</div>
+                        </div>
+                      </a>
+                    )}
                   </div>
                 </div>
 
@@ -97,9 +130,9 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                       <span className='font-black text-sm'>مواعيد العمل</span>
                     </div>
                     <p className='text-sm text-slate-700 font-bold leading-relaxed'>
-                      يومياً من 9 ص
+                      يومياً من 9 ص - 10 م
                       <br />
-                      حتى 9 م
+                      ماعدا الجمعة
                     </p>
                   </div>
                   <div className='p-4 bg-blue-50 rounded-2xl border border-blue-100'>
@@ -108,9 +141,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                       <span className='font-black text-sm'>العنوان</span>
                     </div>
                     <p className='text-sm text-slate-700 font-bold leading-relaxed'>
-                      فيصل، الجيزة
-                      <br />
-                      مصر
+                      {settings?.address || 'فيصل، الجيزة'}
                     </p>
                   </div>
                 </div>

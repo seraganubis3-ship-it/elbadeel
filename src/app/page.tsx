@@ -50,5 +50,16 @@ export default async function HomePage() {
     },
   });
 
-  return <HomeClient categories={categories} />;
+  // Fetch system settings
+  let settings = await prisma.systemSettings.findFirst();
+  if (!settings) {
+    settings = await prisma.systemSettings.create({
+      data: {
+        id: 'main',
+        siteName: 'البديل',
+      },
+    });
+  }
+
+  return <HomeClient categories={categories} settings={settings} />;
 }
