@@ -112,10 +112,14 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
   // Classification logic (same as before)
   const classifyOrder = (
     o: Order
-  ): 'NATIONAL_ID' | 'BIRTH_CERT' | 'DEATH_CERT' | 'PASSPORT' | 'MARRIAGE_CERT' | 'GENERAL' => {
+  ): 'NATIONAL_ID' | 'TRANSLATED_ID' | 'BIRTH_CERT' | 'DEATH_CERT' | 'PASSPORT' | 'MARRIAGE_CERT' | 'GENERAL' => {
     if (!o.service) return 'GENERAL';
     const name = o.service.name.toLowerCase();
     const slug = (o.service.slug || '').toLowerCase();
+    
+    // Check for translated national ID first
+    if (name.includes('مترجم') && (name.includes('بطاقة') || slug === 'national-id')) return 'TRANSLATED_ID';
+    
     if (name.includes('بطاقة') || slug === 'national-id') return 'NATIONAL_ID';
     if (name.includes('جواز') || slug === 'passports') return 'PASSPORT';
     if (name.includes('وفاة') || slug.includes('death')) return 'DEATH_CERT';
@@ -125,10 +129,11 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
   };
 
   const partitionedOrders: Record<
-    'NATIONAL_ID' | 'BIRTH_CERT' | 'DEATH_CERT' | 'PASSPORT' | 'MARRIAGE_CERT' | 'GENERAL',
+    'NATIONAL_ID' | 'TRANSLATED_ID' | 'BIRTH_CERT' | 'DEATH_CERT' | 'PASSPORT' | 'MARRIAGE_CERT' | 'GENERAL',
     Order[]
   > = {
     NATIONAL_ID: [],
+    TRANSLATED_ID: [],
     BIRTH_CERT: [],
     DEATH_CERT: [],
     PASSPORT: [],
@@ -173,6 +178,34 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
         .join('');
       contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">بطاقات الرقم القومي - ${variantName}</div><div class="header-order-num-container"><span class="order-label">رقم امر شغل :</span><span class="order-line"></span></div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="32%">اسم العميل</th><th width="18%">رقم البطاقة القومي</th><th width="15%">غرامات</th><th width="30%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupOrders.length}</td></tr></tbody></table></div>`;
     });
+  }
+
+  // 1.5. Translated National ID - ALL VARIANTS IN ONE TABLE
+  if (partitionedOrders.TRANSLATED_ID.length > 0) {
+    const allOrders = partitionedOrders.TRANSLATED_ID;
+    const rows = allOrders
+      .map((order, idx) => {
+        globalTotalOrders++;
+        const finesDetails = order.finesDetails ? JSON.parse(order.finesDetails) : [];
+        const otherFines = finesDetails.filter(
+          (f: any) =>
+            !f.name ||
+            (!f.name.toLowerCase().includes('محضر') && !f.name.toLowerCase().includes('فقد'))
+        );
+        const totalFines = otherFines.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+        globalTotalFines += totalFines / 100;
+        const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
+        const cellStyle = isSettlement
+          ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
+          : 'style="text-align: center;"';
+        const fineNames = finesDetails.map((f: any) => f.name).join(' - ');
+        const details = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
+        const idStyle =
+          'text-align: center; font-family: monospace; font-size: 14px; letter-spacing: 1px;';
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
+      })
+      .join('');
+    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">بطاقات الرقم القومي المترجمة</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="32%">اسم العميل</th><th width="18%">رقم البطاقة القومي</th><th width="15%">غرامات</th><th width="30%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
   }
 
   // 2. Birth Cert - ALL VARIANTS IN ONE TABLE
