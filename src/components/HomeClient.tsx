@@ -473,6 +473,7 @@ export default function HomeClient({ categories, settings }: { categories: Categ
           </div>
         </motion.button>
 
+
         <ContactModal isOpen={showContactModal} onClose={() => setShowContactModal(false)} settings={settings} />
       </div>
   );

@@ -5,11 +5,14 @@ import Image from 'next/image';
 import { ReactNode } from 'react';
 import Link from 'next/link';
 
+import { Facebook, Instagram } from 'lucide-react';
+
 interface AdminFooterWrapperProps {
   children: ReactNode;
+  settings?: any;
 }
 
-export default function AdminFooterWrapper({ children }: AdminFooterWrapperProps) {
+export default function AdminFooterWrapper({ children, settings }: AdminFooterWrapperProps) {
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith('/admin');
 
@@ -38,20 +41,46 @@ export default function AdminFooterWrapper({ children }: AdminFooterWrapperProps
               <div className='md:col-span-1'>
                 <div className='flex items-center mb-5'>
                   <Image
-                    src='/logo.jpg'
-                    alt='منصة البديل'
+                    src={settings?.logoUrl || '/logo.jpg'}
+                    alt={settings?.siteName || 'منصة البديل'}
                     width={100}
                     height={100}
                     className='w-14 h-14 rounded-full object-cover border border-white/20 shadow-lg'
                   />
                   <div className='mr-4'>
-                    <h3 className='text-xl font-bold'>منصة البديل</h3>
+                    <h3 className='text-xl font-bold'>{settings?.siteName || 'منصة البديل'}</h3>
                     <p className='text-emerald-200 text-sm'>خدمات استخراج الأوراق الرسمية</p>
                   </div>
                 </div>
                 <p className='text-slate-200/90 leading-relaxed text-sm'>
-                  منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية مع ضمان الجودة والسرعة.
+                  {settings?.siteDescription || 'منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية مع ضمان الجودة والسرعة.'}
                 </p>
+                
+                {/* Social Media Links */}
+                <div className='flex gap-4 mt-6'>
+                  {settings?.facebookUrl && (
+                    <a
+                      href={settings.facebookUrl}
+                      target='_blank'
+                      rel='noreferrer'
+                      className='w-10 h-10 bg-white/10 hover:bg-blue-600 rounded-full flex items-center justify-center transition-all hover:scale-110'
+                      aria-label='Facebook'
+                    >
+                      <Facebook className='w-5 h-5' />
+                    </a>
+                  )}
+                  {settings?.instagramUrl && (
+                    <a
+                      href={settings.instagramUrl}
+                      target='_blank'
+                      rel='noreferrer'
+                      className='w-10 h-10 bg-white/10 hover:bg-pink-600 rounded-full flex items-center justify-center transition-all hover:scale-110'
+                      aria-label='Instagram'
+                    >
+                      <Instagram className='w-5 h-5' />
+                    </a>
+                  )}
+                </div>
               </div>
 
               {/* Quick links */}
@@ -61,6 +90,11 @@ export default function AdminFooterWrapper({ children }: AdminFooterWrapperProps
                   <li>
                     <Link href='/' className='hover:text-emerald-300 transition-colors'>
                       الصفحة الرئيسية
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href='/services' className='hover:text-emerald-300 transition-colors'>
+                      الخدمات
                     </Link>
                   </li>
                   <li>
@@ -75,62 +109,38 @@ export default function AdminFooterWrapper({ children }: AdminFooterWrapperProps
               <div>
                 <h4 className='text-lg font-semibold mb-4'>معلومات التواصل</h4>
                 <div className='space-y-3 text-slate-200'>
+                  {/* Phone */}
                   <div className='flex items-center'>
                     <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
-                      <svg
-                        className='w-4.5 h-4.5'
-                        viewBox='0 0 24 24'
-                        fill='none'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth='1.5'
-                          d='M3 5a2 2 0 012-2h3.28a1 1 0 01.95.69l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.69.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z'
-                        />
+                      <svg className='w-4.5 h-4.5' viewBox='0 0 24 24' fill='none' stroke='currentColor'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M3 5a2 2 0 012-2h3.28a1 1 0 01.95.69l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.69.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z' />
                       </svg>
                     </div>
-                    <span className='font-medium'>01021606893</span>
+                    <a href={`tel:${settings?.contactPhone}`} className='font-medium hover:text-emerald-300 transition-colors'>
+                      {settings?.contactPhone || '01021606893'}
+                    </a>
                   </div>
-                  <div className='flex items-center'>
-                    <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
-                      <svg
-                        className='w-4.5 h-4.5'
-                        viewBox='0 0 24 24'
-                        fill='none'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth='1.5'
-                          d='M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'
-                        />
-                      </svg>
+
+                  {/* Email */}
+                  {settings?.contactEmail && (
+                    <div className='flex items-center'>
+                      <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
+                        <svg className='w-4.5 h-4.5' viewBox='0 0 24 24' fill='none' stroke='currentColor'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' />
+                        </svg>
+                      </div>
+                      <a href={`mailto:${settings.contactEmail}`} className='font-medium hover:text-emerald-300 transition-colors'>
+                        {settings.contactEmail}
+                      </a>
                     </div>
-                    <span className='font-medium'>info@albadil.com</span>
-                  </div>
+                  )}
+
+                  {/* Address */}
                   <div className='flex items-center'>
                     <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
-                      <svg
-                        className='w-4.5 h-4.5'
-                        viewBox='0 0 24 24'
-                        fill='none'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth='1.5'
-                          d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
-                        />
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth='1.5'
-                          d='M15 11a3 3 0 11-6 0 3 3 0 016 0z'
-                        />
+                      <svg className='w-4.5 h-4.5' viewBox='0 0 24 24' fill='none' stroke='currentColor'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z' />
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M15 11a3 3 0 11-6 0 3 3 0 016 0z' />
                       </svg>
                     </div>
                     <a
@@ -140,27 +150,19 @@ export default function AdminFooterWrapper({ children }: AdminFooterWrapperProps
                       className='font-medium hover:text-emerald-300 transition-colors cursor-pointer'
                       title='افتح في جوجل مابس'
                     >
-                      شارع صالح قناوى, وليم ناشد, شارع الملك فيصل 15 مدكور، الملك فيصل، 12111
+                      {settings?.address || 'شارع صالح قناوى, وليم ناشد, شارع الملك فيصل 15 مدكور، الملك فيصل، 12111'}
                     </a>
                   </div>
+
+                  {/* WhatsApp */}
                   <div className='flex items-center'>
                     <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
-                      <svg
-                        className='w-4.5 h-4.5'
-                        viewBox='0 0 24 24'
-                        fill='none'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth='1.5'
-                          d='M2 5a2 2 0 012-2h2.6a2 2 0 011.78 1.1l.86 1.72A2 2 0 0011 7h2a2 2 0 011.76 1.03l.88 1.54A2 2 0 0017 11v2a2 2 0 01-2 2h-1'
-                        />
+                      <svg className='w-4.5 h-4.5' viewBox='0 0 24 24' fill='none' stroke='currentColor'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M2 5a2 2 0 012-2h2.6a2 2 0 011.78 1.1l.86 1.72A2 2 0 0011 7h2a2 2 0 011.76 1.03l.88 1.54A2 2 0 0017 11v2a2 2 0 01-2 2h-1' />
                       </svg>
                     </div>
                     <a
-                      href='https://wa.me/201021606893'
+                      href={`https://wa.me/${settings?.whatsappPhone ? settings.whatsappPhone.replace(/^0/, '2') : '201021606893'}`}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='font-medium hover:text-emerald-300 transition-colors'
@@ -175,7 +177,7 @@ export default function AdminFooterWrapper({ children }: AdminFooterWrapperProps
             {/* Bottom bar */}
             <div className='mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3'>
               <p className='text-slate-300 text-sm'>
-                جميع الحقوق محفوظة © {new Date().getFullYear()} منصة البديل
+                جميع الحقوق محفوظة © {new Date().getFullYear()} {settings?.siteName || 'منصة البديل'}
               </p>
               <div className='flex items-center gap-2 text-sm'>
                 <span className='text-slate-300'>صنع بواسطة</span>

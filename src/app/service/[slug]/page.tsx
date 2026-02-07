@@ -79,6 +79,10 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
 
   if (!service) return notFound();
 
+  // Fetch system settings for delivery fee
+  const settings = await prisma.systemSettings.findFirst();
+  const defaultDeliveryFee = settings?.defaultDeliveryFee || 5000; // Default to 50 EGP if not set
+
   // Fetch dynamic fields separately
   const fields = await prisma.serviceField.findMany({
     where: {
@@ -227,6 +231,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
               user={session.user}
               requiredDocuments={(service as any).documents || []}
               dynamicFields={(fields as any) || []}
+              defaultDeliveryFee={defaultDeliveryFee}
             />
           </div>
         </div>

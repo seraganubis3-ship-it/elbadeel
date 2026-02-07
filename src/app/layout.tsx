@@ -109,11 +109,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+import { prisma } from '@/lib/prisma';
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await prisma.systemSettings.findFirst();
+
   return (
     <html lang='ar' dir='rtl' suppressHydrationWarning>
       <head>
@@ -123,10 +127,10 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'البديل',
+              name: settings?.siteName || 'البديل',
               alternateName: 'البديل للخدمات الحكومية',
               description:
-                'البديل للخدمات الحكومية - منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية',
+                settings?.siteDescription || 'البديل للخدمات الحكومية - منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية',
               url: 'https://albadel.com.eg',
               logo: 'https://albadel.com.eg/logo.jpg',
               foundingDate: '2000',
@@ -138,7 +142,7 @@ export default function RootLayout({
               },
               contactPoint: {
                 '@type': 'ContactPoint',
-                telephone: '+20-10-2160-6893',
+                telephone: settings?.contactPhone || '+20-10-2160-6893',
               },
             }),
           }}
@@ -150,7 +154,7 @@ export default function RootLayout({
             <main className='w-full'>{children}</main>
           </AdminLayoutWrapper>
 
-          <AdminFooterWrapper>
+          <AdminFooterWrapper settings={settings}>
             <div></div>
           </AdminFooterWrapper>
 

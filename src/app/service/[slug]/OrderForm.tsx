@@ -36,6 +36,7 @@ export default function OrderForm({
   user,
   requiredDocuments = [],
   dynamicFields = [],
+  defaultDeliveryFee = 5000,
 }: {
   serviceId: string;
   serviceSlug: string;
@@ -44,6 +45,7 @@ export default function OrderForm({
   user: any;
   requiredDocuments?: any[];
   dynamicFields?: DynamicField[];
+  defaultDeliveryFee?: number;
 }) {
   // --- State Management ---
   // Must be first because logic depends on it
@@ -77,7 +79,8 @@ export default function OrderForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showSuccess, showError, showWarning, toasts, removeToast } = useToast();
 
-  const DELIVERY_FEE = 5000; // 50 EGP
+  // Use defaultDeliveryFee from settings instead of hardcoded value
+  const DELIVERY_FEE = defaultDeliveryFee;
 
 
   // --- Special Logic for Passport Service ---
