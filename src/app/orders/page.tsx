@@ -9,6 +9,7 @@ import {
   ORDER_STATUS_OPTIONS,
   getStatusIcon as getStatusIconHelper,
 } from '@/constants/orderStatuses';
+import { getCustomerStatus } from './customerStatusMapping';
 
 interface Order {
   id: string;
@@ -154,20 +155,12 @@ function OrdersContent() {
   }, [searchTerm, statusFilter, sortBy, pathname, router]);
 
   const getStatusBadge = (status: string) => {
-    const config = ORDER_STATUS_CONFIG[status];
-    if (!config) {
-      return (
-        <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800'>
-          {status}
-        </span>
-      );
-    }
-
+    const customerStatus = getCustomerStatus(status);
     return (
       <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bgColor} ${config.color}`}
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${customerStatus.bgColor} ${customerStatus.color}`}
       >
-        {config.label}
+        {customerStatus.label}
       </span>
     );
   };
@@ -357,7 +350,7 @@ function OrdersContent() {
                 <div className='flex flex-col sm:flex-row items-start justify-between gap-4'>
                   <div className='flex-1 w-full'>
                     <div className='flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 sm:space-x-reverse mb-4'>
-                      <div className='text-2xl sm:text-3xl'>{getStatusIcon(order.status)}</div>
+                      <div className='text-2xl sm:text-3xl'>{getCustomerStatus(order.status).icon}</div>
                       <div className='flex-1 w-full'>
                         <h3 className='text-base sm:text-lg font-semibold text-gray-900 mb-1'>
                           {order.service.name}

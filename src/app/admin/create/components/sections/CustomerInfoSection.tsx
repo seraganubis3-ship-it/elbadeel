@@ -103,14 +103,14 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
   );
 
   return (
-     <div className='bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 overflow-visible relative group transition-all duration-300 hover:shadow-[0_40px_80px_-12px_rgba(0,0,0,0.2)]'>
+     <div className='bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 overflow-visible relative group transition-all duration-300'>
       {/* Visual Accent */}
-      <div className='absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[2.5rem]'></div>
+      <div className='absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 opacity-0 transition-opacity duration-500 rounded-t-[2.5rem]'></div>
 
       <div className='p-6 lg:p-4 space-y-6 lg:space-y-4'>
         {/* Header */}
         <div className='flex items-center gap-4 mb-2'>
-          <div className='w-14 h-14 lg:w-10 lg:h-10 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-[1.5rem] lg:rounded-xl flex items-center justify-center text-3xl lg:text-xl shadow-sm border border-emerald-100/50 relative overflow-hidden group-hover:scale-105 transition-transform duration-500'>
+          <div className='w-14 h-14 lg:w-10 lg:h-10 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-[1.5rem] lg:rounded-xl flex items-center justify-center text-3xl lg:text-xl shadow-sm border border-emerald-100/50 relative overflow-hidden transition-transform duration-500'>
              <div className="absolute inset-0 bg-emerald-200/20 blur-xl"></div>
              <span className="relative z-10">📝</span>
           </div>
@@ -340,6 +340,59 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                  />
               </div>
 
+              <div className='space-y-1'>
+                <label className='text-sm font-black text-black block mr-1 flex items-center gap-2'>
+                   تابع
+                   <span className="text-[10px] text-slate-400 font-normal">(اختياري)</span>
+                </label>
+                <div className='relative group'>
+                  {/* Background Layer */}
+                  <div className="absolute inset-0 bg-slate-50/50 rounded-2xl" />
+
+                  {/* Ghost Text */}
+                  {dependentSuggestion && formData.customerFollowUp && dependentSuggestion.toLowerCase().startsWith(formData.customerFollowUp.toLowerCase()) && (
+                    <div className='absolute inset-0 px-5 py-4 font-bold text-slate-400 pointer-events-none z-0 user-select-none opacity-50 flex'>
+                      <span className='opacity-0'>{formData.customerFollowUp}</span>
+                      <span>{dependentSuggestion.slice(formData.customerFollowUp.length)}</span>
+                    </div>
+                  )}
+
+                  <input
+                    type='text'
+                    value={formData.customerFollowUp}
+                    onChange={e => {
+                      setFormData(prev => ({ ...prev, customerFollowUp: e.target.value }));
+                      searchDependent(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === 'ArrowRight') && dependentSuggestion) {
+                        e.preventDefault();
+                        setFormData(prev => ({ ...prev, customerFollowUp: dependentSuggestion }));
+                        setShowDependentDropdown(false);
+                      }
+                    }}
+                    className='relative z-10 w-full px-5 py-4 lg:px-4 lg:py-3 bg-transparent border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white/50 transition-all font-bold text-slate-700 placeholder-transparent lg:text-base'
+                    placeholder='ابحث بالاسم...'
+                  />
+                  <div className={`absolute top-0 right-0 h-full flex items-center pr-5 pointer-events-none transition-opacity duration-200 ${formData.customerFollowUp ? 'opacity-0' : 'opacity-100'}`}>
+                    <span className="text-slate-400 font-bold">ابحث بالاسم...</span>
+                  </div>
+                  {showDependentDropdown && dependentSearchResults.length > 0 && (
+                    <div className='absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 p-1'>
+                      {dependentSearchResults.map(d => (
+                        <div
+                          key={d.id}
+                          onClick={() => selectDependent(d)}
+                          className='p-3 hover:bg-slate-50 rounded-xl cursor-pointer text-sm font-bold text-slate-700'
+                        >
+                          {d.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
 
 
               <div className='md:col-span-2 space-y-1'>
@@ -412,58 +465,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                  />
               </div>
 
-              <div className='space-y-1'>
-                <label className='text-sm font-black text-black block mr-1 flex items-center gap-2'>
-                   تابع
-                   <span className="text-[10px] text-slate-400 font-normal">(اختياري)</span>
-                </label>
-                <div className='relative group'>
-                  {/* Background Layer */}
-                  <div className="absolute inset-0 bg-slate-50/50 rounded-2xl" />
 
-                  {/* Ghost Text */}
-                  {dependentSuggestion && formData.customerFollowUp && dependentSuggestion.toLowerCase().startsWith(formData.customerFollowUp.toLowerCase()) && (
-                    <div className='absolute inset-0 px-5 py-4 font-bold text-slate-400 pointer-events-none z-0 user-select-none opacity-50 flex'>
-                      <span className='opacity-0'>{formData.customerFollowUp}</span>
-                      <span>{dependentSuggestion.slice(formData.customerFollowUp.length)}</span>
-                    </div>
-                  )}
-
-                  <input
-                    type='text'
-                    value={formData.customerFollowUp}
-                    onChange={e => {
-                      setFormData(prev => ({ ...prev, customerFollowUp: e.target.value }));
-                      searchDependent(e.target.value);
-                    }}
-                    onKeyDown={(e) => {
-                      if ((e.key === 'Enter' || e.key === 'ArrowRight') && dependentSuggestion) {
-                        e.preventDefault();
-                        setFormData(prev => ({ ...prev, customerFollowUp: dependentSuggestion }));
-                        setShowDependentDropdown(false);
-                      }
-                    }}
-                    className='relative z-10 w-full px-5 py-4 lg:px-4 lg:py-3 bg-transparent border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white/50 transition-all font-bold text-slate-700 placeholder-transparent lg:text-base'
-                    placeholder='ابحث بالاسم...'
-                  />
-                  <div className={`absolute top-0 right-0 h-full flex items-center pr-5 pointer-events-none transition-opacity duration-200 ${formData.customerFollowUp ? 'opacity-0' : 'opacity-100'}`}>
-                    <span className="text-slate-400 font-bold">ابحث بالاسم...</span>
-                  </div>
-                  {showDependentDropdown && dependentSearchResults.length > 0 && (
-                    <div className='absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 p-1'>
-                      {dependentSearchResults.map(d => (
-                        <div
-                          key={d.id}
-                          onClick={() => selectDependent(d)}
-                          className='p-3 hover:bg-slate-50 rounded-xl cursor-pointer text-sm font-bold text-slate-700'
-                        >
-                          {d.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
            </div>
         </div>
       </div>

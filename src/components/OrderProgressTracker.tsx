@@ -1,6 +1,7 @@
 'use client';
 
-import { ORDER_STATUS_CONFIG, ORDER_PROGRESS_STATUSES } from '@/constants/orderStatuses';
+import { ORDER_STATUS_CONFIG } from '@/constants/orderStatuses';
+import { CUSTOMER_PROGRESS_STEPS, getCurrentStepIndex, getCustomerStatus } from '@/app/orders/customerStatusMapping';
 
 interface OrderProgressTrackerProps {
   orderId: string;
@@ -13,34 +14,29 @@ export default function OrderProgressTracker({
   currentStatus,
   estimatedCompletion,
 }: OrderProgressTrackerProps) {
-  // Get progress statuses in order
-  const statuses = ORDER_PROGRESS_STATUSES.map(status => ({
-    id: status,
-    ...ORDER_STATUS_CONFIG[status],
-  }));
+  
+  const currentStepIndex = getCurrentStepIndex(currentStatus);
+  const isCancelled = currentStepIndex === -1; // Assuming -1 for cancelled/returned based on helper
+  const customerStatus = getCustomerStatus(currentStatus);
 
-  const getCurrentStatusIndex = () => {
-    return statuses.findIndex(status => status.id === currentStatus);
-  };
+  const getStatusClass = (index: number) => {
+    if (isCancelled) return 'text-gray-400 bg-gray-50 border-gray-200';
 
-  const getStatusClass = (statusId: string, index: number) => {
-    const currentIndex = getCurrentStatusIndex();
-
-    if (index < currentIndex) {
+    if (index < currentStepIndex) {
       return 'text-green-600 bg-green-50 border-green-200';
-    } else if (index === currentIndex) {
+    } else if (index === currentStepIndex) {
       return 'text-blue-600 bg-blue-50 border-blue-200';
     } else {
       return 'text-gray-400 bg-gray-50 border-gray-200';
     }
   };
 
-  const getIconClass = (statusId: string, index: number) => {
-    const currentIndex = getCurrentStatusIndex();
+  const getIconClass = (index: number) => {
+    if (isCancelled) return 'bg-gray-300 text-gray-500';
 
-    if (index < currentIndex) {
+    if (index < currentStepIndex) {
       return 'bg-green-500 text-white';
-    } else if (index === currentIndex) {
+    } else if (index === currentStepIndex) {
       return 'bg-blue-500 text-white';
     } else {
       return 'bg-gray-300 text-gray-500';
@@ -54,58 +50,66 @@ export default function OrderProgressTracker({
         <p className='text-gray-600 text-sm'>رقم الطلب: {orderId}</p>
       </div>
 
-      {/* Progress Steps */}
-      <div className='space-y-6'>
-        {statuses.map((status, index) => (
-          <div key={status.id} className='flex items-start space-x-4 space-x-reverse'>
-            {/* Status Icon */}
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-semibold flex-shrink-0 transition-all duration-300 ${getIconClass(status.id, index)}`}
-            >
-              {status.icon}
-            </div>
+      {isCancelled ? (
+        <div className="text-center p-8 bg-red-50 rounded-xl border border-red-200">
+          <div className="text-4xl mb-4">❌</div>
+          <h4 className="text-xl font-bold text-red-800 mb-2">الطلب {customerStatus.label}</h4>
+          <p className="text-red-600">هذا الطلب تم إلغاؤه أو إرجاعه.</p>
+        </div>
+      ) : (
+        /* Progress Steps */
+        <div className='space-y-6'>
+          {CUSTOMER_PROGRESS_STEPS.map((step, index) => (
+            <div key={step.id} className='flex items-start space-x-4 space-x-reverse'>
+              {/* Status Icon */}
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-semibold flex-shrink-0 transition-all duration-300 ${getIconClass(index)}`}
+              >
+                {step.icon}
+              </div>
 
-            {/* Status Content */}
-            <div
-              className={`flex-1 p-4 rounded-xl border-2 transition-all duration-300 ${getStatusClass(status.id, index)}`}
-            >
-              <div className='flex items-center justify-between mb-2'>
-                <h4 className='font-semibold text-lg'>{status.label}</h4>
-                {index === getCurrentStatusIndex() && (
-                  <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
-                    حالياً
-                  </span>
+              {/* Status Content */}
+              <div
+                className={`flex-1 p-4 rounded-xl border-2 transition-all duration-300 ${getStatusClass(index)}`}
+              >
+                <div className='flex items-center justify-between mb-2'>
+                  <h4 className='font-semibold text-lg'>{step.label}</h4>
+                  {index === currentStepIndex && (
+                    <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
+                      حالياً
+                    </span>
+                  )}
+                </div>
+                <p className='text-sm opacity-80'>{step.description}</p>
+
+                {/* Estimated Time for Current Status */}
+                {index === currentStepIndex && estimatedCompletion && (
+                  <div className='mt-3 p-3 bg-blue-100 rounded-lg'>
+                    <div className='flex items-center text-sm text-blue-700'>
+                      <svg
+                        className='w-4 h-4 ml-2'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={2}
+                          d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+                        />
+                      </svg>
+                      <span>
+                        الوقت المتوقع للإنجاز: {estimatedCompletion.toLocaleDateString('ar-EG')}
+                      </span>
+                    </div>
+                  </div>
                 )}
               </div>
-              <p className='text-sm opacity-80'>{status.description}</p>
-
-              {/* Estimated Time for Current Status */}
-              {index === getCurrentStatusIndex() && estimatedCompletion && (
-                <div className='mt-3 p-3 bg-blue-100 rounded-lg'>
-                  <div className='flex items-center text-sm text-blue-700'>
-                    <svg
-                      className='w-4 h-4 ml-2'
-                      fill='none'
-                      stroke='currentColor'
-                      viewBox='0 0 24 24'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
-                      />
-                    </svg>
-                    <span>
-                      الوقت المتوقع للإنجاز: {estimatedCompletion.toLocaleDateString('ar-EG')}
-                    </span>
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Current Status Summary */}
       <div className='mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200'>
@@ -113,11 +117,11 @@ export default function OrderProgressTracker({
           <div>
             <h4 className='font-semibold text-blue-900'>الحالة الحالية</h4>
             <p className='text-sm text-blue-700'>
-              {ORDER_STATUS_CONFIG[currentStatus]?.label || 'غير محدد'}
+              {customerStatus.label}
             </p>
           </div>
           <div className='text-right'>
-            <div className='text-2xl'>{ORDER_STATUS_CONFIG[currentStatus]?.icon || '❓'}</div>
+            <div className='text-2xl'>{customerStatus.icon}</div>
           </div>
         </div>
       </div>

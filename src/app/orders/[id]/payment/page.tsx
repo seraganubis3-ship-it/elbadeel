@@ -150,7 +150,7 @@ export default function PaymentPage() {
                   }`}
                 >
                   <div className='text-2xl mb-2'>📱</div>
-                  <div className='font-bold'>فودافون كاش</div>
+                  <div className='font-bold'>محفظة</div>
                 </div>
                 <div
                   onClick={() => setMethod('INSTA_PAY')}
@@ -169,9 +169,9 @@ export default function PaymentPage() {
               <div className='bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm'>
                 <p className='font-bold text-slate-700 mb-2'>تعليمات الدفع:</p>
                 {method === 'VODAFONE_CASH' ? (
-                  <p className='text-slate-600'>يرجى التحويل على الرقم: <span className='font-mono font-bold select-all'>010xxxxxxxxx</span></p>
+                  <p className='text-slate-600'>يرجى التحويل على الرقم: <span className='font-mono font-bold select-all'>01001544258</span></p>
                 ) : (
-                   <p className='text-slate-600'>يرجى التحويل على المعرف: <span className='font-mono font-bold select-all'>username@instapay</span></p>
+                   <p className='text-slate-600'>يرجى التحويل على الرقم: <span className='font-mono font-bold select-all'>01001544258</span></p>
                 )}
               </div>
 

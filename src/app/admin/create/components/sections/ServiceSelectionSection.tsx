@@ -84,14 +84,14 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
   }, [deliveryDate, setFormData, formData.deliveryDate]);
 
   return (
-    <div className='bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 overflow-visible relative group transition-all duration-300 hover:shadow-[0_40px_80px_-12px_rgba(0,0,0,0.2)]'>
+    <div className='bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 overflow-visible relative group transition-all duration-300'>
        {/* Visual Accent */}
-       <div className='absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[2.5rem]'></div>
+       <div className='absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-600 opacity-0 transition-opacity duration-500 rounded-t-[2.5rem]'></div>
 
        <div className='p-6 lg:p-4 space-y-6 lg:space-y-4'>
          {/* Header */}
          <div className='flex items-center gap-4 mb-2'>
-           <div className='w-14 h-14 lg:w-10 lg:h-10 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-[1.5rem] lg:rounded-xl flex items-center justify-center text-3xl lg:text-xl shadow-sm border border-cyan-100/50 relative overflow-hidden group-hover:scale-105 transition-transform duration-500'>
+           <div className='w-14 h-14 lg:w-10 lg:h-10 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-[1.5rem] lg:rounded-xl flex items-center justify-center text-3xl lg:text-xl shadow-sm border border-cyan-100/50 relative overflow-hidden transition-transform duration-500'>
               <div className="absolute inset-0 bg-cyan-200/20 blur-xl"></div>
               <span className="relative z-10">🛠️</span>
            </div>

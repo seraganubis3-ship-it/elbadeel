@@ -13,36 +13,10 @@ interface OrderDetailClientProps {
   order: OrderWithDetails;
 }
 
-export default function OrderDetailClient({ order }: OrderDetailClientProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'IN_PROGRESS':
-        return 'bg-blue-100 text-blue-800';
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+import { getCustomerStatus } from '../customerStatusMapping';
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'قيد الانتظار';
-      case 'IN_PROGRESS':
-        return 'قيد التنفيذ';
-      case 'COMPLETED':
-        return 'مكتمل';
-      case 'CANCELLED':
-        return 'ملغي';
-      default:
-        return 'غير محدد';
-    }
-  };
+export default function OrderDetailClient({ order }: OrderDetailClientProps) {
+  const customerStatus = getCustomerStatus(order.status);
 
   const formatPrice = (cents: number) => {
     return `${(cents / 100).toFixed(2)} جنيه`;
@@ -80,9 +54,9 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
               </div>
               <div className='flex items-center gap-3'>
                 <span
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${customerStatus.bgColor} ${customerStatus.color}`}
                 >
-                  {getStatusText(order.status)}
+                  {customerStatus.label}
                 </span>
                 <span className='text-sm text-gray-600'>
                   {new Date(order.createdAt).toLocaleDateString('ar-EG')}
