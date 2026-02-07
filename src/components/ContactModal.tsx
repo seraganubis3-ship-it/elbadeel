@@ -87,35 +87,38 @@ export default function ContactModal({ isOpen, onClose, settings }: ContactModal
                         </div>
                       </a>
                     )}
-
-                    <a
-                      href={`https://wa.me/${settings?.whatsappPhone?.replace(/^0/, '2') || '201021606893'}`}
-                      target='_blank'
-                      rel='noreferrer'
-                      className='w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all text-white group relative'
-                      title={`واتساب: ${settings?.whatsappPhone || '01021606893'}`}
-                    >
-                      <MessageCircle className='w-6 h-6' />
-                      <span className='absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>1</span>
-                    </a>
-                    
-                    {settings?.secondaryWhatsappPhone && (
-                      <a
-                        href={`https://wa.me/${settings.secondaryWhatsappPhone.replace(/^0/, '2')}`}
-                        target='_blank'
-                        rel='noreferrer'
-                        className='w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all text-white group relative'
-                        title={`واتساب: ${settings.secondaryWhatsappPhone}`}
-                      >
-                        <MessageCircle className='w-6 h-6' />
-                        <span className='absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>2</span>
-                      </a>
-                    )}
                   </div>
                   
-                  {/* WhatsApp Numbers Label */}
-                  <div className='text-center mt-2'>
-                    <p className='text-xs text-slate-500 font-bold'>تواصل عبر واتساب</p>
+                  {/* WhatsApp Buttons - Side by Side */}
+                  <div className='space-y-2'>
+                    <h3 className='text-sm font-black text-slate-400 uppercase tracking-widest text-center'>
+                      تواصل عبر واتساب
+                    </h3>
+                    <div className='flex items-center justify-center gap-4'>
+                      <a
+                        href={`https://wa.me/${settings?.whatsappPhone?.replace(/^0/, '2') || '201021606893'}`}
+                        target='_blank'
+                        rel='noreferrer'
+                        className='w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all text-white group relative'
+                        title={`واتساب: ${settings?.whatsappPhone || '01021606893'}`}
+                      >
+                        <MessageCircle className='w-7 h-7' />
+                        <span className='absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>1</span>
+                      </a>
+                      
+                      {settings?.secondaryWhatsappPhone && (
+                        <a
+                          href={`https://wa.me/${settings.secondaryWhatsappPhone.replace(/^0/, '2')}`}
+                          target='_blank'
+                          rel='noreferrer'
+                          className='w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all text-white group relative'
+                          title={`واتساب: ${settings.secondaryWhatsappPhone}`}
+                        >
+                          <MessageCircle className='w-7 h-7' />
+                          <span className='absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>2</span>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
 
