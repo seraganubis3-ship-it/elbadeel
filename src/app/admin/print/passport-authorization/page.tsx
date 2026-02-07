@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Order } from '../../orders/types';
 
 interface Delegate {
@@ -25,13 +25,7 @@ export default function PassportAuthorizationPrintPage() {
   const [delegate, setDelegate] = useState<Delegate | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (orderId && delegateId) {
-      fetchData();
-    }
-  }, [orderId, delegateId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       // Fetch Order
       const orderRes = await fetch(`/api/admin/orders/${orderId}`);
@@ -61,7 +55,13 @@ export default function PassportAuthorizationPrintPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId, delegateId]);
+
+  useEffect(() => {
+    if (orderId && delegateId) {
+      fetchData();
+    }
+  }, [orderId, delegateId, fetchData]);
 
   if (loading) return <div className="flex justify-center p-12">جار تحميل البيانات...</div>;
   if (!order || !delegate) return <div className="flex justify-center p-12 text-red-500">بيانات غير مكتملة (تأكد من اختيار المندوب والطلب)</div>;

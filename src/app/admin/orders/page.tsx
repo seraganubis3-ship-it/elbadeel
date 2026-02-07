@@ -165,6 +165,7 @@ export default function AdminOrdersPage() {
       return;
     }
     setShowDelegateModal(true);
+    setTargetReport('TRANSLATION');
   };
 
   const executePrintTranslationReport = (delegate: any) => {
@@ -235,6 +236,62 @@ export default function AdminOrdersPage() {
     setShowDelegateModal(false);
     window.open('/admin/orders/print-translation-report', '_blank');
   };
+
+  // Family Record Report Logic
+  const handlePrintFamilyReport = () => {
+    if (selectedOrders.length === 0) {
+      showError('تنبيه', 'برجاء تحديد طلبات أولاً لطباعة الكشف');
+      return;
+    }
+    // Reuse delegate modal, we'll distinguish action by a state or just use a separate handler when modal submits
+    // For simplicity, we can use the same modal state but set a 'targetReport' state
+    setTargetReport('FAMILY');
+    setShowDelegateModal(true);
+  };
+
+  const executePrintFamilyReport = (delegate: any) => {
+    const reportData = selectedOrders
+      .map(id => currentOrders.find(o => o.id === id))
+      .filter(o => o)
+      .map(order => {
+        // ID logic
+        let idNumber = order?.idNumber;
+        if (!idNumber && order?.birthDate) {
+           const date = new Date(order.birthDate);
+           if (!isNaN(date.getTime())) {
+             idNumber = date.toLocaleDateString('en-GB');
+           } else {
+             idNumber = order.birthDate;
+           }
+        }
+        idNumber = idNumber || '';
+        
+        // Quantity
+        const quantity = order?.quantity || 1;
+
+        return {
+           name: order?.customerName || '',
+           idNumber,
+           source: '', // Requested to be empty
+           quantity
+        };
+      });
+
+    // Save Data + Delegate Info
+    localStorage.setItem('temp_family_report_data', JSON.stringify({
+      orders: reportData,
+      delegate: {
+        name: delegate.name,
+        idNumber: delegate.idNumber,
+        unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
+      }
+    }));
+    
+    setShowDelegateModal(false);
+    window.open('/admin/orders/print-family-report', '_blank');
+  };
+
+  const [targetReport, setTargetReport] = useState<'TRANSLATION' | 'FAMILY'>('TRANSLATION');
 
   // Work Order Logic
   const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
@@ -354,6 +411,7 @@ export default function AdminOrdersPage() {
               onApplyBulkStatus={handleApplyBulkStatus}
               onPrintReport={printReport}
               onPrintTranslationReport={handlePrintTranslationReport}
+              onPrintFamilyReport={handlePrintFamilyReport}
               onOpenPhoneReport={handleOpenPhoneReport}
               hasOrders={filteredOrders.length > 0}
             />
@@ -451,11 +509,16 @@ export default function AdminOrdersPage() {
         }
       />
 
-      {/* Select Delegate Modal */}
       <SelectDelegateModal
         isOpen={showDelegateModal}
         onClose={() => setShowDelegateModal(false)}
-        onConfirm={executePrintTranslationReport}
+        onConfirm={(delegate) => {
+             if (targetReport === 'TRANSLATION') {
+                 executePrintTranslationReport(delegate);
+             } else {
+                 executePrintFamilyReport(delegate);
+             }
+        }}
       />
 
       {/* Toast Container */}

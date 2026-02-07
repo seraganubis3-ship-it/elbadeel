@@ -40,7 +40,7 @@ export function SelectDelegateModal({
         setDelegates(data.delegates);
       }
     } catch (error) {
-      console.error('Failed to fetch delegates:', error);
+      // generic error handling or ignore
     } finally {
       setLoading(false);
     }

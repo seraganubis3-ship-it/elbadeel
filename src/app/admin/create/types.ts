@@ -92,6 +92,8 @@ export interface FormData {
   fatherName: string;
   idNumber: string;
   motherName: string;
+  nationality: string;
+
 
   wifeName: string;
   wifeMotherName: string;
@@ -160,6 +162,7 @@ export const initialFormData: FormData = {
   fatherName: '',
   idNumber: '',
   motherName: '',
+  nationality: '',
 
   wifeName: '',
   wifeMotherName: '',

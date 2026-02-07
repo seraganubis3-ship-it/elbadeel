@@ -25,16 +25,7 @@ export const OrderSelectionModal: React.FC<OrderSelectionModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen && customer?.id) {
-      fetchOrders();
-    } else {
-      setOrders([]);
-      setSelectedOrders(new Set());
-    }
-  }, [isOpen, customer]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = React.useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -61,7 +52,16 @@ export const OrderSelectionModal: React.FC<OrderSelectionModalProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [customer]);
+
+  useEffect(() => {
+    if (isOpen && customer?.id) {
+      fetchOrders();
+    } else {
+      setOrders([]);
+      setSelectedOrders(new Set());
+    }
+  }, [isOpen, customer, fetchOrders]);
 
   const toggleOrder = (orderId: string) => {
     const newSelected = new Set(selectedOrders);

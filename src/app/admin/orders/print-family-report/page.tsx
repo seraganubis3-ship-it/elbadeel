@@ -4,13 +4,12 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
-// Report Data Interface
-interface TranslationReportData {
+// Report Data Interface matching the Family Record structure
+interface FamilyRecordReportData {
   name: string;
   idNumber: string;
-  source: string;
+  source: string; // Used for "Authority" (الجهة) - currently requested to be empty but keeping structure
   quantity: number;
-  language: string;
 }
 
 interface DelegateData {
@@ -19,13 +18,13 @@ interface DelegateData {
   unionCard: string;
 }
 
-export default function PrintTranslationReport() {
-  const [data, setData] = useState<TranslationReportData[]>([]);
+export default function PrintFamilyRecordReport() {
+  const [data, setData] = useState<FamilyRecordReportData[]>([]);
   const [delegate, setDelegate] = useState<DelegateData | null>(null);
 
   useEffect(() => {
     // Load data from localStorage
-    const storedData = localStorage.getItem('temp_translation_report_data');
+    const storedData = localStorage.getItem('temp_family_report_data');
     if (storedData) {
       const parsed = JSON.parse(storedData);
       setData(parsed.orders || []);
@@ -39,6 +38,7 @@ export default function PrintTranslationReport() {
   }, []);
 
   const currentDate = new Date().toLocaleDateString('ar-EG', {
+    weekday: 'long',
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',
@@ -76,7 +76,7 @@ export default function PrintTranslationReport() {
         {/* Center: Title */}
         <div className="w-1/3 flex flex-col items-center pt-4">
             <h2 className="text-xl font-bold bg-white text-black px-6 py-2 border-2 border-blue-600 rounded-xl shadow-[4px_4px_0_0_#2563eb]">
-               كشف الترجمة
+               كشف قيد عائلي ثاني مرة
             </h2>
              <div className="mt-2 bg-gray-200 rounded-lg px-4 py-1 border border-gray-400 font-bold text-lg">
              {currentDate}
@@ -91,7 +91,7 @@ export default function PrintTranslationReport() {
       {/* Sub Header */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
-           <h3 className="text-base font-bold">السيد العميد / مدير مصلحة الأحوال المدنية</h3>
+           <h3 className="text-base font-bold">السيد العميد / مدير مصلحة الأحوال المدنية بالجيزة</h3>
         </div>
         <p className="text-center text-lg font-bold mb-2">تحية طيبة وبعد</p>
         <p className="text-justify text-base leading-relaxed mb-4 font-medium">
@@ -105,29 +105,33 @@ export default function PrintTranslationReport() {
           <thead>
             <tr className="bg-gray-300 text-gray-900 border-b border-gray-800">
               <th className="border border-gray-800 p-1 w-10 text-center font-bold">م</th>
-              <th className="border border-gray-800 p-1 text-right font-bold">الاسم</th>
-              <th className="border border-gray-800 p-1 width-28 text-center font-bold">الرقم القومي</th>
-              <th className="border border-gray-800 p-1 w-28 text-center font-bold">المصدر</th>
+              <th className="border border-gray-800 p-1 text-right font-bold h-12">الاسم</th>
+              <th className="border border-gray-800 p-1 w-32 text-center font-bold">الرقم القومي</th>
               <th className="border border-gray-800 p-1 w-16 text-center font-bold">العدد</th>
-              <th className="border border-gray-800 p-1 w-24 text-center font-bold">ترجمة</th>
+              <th className="border border-gray-800 p-1 w-32 text-center font-bold">الجهة</th>
             </tr>
           </thead>
           <tbody>
             {data.map((item, index) => (
               <tr key={index} className="border-b border-gray-800">
-                <td className="border border-gray-800 p-1 text-center font-bold">{index + 1}</td>
+                <td className="border border-gray-800 p-1 text-center font-bold h-10">{index + 1}</td>
                 <td className="border border-gray-800 p-1 text-right font-bold">{item.name}</td>
-                <td className="border border-gray-800 p-1 text-center font-bold">{item.idNumber}</td>
-                <td className="border border-gray-800 p-1 text-center font-bold">{item.source}</td>
+                <td className="border border-gray-800 p-1 text-center font-bold font-mono text-base">{item.idNumber}</td>
                 <td className="border border-gray-800 p-1 text-center font-bold">{item.quantity}</td>
-                <td className="border border-gray-800 p-1 text-center font-bold bg-gray-50">{item.language}</td>
+                <td className="border border-gray-800 p-1 text-center font-bold bg-gray-50">{item.source}</td>
               </tr>
             ))}
+            {/* Fill remaining rows if needed, or leave dynamic */}
+             {data.length === 0 && (
+                <tr>
+                    <td colSpan={5} className="text-center p-4">لا توجد بيانات</td>
+                </tr>
+             )}
           </tbody>
         </table>
       </div>
 
-      {/* Footer / Dynamic ID Card Image */}
+      {/* Footer / Generic image or Delegate Card */}
       <div className="mt-4 flex justify-center items-center h-48">
          {delegate?.unionCard ? (
            <img 
@@ -136,9 +140,8 @@ export default function PrintTranslationReport() {
              className="max-h-full max-w-full object-contain border border-gray-300 rounded-lg shadow-sm"
            />
          ) : (
-            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 text-center text-gray-400 w-64 h-32 flex items-center justify-center">
-               لا توجد صورة للمندوب
-            </div>
+             // Fallback image mentioned in prompt "Same picture as translation report" - assuming generic footer or fallback
+             <img src="/images/report-footer.png" className="h-32 object-contain" alt="Footer" />
          )}
       </div>
 

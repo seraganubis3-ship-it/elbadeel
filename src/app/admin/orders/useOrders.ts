@@ -312,7 +312,7 @@ export function useOrders(
     }, 500); // 500ms delay
 
     return () => clearTimeout(timer);
-  }, [fetchOrders]); // fetchOrders depends on filter values, so this triggers on filter change
+  }, [fetchOrders, orders.length]); // fetchOrders depends on filter values, so this triggers on filter change
 
   // Filter orders when data changes
   useEffect(() => {

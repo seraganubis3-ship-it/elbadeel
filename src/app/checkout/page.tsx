@@ -1,4 +1,4 @@
-
+import { Suspense } from 'react';
 import { prisma } from '@/lib/prisma';
 import CheckoutClient from './CheckoutClient';
 import type { Metadata } from 'next';
@@ -20,5 +20,9 @@ export default async function CheckoutPage() {
     orderBy: { orderIndex: 'asc' },
   });
 
-  return <CheckoutClient services={services} />;
+  return (
+    <Suspense fallback={<div className="flex justify-center p-12">جار التحميل...</div>}>
+      <CheckoutClient services={services} />
+    </Suspense>
+  );
 }
