@@ -29,10 +29,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAuth();
-    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    await requireAuth();
 
     const body = await request.json();
 
