@@ -16,34 +16,13 @@ const printStyles = `
     html, body {
       margin: 0 !important;
       padding: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
+      height: 148mm !important;
       overflow: hidden !important;
       -webkit-print-color-adjust: exact;
       color-adjust: exact;
     }
     
-    /* Hide known layout elements - Sidebar and Header */
-    header, 
-    div.fixed.h-full.w-72, 
-    div.fixed.h-full.w-80, 
-    div.fixed.h-full.w-96,
-    nav {
-      display: none !important;
-    }
-
-    /* Reset Main Layout wrappers */
-    .admin-panel, main {
-      margin: 0 !important;
-      padding: 0 !important;
-      background: none !important;
-      border: none !important;
-      width: auto !important;
-      height: auto !important;
-      overflow: visible !important;
-    }
-
-    /* Fallback: Hide everything else */
+    /* Isolation technique: Hide everything by default */
     body * {
       visibility: hidden;
     }
@@ -52,11 +31,10 @@ const printStyles = `
     .print-landscape,
     .print-landscape * {
       visibility: visible;
-      display: block;
     }
     
     .print-landscape {
-      position: fixed !important;
+      position: absolute;
       left: 6mm !important;
       top: 6mm !important;
       width: 198mm !important;
@@ -70,7 +48,6 @@ const printStyles = `
       flex-direction: column !important;
       background: white !important;
       border: 1px solid black !important;
-      z-index: 99999 !important;
     }
 
     /* Reset min-height for print */

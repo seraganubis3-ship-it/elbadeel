@@ -217,9 +217,9 @@ export default function CollectiveReceiptPage() {
   const finalRemaining = (summary?.totalRemaining || 0) + totalFineFees;
 
   // --- Dynamic Sizing Logic ---
-  // If orders <= 1, use "Loose" mode (Bigger fonts, more padding)
-  // If orders > 1, use "Compact" mode (Smaller fonts, tighter padding)
-  const isCompact = orders.length > 1;
+  // If orders <= 5, use "Loose" mode (Bigger fonts, more padding)
+  // If orders > 5, use "Compact" mode (Smaller fonts, tighter padding)
+  const isCompact = orders.length > 5;
 
   const fontSizes = {
     headerTitle: isCompact ? 'text-sm' : 'text-lg',
