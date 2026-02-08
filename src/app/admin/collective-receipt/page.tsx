@@ -2,38 +2,49 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Image from 'next/image';
+
 
 // Print styles for A5 landscape orientation
 const printStyles = `
   @media print {
     @page {
       size: A5 landscape;
-      margin: 0 !important;
+      margin: 0;
     }
     
     html, body {
       margin: 0 !important;
       padding: 0 !important;
-      height: auto !important;
-      width: 210mm !important;
-      overflow: visible !important;
       -webkit-print-color-adjust: exact;
       color-adjust: exact;
     }
     
+    /* Isolation technique: Hide everything by default */
+    body * {
+      visibility: hidden;
+    }
+    
+    /* Show only the print container and its children */
+    .print-landscape,
+    .print-landscape * {
+      visibility: visible;
+    }
+    
     .print-landscape {
-      width: 210mm !important;
-      height: auto !important;
+      position: absolute;
+      left: 6mm !important;
+      top: 6mm !important;
+      width: 198mm !important;
+      height: 136mm !important;
+      max-height: 136mm !important;
       margin: 0 !important;
-      padding: 0 !important; /* Zero padding to maximize space */
+      padding: 3mm !important;
       box-sizing: border-box !important;
-      overflow: visible !important;
-      display: block !important; /* Changed from flex to block to avoid stretching */
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
       background: white !important;
-      border: 0px none !important; /* Force Remove frame */
-      outline: none !important;
-      box-shadow: none !important;
+      border: 1px solid black !important;
     }
 
     /* Strict Black & White Grid */
@@ -210,7 +221,7 @@ export default function CollectiveReceiptPage() {
           {/* Header */}
           <div className={`border-b border-black ${spacing.headerPad} flex items-center justify-between`}>
               <div className='flex items-center space-x-2 space-x-reverse'>
-                <Image src='/logo.jpg' alt='البديل' width={100} height={48} className={`h-auto grayscale ${isCompact ? 'w-10' : 'w-14'}`} />
+                <img src='/logo.jpg' alt='البديل' style={{ height: 'auto' }} className={`grayscale ${isCompact ? 'w-10' : 'w-14'}`} />
                 <div className='leading-tight'>
                   <div className={`font-black text-black ${isCompact ? 'text-xs' : 'text-sm'}`}>البديل للخدمات الحكومية</div>
                   <div className={`text-black font-bold opacity-70 ${isCompact ? 'text-[8px]' : 'text-[10px]'}`}>بديلك لإنجاز أعمالك وخدماتك الحكومية</div>
@@ -223,7 +234,7 @@ export default function CollectiveReceiptPage() {
               </div>
 
               <div className='flex flex-col items-center'>
-                <Image src='/images/egyptnisr.png' alt='شعار' width={100} height={100} className={`h-auto mb-0.5 grayscale ${isCompact ? 'w-6' : 'w-8'}`} />
+                <img src='/images/egyptnisr.png' alt='شعار' style={{ height: 'auto' }} className={`mb-0.5 grayscale ${isCompact ? 'w-6' : 'w-8'}`} />
                 <div className={`leading-3 text-center max-w-[120px] font-bold ${isCompact ? 'text-[7px]' : 'text-[9px]'}`}>
 طبقا لقرار رئيس مجلس الوزاراء
 رقم ١٥٥١ لستة ٢٠٠٨ بتصريح و ترخيص من وزارة الدولة للتنمية الادارية                </div>
