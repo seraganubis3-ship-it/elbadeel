@@ -15,13 +15,35 @@ const printStyles = `
     html, body {
       margin: 0 !important;
       padding: 0 !important;
-      height: 148mm !important;
+      width: 100% !important;
+      height: 100% !important;
       overflow: hidden !important;
       -webkit-print-color-adjust: exact;
       color-adjust: exact;
     }
     
-    /* Isolation technique: Hide everything by default */
+    /* Hide specific Layout elements - Sidebar and Header */
+    /* Sidebar has classes like 'fixed top-0 right-0 h-full ...' */
+    header, 
+    div.fixed.h-full.w-72, 
+    div.fixed.h-full.w-80, 
+    div.fixed.h-full.w-96,
+    nav {
+      display: none !important;
+    }
+    
+    /* Reset Main Layout wrappers to be transparent and compact */
+    .admin-panel, main {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: none !important;
+      border: none !important;
+      width: auto !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    /* Fallback: Visibility hidden for everything else */
     body * {
       visibility: hidden;
     }
@@ -30,10 +52,11 @@ const printStyles = `
     .print-landscape,
     .print-landscape * {
       visibility: visible;
+      display: block;
     }
     
     .print-landscape {
-      position: absolute;
+      position: fixed !important;
       left: 6mm !important;
       top: 6mm !important;
       width: 198mm !important;
@@ -47,6 +70,7 @@ const printStyles = `
       flex-direction: column !important;
       background: white !important;
       border: 1px solid black !important;
+      z-index: 99999 !important;
     }
 
     /* Strict Black & White Grid */
