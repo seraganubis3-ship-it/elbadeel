@@ -77,7 +77,8 @@ export default function HomeClient({ categories, settings }: { categories: Categ
                 fill
                 className='object-cover object-center'
                 priority
-                sizes="100vw"
+                sizes="(max-width: 768px) 100vw, 100vw"
+                quality={60}
               />
             </div>
             <div className='absolute inset-0 bg-gradient-to-br from-emerald-950/80 via-teal-900/70 to-emerald-950/80'></div>
@@ -86,36 +87,30 @@ export default function HomeClient({ categories, settings }: { categories: Categ
           {/* ... (rest of hero content) ... */}
 
           {/* Floating particles */}
+          {/* Floating particles - CSS Optimized */}
           <div className='absolute inset-0 overflow-hidden pointer-events-none'>
             {[...Array(6)].map((_, i) => (
-              <motion.div
+              <div
                 key={i}
-                style={{ y: particleY }}
-                animate={{
-                  y: [0, -20, 0],
-                  opacity: [0.3, 0.6, 0.3],
+                className={`particle absolute ${PARTICLE_SIZES[i % 3]} bg-emerald-400/30 rounded-full blur-sm will-change-transform animate-float-slow`}
+                style={{
+                  top: `${10 + i * 15}%`,
+                  left: `${5 + (i % 3) * 35}%`,
+                  animationDelay: `${i * 2}s`,
+                  opacity: 0.4
                 }}
-                transition={{
-                  duration: 3 + i,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-                className={`particle absolute ${PARTICLE_SIZES[i % 3]} bg-emerald-400/30 rounded-full blur-sm will-change-transform`}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: `${10 + i * 15}%`,
-                    left: `${5 + (i % 3) * 35}%`,
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: '50%',
-                    background: 'currentColor',
-                  }}
-                />
-              </motion.div>
+              />
             ))}
           </div>
+          <style jsx>{`
+            @keyframes float-slow {
+              0%, 100% { transform: translateY(0); opacity: 0.3; }
+              50% { transform: translateY(-20px); opacity: 0.6; }
+            }
+            .animate-float-slow {
+              animation: float-slow 4s ease-in-out infinite;
+            }
+          `}</style>
 
           {/* Content */}
           <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center pb-32 sm:pb-40'>
