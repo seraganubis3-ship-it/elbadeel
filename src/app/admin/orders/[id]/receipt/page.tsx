@@ -16,6 +16,8 @@ const printStyles = `
     html, body {
       margin: 0 !important;
       padding: 0 !important;
+      height: 148mm !important;
+      overflow: hidden !important;
       -webkit-print-color-adjust: exact;
       color-adjust: exact;
     }
