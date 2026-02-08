@@ -102,15 +102,7 @@ export default function HomeClient({ categories, settings }: { categories: Categ
               />
             ))}
           </div>
-          <style jsx>{`
-            @keyframes float-slow {
-              0%, 100% { transform: translateY(0); opacity: 0.3; }
-              50% { transform: translateY(-20px); opacity: 0.6; }
-            }
-            .animate-float-slow {
-              animation: float-slow 4s ease-in-out infinite;
-            }
-          `}</style>
+
 
           {/* Content */}
           <div className='relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center pb-32 sm:pb-40'>
@@ -425,31 +417,7 @@ export default function HomeClient({ categories, settings }: { categories: Categ
             </StaggerContainer>
           </div>
         </section>
-        <style jsx global>{`
-          @keyframes glow-pulse {
-            0% {
-              box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            }
-            70% {
-              box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
-            }
-            100% {
-              box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-            }
-          }
-          .animate-glow-pulse {
-            animation: glow-pulse 2s infinite;
-          }
-          
-          @keyframes shimmer {
-            0% { transform: translateX(-150%); }
-            50% { transform: translateX(150%); }
-            100% { transform: translateX(150%); }
-          }
-          .animate-shimmer {
-            animation: shimmer 3s infinite;
-          }
-        `}</style>
+
         
         {/* Floating Contact Button */}
         <motion.button
