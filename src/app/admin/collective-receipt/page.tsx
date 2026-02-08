@@ -11,6 +11,9 @@ const printStyles = `
       size: A5 landscape;
       margin: 0;
     }
+
+    /* Target specific browser header/footer elements if possible usually margin 0 handles it */ 
+    @page { margin: 0; }
     
     html, body {
       margin: 0 !important;
@@ -71,6 +74,8 @@ const printStyles = `
       background: white !important;
       border: 1px solid black !important;
       z-index: 99999 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
     /* Strict Black & White Grid */
@@ -242,7 +247,7 @@ export default function CollectiveReceiptPage() {
     <div className='min-h-screen bg-gray-50 flex justify-center p-8 print:p-0 print:bg-white' dir='rtl'>
       <style dangerouslySetInnerHTML={{ __html: printStyles }} />
       
-      <div className={`w-[210mm] bg-white shadow-xl print:shadow-none print-landscape border border-black print:border-0 flex flex-col`}>
+      <div className={`w-[198mm] bg-white shadow-xl print:shadow-none print-landscape border border-black flex flex-col`}>
           
           {/* Header */}
           <div className={`border-b border-black ${spacing.headerPad} flex items-center justify-between`}>
