@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -10,29 +10,47 @@ const printStyles = `
   @media print {
     @page {
       size: A5 landscape;
-      margin: 0 !important;
+      margin: 0;
     }
     
     html, body {
       margin: 0 !important;
       padding: 0 !important;
-      height: 148mm !important;
-      overflow: hidden !important;
       -webkit-print-color-adjust: exact;
       color-adjust: exact;
     }
     
+    /* Isolation technique: Hide everything by default */
+    body * {
+      visibility: hidden;
+    }
+    
+    /* Show only the print container and its children */
+    .print-landscape,
+    .print-landscape * {
+      visibility: visible;
+    }
+    
     .print-landscape {
-      width: 210mm !important;
-      height: 148mm !important;
-      max-height: 148mm !important;
+      position: absolute;
+      left: 6mm !important;
+      top: 6mm !important;
+      width: 198mm !important;
+      height: 136mm !important;
+      max-height: 136mm !important;
       margin: 0 !important;
-      padding: 4mm !important;
+      padding: 3mm !important;
       box-sizing: border-box !important;
       overflow: hidden !important;
       display: flex !important;
       flex-direction: column !important;
       background: white !important;
+      border: 1px solid black !important;
+    }
+
+    /* Reset min-height for print */
+    .min-h-screen {
+      min-height: auto !important;
     }
 
     /* Aggressive spacing reduction */
@@ -180,12 +198,11 @@ export default function ReceiptPage() {
           <div className='border-b border-black p-2 print:border-b-2'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center space-x-2 space-x-reverse'>
-                <Image
+                <img
                   src='/logo.jpg'
                   alt='البديل'
-                  width={100}
-                  height={48}
-                  className='h-10 w-auto grayscale'
+                  style={{ height: '40px', width: 'auto' }}
+                  className='max-h-10 w-auto grayscale'
                 />
                 <div className='text-xs leading-4'>
                   <div className='font-black text-sm text-black'>البديل للخدمات الحكومية</div>
@@ -196,12 +213,11 @@ export default function ReceiptPage() {
               </div>
 
               <div className='flex flex-col items-center'>
-                <Image
+                <img
                   src='/images/egyptnisr.png'
                   alt='شعار'
-                  width={100}
-                  height={100}
-                  className='h-8 w-auto mb-1 grayscale'
+                  style={{ height: '32px', width: 'auto' }}
+                  className='mb-1 grayscale'
                 />
                 <div className='text-[9px] leading-3 text-center max-w-xs font-bold'>
 طبقا لقرار رئيس مجلس الوزاراء

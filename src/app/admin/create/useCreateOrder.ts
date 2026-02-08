@@ -290,7 +290,7 @@ export function useCreateOrder() {
       idNumber: (cust as any).idNumber || '',
       fatherName: (cust as any).fatherName || '',
       motherName: (cust as any).motherName || '',
-      nationality: (cust as any).nationality || '',
+
       gender: (cust as any).gender || '',
       wifeName: (cust as any).wifeName || '',
       age:
@@ -811,7 +811,7 @@ export function useCreateOrder() {
           fatherName: formData.fatherName,
           idNumber: formData.idNumber,
           motherName: formData.motherName,
-          nationality: formData.nationality,
+
           gender: formData.gender,
           wifeName: formData.wifeName,
           paymentMethod: formData.paymentMethod,
