@@ -32,18 +32,33 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 3600; // Revalidate every hour
+
 export default async function HomePage() {
-  // Fetch categories and services server-side
+  // Fetch categories and services server-side with optimized selection
   const categories = await prisma.category.findMany({
     orderBy: { orderIndex: 'asc' },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      icon: true,
       services: {
         where: { active: true, isHidden: false },
         orderBy: { orderIndex: 'asc' },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          icon: true,
+          description: true,
+          orderIndex: true,
           variants: {
             where: { active: true },
             orderBy: { priceCents: 'asc' },
+            select: {
+              priceCents: true,
+              etaDays: true,
+            },
           },
         },
       },

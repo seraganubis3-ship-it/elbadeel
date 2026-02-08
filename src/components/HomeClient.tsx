@@ -46,19 +46,19 @@ export default function HomeClient({ categories, settings }: { categories: Categ
 
   const [showContactModal, setShowContactModal] = React.useState(false);
 
-  // 1. Ensure content covers screen multiple times (min 15 items to be safe)
+  // 1. DUPLICATION LOGIC OPTIMIZATION
+  // Instead of duplicating until 15, we just ensure enough items to fill screen width twice.
+  // 50 items is more than enough for 2 HD screens. 
+  // If we have 10 services, we duplicate 4 times max.
   let marqueeServices = [...allServices];
-  // Safety check to prevent hanging if no services exist
   if (marqueeServices.length > 0) {
-    // Cap duplication to avoid massive DOM
-    let safetyCounter = 0;
-    while (marqueeServices.length < 15 && safetyCounter < 10) {
-      marqueeServices = [...marqueeServices, ...allServices];
-      safetyCounter++;
-    }
+     const targetCount = 30; // Reduced from potentially hundreds to a sane number
+     while (marqueeServices.length < targetCount) {
+        marqueeServices = [...marqueeServices, ...allServices];
+     }
+     // Cap at 50 to avoid DOM bloat if services count is high
+     if (marqueeServices.length > 50) marqueeServices = marqueeServices.slice(0, 50);
   }
-
-  // We ensure sufficient items for the slider
 
   return (
       <div ref={containerRef} className='min-h-screen bg-white overflow-hidden'>
@@ -100,7 +100,7 @@ export default function HomeClient({ categories, settings }: { categories: Categ
                   repeat: Infinity,
                   ease: 'easeInOut',
                 }}
-                className={`particle absolute ${PARTICLE_SIZES[i % 3]} bg-emerald-400/30 rounded-full blur-sm`}
+                className={`particle absolute ${PARTICLE_SIZES[i % 3]} bg-emerald-400/30 rounded-full blur-sm will-change-transform`}
               >
                 <div
                   style={{
@@ -323,7 +323,7 @@ export default function HomeClient({ categories, settings }: { categories: Categ
               transition={{
                 repeat: Infinity,
                 ease: 'linear',
-                duration: 60, // Slower, smoother
+                duration: Math.max(40, marqueeServices.length * 2), // Dynamic duration based on count (2s per item) for consistent speed
                 repeatType: 'loop',
               }}
               style={{ willChange: 'transform' }}
@@ -338,7 +338,7 @@ export default function HomeClient({ categories, settings }: { categories: Categ
                     <ServiceCard 
                         service={service} 
                         animateInView={false} 
-                        className="h-[380px] sm:h-[420px]" 
+                        className="h-[380px] sm:h-[420px] transform-gpu" // GPU acceleration hint 
                     />
                 </div>
               ))}
