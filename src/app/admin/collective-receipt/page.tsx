@@ -9,7 +9,7 @@ import { useSearchParams } from 'next/navigation';
 const printStyles = `
   @media print {
     @page {
-      size: A5 landscape;
+      size: A4 portrait;
       margin: 0;
     }
 
@@ -60,7 +60,7 @@ const printStyles = `
     }
     
     .print-landscape {
-      position: fixed !important;
+      position: absolute !important;
       left: 6mm !important;
       top: 6mm !important;
       width: 198mm !important;

@@ -51,35 +51,35 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
       .logo-area { position: absolute; right: -20px; top: -50px; text-align: right; }
       .logo-img { height: 200px; } 
       .report-center { position: absolute; left: 0; right: 0; top: 60px; text-align: center; }
-      .report-center .main-title { font-size: 18px; font-weight: 900; margin-bottom: 5px; background: white; display: block; width: fit-content; margin: 0 auto 5px auto; padding: 5px 15px; border: 2px solid #000; border-radius: 8px; }
-      .report-center .date-range { font-size: 13px; font-weight: bold; background: white; display: block; width: fit-content; margin: 0 auto; }
-      .meta-info { position: absolute; left: 0; top: 20px; text-align: left; font-size: 11px; font-weight: bold; line-height: 1.5; border: 1px solid #000; padding: 5px; border-radius: 4px; }
+      .report-center .main-title { font-size: 24px; font-weight: 900; margin-bottom: 5px; background: white; display: block; width: fit-content; margin: 0 auto 5px auto; padding: 5px 20px; border: 3px solid #000; border-radius: 8px; }
+      .report-center .date-range { font-size: 16px; font-weight: bold; background: white; display: block; width: fit-content; margin: 0 auto; }
+      .meta-info { position: absolute; left: 0; top: 20px; text-align: left; font-size: 13px; font-weight: bold; line-height: 1.5; border: 1px solid #000; padding: 5px; border-radius: 4px; }
       
       /* Main Content Area */
       .main-content-cell { vertical-align: top; padding: 0; }
-      .main-content-wrapper { display: flex; flex-direction: column; min-height: calc(100vh - 320px); padding: 5px 15mm 20px 15mm; box-sizing: border-box; }
-      .content-body { flex: 1; }
+      .main-content-wrapper { display: block; padding: 5px 15mm 20px 15mm; box-sizing: border-box; }
+      .content-body { margin-bottom: 20px; }
 
       /* Groups */
-      .group-section { margin-bottom: 15px; page-break-inside: avoid; }
-      .group-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px; padding-bottom: 2px; }
-      .header-title { font-size: 16px; font-weight: 900; text-decoration: underline; }
+      .group-section { margin-bottom: 25px; page-break-inside: avoid; }
+      .group-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; padding-bottom: 4px; }
+      .header-title { font-size: 20px; font-weight: 900; text-decoration: underline; }
       .header-order-num-container { display: flex; align-items: flex-end; gap: 10px; width: 300px; }
-      .order-label { font-size: 13px; font-weight: 900; white-space: nowrap; }
+      .order-label { font-size: 16px; font-weight: 900; white-space: nowrap; }
       .order-line { flex: 1; border-bottom: 2px dashed #000; margin-bottom: 4px; height: 1px; }
 
       /* Table Styling */
-      .data-table { width: 100%; border-collapse: collapse; font-size: 11px; border: 2px solid #000; margin-bottom: 15px; }
-      .data-table th { background-color: #d1d5db; border: 1px solid #000; padding: 4px; text-align: center; font-weight: 900; }
-      .data-table td { border: 1px solid #000; padding: 3px 4px; vertical-align: middle; }
+      .data-table { width: 100%; border-collapse: collapse; font-size: 15px; border: 2px solid #000; margin-bottom: 15px; }
+      .data-table th { background-color: #d1d5db; border: 1px solid #000; padding: 8px; text-align: center; font-weight: 900; font-size: 16px; }
+      .data-table td { border: 1px solid #000; padding: 6px 8px; vertical-align: middle; }
       .data-table tr:nth-child(even) { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; } 
-      .count-row td { background-color: #fff !important; border-top: 2px solid #000; padding: 8px; }
+      .count-row td { background-color: #fff !important; border-top: 2px solid #000; padding: 10px; font-size: 16px; }
 
-      /* Summary Table - Positioned at bottom of last page */
-      .summary-section { margin-top: auto; padding-top: 20px; page-break-inside: avoid; }
-      .footer-table { width: 100%; border-collapse: collapse; text-align: center; font-weight: bold; border: 2px solid #000; }
-      .footer-table td { border: 1px solid #000; padding: 8px; background: #fff; font-size: 11px; }
-      .footer-table tr:first-child td { background-color: #e5e7eb; } 
+      /* Summary Table - Flows naturally after content */
+      .summary-section { padding-top: 10px; page-break-inside: avoid; }
+      .footer-table { width: 40%; margin-left: auto; border-collapse: collapse; text-align: center; font-weight: bold; border: 2px solid #000; }
+      .footer-table td { border: 1px solid #000; padding: 4px; background: #fff; font-size: 12px; }
+      .footer-table tr:first-child td { background-color: #e5e7eb; font-size: 11px; } 
       .footer-table .val { font-size: 14px; font-weight: 900; }
       
       .footer-contacts { position: absolute; bottom: 0; right: 15mm; left: 15mm; text-align: right; }
@@ -88,7 +88,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
       @media print {
         thead { display: table-header-group; }
         tfoot { display: table-footer-group; }
-        .main-content-wrapper { min-height: calc(100vh - 320px); }
+        .main-content-wrapper { display: block; }
         button { display: none; }
         body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       }
@@ -172,7 +172,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
           const fineNames = finesDetails.map((f: any) => f.name).join(' - ');
           const details = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
           const idStyle =
-            'text-align: center; font-family: monospace; font-size: 14px; letter-spacing: 1px;';
+            'text-align: center; font-family: monospace; font-size: 16px; letter-spacing: 1px;';
           return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
         })
         .join('');
@@ -201,7 +201,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
         const fineNames = finesDetails.map((f: any) => f.name).join(' - ');
         const details = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
         const idStyle =
-          'text-align: center; font-family: monospace; font-size: 14px; letter-spacing: 1px;';
+          'text-align: center; font-family: monospace; font-size: 16px; letter-spacing: 1px; opacity: 1;';
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
       })
       .join('');
