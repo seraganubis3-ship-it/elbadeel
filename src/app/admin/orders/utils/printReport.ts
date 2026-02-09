@@ -103,8 +103,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
          <div class="date-range">عن الفترة من ${currentDate} حتى تاريخ ${currentDate}</div>
        </div>
        <div class="meta-info">
-         <div>${currentDate}</div>
-         <div>${currentDay}</div>
+         <div>${currentDay} (${currentDate})</div>
        </div>
     </div>
   `;
