@@ -5,7 +5,7 @@ import { compare } from 'bcryptjs';
 
 const credentialsSchema = z.object({
   phone: z.string().min(10),
-  password: z.string().min(6),
+  password: z.string().min(4),
   workDate: z.string().optional(), // تاريخ العمل بصيغة DD/MM/YYYY
 });
 

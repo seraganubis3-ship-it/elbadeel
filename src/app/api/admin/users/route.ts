@@ -114,39 +114,50 @@ export async function PUT(req: NextRequest) {
 
     const formData = await req.formData();
     const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
+    const emailRaw = formData.get('email') as string;
+    const email = emailRaw && emailRaw.trim() !== '' && emailRaw !== 'undefined' && emailRaw !== 'null' ? emailRaw : null;
     const phone = formData.get('phone') as string;
     const newRole = formData.get('role') as string;
+    const password = formData.get('password') as string;
     const isActive = formData.get('isActive') === 'true';
 
     // التحقق من صحة البيانات
-    if (!name || !email) {
-      return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
+    if (!name) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    // التحقق من أن البريد الإلكتروني فريد
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        email: email,
-        id: { not: userId },
-      },
-    });
+    // التحقق من أن البريد الإلكتروني فريد (فقط إذا كان موجوداً)
+    if (email) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          email: email,
+          id: { not: userId },
+        },
+      });
 
-    if (existingUser) {
-      return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
+      if (existingUser) {
+        return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
+      }
     }
 
+    // إعداد بيانات التحديث
+    const updateData: any = {
+      name,
+      email,
+      phone: phone || null,
+      role: newRole as any,
+    };
+
+    // تحديث كلمة المرور إذا تم توفيرها
+    if (password && password.trim().length > 0) {
+      const { hash } = await import('bcryptjs');
+      updateData.passwordHash = await hash(password, 12);
+    }
+    
     // تحديث المستخدم
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        name,
-        email,
-        phone: phone || null,
-        role: newRole as any,
-        // isActive غير موجود في الـ schema، سنستخدم role بدلاً منه
-        // يمكن إضافة حقل isActive لاحقاً في الـ schema
-      },
+      data: updateData,
       select: {
         id: true,
         name: true,

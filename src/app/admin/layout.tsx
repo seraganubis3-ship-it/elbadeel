@@ -323,7 +323,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         '/admin',
         '/admin/create',
         '/admin/orders',
-        '/admin/inventory',
         '/admin/work-orders',
       ].includes(item.href);
     }

@@ -17,6 +17,7 @@ import OrderNotes from './components/OrderNotes';
 import OrderActionsSidebar from './components/OrderActionsSidebar';
 import OrderSummary from './components/OrderSummary';
 import WhatsAppModal from './components/WhatsAppModal';
+import { printReceipt } from '../utils/printReceipt';
 
 export default function OrderDetailsPage() {
   const params = useParams();
@@ -194,7 +195,7 @@ export default function OrderDetailsPage() {
                   إجراءات إضافية
                 </h3>
                 <button
-                  onClick={() => window.open(`/admin/orders/${order.id}/receipt`, '_blank')}
+                  onClick={() => printReceipt(order as any)}
                   className='w-full px-6 py-4 bg-indigo-50 text-indigo-700 rounded-2xl hover:bg-indigo-100 transition-all font-bold text-center border border-indigo-100 flex items-center justify-center gap-3'
                 >
                   <span>🖨️ إعادة طباعة الإيصال</span>

@@ -13,16 +13,19 @@ interface Delegate {
 interface SelectDelegateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (delegate: Delegate) => void;
+  onConfirm: (delegate: Delegate, authType?: 'passport' | 'work-permit') => void;
+  mode?: 'default' | 'authorization';
 }
 
 export function SelectDelegateModal({
   isOpen,
   onClose,
   onConfirm,
+  mode = 'default',
 }: SelectDelegateModalProps) {
   const [delegates, setDelegates] = useState<Delegate[]>([]);
   const [selectedDelegateId, setSelectedDelegateId] = useState<string>('');
+  const [authType, setAuthType] = useState<'passport' | 'work-permit'>('passport');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -49,7 +52,11 @@ export function SelectDelegateModal({
   const handleConfirm = () => {
     const delegate = delegates.find(d => d.id === selectedDelegateId);
     if (delegate) {
-      onConfirm(delegate);
+      if (mode === 'authorization') {
+        onConfirm(delegate, authType);
+      } else {
+        onConfirm(delegate);
+      }
     }
   };
 
@@ -60,7 +67,7 @@ export function SelectDelegateModal({
       <div className='bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden'>
         <div className='p-6'>
           <h3 className='text-xl font-bold text-gray-900 mb-4 text-center'>
-            اختر المندوب لطباعة الكشف
+            {mode === 'authorization' ? 'طباعة تفويض' : 'اختر المندوب لطباعة الكشف'}
           </h3>
 
           {loading ? (
@@ -69,6 +76,36 @@ export function SelectDelegateModal({
              </div>
           ) : (
             <div className='space-y-4'>
+              {mode === 'authorization' && (
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    نوع التفويض
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setAuthType('passport')}
+                      className={`py-2 px-3 rounded-lg font-bold text-sm transition-all ${
+                        authType === 'passport'
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      جواز سفر
+                    </button>
+                    <button
+                      onClick={() => setAuthType('work-permit')}
+                      className={`py-2 px-3 rounded-lg font-bold text-sm transition-all ${
+                        authType === 'work-permit'
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      تصريح عمل
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-1'>
                   المندوب

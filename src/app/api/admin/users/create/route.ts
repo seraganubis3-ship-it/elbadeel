@@ -13,7 +13,7 @@ const createUserSchema = z.object({
   name: z.string().min(2, 'الاسم يجب أن يكون على الأقل حرفين'),
   // email: z.string().email('بريد إلكتروني غير صحيح'),
   phone: z.string().min(10, 'رقم الهاتف يجب أن يكون 10 أرقام على الأقل'),
-  password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
+  password: z.string().min(4, 'كلمة المرور يجب أن تكون 4 أحرف على الأقل'),
   role: z.enum(['ADMIN', 'STAFF', 'VIEWER'], 'دور غير صحيح'),
 });
 

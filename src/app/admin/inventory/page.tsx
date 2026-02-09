@@ -3,11 +3,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 type Service = { id: string; name: string; slug: string; variants: { id: string; name: string }[] };
 type FormType = { id: string; name: string; description?: string | null; active: boolean };
 
 export default function InventoryPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session || session.user.role !== 'ADMIN') {
+      router.push('/admin');
+    }
+  }, [session, status, router]);
+
   const [loading, setLoading] = useState(true);
   const [services, setServices] = useState<Service[]>([]);
   const [formTypes, setFormTypes] = useState<FormType[]>([]);

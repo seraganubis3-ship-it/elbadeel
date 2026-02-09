@@ -100,6 +100,67 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    await requireAuth();
+
+    const formData = await req.formData();
+    const id = formData.get('id') as string;
+    
+    if (!id) {
+        return NextResponse.json({ error: 'Delegate ID is required' }, { status: 400 });
+    }
+
+    const name = formData.get('name') as string;
+    const idNumber = formData.get('idNumber') as string;
+    const licenseNumber = formData.get('licenseNumber') as string;
+    
+    // Handle files
+    const idCardFrontFile = formData.get('idCardFront') as File | null;
+    const idCardBackFile = formData.get('idCardBack') as File | null;
+    const unionCardFrontFile = formData.get('unionCardFront') as File | null;
+    const unionCardBackFile = formData.get('unionCardBack') as File | null;
+
+    if (!name || !idNumber) {
+        return NextResponse.json({ error: 'Name and ID Number are required' }, { status: 400 });
+    }
+
+    // Prepare update data
+    const updateData: any = {
+        name,
+        idNumber,
+        licenseNumber,
+    };
+
+    // Save and update files only if new ones are uploaded
+    if (idCardFrontFile && idCardFrontFile.size > 0) {
+        updateData.idCardFront = await saveFile(idCardFrontFile);
+    }
+    if (idCardBackFile && idCardBackFile.size > 0) {
+        updateData.idCardBack = await saveFile(idCardBackFile);
+    }
+    if (unionCardFrontFile && unionCardFrontFile.size > 0) {
+        updateData.unionCardFront = await saveFile(unionCardFrontFile);
+    }
+    if (unionCardBackFile && unionCardBackFile.size > 0) {
+        updateData.unionCardBack = await saveFile(unionCardBackFile);
+    }
+
+    const delegate = await prisma.delegate.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return NextResponse.json({ delegate });
+  } catch (error) {
+    // Error updating delegate
+    return NextResponse.json(
+      { error: 'Error updating delegate' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     await requireAuth();

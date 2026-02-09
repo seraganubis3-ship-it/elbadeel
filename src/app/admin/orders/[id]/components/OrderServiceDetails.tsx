@@ -33,6 +33,7 @@ export default function OrderServiceDetails({
     quantity: order.quantity || 1,
     policeStation: order.policeStation || '',
     pickupLocation: order.pickupLocation || '',
+    createdAt: order.createdAt ? new Date(order.createdAt).toISOString().split('T')[0] : '',
   });
 
   const handleSave = () => {
@@ -40,7 +41,11 @@ export default function OrderServiceDetails({
     const updates: Partial<Order> = {};
     Object.entries(formData).forEach(([key, value]) => {
       if (value !== '') {
-        (updates as any)[key] = value;
+        if (key === 'createdAt') {
+          (updates as any)[key] = new Date(value as string).toISOString();
+        } else {
+          (updates as any)[key] = value;
+        }
       }
     });
     onSave(updates);
@@ -131,6 +136,21 @@ export default function OrderServiceDetails({
               الكميات والمواصفات
             </h2>
             <div className='space-y-5'>
+              <div className='flex justify-between items-center group/field'>
+                <span className='text-slate-500 font-bold text-sm'>تاريخ الخدمة:</span>
+                {isEditing ? (
+                  <input
+                    type='date'
+                    value={formData.createdAt}
+                    onChange={e => setFormData({ ...formData, createdAt: e.target.value })}
+                    className='bg-white/80 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 font-bold text-sm outline-none focus:ring-2 focus:ring-amber-500 text-center'
+                  />
+                ) : (
+                  <span className='text-slate-800 font-black group-hover/field:text-amber-600 transition-colors'>
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString('ar-EG') : '----'}
+                  </span>
+                )}
+              </div>
               <div className='flex justify-between items-center group/field'>
                 <span className='text-slate-500 font-bold text-sm'>العدد المطلوب:</span>
                 {isEditing ? (

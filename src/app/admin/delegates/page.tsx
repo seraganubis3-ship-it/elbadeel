@@ -31,6 +31,8 @@ export default function DelegatesPage() {
     unionCardBack: null as File | null,
   });
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   useEffect(() => {
     fetchDelegates();
   }, []);
@@ -55,6 +57,20 @@ export default function DelegatesPage() {
       }
   };
 
+  const handleEdit = (delegate: Delegate) => {
+    setEditingId(delegate.id);
+    setFormData({
+      name: delegate.name,
+      idNumber: delegate.idNumber,
+      licenseNumber: delegate.licenseNumber || '',
+      idCardFront: null,
+      idCardBack: null,
+      unionCardFront: null,
+      unionCardBack: null,
+    });
+    setShowModal(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -69,14 +85,24 @@ export default function DelegatesPage() {
       if (formData.unionCardFront) data.append('unionCardFront', formData.unionCardFront);
       if (formData.unionCardBack) data.append('unionCardBack', formData.unionCardBack);
 
-      const res = await fetch('/api/admin/delegates', {
-        method: 'POST',
-        body: data,
-      });
+      let res;
+      if (editingId) {
+        data.append('id', editingId);
+        res = await fetch('/api/admin/delegates', {
+          method: 'PUT',
+          body: data,
+        });
+      } else {
+        res = await fetch('/api/admin/delegates', {
+          method: 'POST',
+          body: data,
+        });
+      }
 
       if (res.ok) {
-        showSuccess('تمت الإضافة', 'تم إضافة المندوب بنجاح');
+        showSuccess(editingId ? 'تم التعديل' : 'تمت الإضافة', editingId ? 'تم تعديل بيانات المندوب بنجاح' : 'تم إضافة المندوب بنجاح');
         setShowModal(false);
+        setEditingId(null);
         setFormData({
             name: '',
             idNumber: '',
@@ -89,7 +115,7 @@ export default function DelegatesPage() {
         fetchDelegates();
       } else {
         const errData = await res.json();
-        showError('خطأ', errData.error || 'فشل في إضافة المندوب');
+        showError('خطأ', errData.error || (editingId ? 'فشل في تعديل المندوب' : 'فشل في إضافة المندوب'));
       }
     } catch (error) {
         showError('خطأ', 'حدث خطأ أثناء الاتصال بالخادم');
@@ -126,7 +152,19 @@ export default function DelegatesPage() {
             <p className="text-slate-500 font-bold mt-2">إدارة بيانات وصور المندوبين لطباعة التفويضات</p>
           </div>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setEditingId(null);
+              setFormData({
+                name: '',
+                idNumber: '',
+                licenseNumber: '',
+                idCardFront: null,
+                idCardBack: null,
+                unionCardFront: null,
+                unionCardBack: null,
+              });
+              setShowModal(true);
+            }}
             className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg"
           >
             + إضافة مندوب جديد
@@ -143,12 +181,22 @@ export default function DelegatesPage() {
               <div key={delegate.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all">
                 <div className="flex justify-between items-start mb-4">
                     <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-xl">👤</div>
-                    <button 
-                        onClick={() => deleteDelegate(delegate.id)}
-                        className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"
-                    >
-                        🗑️
-                    </button>
+                    <div className="flex gap-2">
+                      <button 
+                          onClick={() => handleEdit(delegate)}
+                          className="text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition-colors"
+                          title="تعديل"
+                      >
+                          ✏️
+                      </button>
+                      <button 
+                          onClick={() => deleteDelegate(delegate.id)}
+                          className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          title="حذف"
+                      >
+                          🗑️
+                      </button>
+                    </div>
                 </div>
                 <h3 className="text-xl font-black text-slate-900 mb-1">{delegate.name}</h3>
                 <p className="text-sm font-bold text-slate-500 mb-4">{delegate.idNumber}</p>
@@ -180,7 +228,7 @@ export default function DelegatesPage() {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
               <div className="p-8 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                <h2 className="text-2xl font-black text-slate-900">إضافة مندوب جديد</h2>
+                <h2 className="text-2xl font-black text-slate-900">{editingId ? 'تعديل بيانات المندوب' : 'إضافة مندوب جديد'}</h2>
                 <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 text-2xl">✕</button>
               </div>
               
@@ -221,7 +269,7 @@ export default function DelegatesPage() {
                     <h3 className="font-black text-lg border-b pb-2">صورة البطاقة الشخصية</h3>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500">الوجه الأمامي</label>
+                            <label className="text-xs font-bold text-slate-500">الوجه الأمامي {editingId && '(اختياري)'}</label>
                             <input 
                                 type="file" 
                                 accept="image/*"
@@ -230,7 +278,7 @@ export default function DelegatesPage() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500">الوجه الخلفي</label>
+                            <label className="text-xs font-bold text-slate-500">الوجه الخلفي {editingId && '(اختياري)'}</label>
                             <input 
                                 type="file" 
                                 accept="image/*"
@@ -245,7 +293,7 @@ export default function DelegatesPage() {
                     <h3 className="font-black text-lg border-b pb-2">صورة الكارنية</h3>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500">الوجه الأمامي</label>
+                            <label className="text-xs font-bold text-slate-500">الوجه الأمامي {editingId && '(اختياري)'}</label>
                              <input 
                                 type="file" 
                                 accept="image/*"
@@ -254,7 +302,7 @@ export default function DelegatesPage() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-500">الوجه الخلفي</label>
+                            <label className="text-xs font-bold text-slate-500">الوجه الخلفي {editingId && '(اختياري)'}</label>
                              <input 
                                 type="file" 
                                 accept="image/*"
@@ -271,7 +319,7 @@ export default function DelegatesPage() {
                         disabled={submitting}
                         className="flex-1 py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-xl disabled:opacity-50"
                     >
-                        {submitting ? 'جاري الحفظ...' : 'حفظ المندوب'}
+                        {submitting ? 'جاري الحفظ...' : (editingId ? 'حفظ التعديلات' : 'حفظ المندوب')}
                     </button>
                     <button
                         type="button"

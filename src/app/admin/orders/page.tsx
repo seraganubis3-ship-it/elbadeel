@@ -291,7 +291,26 @@ export default function AdminOrdersPage() {
     window.open('/admin/orders/print-family-report', '_blank');
   };
 
-  const [targetReport, setTargetReport] = useState<'TRANSLATION' | 'FAMILY'>('TRANSLATION');
+  const [targetReport, setTargetReport] = useState<'TRANSLATION' | 'FAMILY' | 'AUTHORIZATION'>('TRANSLATION');
+  const [authorizationOrder, setAuthorizationOrder] = useState<Order | null>(null);
+
+  // Authorization Report Logic
+  const handlePrintAuthorization = (order: Order) => {
+    setAuthorizationOrder(order);
+    setTargetReport('AUTHORIZATION');
+    setShowDelegateModal(true);
+  };
+
+  const executePrintAuthorization = (delegate: any, authType: 'passport' | 'work-permit') => {
+    if (!authorizationOrder) return;
+    const basePath = authType === 'passport' 
+      ? '/admin/print/passport-authorization'
+      : '/admin/print/work-permit-authorization';
+    const url = `${basePath}?orderId=${authorizationOrder.id}&delegateId=${delegate.id}`;
+    window.open(url, '_blank');
+    setShowDelegateModal(false);
+    setAuthorizationOrder(null);
+  };
 
   // Work Order Logic
   const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
@@ -451,6 +470,7 @@ export default function AdminOrdersPage() {
                     onSelect={toggleOrderSelection}
                     onStatusChange={handleStatusUpdate}
                     onWhatsAppClick={handleWhatsAppClick}
+                    onPrintAuthorization={handlePrintAuthorization}
                   />
                 ))}
               </div>
@@ -512,13 +532,16 @@ export default function AdminOrdersPage() {
       <SelectDelegateModal
         isOpen={showDelegateModal}
         onClose={() => setShowDelegateModal(false)}
-        onConfirm={(delegate) => {
+        onConfirm={(delegate, authType) => {
              if (targetReport === 'TRANSLATION') {
                  executePrintTranslationReport(delegate);
-             } else {
+             } else if (targetReport === 'FAMILY') {
                  executePrintFamilyReport(delegate);
+             } else if (targetReport === 'AUTHORIZATION' && authType) {
+                 executePrintAuthorization(delegate, authType);
              }
         }}
+        mode={targetReport === 'AUTHORIZATION' ? 'authorization' : 'default'}
       />
 
       {/* Toast Container */}

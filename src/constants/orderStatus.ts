@@ -17,17 +17,11 @@ export const ORDER_STATUS_CONFIG = {
     color: 'bg-blue-100 text-blue-800',
     icon: '⚡',
   },
-  supply: {
-    text: 'ورود',
-    class: 'bg-indigo-100 text-indigo-800',
-    color: 'bg-indigo-100 text-indigo-800',
-    icon: '📦',
-  },
   settlement: {
     text: 'تسديد',
     class: 'bg-purple-100 text-purple-800',
     color: 'bg-purple-100 text-purple-800',
-    icon: '�',
+    icon: '📋',
   },
   fulfillment: {
     text: 'استيفاء',
@@ -35,7 +29,12 @@ export const ORDER_STATUS_CONFIG = {
     color: 'bg-teal-100 text-teal-800',
     icon: '✅',
   },
-
+  supply: {
+    text: 'ورود',
+    class: 'bg-indigo-100 text-indigo-800',
+    color: 'bg-indigo-100 text-indigo-800',
+    icon: '📦',
+  },
   delivered: {
     text: 'تم التسليم',
     class: 'bg-green-100 text-green-800',
