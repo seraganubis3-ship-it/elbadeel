@@ -365,7 +365,7 @@ export default function CollectiveReceiptPage() {
                 <div className={`font-black underline ${fontSizes.footerNotes} ${isCompact ? 'mb-0' : 'mb-1'}`}>ملاحظات هامة:</div>
                 <ol className={`list-decimal pr-4 font-bold ${fontSizes.footerNotes} ${isCompact ? 'space-y-0' : 'space-y-0.5'}`}>
                    {hasNationalId && (
-                      <li className="font-black">
+                      <li className="font-black text-[12px]">
                          تفاصيل التصوير: التصوير 9 صباحا فقط - سجل الهرم الدور الرابع (الدخول من اخر باب) في الشارع الجانبى للسجل - دفع ١٥ج عند التصوير. واوقت الانتظار (ساعه) لفحص ومراجعه الاستمارة من وقت وصولك للمندوب.
                       </li>
                    )}

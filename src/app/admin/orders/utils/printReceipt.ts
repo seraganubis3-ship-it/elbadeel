@@ -437,7 +437,7 @@ export const printReceipt = (order: Order) => {
               <div class='font-black underline mb-1'>ملاحظات هامة:</div>
               <ol class='list-decimal pr-4 space-y-0.5 font-bold'>
                 ${isNationalId ? 
-                   `<li class="font-black text-[10px]">
+                   `<li class="font-black text-[12px]">
                      تفاصيل التصوير: التصوير 9 صباحا فقط - سجل الهرم الدور الرابع (الدخول من اخر باب) في الشارع الجانبى للسجل - دفع ١٥ج عند التصوير. واوقت الانتظار (ساعه) لفحص ومراجعه الاستمارة من وقت وصولك للمندوب.
                    </li>` 
                 : ''}
