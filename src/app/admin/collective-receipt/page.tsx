@@ -56,7 +56,6 @@ const printStyles = `
     .print-landscape,
     .print-landscape * {
       visibility: visible;
-      display: block;
     }
     
     .print-landscape {
