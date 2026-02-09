@@ -17,9 +17,6 @@ if (process.env.NODE_ENV !== 'production') {
   globalThis.prisma = prisma;
 }
 
-// Graceful shutdown
-if (typeof process !== 'undefined') {
-  process.on('beforeExit', async () => {
-    await prisma.$disconnect();
-  });
-}
+// Graceful shutdown is handled by Next.js/Vercel
+// Removing manual listener to prevent MaxListenersExceededWarning in dev
+
