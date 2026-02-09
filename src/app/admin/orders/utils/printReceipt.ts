@@ -96,7 +96,7 @@ export const printReceipt = (order: Order) => {
   const printStyles = `
     @media print {
       @page {
-        size: A5 landscape;
+        size: A4 portrait;
         margin: 0;
       }
       
