@@ -42,9 +42,10 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
       html, body { height: 100%; margin: 0; padding: 0; background: white; color: #000; direction: rtl; }
       
       .report-outer-container { width: 100%; height: 100%; border-collapse: collapse; table-layout: fixed; }
-      .header-space, .footer-space { height: 200px; }
+      .header-space { height: 200px; }
+      .footer-space { height: 300px; }
       .header-container { position: fixed; top: 0; width: 100%; height: 160px; background: white; z-index: 1000; }
-      .footer-container { position: fixed; bottom: 0; width: 100%; height: 200px; background: white; z-index: 1000; }
+      .footer-container { position: fixed; bottom: 0; width: 100%; height: 300px; background: white; z-index: 1000; }
 
       /* Header Layout */
       .top-header { position: relative; height: 160px; border-bottom: 2px solid #ccc; margin: 0 15mm; }
@@ -83,7 +84,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
       .footer-table .val { font-size: 14px; font-weight: 900; }
       
       .footer-contacts { position: absolute; bottom: 0; right: 15mm; left: 15mm; text-align: right; }
-      .footer-img { height: 200px; width: 100%; object-fit: contain; display: block; }
+      .footer-img { height: 300px; width: 100%; object-fit: contain; display: block; }
       
       @media print {
         thead { display: table-header-group; }
