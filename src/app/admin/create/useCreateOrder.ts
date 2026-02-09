@@ -881,7 +881,8 @@ export function useCreateOrder() {
               // Open receipt in new tab if possible, or redirect
               // Usually redirecting is fine, but user wants to stay if CANCEL is clicked.
               // If YES is clicked, we redirect to receipt page.
-              router.push(`/admin/orders/${orderId}/receipt`);
+              // Redirect to order details page instead of receipt
+              router.push(`/admin/orders/${orderId}`);
             } else {
               // If NO, reset form and stay on page
               handleReset();

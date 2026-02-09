@@ -111,7 +111,7 @@ export default function OrderDetailsPage() {
         <div className='absolute bottom-[10%] left-[5%] w-[500px] h-[500px] bg-indigo-100/50 rounded-full blur-[120px]'></div>
       </div>
 
-      <OrderDetailHeader order={order} onDelete={deleteOrder} onPrint={() => window.print()} />
+      <OrderDetailHeader order={order} onDelete={deleteOrder} onPrint={() => printReceipt(order as any)} />
 
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative'>
         <div className='grid grid-cols-1 xl:grid-cols-3 gap-10'>

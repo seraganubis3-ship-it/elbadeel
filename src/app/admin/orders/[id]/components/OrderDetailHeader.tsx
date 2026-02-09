@@ -58,8 +58,8 @@ export default function OrderDetailHeader({ order, onDelete, onPrint }: OrderDet
               </svg>
               <span>العودة</span>
             </Link>
-            <Link
-              href={`/admin/orders/${order.id}/receipt`}
+            <button
+              onClick={onPrint}
               className='px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 font-medium flex items-center space-x-2 space-x-reverse shadow-lg'
               title='إعادة طباعة الإيصال'
             >
@@ -72,7 +72,7 @@ export default function OrderDetailHeader({ order, onDelete, onPrint }: OrderDet
                 />
               </svg>
               <span>طباعة</span>
-            </Link>
+            </button>
             <button
               onClick={onDelete}
               className='px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 font-medium flex items-center space-x-2 space-x-reverse shadow-lg'
