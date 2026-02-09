@@ -172,7 +172,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
           const fineNames = finesDetails.map((f: any) => f.name).join(' - ');
           const details = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
           const idStyle =
-            'text-align: center; font-family: monospace; font-size: 16px; letter-spacing: 1px;';
+            'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px;';
           return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
         })
         .join('');
@@ -201,7 +201,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
         const fineNames = finesDetails.map((f: any) => f.name).join(' - ');
         const details = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
         const idStyle =
-          'text-align: center; font-family: monospace; font-size: 16px; letter-spacing: 1px; opacity: 1;';
+          'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px; opacity: 1;';
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
       })
       .join('');
@@ -216,7 +216,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
         globalTotalOrders++;
         const isSupply = order.status === 'supply';
         const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
-        const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
+        const mono = 'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
 
         const formatDate = (date: any) => {
           if (!date) return '---';
@@ -273,7 +273,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
         const cellStyle = isSettlement
           ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
           : 'style="text-align: center;"';
-        const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
+        const mono = 'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
         const station = stationMap[order.policeStation || ''] || order.policeStation || '---';
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${order.idNumber || '---'}</td><td style="text-align: center;">${station}</td><td style="text-align: right;">${order.pickupLocation || '---'}</td></tr>`;
       })
@@ -360,7 +360,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
         const variantName = order.variant?.name ? ` (${order.variant.name})` : '';
         const fullServiceName = serviceName + variantName;
         
-        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center;">${order.idNumber || '---'}</td><td style="text-align: right; font-size: 11px;">${fullServiceName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${order.serviceDetails || '---'}</td></tr>`;
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;">${order.idNumber || '---'}</td><td style="text-align: right; font-size: 11px;">${fullServiceName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${order.serviceDetails || '---'}</td></tr>`;
       })
       .join('');
     contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">خدمات أخرى</div></div><table class="data-table"><thead><tr><th width="5%">#</th><th width="25%">اسم العميل</th><th width="15%">رقم القومي</th><th width="20%">الخدمة</th><th width="10%">الغرامات</th><th width="25%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
