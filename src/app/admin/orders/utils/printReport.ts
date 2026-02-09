@@ -30,9 +30,8 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
   }
 
   const currentDate = new Date().toLocaleDateString('ar-EG');
-  const currentTime = new Date().toLocaleTimeString('ar-EG', {
-    hour: '2-digit',
-    minute: '2-digit',
+  const currentDay = new Date().toLocaleDateString('ar-EG', {
+    weekday: 'long',
   });
 
   // Shared CSS Styles
@@ -105,7 +104,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
        </div>
        <div class="meta-info">
          <div>${currentDate}</div>
-         <div>${currentTime}</div>
+         <div>${currentDay}</div>
        </div>
     </div>
   `;
