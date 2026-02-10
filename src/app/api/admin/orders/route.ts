@@ -646,7 +646,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'حدث خطأ أثناء إنشاء الطلب',
+        error: error instanceof Error ? error.message : 'حدث خطأ غير متوقع',
       },
       { status: 500 }
     );

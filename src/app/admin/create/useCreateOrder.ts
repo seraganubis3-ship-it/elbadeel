@@ -72,6 +72,8 @@ export function useCreateOrder() {
   // Modals
   const [showAttachmentModal, setShowAttachmentModal] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
 
   // Attachments
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -715,6 +717,8 @@ export function useCreateOrder() {
     setServicesSearchTerm('');
     setSuggestion('');
     setDependentSuggestion('');
+    setShowSuccessModal(false);
+    setCreatedOrderId(null);
   }, []);
 
   const handleSubmit = useCallback(
@@ -873,22 +877,9 @@ export function useCreateOrder() {
         if (response.ok) {
           const data = await response.json();
           const orderId = data.order.id;
-          showSuccess('تم إنشاء الطلب بنجاح! 🎉', `تم إنشاء الطلب #${orderId} بنجاح`);
-          setTimeout(() => {
-            // Check if user wants to print receipt
-            const shouldPrint = window.confirm('هل تريد طباعة إيصال؟');
-            if (shouldPrint) {
-              // Open receipt in new tab if possible, or redirect
-              // Usually redirecting is fine, but user wants to stay if CANCEL is clicked.
-              // If YES is clicked, we redirect to receipt page.
-              // Redirect to order details page instead of receipt
-              router.push(`/admin/orders/${orderId}`);
-            } else {
-              // If NO, reset form and stay on page
-              handleReset();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }, 500); // Reduced delay slightly
+          // showSuccess('تم إنشاء الطلب بنجاح! 🎉', `تم إنشاء الطلب #${orderId} بنجاح`); // Removed toast to avoid duplicate feedback with modal
+          setCreatedOrderId(orderId);
+          setShowSuccessModal(true);
         } else {
           const errorData = await response.json();
           showError(
@@ -1017,5 +1008,8 @@ export function useCreateOrder() {
     dependentSuggestion, // Exported for UI
     handleSubmit,
     handleReset,
+    showSuccessModal,
+    setShowSuccessModal,
+    createdOrderId,
   };
 }

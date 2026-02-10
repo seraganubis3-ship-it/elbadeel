@@ -19,6 +19,7 @@ import {
   DocumentsSection,
   PaymentSection,
   ActionsSection,
+  SuccessModal,
 } from './components';
 import { ServiceSelectionSection } from './components/sections/ServiceSelectionSection';
 
@@ -100,6 +101,9 @@ export default function CreateOrderPage() {
     handleKeyDown,
     handleSubmit,
     handleReset,
+    showSuccessModal,
+    setShowSuccessModal,
+    createdOrderId,
   } = useCreateOrder();
 
   // Aliases for compatibility with existing JSX
@@ -331,6 +335,17 @@ export default function CreateOrderPage() {
         isOpen={showAttachmentModal}
         onClose={() => setShowAttachmentModal(false)}
         onSave={handleSaveAttachment}
+      />
+
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        orderId={createdOrderId}
+        onReset={() => {
+          setShowSuccessModal(false);
+          handleReset();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
 
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
