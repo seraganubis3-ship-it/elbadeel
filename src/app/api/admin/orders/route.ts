@@ -396,22 +396,28 @@ export async function POST(request: NextRequest) {
         const isEmpty = current === null || current === undefined || current === '';
         if (isEmpty && value !== undefined && value !== '') updates[key] = value;
       };
-      assignIfMissing('name', customerName);
+      // Always update name and address info if provided in the order
+      if (customerName) updates.name = customerName;
       if (!(u as any).email && customerEmail) updates.email = customerEmail;
+      
       assignIfMissing('phone', normalizedPhone || customerPhone);
       assignIfMissing('additionalPhone', additionalPhone);
-      assignIfMissing('address', address);
-      assignIfMissing('governorate', governorate);
-      assignIfMissing('city', city);
-      assignIfMissing('district', district);
-      assignIfMissing('street', street);
-      assignIfMissing('buildingNumber', buildingNumber);
-      assignIfMissing('apartmentNumber', apartmentNumber);
-      assignIfMissing('landmark', landmark);
+
+      // Upsert address fields if provided
+      if (address) updates.address = address;
+      if (governorate) updates.governorate = governorate;
+      if (city) updates.city = city;
+      if (district) updates.district = district;
+      if (street) updates.street = street;
+      if (buildingNumber) updates.buildingNumber = buildingNumber;
+      if (apartmentNumber) updates.apartmentNumber = apartmentNumber;
+      if (landmark) updates.landmark = landmark;
+
       if ((u as any).birthDate == null && birthDate && birthDate !== '') {
         const parsed = safeParseDate(birthDate);
         if (parsed) updates.birthDate = parsed;
       }
+      
       assignIfMissing('fatherName', fatherName);
       assignIfMissing('idNumber', idNumber);
       assignIfMissing('motherName', motherName);
