@@ -231,6 +231,7 @@ export async function POST(request: NextRequest) {
       finesDetails,
       servicesDetails,
       customerFollowUp,
+      otherFees, // Add otherFees
       workDate: clientWorkDate,
       dynamicAnswers,
       marriageDate,
@@ -289,6 +290,18 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'الخدمة ونوع الخدمة واسم العميل ورقم الهاتف مطلوبة',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate Phone Number (Must be 11 digits)
+    const phoneRegex = /^01[0125][0-9]{8}$/;
+    if (!phoneRegex.test(customerPhone)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'رقم الهاتف غير صحيح. يجب أن يكون 11 رقم ويبدأ بـ 01',
         },
         { status: 400 }
       );
@@ -541,6 +554,7 @@ export async function POST(request: NextRequest) {
         adminNotes: adminNotes || '',
         deliveryType: deliveryType || 'OFFICE',
         deliveryFee: deliveryFee || 0,
+        otherFees: otherFees || 0, // Save otherFees
         discount: (discount || 0) * 100,
         promoCodeId: promoCodeId || null,
         discountAmount: discountAmountCents,

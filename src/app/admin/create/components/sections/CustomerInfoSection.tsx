@@ -222,19 +222,25 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
 
         {/* Main Inputs Grid - Adjusted Gap/Text for lg */}
         <div className='grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-3 items-end'>
-          <div className='md:col-span-3 space-y-1 group/input'>
+          <div className='md:col-span-3 space-y-1 group/input relative'>
             <MandatoryLabel label="رقم الهاتف" />
             <input
               type='tel'
               value={formData.customerPhone}
               onChange={e => {
-                const val = e.target.value;
+                const val = e.target.value.replace(/\D/g, '').slice(0, 11);
                 setFormData(prev => ({ ...prev, customerPhone: val }));
               }}
               dir="ltr"
-              className='w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white transition-all font-black text-slate-700 text-right text-lg lg:text-base group-hover/input:bg-slate-50'
+              maxLength={11}
+              className={`w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 rounded-2xl focus:bg-white transition-all font-black text-slate-700 text-right text-lg lg:text-base group-hover/input:bg-slate-50 ${
+                formData.customerPhone.length === 11 ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-100 focus:border-emerald-500'
+              }`}
               placeholder='01xxxxxxxx'
             />
+            <div className={`absolute left-4 top-[2.8rem] lg:top-[2.4rem] text-[10px] font-bold transition-colors ${formData.customerPhone.length === 11 ? 'text-emerald-500' : 'text-slate-300'}`}>
+               {formData.customerPhone.length}/11
+            </div>
           </div>
 
           <div className='md:col-span-3 space-y-1 group/input'>
@@ -246,10 +252,11 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                type='tel'
                value={formData.additionalPhone}
                onChange={e => {
-                 const val = e.target.value;
+                 const val = e.target.value.replace(/\D/g, '').slice(0, 11);
                  setFormData(prev => ({ ...prev, additionalPhone: val }));
                }}
                dir="ltr"
+               maxLength={11}
                className='w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white transition-all font-black text-slate-700 text-right text-lg lg:text-base group-hover/input:bg-slate-50'
                placeholder='01xxxxxxxx'
             />
