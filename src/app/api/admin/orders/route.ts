@@ -45,6 +45,7 @@ interface OrderResponse {
   pickupLocation: string | null;
   marriageDate: Date | null;
   divorceDate: Date | null;
+  deathDate: Date | null;
   wifeMotherName: string | null;
   wifeName: string | null;
   destination: string | null;
@@ -139,6 +140,7 @@ export async function GET(request: NextRequest) {
         pickupLocation: order.pickupLocation,
         marriageDate: (order as any).marriageDate,
         divorceDate: (order as any).divorceDate,
+        deathDate: (order as any).deathDate,
         wifeMotherName: (order as any).wifeMotherName,
         wifeName: (order as any).wifeName,
         destination: (order as any).destination,
@@ -236,6 +238,7 @@ export async function POST(request: NextRequest) {
       wifeMotherName,
       destination,
       title,
+      deathDate,
     } = body;
 
     let finalServiceDetails = body.serviceDetails || '';
@@ -562,6 +565,7 @@ export async function POST(request: NextRequest) {
         serviceDetails: finalServiceDetails,
         marriageDate: safeParseDate(marriageDate),
         divorceDate: safeParseDate(divorceDate),
+        deathDate: safeParseDate(deathDate),
         wifeMotherName: wifeMotherName || '',
         destination: destination || '',
         title: title || '',

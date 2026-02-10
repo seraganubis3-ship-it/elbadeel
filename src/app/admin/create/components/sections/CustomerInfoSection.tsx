@@ -453,11 +453,15 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                  <MandatoryLabel label="تاريخ الوفاة" show={isDeathCert} />
                  <input
                    type='text'
-                   onFocus={(e) => e.target.type = 'date'}
-                   onBlur={(e) => e.target.type = 'text'}
                    value={formData.deathDate}
-                   onChange={e => setFormData(prev => ({ ...prev, deathDate: e.target.value }))}
-                   className='w-full px-5 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+                   onChange={e => {
+                     let v = e.target.value.replace(/\D/g, '');
+                     if (v.length > 8) v = v.slice(0, 8);
+                     if (v.length > 4) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4);
+                     else if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+                     setFormData(prev => ({ ...prev, deathDate: v }));
+                   }}
+                   className='w-full px-5 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base text-center tracking-widest'
                    placeholder='DD / MM / YYYY'
                  />
               </div>

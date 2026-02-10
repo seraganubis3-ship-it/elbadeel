@@ -826,6 +826,7 @@ export function useCreateOrder() {
           quantity: formData.quantity,
           marriageDate: formData.marriageDate,
           divorceDate: formData.divorceDate,
+          deathDate: formData.deathDate,
           customerFollowUp: formData.customerFollowUp,
           wifeMotherName: formData.wifeMotherName,
           serviceDetails: formData.translationLanguage 

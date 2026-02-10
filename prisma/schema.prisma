@@ -239,6 +239,7 @@ model Order {
   photographyDate         DateTime?
   marriageDate            DateTime?
   divorceDate             DateTime?
+  deathDate               DateTime?
   wifeMotherName          String?
   quantity                Int             @default(1)
   serviceDetails          String?
