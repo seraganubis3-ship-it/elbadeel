@@ -466,11 +466,15 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                  <label className='text-sm font-black text-black block mr-1'>تاريخ الزواج</label>
                  <input
                    type='text'
-                   onFocus={(e) => e.target.type = 'date'}
-                   onBlur={(e) => e.target.type = 'text'}
                    value={formData.marriageDate}
-                   onChange={e => setFormData(prev => ({ ...prev, marriageDate: e.target.value }))}
-                   className='w-full px-5 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+                   onChange={e => {
+                     let v = e.target.value.replace(/\D/g, '');
+                     if (v.length > 8) v = v.slice(0, 8);
+                     if (v.length > 4) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4);
+                     else if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+                     setFormData(prev => ({ ...prev, marriageDate: v }));
+                   }}
+                   className='w-full px-5 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base text-center tracking-widest'
                    placeholder='DD / MM / YYYY'
                  />
               </div>
@@ -479,11 +483,15 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                  <label className='text-sm font-black text-black block mr-1'>تاريخ الطلاق</label>
                  <input
                    type='text'
-                   onFocus={(e) => e.target.type = 'date'}
-                   onBlur={(e) => e.target.type = 'text'}
                    value={formData.divorceDate}
-                   onChange={e => setFormData(prev => ({ ...prev, divorceDate: e.target.value }))}
-                   className='w-full px-5 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+                   onChange={e => {
+                     let v = e.target.value.replace(/\D/g, '');
+                     if (v.length > 8) v = v.slice(0, 8);
+                     if (v.length > 4) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4);
+                     else if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+                     setFormData(prev => ({ ...prev, divorceDate: v }));
+                   }}
+                   className='w-full px-5 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base text-center tracking-widest'
                    placeholder='DD / MM / YYYY'
                  />
               </div>
