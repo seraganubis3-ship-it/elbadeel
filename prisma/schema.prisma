@@ -80,6 +80,7 @@ model User {
   idNumber                String?
   motherName              String?
   nationality             String?
+  gender                  String?
   wifeName                String?
   wifeMotherName          String?
   accounts                Account[]
