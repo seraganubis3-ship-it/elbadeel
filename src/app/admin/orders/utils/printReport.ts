@@ -4,9 +4,10 @@ interface PrintReportOptions {
   orders: Order[];
   selectedOrders: string[];
   filters: OrderFilters;
+  delegate?: any;
 }
 
-export function printOrdersReport({ orders, selectedOrders, filters }: PrintReportOptions) {
+export function printOrdersReport({ orders, selectedOrders, filters, delegate }: PrintReportOptions) {
   // Determine which orders to print
   const ordersToPrint =
     selectedOrders.length > 0 ? orders.filter(order => selectedOrders.includes(order.id)) : orders;
@@ -29,8 +30,17 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
     return;
   }
 
-  const currentDate = new Date().toLocaleDateString('ar-EG');
-  const currentDay = new Date().toLocaleDateString('ar-EG', {
+  let workDate = new Date();
+  const savedWorkDate = localStorage.getItem('adminWorkDate');
+  if (savedWorkDate) {
+    const [day, month, year] = savedWorkDate.split('/').map(Number);
+    if (day && month && year) {
+      workDate = new Date(year, month - 1, day);
+    }
+  }
+  
+  const currentDate = workDate.toLocaleDateString('ar-EG');
+  const currentDay = workDate.toLocaleDateString('ar-EG', {
     weekday: 'long',
   });
 
@@ -41,39 +51,40 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
       html, body { height: 100%; margin: 0; padding: 0; background: white; color: #000; direction: rtl; }
       
       .report-outer-container { width: 100%; height: 100%; border-collapse: collapse; table-layout: fixed; }
-      .header-space { height: 140px; }
-      .footer-space { height: 270px; }
-      .header-container { position: fixed; top: 0; width: 100%; height: 140px; background: white; z-index: 1000; }
-      .footer-container { position: fixed; bottom: 0; width: 100%; height: 270px; background: white; z-index: 1000; }
+      .header-space { height: 110px; }
+      .footer-space { height: 190px; }
+      .header-container { position: fixed; top: 0; width: 100%; height: 110px; background: white; z-index: 1000; }
+      .footer-container { position: fixed; bottom: 0; width: 100%; height: 190px; background: white; z-index: 1000; }
 
       /* Header Layout */
-      .top-header { position: relative; height: 140px; border-bottom: 2px solid #ccc; margin: 0 15mm; }
-      .logo-area { position: absolute; right: -20px; top: -50px; text-align: right; }
-      .logo-img { height: 180px; } 
-      .report-center { position: absolute; left: 0; right: 0; top: 60px; text-align: center; }
+      .top-header { position: relative; height: 110px; border-bottom: 2px solid #ccc; margin: 0 15mm; }
+      .logo-area { position: absolute; right: -20px; top: -30px; text-align: right; }
+      .logo-img { height: 140px; } 
+      .report-center { position: absolute; left: 0; right: 0; top: 40px; text-align: center; }
       .report-center .main-title { font-size: 24px; font-weight: 900; margin-bottom: 5px; background: white; display: block; width: fit-content; margin: 0 auto 5px auto; padding: 5px 20px; border: 3px solid #000; border-radius: 8px; }
       .report-center .date-range { font-size: 16px; font-weight: bold; background: white; display: block; width: fit-content; margin: 0 auto; }
       .meta-info { position: absolute; left: 0; top: 20px; text-align: left; font-size: 13px; font-weight: bold; line-height: 1.5; border: 1px solid #000; padding: 5px; border-radius: 4px; }
       
       /* Main Content Area */
       .main-content-cell { vertical-align: top; padding: 0; }
-      .main-content-wrapper { display: block; padding: 5px 15mm 20px 15mm; box-sizing: border-box; }
+      .main-content-wrapper { display: block; padding: 5px 15mm 10px 15mm; box-sizing: border-box; }
       .content-body { margin-bottom: 20px; }
 
       /* Groups */
-      .group-section { margin-bottom: 25px; page-break-inside: avoid; }
-      .group-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; padding-bottom: 4px; }
+      .group-section { margin-bottom: 15px; page-break-inside: auto; }
+      .group-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; padding-bottom: 4px; page-break-after: avoid; }
       .header-title { font-size: 20px; font-weight: 900; text-decoration: underline; }
       .header-order-num-container { display: flex; align-items: flex-end; gap: 10px; width: 300px; }
       .order-label { font-size: 16px; font-weight: 900; white-space: nowrap; }
       .order-line { flex: 1; border-bottom: 2px dashed #000; margin-bottom: 4px; height: 1px; }
 
       /* Table Styling */
-      .data-table { width: 100%; border-collapse: collapse; font-size: 15px; border: 2px solid #000; margin-bottom: 15px; }
-      .data-table th { background-color: #d1d5db; border: 1px solid #000; padding: 8px; text-align: center; font-weight: 900; font-size: 16px; }
-      .data-table td { border: 1px solid #000; padding: 6px 8px; vertical-align: middle; }
+      .data-table { width: 100%; border-collapse: collapse; font-size: 16px; border: 2px solid #000; margin-bottom: 10px; page-break-inside: auto; }
+      .data-table th { background-color: #d1d5db; border: 1px solid #000; padding: 6px; text-align: center; font-weight: 900; font-size: 17px; }
+      .data-table td { border: 1px solid #000; padding: 4px 6px; vertical-align: middle; line-height: 1.2; }
+      .data-table tr { page-break-inside: avoid; page-break-after: auto; }
       .data-table tr:nth-child(even) { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; } 
-      .count-row td { background-color: #fff !important; border-top: 2px solid #000; padding: 10px; font-size: 16px; }
+      .count-row td { background-color: #fff !important; border-top: 2px solid #000; padding: 8px; font-size: 17px; }
 
       /* Summary Table - Flows naturally after content */
       .summary-section { padding-top: 10px; page-break-inside: avoid; }
@@ -82,8 +93,44 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
       .footer-table tr:first-child td { background-color: #e5e7eb; font-size: 11px; } 
       .footer-table .val { font-size: 14px; font-weight: 900; }
       
-      .footer-contacts { position: absolute; bottom: 0; right: 15mm; left: 15mm; text-align: right; }
-      .footer-img { height: 250px; width: 100%; object-fit: contain; display: block; }
+      .footer-contacts { position: absolute; bottom: 10px; left: 20px; right: auto; text-align: left; }
+      .footer-img { height: 200px; width: auto; object-fit: contain; display: block; }
+
+      .delegate-section {
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 260px;
+        height: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+      .delegate-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 4px;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      .delegate-placeholder {
+          width: 100%;
+          height: 100%;
+          border: 2px dashed #9ca3af;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #9ca3af;
+          font-weight: bold;
+          font-size: 14px;
+          background: #f9fafb;
+      }
       
       @media print {
         thead { display: table-header-group; }
@@ -162,14 +209,22 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
               !f.name ||
               (!f.name.toLowerCase().includes('محضر') && !f.name.toLowerCase().includes('فقد'))
           );
-          const totalFines = otherFines.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+          // Use override if present, otherwise calculate
+          const totalFines = (order as any).overrideTotalFines !== undefined 
+            ? (order as any).overrideTotalFines * 100 // Convert back to cents if storing as pounds, or handle unit consistency. Let's assume input is pounds.
+            : otherFines.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+            
           globalTotalFines += totalFines / 100;
+          
           const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
           const cellStyle = isSettlement
             ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
             : 'style="text-align: center;"';
+            
           const fineNames = finesDetails.map((f: any) => f.name).join(' - ');
-          const details = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
+          const computedDetails = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
+          const details = (order as any).overrideDetails !== undefined ? (order as any).overrideDetails : computedDetails;
+          
           const idStyle =
             'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px;';
           return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
@@ -191,14 +246,23 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
             !f.name ||
             (!f.name.toLowerCase().includes('محضر') && !f.name.toLowerCase().includes('فقد'))
         );
-        const totalFines = otherFines.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+        
+        // Override logic
+        const totalFines = (order as any).overrideTotalFines !== undefined 
+            ? (order as any).overrideTotalFines * 100 
+            : otherFines.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+            
         globalTotalFines += totalFines / 100;
+        
         const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
         const cellStyle = isSettlement
           ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
           : 'style="text-align: center;"';
+          
         const fineNames = finesDetails.map((f: any) => f.name).join(' - ');
-        const details = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
+        const computedDetails = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
+        const details = (order as any).overrideDetails !== undefined ? (order as any).overrideDetails : computedDetails;
+        
         const idStyle =
           'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px; opacity: 1;';
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
@@ -345,7 +409,12 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
     const rows = allOrders
       .map((order, idx) => {
         globalTotalOrders++;
-        const fees = order.otherFees || 0;
+        
+        // Fees Override
+        const fees = (order as any).overrideTotalFines !== undefined
+            ? (order as any).overrideTotalFines
+            : (order.otherFees || 0);
+
         globalTotalFines += fees;
         const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
         const isSupply = order.status === 'supply';
@@ -359,11 +428,21 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
         const variantName = order.variant?.name ? ` (${order.variant.name})` : '';
         const fullServiceName = serviceName + variantName;
         
-        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;">${order.idNumber || '---'}</td><td style="text-align: right; font-size: 11px;">${fullServiceName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${order.serviceDetails || '---'}</td></tr>`;
+        const details = (order as any).overrideDetails !== undefined ? (order as any).overrideDetails : (order.serviceDetails || '---');
+        
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;">${order.idNumber || '---'}</td><td style="text-align: right; font-size: 11px;">${fullServiceName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
       })
       .join('');
     contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">خدمات أخرى</div></div><table class="data-table"><thead><tr><th width="5%">#</th><th width="25%">اسم العميل</th><th width="15%">رقم القومي</th><th width="20%">الخدمة</th><th width="10%">الغرامات</th><th width="25%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
   }
+
+  const delegateHtml = delegate && (delegate.unionCard || delegate.unionCardFront || delegate.idCardFront) 
+  ? `
+    <div class="delegate-section">
+      <img src="${delegate.unionCard || delegate.unionCardFront || delegate.idCardFront}" class="delegate-img" alt="Delegate" />
+    </div>
+  ` 
+  : '';
 
   const summaryHtml = `
     <div class="summary-section">
@@ -385,6 +464,7 @@ export function printOrdersReport({ orders, selectedOrders, filters }: PrintRepo
     <body>
       <div class="header-container">${headerHtml}</div>
       <div class="footer-container">
+        ${delegateHtml}
         <div class="footer-contacts"><img src="/images/report-footer.png" class="footer-img" alt="Footer" /></div>
       </div>
 

@@ -412,6 +412,29 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                 </button>
               </div>
 
+              {/* Destination & Title */}
+              <div className='md:col-span-1 space-y-1'>
+                 <label className='text-sm font-black text-black block mr-1'>الجهة</label>
+                 <input
+                   type='text'
+                   value={formData.destination || ''}
+                   onChange={e => setFormData(prev => ({ ...prev, destination: e.target.value }))}
+                   className='w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+                   placeholder='اكتب الجهة...'
+                 />
+              </div>
+
+              <div className='md:col-span-1 space-y-1'>
+                 <label className='text-sm font-black text-black block mr-1'>الصفة</label>
+                 <input
+                   type='text'
+                   value={formData.title || ''}
+                   onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                   className='w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+                   placeholder='اكتب الصفة...'
+                 />
+              </div>
+
 
 
               {/* Restored Fields */}

@@ -53,6 +53,8 @@ export interface Order {
   selectedFines?: string;
   finesDetails?: string;
   servicesDetails?: string;
+  destination?: string;
+  title?: string;
   user: {
     id: string;
     name: string;

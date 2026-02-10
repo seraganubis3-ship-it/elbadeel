@@ -57,6 +57,8 @@ export default async function ServicesPage() {
             where: { active: true },
             orderBy: { priceCents: 'asc' },
             select: {
+              id: true,
+              name: true,
               priceCents: true,
               etaDays: true,
             },

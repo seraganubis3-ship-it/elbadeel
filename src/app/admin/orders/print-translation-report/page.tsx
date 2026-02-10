@@ -45,7 +45,7 @@ export default function PrintTranslationReport() {
   });
 
   return (
-    <div className="min-h-screen bg-white font-sans" dir="rtl">
+    <div className="bg-white font-sans" dir="rtl">
       <style jsx global>{`
         @media print {
           @page {
@@ -58,6 +58,9 @@ export default function PrintTranslationReport() {
           }
           .no-print {
             display: none !important;
+          }
+          ::-webkit-scrollbar {
+            display: none;
           }
         }
       `}</style>
@@ -75,7 +78,7 @@ export default function PrintTranslationReport() {
 
         {/* Center: Title */}
         <div className="w-1/3 flex flex-col items-center pt-4">
-            <h2 className="text-xl font-bold bg-white text-black px-6 py-2 border-2 border-blue-600 rounded-xl shadow-[4px_4px_0_0_#2563eb]">
+            <h2 className="text-xl font-bold bg-white text-black px-6 py-2 border border-black rounded-xl">
                كشف الترجمة
             </h2>
              <div className="mt-2 bg-gray-200 rounded-lg px-4 py-1 border border-gray-400 font-bold text-lg">

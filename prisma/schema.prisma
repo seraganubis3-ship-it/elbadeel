@@ -254,6 +254,8 @@ model Order {
   finesDetails            String?
   servicesDetails         String?
   customerFollowUp        String?
+  destination             String?
+  title                   String?
   documents               Document[]
   service                 Service         @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   user                    User            @relation("OrderUser", fields: [userId], references: [id], onDelete: Cascade)

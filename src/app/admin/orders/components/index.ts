@@ -7,5 +7,6 @@ export { WhatsAppModal } from './WhatsAppModal';
 export { Pagination } from './Pagination';
 export { OrdersLoading } from './OrdersLoading';
 export * from './PhoneReportModal';
-export * from './WorkOrderModal';
-export * from './SelectDelegateModal';
+export { WorkOrderModal } from './WorkOrderModal';
+export { SelectDelegateModal } from './SelectDelegateModal';
+export { default as EditReportDataModal } from './EditReportDataModal';

@@ -281,7 +281,7 @@ export default function CollectiveReceiptPage() {
                 <div className={`col-span-4 font-bold ${spacing.tablePad}`}>{customer?.phone}</div>
              </div>
              <div className='grid grid-cols-12'>
-<div className={`col-span-2 bg-black text-white border-l border-black font-extrabold flex items-center ${spacing.tablePad}`}>
+<div className={`col-span-2 bg-gray-100 text-black border-l border-black font-extrabold flex items-center ${spacing.tablePad}`}>
   الرقم القومي
 </div>
                 <div className={`col-span-4 border-l border-black font-bold ${spacing.tablePad}`}>{customer?.idNumber}</div>

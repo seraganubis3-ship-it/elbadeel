@@ -13,8 +13,9 @@ interface Delegate {
 interface SelectDelegateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (delegate: Delegate, authType?: 'passport' | 'work-permit') => void;
+  onConfirm: (delegate?: Delegate, authType?: 'passport' | 'work-permit') => void;
   mode?: 'default' | 'authorization';
+  isOptional?: boolean;
 }
 
 export function SelectDelegateModal({
@@ -22,6 +23,7 @@ export function SelectDelegateModal({
   onClose,
   onConfirm,
   mode = 'default',
+  isOptional = false,
 }: SelectDelegateModalProps) {
   const [delegates, setDelegates] = useState<Delegate[]>([]);
   const [selectedDelegateId, setSelectedDelegateId] = useState<string>('');
@@ -51,6 +53,13 @@ export function SelectDelegateModal({
 
   const handleConfirm = () => {
     const delegate = delegates.find(d => d.id === selectedDelegateId);
+    
+    // If optional and no delegate, confirm with undefined
+    if (isOptional && !delegate) {
+        onConfirm(undefined);
+        return;
+    }
+
     if (delegate) {
       if (mode === 'authorization') {
         onConfirm(delegate, authType);
@@ -115,7 +124,7 @@ export function SelectDelegateModal({
                   onChange={(e) => setSelectedDelegateId(e.target.value)}
                   className='w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all'
                 >
-                  <option value=''>اختر المندوب...</option>
+                  <option value=''>{isOptional ? 'بدون مندوب (طباعة مباشرة)' : 'اختر المندوب...'}</option>
                   {delegates.map((delegate) => (
                     <option key={delegate.id} value={delegate.id}>
                       {delegate.name}
@@ -129,7 +138,7 @@ export function SelectDelegateModal({
           <div className='mt-6 flex gap-3'>
             <button
               onClick={handleConfirm}
-              disabled={!selectedDelegateId}
+              disabled={!isOptional && !selectedDelegateId}
               className='flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             >
               طباعة

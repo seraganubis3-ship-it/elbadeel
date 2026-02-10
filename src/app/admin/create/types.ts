@@ -139,6 +139,8 @@ export interface FormData {
   deliveryFee: number;
   dynamicAnswers?: Record<string, string>;
   translationLanguage?: string;
+  destination?: string;
+  title?: string;
 }
 
 export const initialFormData: FormData = {
@@ -203,9 +205,10 @@ export const initialFormData: FormData = {
   // Notes
   notes: '',
   adminNotes: '',
-  // Delivery
   deliveryType: 'OFFICE',
   deliveryFee: 0,
   dynamicAnswers: {},
   translationLanguage: '',
+  destination: '',
+  title: '',
 };

@@ -67,13 +67,14 @@ export default function PassportAuthorizationPrintPage() {
   if (!order || !delegate) return <div className="flex justify-center p-12 text-red-500">بيانات غير مكتملة (تأكد من اختيار المندوب والطلب)</div>;
 
   return (
-    <div className="bg-white min-h-screen text-black" style={{ direction: 'rtl' }}>
+    <div className="bg-white text-black" style={{ direction: 'rtl' }}>
       {/* Print Styles */}
       <style jsx global>{`
         @media print {
           @page { size: A4; margin: 0; }
           body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
           .no-print { display: none; }
+          ::-webkit-scrollbar { display: none; }
         }
       `}</style>
       

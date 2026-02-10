@@ -47,6 +47,8 @@ interface OrderResponse {
   divorceDate: Date | null;
   wifeMotherName: string | null;
   wifeName: string | null;
+  destination: string | null;
+  title: string | null;
 }
 
 export async function GET(request: NextRequest) {
@@ -139,6 +141,8 @@ export async function GET(request: NextRequest) {
         divorceDate: (order as any).divorceDate,
         wifeMotherName: (order as any).wifeMotherName,
         wifeName: (order as any).wifeName,
+        destination: (order as any).destination,
+        title: (order as any).title,
       }));
     } catch (mapError) {
       logger.error('Error mapping orders in GET API', mapError);
@@ -230,6 +234,8 @@ export async function POST(request: NextRequest) {
       marriageDate,
       divorceDate,
       wifeMotherName,
+      destination,
+      title,
     } = body;
 
     let finalServiceDetails = body.serviceDetails || '';
@@ -551,6 +557,8 @@ export async function POST(request: NextRequest) {
         marriageDate: safeParseDate(marriageDate),
         divorceDate: safeParseDate(divorceDate),
         wifeMotherName: wifeMotherName || '',
+        destination: destination || '',
+        title: title || '',
       } as any,
       include: {
         service: { select: { name: true, slug: true } },

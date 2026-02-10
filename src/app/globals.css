@@ -38,9 +38,13 @@ html {
     display: block !important;
   }
 
-  body {
+  body, .admin-panel {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    background: white !important;
+    background-image: none !important;
+    height: auto !important;
+    min-height: 0 !important;
   }
 }
 

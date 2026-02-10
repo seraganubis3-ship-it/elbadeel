@@ -333,7 +333,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   });
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-slate-100 admin-panel'>
+    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-slate-100 admin-panel print:bg-white print:bg-none'>
       {/* Header (hidden in print) */}
       <header className='relative overflow-hidden border-b shadow-lg sticky top-0 z-[1000] bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-950 print:hidden'>
         {/* Background gradient matching navbar */}
