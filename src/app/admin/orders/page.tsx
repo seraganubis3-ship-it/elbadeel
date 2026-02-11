@@ -359,7 +359,7 @@ export default function AdminOrdersPage() {
   // Translation Report Logic
   const [showDelegateModal, setShowDelegateModal] = useState(false);
   /* REMOVED DUPLICATE */
-  const [targetReport, setTargetReport] = useState<'TRANSLATION' | 'FAMILY' | 'GENERAL' | 'AUTHORIZATION' | 'ID_CARD_SIGNATURES'>('GENERAL');
+  const [targetReport, setTargetReport] = useState<'TRANSLATION' | 'FAMILY' | 'GENERAL' | 'AUTHORIZATION' | 'ID_CARD_SIGNATURES' | 'OFFICIAL_DOCUMENTS_SIGNATURES'>('GENERAL');
 
   const handlePrintTranslationReport = () => {
     if (selectedOrders.length === 0) {
@@ -373,7 +373,7 @@ export default function AdminOrdersPage() {
   // Editable Report Modal State
   const [showEditReportModal, setShowEditReportModal] = useState(false);
   const [reportEditingState, setReportEditingState] = useState<{
-    type: 'TRANSLATION' | 'FAMILY' | 'GENERAL' | 'ID_CARD_SIGNATURES';
+    type: 'TRANSLATION' | 'FAMILY' | 'GENERAL' | 'ID_CARD_SIGNATURES' | 'OFFICIAL_DOCUMENTS_SIGNATURES';
     data?: any[]; // Legacy
     columns?: any[]; // Legacy
     sections?: any[]; // New
@@ -419,6 +419,17 @@ export default function AdminOrdersPage() {
               }
            }));
            window.open('/admin/orders/print-id-card-signatures-report', '_blank');
+           setShowEditReportModal(false); // Close Modal
+      } else if (type === 'OFFICIAL_DOCUMENTS_SIGNATURES') {
+           localStorage.setItem('temp_official_docs_signature_report_data', JSON.stringify({
+              orders: finalData,
+              delegate: {
+                  name: delegate.name,
+                  idNumber: delegate.idNumber,
+                  unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
+              }
+           }));
+           window.open('/admin/orders/print-official-documents-signature-report', '_blank');
            setShowEditReportModal(false); // Close Modal
       } else if (type === 'GENERAL') {
           // Reconstruct orders with overrides
@@ -620,6 +631,69 @@ export default function AdminOrdersPage() {
     setShowDelegateModal(false);
   };
 
+  // Official Documents Signature Report Logic
+  const handlePrintOfficialDocumentsSignatureReport = () => {
+    if (selectedOrders.length === 0) {
+      showError('تنبيه', 'برجاء تحديد طلبات أولاً لطباعة الكشف');
+      return;
+    }
+    setTargetReport('OFFICIAL_DOCUMENTS_SIGNATURES');
+    setShowDelegateModal(true);
+  };
+
+  const executePrintOfficialDocumentsSignatureReport = (delegate: any) => {
+    const reportData = selectedOrders
+      .map(id => currentOrders.find(o => o.id === id))
+      .filter(o => o)
+      .map(order => {
+        // ID logic
+        let idNumber = order?.idNumber;
+        if (!idNumber && order?.birthDate) {
+           const date = new Date(order.birthDate);
+           if (!isNaN(date.getTime())) {
+             idNumber = date.toLocaleDateString('en-GB');
+           } else {
+             idNumber = order.birthDate;
+           }
+        }
+        idNumber = idNumber || '';
+
+        // Source Logic
+        const serviceName = order?.service?.name || '';
+        let source = serviceName;
+        if (serviceName.includes('ميلاد')) source = 'ميلاد';
+        else if (serviceName.includes('زواج')) source = 'زواج';
+        else if (serviceName.includes('طلاق')) source = 'طلاق';
+        else if (serviceName.includes('قيد فردي')) source = 'قيد فردي';
+        else if (serviceName.includes('قيد عائلي')) source = 'قيد عائلي';
+
+        return {
+           name: order?.customerName || '',
+           idNumber,
+           source,
+           quantity: order?.quantity || 1,
+           relation: order?.title || ''
+        };
+      });
+
+    // OPEN EDIT MODAL
+    setReportEditingState({
+        type: 'OFFICIAL_DOCUMENTS_SIGNATURES',
+        data: reportData,
+        delegate,
+        title: 'مراجعة بيانات كشف توقيعات المستخرجات',
+        columns: [
+            { key: 'name', label: 'الاسم' },
+            { key: 'idNumber', label: 'الرقم القومي' },
+            { key: 'source', label: 'المصدر' },
+            { key: 'quantity', label: 'العدد', type: 'number' },
+            { key: 'relation', label: 'الصفة' },
+        ]
+    });
+    setShowEditReportModal(true);
+    setShowDelegateModal(false);
+  };
+
   const [authorizationOrder, setAuthorizationOrder] = useState<Order | null>(null);
 
   // Authorization Report Logic
@@ -759,6 +833,7 @@ export default function AdminOrdersPage() {
               onPrintReport={printReport}
               onPrintTranslationReport={handlePrintTranslationReport}
               onPrintIdCardSignaturesReport={handlePrintIdCardSignaturesReport}
+              onPrintOfficialDocumentsSignatureReport={handlePrintOfficialDocumentsSignatureReport}
               onPrintFamilyReport={handlePrintFamilyReport}
               onOpenPhoneReport={handleOpenPhoneReport}
               hasOrders={filteredOrders.length > 0}
@@ -868,6 +943,8 @@ export default function AdminOrdersPage() {
               executePrintFamilyReport(delegate!);
            } else if (targetReport === 'ID_CARD_SIGNATURES') {
               executePrintIdCardSignaturesReport(delegate!);
+           } else if (targetReport === 'OFFICIAL_DOCUMENTS_SIGNATURES') {
+              executePrintOfficialDocumentsSignatureReport(delegate!);
            } else if (targetReport === 'GENERAL') {
               handleDelegateForGeneralReport(delegate);
            } else if (targetReport === 'AUTHORIZATION' && authType) {
