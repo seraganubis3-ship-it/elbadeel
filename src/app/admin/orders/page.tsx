@@ -359,7 +359,7 @@ export default function AdminOrdersPage() {
   // Translation Report Logic
   const [showDelegateModal, setShowDelegateModal] = useState(false);
   /* REMOVED DUPLICATE */
-  const [targetReport, setTargetReport] = useState<'TRANSLATION' | 'FAMILY' | 'GENERAL' | 'AUTHORIZATION'>('GENERAL');
+  const [targetReport, setTargetReport] = useState<'TRANSLATION' | 'FAMILY' | 'GENERAL' | 'AUTHORIZATION' | 'ID_CARD_SIGNATURES'>('GENERAL');
 
   const handlePrintTranslationReport = () => {
     if (selectedOrders.length === 0) {
@@ -373,7 +373,7 @@ export default function AdminOrdersPage() {
   // Editable Report Modal State
   const [showEditReportModal, setShowEditReportModal] = useState(false);
   const [reportEditingState, setReportEditingState] = useState<{
-    type: 'TRANSLATION' | 'FAMILY' | 'GENERAL';
+    type: 'TRANSLATION' | 'FAMILY' | 'GENERAL' | 'ID_CARD_SIGNATURES';
     data?: any[]; // Legacy
     columns?: any[]; // Legacy
     sections?: any[]; // New
@@ -408,6 +408,17 @@ export default function AdminOrdersPage() {
               }
            }));
            window.open('/admin/orders/print-family-report', '_blank');
+           setShowEditReportModal(false); // Close Modal
+      } else if (type === 'ID_CARD_SIGNATURES') {
+           localStorage.setItem('temp_id_card_signatures_report_data', JSON.stringify({
+              orders: finalData,
+              delegate: {
+                  name: delegate.name,
+                  idNumber: delegate.idNumber,
+                  unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
+              }
+           }));
+           window.open('/admin/orders/print-id-card-signatures-report', '_blank');
            setShowEditReportModal(false); // Close Modal
       } else if (type === 'GENERAL') {
           // Reconstruct orders with overrides
@@ -545,6 +556,64 @@ export default function AdminOrdersPage() {
             { key: 'idNumber', label: 'الرقم القومي' },
             { key: 'source', label: 'الجهة' },
             { key: 'quantity', label: 'العدد', type: 'number' },
+        ]
+    });
+    setShowEditReportModal(true);
+    setShowDelegateModal(false);
+  };
+
+
+
+  // ID Card Signatures Report Logic
+  const handlePrintIdCardSignaturesReport = () => {
+    if (selectedOrders.length === 0) {
+      showError('تنبيه', 'برجاء تحديد طلبات أولاً لطباعة الكشف');
+      return;
+    }
+    setTargetReport('ID_CARD_SIGNATURES');
+    setShowDelegateModal(true);
+  };
+
+  const executePrintIdCardSignaturesReport = (delegate: any) => {
+    const reportData = selectedOrders
+      .map(id => currentOrders.find(o => o.id === id))
+      .filter(o => o)
+      .map(order => {
+        // ID logic
+        let idNumber = order?.idNumber;
+        if (!idNumber && order?.birthDate) {
+           const date = new Date(order.birthDate);
+           if (!isNaN(date.getTime())) {
+             idNumber = date.toLocaleDateString('en-GB');
+           } else {
+             idNumber = order.birthDate;
+           }
+        }
+        idNumber = idNumber || '';
+
+        // Card Type Logic (from variant name or defaulting to 'عادية')
+        const variantName = order?.variant?.name || '';
+        let cardType = 'عادية';
+        if (variantName.includes('مستعجل')) cardType = 'مستعجلة';
+        if (variantName.includes('VIP') || variantName.includes('vip')) cardType = 'VIP';
+
+        return {
+           name: order?.customerName || '',
+           idNumber,
+           cardType
+        };
+      });
+
+    // OPEN EDIT MODAL
+    setReportEditingState({
+        type: 'ID_CARD_SIGNATURES',
+        data: reportData,
+        delegate,
+        title: 'مراجعة بيانات كشف توقيعات البطاقة',
+        columns: [
+            { key: 'name', label: 'الاسم' },
+            { key: 'idNumber', label: 'الرقم القومي' },
+            { key: 'cardType', label: 'نوع البطاقة' },
         ]
     });
     setShowEditReportModal(true);
@@ -689,6 +758,7 @@ export default function AdminOrdersPage() {
               onApplyBulkStatus={handleApplyBulkStatus}
               onPrintReport={printReport}
               onPrintTranslationReport={handlePrintTranslationReport}
+              onPrintIdCardSignaturesReport={handlePrintIdCardSignaturesReport}
               onPrintFamilyReport={handlePrintFamilyReport}
               onOpenPhoneReport={handleOpenPhoneReport}
               hasOrders={filteredOrders.length > 0}
@@ -796,6 +866,8 @@ export default function AdminOrdersPage() {
               executePrintTranslationReport(delegate!);
            } else if (targetReport === 'FAMILY') {
               executePrintFamilyReport(delegate!);
+           } else if (targetReport === 'ID_CARD_SIGNATURES') {
+              executePrintIdCardSignaturesReport(delegate!);
            } else if (targetReport === 'GENERAL') {
               handleDelegateForGeneralReport(delegate);
            } else if (targetReport === 'AUTHORIZATION' && authType) {
