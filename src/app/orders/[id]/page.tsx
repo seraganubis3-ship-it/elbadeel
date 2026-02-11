@@ -282,34 +282,50 @@ export default function OrderDetailPage() {
                     </div>
                  ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                       {order.documents.map(doc => (
-                          <a 
-                             key={doc.id}
-                             href={doc.filePath}
-                             target="_blank"
-                             rel="noopener noreferrer"
-                             className="group flex items-start gap-4 p-5 bg-white rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-100/50 transition-all relative overflow-hidden"
-                          >  
-                             <div className={`p-3 rounded-xl ${doc.documentType === 'PAYMENT_RECEIPT' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
-                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                             </div>
-                             <div className="flex-1 min-w-0">
-                                <p className="font-bold text-slate-900 truncate mb-1">{doc.fileName}</p>
-                                <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
-                                   <span>{(doc.fileSize / 1024 / 1024).toFixed(2)} MB</span>
-                                   <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                   <span>{new Date(doc.uploadedAt).toLocaleDateString()}</span>
-                                </p>
-                             </div>
-                             <div className="absolute top-1/2 left-4 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
-                                <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                </svg>
-                             </div>
-                          </a>
-                       ))}
+                       {order.documents.map(doc => {
+                         const isImage = doc.fileType.startsWith('image/');
+                         return (
+                           <div 
+                              key={doc.id}
+                              className="group flex flex-col bg-white rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-100/50 transition-all relative overflow-hidden"
+                           >
+                              {isImage && (
+                                <div className="h-48 w-full bg-slate-100 relative">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img 
+                                    src={doc.filePath} 
+                                    alt={doc.fileName}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              
+                              <a 
+                                 href={doc.filePath}
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 className={`flex items-start gap-4 p-5 ${isImage ? 'border-t border-slate-100' : ''}`}
+                              >  
+                                 <div className={`p-3 rounded-xl ${doc.documentType === 'PAYMENT_RECEIPT' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                 </div>
+                                 <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-slate-900 truncate mb-1">{doc.fileName}</p>
+                                    <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
+                                       <span>{(doc.fileSize / 1024 / 1024).toFixed(2)} MB</span>
+                                       <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                       <span>{new Date(doc.uploadedAt).toLocaleDateString()}</span>
+                                    </p>
+                                    <div className="mt-2 text-xs font-bold text-blue-600 flex items-center gap-1 group-hover:underline">
+                                       {isImage ? '🔍 عرض بالحجم الكامل' : '⬇️ تحميل الملف'}
+                                    </div>
+                                 </div>
+                              </a>
+                           </div>
+                         );
+                       })}
                     </div>
                  )}
               </div>

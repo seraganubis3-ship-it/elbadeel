@@ -598,16 +598,30 @@ export async function POST(request: NextRequest) {
         select: { formTypeId: true },
       });
       if (link) {
-        await (prisma as any).formSerial.updateMany({
-          where: { formTypeId: link.formTypeId, serialNumber: formSerialNumber, consumed: false },
-          data: {
-            consumed: true,
-            consumedAt: workDate,
-            orderId: order.id,
-            consumedByAdminId: session.user.id,
-          },
+        await (prisma as any).formSerial.update({
+          where: { formTypeId_serialNumber: { formTypeId: link.formTypeId, serialNumber: formSerialNumber } },
+          data: { orderId: order.id, consumed: true, consumedAt: new Date(), consumedByAdminId: adminUserId },
         });
       }
+    }
+
+    if (attachedDocuments && Array.isArray(attachedDocuments)) {
+       // Old string based attachments - might be legacy or just names
+       // We keep them as is in the order.attachedDocuments field
+    }
+
+    // Save Uploaded Documents (The new B2 ones)
+    const uploadedDocs = body.uploadedDocuments;
+    if (uploadedDocs && Array.isArray(uploadedDocs) && uploadedDocs.length > 0) {
+       await prisma.document.createMany({
+          data: uploadedDocs.map((doc: any) => ({
+             orderId: order.id,
+             fileName: doc.originalName || doc.filename,
+             filePath: doc.filePath,
+             fileType: doc.fileType,
+             fileSize: doc.fileSize
+          }))
+       });
     }
 
     if (paidAmount && paidAmount > 0) {

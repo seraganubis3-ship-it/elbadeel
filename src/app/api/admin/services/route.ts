@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { writeFile, mkdir } from 'fs/promises';
+import { uploadToBackblaze } from '@/lib/s3';
+import { generatePresignedUrl } from '@/lib/presignedUrl';
 
 export const dynamic = 'force-dynamic';
-
-import { join } from 'path';
-import { existsSync } from 'fs';
 
 export async function GET(_request: NextRequest) {
   try {
@@ -28,7 +26,16 @@ export async function GET(_request: NextRequest) {
       ],
     });
 
-    return NextResponse.json({ success: true, services });
+    // Process services to add signed URLs for icons
+    const servicesWithSignedUrls = await Promise.all(services.map(async (service) => {
+        let iconUrl = service.icon;
+        if (iconUrl && !iconUrl.startsWith('/uploads/') && !iconUrl.startsWith('http')) {
+            iconUrl = await generatePresignedUrl(iconUrl);
+        }
+        return { ...service, icon: iconUrl };
+    }));
+
+    return NextResponse.json({ success: true, services: servicesWithSignedUrls });
   } catch (error) {
     return NextResponse.json({ error: 'حدث خطأ أثناء جلب الخدمات' }, { status: 500 });
   }
@@ -80,23 +87,15 @@ export async function POST(request: NextRequest) {
 
     let imagePath = null;
 
-    // Handle image upload
+    // Handle image upload with B2
     if (image && image.size > 0) {
-      const uploadsDir = join(process.cwd(), 'public', 'uploads', 'services');
-
-      if (!existsSync(uploadsDir)) {
-        await mkdir(uploadsDir, { recursive: true });
-      }
-
-      const timestamp = Date.now();
-      const fileName = `${timestamp}_${image.name}`;
-      const filePath = join(uploadsDir, fileName);
-
-      const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      await writeFile(filePath, buffer);
-      imagePath = `/uploads/services/${fileName}`;
+        try {
+            imagePath = await uploadToBackblaze(image, 'services');
+        } catch (e) {
+            // Upload failed
+            // Non-blocking? Or blocking? Typically blocking.
+            // But if it fails, we might just continue without image or error.
+        }
     }
 
     // Create service

@@ -39,7 +39,7 @@ export function OrderCard({
     >
       {/* Card Header */}
       <div className='p-4 bg-gradient-to-l from-gray-50 to-white border-b border-gray-100'>
-        <div className='flex items-center justify-between'>
+        <div className='flex flex-wrap items-center justify-between gap-2'>
           <div className='flex items-center gap-3'>
             {/* Checkbox */}
             <input
@@ -125,7 +125,7 @@ export function OrderCard({
         )}
 
         {/* Customer Info Grid */}
-        <div className='grid grid-cols-2 gap-3 mb-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4'>
           <div className='flex items-center gap-2 text-sm'>
             <span className='text-gray-400'>👤</span>
             <span className='text-gray-700 truncate'>

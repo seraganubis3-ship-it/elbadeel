@@ -32,40 +32,26 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'لا يمكن الدفع لهذا الطلب' }, { status: 400 });
     }
 
-    const formData = await request.formData();
-    const method = formData.get('method') as 'VODAFONE_CASH' | 'INSTA_PAY';
-    const senderPhone = formData.get('senderPhone') as string;
-    const file = formData.get('screenshot') as File | null;
+    const body = await request.json();
+    const { method, senderPhone, paymentScreenshot, fileSize, fileType } = body;
 
     // Validate textual data
     paymentSchema.parse({ method, senderPhone });
 
-    let screenshotPath = null;
-
-    // Handle File Upload
-    if (file) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      // Create unique filename
-      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-      const filename = `payment-${id}-${uniqueSuffix}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-      const uploadDir = join(process.cwd(), 'public', 'uploads', 'payments');
-      
-      await mkdir(uploadDir, { recursive: true });
-      await writeFile(join(uploadDir, filename), buffer);
-      
-      screenshotPath = `/uploads/payments/${filename}`;
-
-      // Create OrderDocument for the receipt
-      await prisma.orderDocument.create({
+    // Handle Payment Screenshot (Already uploaded to B2 via client)
+    if (paymentScreenshot) {
+       // Create Document record for the receipt
+       await prisma.document.create({
         data: {
           orderId: id,
-          fileName: `إيصال دفع - ${method === 'VODAFONE_CASH' ? 'فودافون' : 'انستا'}`,
-          filePath: screenshotPath,
-          fileSize: file.size,
-          fileType: file.type || 'image/jpeg',
-          documentType: 'PAYMENT_RECEIPT',
+          fileName: `payment_${method}_${Date.now()}.jpg`, // Construct a name that implies type if needed, or just descriptive
+          filePath: paymentScreenshot,
+          fileSize: fileSize || 0,
+          fileType: fileType || 'image/jpeg',
+          // Document model doesn't have documentType, but we can infer or just accept it's a doc.
+          // To mimic the 'PAYMENT_RECEIPT' logic, we might need to rely on filename convention if we use that inference.
+          // The inference uses LastIndexOf('_'). 'payment_VODAFONE_CASH_123.jpg' -> 'payment_VODAFONE_CASH'.
+          // Or just 'payment_receipt_123.jpg'.
         },
       });
     }
@@ -76,7 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       update: {
         method,
         senderPhone,
-        paymentScreenshot: screenshotPath,
+        paymentScreenshot: paymentScreenshot || null,
         status: 'PENDING',
         updatedAt: new Date(),
       },
@@ -87,7 +73,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         method,
         status: 'PENDING',
         senderPhone,
-        paymentScreenshot: screenshotPath,
+        paymentScreenshot: paymentScreenshot || null,
       },
     });
 

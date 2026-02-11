@@ -25,6 +25,10 @@ export default function WorkPermitAuthorizationPrintPage() {
   const [delegate, setDelegate] = useState<Delegate | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Image Loading State
+  const [imagesLoaded, setImagesLoaded] = useState(0);
+  const [totalImages, setTotalImages] = useState(1); // Start with 1 for header
+  
   const fetchData = useCallback(async () => {
     try {
       // Fetch Order
@@ -32,7 +36,7 @@ export default function WorkPermitAuthorizationPrintPage() {
       const orderData = await orderRes.json();
 
       // Fetch Delegates (we'll just fetch all and find one, simpler for now)
-      const delegateRes = await fetch(`/api/admin/delegates`);
+      const delegateRes = await fetch(`/api/admin/delegates`, { cache: 'no-store' });
       const delegateData = await delegateRes.json();
       const selectedDelegate = delegateData.delegates.find((d: Delegate) => d.id === delegateId);
 
@@ -44,12 +48,15 @@ export default function WorkPermitAuthorizationPrintPage() {
       setOrder(actualOrder);
       setDelegate(selectedDelegate || null);
 
-      // Auto print after data load (small delay to ensure rendering)
-      if (actualOrder && selectedDelegate) {
-          setTimeout(() => {
-              window.print();
-          }, 1000);
+      if (selectedDelegate) {
+          let count = 1; // Header
+          if (selectedDelegate.idCardFront) count++;
+          if (selectedDelegate.idCardBack) count++;
+          if (selectedDelegate.unionCardFront) count++;
+          if (selectedDelegate.unionCardBack) count++;
+          setTotalImages(count);
       }
+
     } catch (error) {
       // Error fetching data
     } finally {
@@ -62,6 +69,32 @@ export default function WorkPermitAuthorizationPrintPage() {
       fetchData();
     }
   }, [orderId, delegateId, fetchData]);
+
+  const handleImageLoad = () => {
+      setImagesLoaded(prev => prev + 1);
+  };
+
+  useEffect(() => {
+      if (!loading && order && delegate) {
+          // If all images loaded OR 3 seconds passed (fallback)
+          if (imagesLoaded >= totalImages) {
+              // Small delay to ensure rendering
+               setTimeout(() => {
+                  // window.print(); // Auto-print disabled
+              }, 500);
+          }
+      }
+  }, [imagesLoaded, totalImages, loading, order, delegate]);
+
+  // Fallback timeout in case images fail to load
+  useEffect(() => {
+      if (!loading && order && delegate) {
+          const timer = setTimeout(() => {
+              // window.print(); // Auto-print disabled
+          }, 4000); 
+          return () => clearTimeout(timer);
+      }
+  }, [loading, order, delegate]);
 
   if (loading) return <div className="flex justify-center p-12">جار تحميل البيانات...</div>;
   if (!order || !delegate) return <div className="flex justify-center p-12 text-red-500">بيانات غير مكتملة (تأكد من اختيار المندوب والطلب)</div>;
@@ -82,7 +115,13 @@ export default function WorkPermitAuthorizationPrintPage() {
         {/* Header - Logo Only (Top Right) */}
         <div className="flex justify-start mb-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/report-header.png" alt="Header Logo" className="h-44 object-contain" />
+            <img 
+                src="/images/report-header.png" 
+                alt="Header Logo" 
+                className="h-44 object-contain" 
+                onLoad={handleImageLoad}
+                onError={handleImageLoad}
+            />
         </div>
 
         {/* Content */}
@@ -123,22 +162,22 @@ export default function WorkPermitAuthorizationPrintPage() {
             <div className="space-y-3">
                  <div className="h-40 flex items-center justify-center">
                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                     {delegate.idCardFront ? <img src={delegate.idCardFront} alt="ID Card Front" className="max-h-full max-w-full object-contain" /> : null}
+                     {delegate.idCardFront ? <img src={delegate.idCardFront} alt="ID Card Front" className="max-h-full max-w-full object-contain" onLoad={handleImageLoad} onError={handleImageLoad} /> : null}
                  </div>
                  <div className="h-40 flex items-center justify-center">
                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                     {delegate.idCardBack ? <img src={delegate.idCardBack} alt="ID Card Back" className="max-h-full max-w-full object-contain" /> : null}
+                     {delegate.idCardBack ? <img src={delegate.idCardBack} alt="ID Card Back" className="max-h-full max-w-full object-contain" onLoad={handleImageLoad} onError={handleImageLoad} /> : null}
                  </div>
             </div>
 
             <div className="space-y-3">
                 <div className="h-40 flex items-center justify-center">
                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                     {delegate.unionCardFront ? <img src={delegate.unionCardFront} alt="Union Card Front" className="max-h-full max-w-full object-contain" /> : null}
+                     {delegate.unionCardFront ? <img src={delegate.unionCardFront} alt="Union Card Front" className="max-h-full max-w-full object-contain" onLoad={handleImageLoad} onError={handleImageLoad} /> : null}
                 </div>
                  <div className="h-40 flex items-center justify-center">
                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                     {delegate.unionCardBack ? <img src={delegate.unionCardBack} alt="Union Card Back" className="max-h-full max-w-full object-contain" /> : null}
+                     {delegate.unionCardBack ? <img src={delegate.unionCardBack} alt="Union Card Back" className="max-h-full max-w-full object-contain" onLoad={handleImageLoad} onError={handleImageLoad} /> : null}
                 </div>
             </div>
         </div>

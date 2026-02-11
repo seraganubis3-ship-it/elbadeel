@@ -30,19 +30,29 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
     return;
   }
 
-  let workDate = new Date();
-  const savedWorkDate = localStorage.getItem('adminWorkDate');
-  if (savedWorkDate) {
-    const [day, month, year] = savedWorkDate.split('/').map(Number);
-    if (day && month && year) {
-      workDate = new Date(year, month - 1, day);
-    }
+  // Date Logic
+  let dateText = '';
+  // 1. Try Filters (From - To)
+  if (filters.dateFrom && filters.dateTo) {
+      const d1 = new Date(filters.dateFrom).toLocaleDateString('ar-EG');
+      const d2 = new Date(filters.dateTo).toLocaleDateString('ar-EG');
+      dateText = `عن الفترة من ${d1} حتى تاريخ ${d2}`;
+  } 
+  // 2. Try Work Date
+  else {
+      let workDate = new Date();
+      const savedWorkDate = localStorage.getItem('adminWorkDate');
+      if (savedWorkDate) {
+        const [day, month, year] = savedWorkDate.split('/').map(Number);
+        if (day && month && year) {
+          workDate = new Date(year, month - 1, day);
+        }
+      }
+      const d = workDate.toLocaleDateString('ar-EG');
+      dateText = `عن الفترة من ${d} حتى تاريخ ${d}`;
   }
-  
-  const currentDate = workDate.toLocaleDateString('ar-EG');
-  const currentDay = workDate.toLocaleDateString('ar-EG', {
-    weekday: 'long',
-  });
+
+  const currentDate = new Date().toLocaleDateString('ar-EG'); // For footer/meta if needed
 
   // Shared CSS Styles
   const reportStyles = `
@@ -147,10 +157,10 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
        <div class="logo-area"><img src="/images/report-header.png" class="logo-img" alt="البديل" /></div>
        <div class="report-center">
          <div class="main-title">${ordersToPrint.length === 0 ? 'كشف مستخرجات رسمية' : ordersToPrint.length === 1 ? ordersToPrint[0]?.service?.name || 'كشف مستخرجات رسمية' : 'كشف مستخرجات رسمية'}</div>
-         <div class="date-range">عن الفترة من ${currentDate} حتى تاريخ ${currentDate}</div>
+         <div class="date-range">${dateText}</div>
        </div>
        <div class="meta-info">
-         <div>${currentDay} (${currentDate})</div>
+         <div>طباعة: ${currentDate}</div>
        </div>
     </div>
   `;

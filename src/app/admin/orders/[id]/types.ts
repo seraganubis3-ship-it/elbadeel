@@ -103,6 +103,14 @@ export interface Order {
   payment?: OrderPayment;
   orderDocuments: OrderDocument[];
   formSerials?: FormSerial[];
+  documents?: {
+    id: string;
+    fileName: string;
+    filePath: string;
+    fileType: string;
+    fileSize: number;
+    uploadedAt: string | Date;
+  }[];
 }
 
 export interface OrderPayment {

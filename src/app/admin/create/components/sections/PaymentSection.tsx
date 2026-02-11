@@ -69,7 +69,7 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
             }`}
           >
             <span className='text-xl lg:text-lg mb-1'>⚖️</span>
-            <span className='text-[10px] lg:text-[9px] font-black uppercase tracking-widest'>غرامات</span>
+            <span className='text-sm font-black uppercase tracking-widest'>غرامات</span>
             <span className='text-xs lg:text-[10px] font-bold mt-1 text-rose-500'>
               {selectedFines.filter(id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'غرامات').length} محدد
             </span>
@@ -85,7 +85,7 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
             }`}
           >
             <span className='text-xl lg:text-lg mb-1'>➕</span>
-            <span className='text-[10px] lg:text-[9px] font-black uppercase tracking-widest'>خدمات إضافية</span>
+            <span className='text-sm font-black uppercase tracking-widest'>خدمات إضافية</span>
             <span className='text-xs lg:text-[10px] font-bold mt-1 text-sky-500'>
               {selectedFines.filter(id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'خدمات اضافية').length} محدد
             </span>
@@ -102,10 +102,10 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
                   placeholder='ابحث في الغرامات...'
                   value={finesSearchTerm}
                   onChange={e => setFinesSearchTerm(e.target.value)}
-                  className='w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-rose-400 outline-none'
+                  className='w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-base focus:border-rose-400 outline-none'
                   autoFocus
                 />
-                <div className='max-h-40 overflow-y-auto space-y-1 custom-scrollbar'>
+                <div className='max-h-60 overflow-y-auto space-y-1 custom-scrollbar'>
                   {PREDEFINED_FINES.filter(
                     f => f.category === 'غرامات' && f.name.includes(finesSearchTerm)
                   ).slice(0, 50).map(f => (
@@ -115,14 +115,14 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
                          e.preventDefault();
                          handleFineToggle(f.id);
                       }}
-                      className={`p-2 rounded-lg cursor-pointer flex justify-between items-center transition-all ${
+                      className={`p-3 rounded-lg cursor-pointer flex justify-between items-center transition-all ${
                         selectedFines.includes(f.id)
                           ? 'bg-rose-500 text-white'
                           : 'bg-white hover:bg-slate-100 text-slate-700'
                       }`}
                     >
-                      <span className='text-[11px] font-bold'>{f.name}</span>
-                      <span className='text-[10px] font-black bg-black/10 px-1.5 py-0.5 rounded'>
+                      <span className='text-base font-bold'>{f.name}</span>
+                      <span className='text-sm font-black bg-black/10 px-2 py-0.5 rounded'>
                         {(f.amountCents / 100).toFixed(0)}
                       </span>
                     </div>
@@ -137,10 +137,10 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
                   placeholder='ابحث في الخدمات...'
                   value={servicesSearchTerm}
                   onChange={e => setServicesSearchTerm(e.target.value)}
-                  className='w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-sky-400 outline-none'
+                  className='w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-base focus:border-sky-400 outline-none'
                   autoFocus
                 />
-                <div className='max-h-40 overflow-y-auto space-y-1 custom-scrollbar'>
+                <div className='max-h-60 overflow-y-auto space-y-1 custom-scrollbar'>
                   {PREDEFINED_FINES.filter(
                     s => s.category === 'خدمات اضافية' && s.name.includes(servicesSearchTerm)
                   ).slice(0, 50).map(s => (
@@ -150,12 +150,12 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
                             e.preventDefault();
                             handleFineToggle(s.id);
                          }}
-                         className={`p-2 cursor-pointer flex justify-between items-center transition-all ${
+                         className={`p-3 cursor-pointer flex justify-between items-center transition-all ${
                            selectedFines.includes(s.id) ? 'bg-sky-50 text-sky-700' : 'hover:bg-slate-50 text-slate-700'
                          }`}
                        >
-                          <span className='text-[11px] font-bold'>{s.name}</span>
-                          {selectedFines.includes(s.id) && <span className='text-xs'>✓</span>}
+                          <span className='text-base font-bold'>{s.name}</span>
+                          {selectedFines.includes(s.id) && <span className='text-sm'>✓</span>}
                        </div>
                        {selectedFines.includes(s.id) && s.id !== 'service_001' && (
                           <div className="p-2 bg-slate-50 border-t border-slate-100">

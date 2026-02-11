@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { uploadToBackblaze } from '@/lib/s3';
+import { generatePresignedUrl } from '@/lib/presignedUrl';
 
 export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -38,6 +37,11 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 
     if (!service) {
       return NextResponse.json({ error: 'الخدمة غير موجودة' }, { status: 404 });
+    }
+
+    // Sign icon URL if needed
+    if (service.icon && !service.icon.startsWith('/uploads/') && !service.icon.startsWith('http')) {
+        service.icon = await generatePresignedUrl(service.icon);
     }
 
     return NextResponse.json({ success: true, service });
@@ -103,19 +107,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Handle Image Upload
     let imagePath: string | undefined = undefined;
     if (image && image.size > 0) {
-        const uploadsDir = join(process.cwd(), 'public', 'uploads', 'services');
-        if (!existsSync(uploadsDir)) {
-          await mkdir(uploadsDir, { recursive: true });
+        try {
+            imagePath = await uploadToBackblaze(image, 'services');
+        } catch (e) {
+            // Upload failed
         }
-
-        const timestamp = Date.now();
-        const fileName = `${timestamp}_${image.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-        const filePath = join(uploadsDir, fileName);
-
-        const bytes = await image.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        await writeFile(filePath, buffer);
-        imagePath = `/uploads/services/${fileName}`;
     }
 
     // Prepare update data

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { generatePresignedUrl } from '@/lib/presignedUrl';
 
 export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -48,6 +49,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
         },
         payment: true,
         orderDocuments: true,
+        documents: true,
         formSerials: {
           include: {
             formType: true,
@@ -59,6 +61,11 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
     if (!order) {
       return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 });
     }
+
+    const enhancedDocuments = await Promise.all(order.documents.map(async (doc) => {
+      const signedUrl = await generatePresignedUrl(doc.filePath);
+      return { ...doc, filePath: signedUrl };
+    }));
 
     return NextResponse.json({
       success: true,
@@ -121,6 +128,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
         createdByAdmin: order.createdByAdmin,
         payment: order.payment,
         orderDocuments: order.orderDocuments,
+        documents: enhancedDocuments,
         formSerials: order.formSerials.map((fs: any) => ({
           id: fs.id,
           serialNumber: fs.serialNumber,

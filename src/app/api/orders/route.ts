@@ -5,9 +5,8 @@ import { generateOrderNumber } from '@/lib/orderNumbering';
 import { sendWhatsAppMessage, NotificationTemplates, checkWhatsAppStatus } from '@/lib/whatsapp';
 import { logger } from '@/lib/logger';
 
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { s3Client } from '@/lib/s3';
+import { Upload } from '@aws-sdk/lib-storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -311,38 +310,46 @@ export async function POST(request: NextRequest) {
     for (const [key, value] of formData.entries()) {
       if (value instanceof File && value.size > 0) {
         try {
-          const uploadsDir = join(process.cwd(), 'public', 'uploads', 'orders', order.id);
-          if (!existsSync(uploadsDir)) {
-            await mkdir(uploadsDir, { recursive: true });
-          }
-
           const timestamp = Date.now();
           const fileExtension = value.name.split('.').pop();
           const fileName = `${key}_${timestamp}.${fileExtension}`;
-          const filePath = join(uploadsDir, fileName);
-
+          
+          // Upload to B2
           const buffer = Buffer.from(await value.arrayBuffer());
-          await writeFile(filePath, buffer);
+          const upload = new Upload({
+            client: s3Client,
+            params: {
+              Bucket: process.env.B2_BUCKET_NAME,
+              Key: `orders/${order.id}/${fileName}`,
+              Body: buffer,
+              ContentType: value.type,
+            },
+          });
 
-          await prisma.orderDocument.create({
+          const result = await upload.done();
+          // For Private Bucket, store the Key, avoiding the inaccessible public URL.
+          const filePath = `orders/${order.id}/${fileName}`;
+
+          // Save to Document table (New B2 System)
+          await prisma.document.create({
             data: {
               orderId: order.id,
-              fileName: value.name,
-              filePath: `/uploads/orders/${order.id}/${fileName}`,
+              fileName: value.name, // Store original name for display
+              filePath: filePath,
               fileSize: value.size,
               fileType: value.type,
-              documentType: key,
             },
           });
 
           uploadedFiles.push({
             originalName: value.name,
-            savedPath: `/uploads/orders/${order.id}/${fileName}`,
+            savedPath: filePath,
             size: value.size,
             type: value.type,
           });
-        } catch {
-          // تجاهل لو فيه مشكلة في رفع ملف
+        } catch (uploadError) {
+          logger.error('Error uploading file to B2', uploadError);
+          // Continue with other files even if one fails
         }
       }
     }

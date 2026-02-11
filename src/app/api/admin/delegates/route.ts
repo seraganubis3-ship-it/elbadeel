@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { uploadToBackblaze } from '@/lib/s3';
+import { generatePresignedUrl } from '@/lib/presignedUrl';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +17,23 @@ export async function GET(_request: NextRequest) {
       orderBy: { name: 'asc' },
     });
 
-    return NextResponse.json({ delegates });
+    const delegatesWithSignedUrls = await Promise.all(delegates.map(async (d) => {
+      const signOrReturn = async (path: string | null) => {
+        if (!path) return null;
+        if (path.startsWith('/uploads/') || path.startsWith('http')) return path; // Return local or already absolute paths
+        return await generatePresignedUrl(path);
+      };
+
+      return {
+        ...d,
+        idCardFront: await signOrReturn(d.idCardFront),
+        idCardBack: await signOrReturn(d.idCardBack),
+        unionCardFront: await signOrReturn(d.unionCardFront),
+        unionCardBack: await signOrReturn(d.unionCardBack),
+      };
+    }));
+
+    return NextResponse.json({ delegates: delegatesWithSignedUrls });
   } catch (error) {
     return NextResponse.json(
       { error: 'Error fetching delegates' },
@@ -29,27 +44,7 @@ export async function GET(_request: NextRequest) {
 
 async function saveFile(file: File): Promise<string | null> {
     if (!file || file.size === 0) return null;
-
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'delegates');
-    if (!existsSync(uploadsDir)) {
-        try {
-            await mkdir(uploadsDir, { recursive: true });
-        } catch (e) {
-            // Error creating directory
-            return null;
-        }
-    }
-
-    const timestamp = Date.now();
-    // Unique filename
-    const fileName = `${timestamp}_${Math.random().toString(36).substring(7)}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const filePath = join(uploadsDir, fileName);
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    await writeFile(filePath, buffer);
-    return `/uploads/delegates/${fileName}`;
+    return await uploadToBackblaze(file, 'delegates');
 }
 
 export async function POST(req: NextRequest) {

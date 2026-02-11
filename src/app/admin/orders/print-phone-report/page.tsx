@@ -19,7 +19,7 @@ export default function PrintPhoneReportPage() {
     } finally {
       setLoading(false);
       // Auto print after a short delay
-      setTimeout(() => window.print(), 500);
+      // setTimeout(() => window.print(), 500); // Auto-print disabled
     }
   }, []);
 

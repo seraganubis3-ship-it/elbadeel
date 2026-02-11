@@ -12,7 +12,6 @@ import {
   WhatsAppModal,
   Pagination,
   OrdersLoading,
-  PhoneReportModal,
   WorkOrderModal,
   SelectDelegateModal,
   EditReportDataModal,
@@ -325,35 +324,33 @@ export default function AdminOrdersPage() {
 
 
   // Phone Report Logic
-  const [showPhoneReportModal, setShowPhoneReportModal] = useState(false);
-
   const handleOpenPhoneReport = () => {
     if (selectedOrders.length === 0) {
-      showError('تنبيه', 'برجاء تحديد طلبات أولاً لطباعة الكشف');
+      showError('تنبيه', 'برجاء تحديد طلبات أولاً');
       return;
     }
-    setShowPhoneReportModal(true);
-  };
 
-  const handlePrintPhoneReport = (ordersWithNotes: { orderId: string; note: string }[]) => {
-    // 1. Enrich data with names and phones
-    const reportData = ordersWithNotes.map(item => {
-      const order = currentOrders.find(o => o.id === item.orderId);
-      return {
+    const reportData = selectedOrders
+      .map(id => currentOrders.find(o => o.id === id))
+      .filter(o => o)
+      .map(order => ({
         name: order?.customerName || '',
-        phone: order?.customerPhone || '',
-        note: item.note,
-      };
+        phone: order?.customerPhone || order?.user?.phone || '',
+        note: ''
+      }));
+
+    setReportEditingState({
+        type: 'PHONE',
+        data: reportData,
+        delegate: null, // No delegate for phone report
+        title: 'كشف أرقام التليفونات',
+        columns: [
+            { key: 'name', label: 'الاسم' },
+            { key: 'phone', label: 'رقم الهاتف' },
+            { key: 'note', label: 'ملاحظات' },
+        ]
     });
-
-    // 2. Save to localStorage to pass to new window
-    localStorage.setItem('temp_phone_report_data', JSON.stringify(reportData));
-
-    // 3. Open print page
-    const printWindow = window.open('/admin/orders/print-phone-report', '_blank');
-    
-    // 4. Close modal
-    setShowPhoneReportModal(false);
+    setShowEditReportModal(true);
   };
 
   // Translation Report Logic
@@ -373,7 +370,7 @@ export default function AdminOrdersPage() {
   // Editable Report Modal State
   const [showEditReportModal, setShowEditReportModal] = useState(false);
   const [reportEditingState, setReportEditingState] = useState<{
-    type: 'TRANSLATION' | 'FAMILY' | 'GENERAL' | 'ID_CARD_SIGNATURES' | 'OFFICIAL_DOCUMENTS_SIGNATURES';
+    type: 'TRANSLATION' | 'FAMILY' | 'GENERAL' | 'ID_CARD_SIGNATURES' | 'OFFICIAL_DOCUMENTS_SIGNATURES' | 'PHONE';
     data?: any[]; // Legacy
     columns?: any[]; // Legacy
     sections?: any[]; // New
@@ -430,6 +427,10 @@ export default function AdminOrdersPage() {
               }
            }));
            window.open('/admin/orders/print-official-documents-signature-report', '_blank');
+           setShowEditReportModal(false); // Close Modal
+      } else if (type === 'PHONE') {
+          localStorage.setItem('temp_phone_report_data', JSON.stringify(finalData));
+           window.open('/admin/orders/print-phone-report', '_blank');
            setShowEditReportModal(false); // Close Modal
       } else if (type === 'GENERAL') {
           // Reconstruct orders with overrides
@@ -907,15 +908,6 @@ export default function AdminOrdersPage() {
         onMessageChange={setWhatsappMessage}
         onTemplateSelect={setSelectedTemplate}
         onSend={sendWhatsApp}
-      />
-
-      {/* Phone Report Modal */}
-      <PhoneReportModal
-        isOpen={showPhoneReportModal}
-        selectedOrders={selectedOrders}
-        orders={currentOrders}
-        onClose={() => setShowPhoneReportModal(false)}
-        onPrint={handlePrintPhoneReport}
       />
 
       {/* Work Order Modal */}

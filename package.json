@@ -43,6 +43,9 @@
     "whatsapp": "node whatsapp-bot.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.987.0",
+    "@aws-sdk/lib-storage": "^3.987.0",
+    "@aws-sdk/s3-request-presigner": "^3.987.0",
     "@google/genai": "^1.37.0",
     "@gsap/react": "^2.1.2",
     "@prisma/client": "^5.7.1",

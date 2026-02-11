@@ -174,13 +174,13 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                            >
                               <div className="relative z-10 flex flex-col h-full justify-between gap-2">
                                  <div className="flex justify-between items-start">
-                                    <span className={`text-sm font-black ${isSelected ? 'text-white' : 'text-slate-700'}`}>
+                                    <span className={`text-base font-black ${isSelected ? 'text-white' : 'text-slate-700'}`}>
                                        {variant.name}
                                     </span>
-                                    {isSelected && <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full font-bold">✓</span>}
+                                    {isSelected && <span className="text-xs bg-white/20 px-2 py-1 rounded-full font-bold">✓</span>}
                                  </div>
-                                 <div className="text-sm font-black tracking-tight">
-                                    {(variant.priceCents / 100).toLocaleString('en-US')} <span className={`text-[9px] ${isSelected ? 'opacity-80' : 'text-slate-400'}`}>ج.م</span>
+                                 <div className="text-base font-black tracking-tight">
+                                    {(variant.priceCents / 100).toLocaleString('en-US')} <span className={`text-xs ${isSelected ? 'opacity-80' : 'text-slate-400'}`}>ج.م</span>
                                  </div>
                               </div>
                            </div>
@@ -230,13 +230,13 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                  selectedService?.name?.includes('جواز')) && (
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <div className='space-y-1'>
-                    <label htmlFor="policeStation" className='text-[10px] font-black text-black uppercase tracking-widest mr-1'>قسم الجوازات</label>
+                    <label htmlFor="policeStation" className='text-xs font-black text-black uppercase tracking-widest mr-1'>قسم الجوازات</label>
                     <div className="relative">
                       <select
                         id="policeStation"
                         value={formData.policeStation}
                         onChange={e => setFormData(p => ({ ...p, policeStation: e.target.value }))}
-                        className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-xs appearance-none'
+                        className='w-full bg-white border border-slate-200 rounded-lg px-3 py-3 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-base appearance-none'
                       >
                         <option value="">اختر القسم...</option>
                         <option value="الجيزة">الجيزة</option>
@@ -246,18 +246,18 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                         <option value="العباسية">العباسية</option>
                         <option value="العجوزة">العجوزة</option>
                       </select>
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">▼</div>
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-sm">▼</div>
                     </div>
                   </div>
                   <div className='space-y-1'>
-                    <label htmlFor="pickupLocation" className='text-[10px] font-black text-black uppercase tracking-widest mr-1'>مكان الاستلام</label>
+                    <label htmlFor="pickupLocation" className='text-xs font-black text-black uppercase tracking-widest mr-1'>مكان الاستلام</label>
                     <div className="relative">
                       <input
                         id="pickupLocation"
                         type="text"
                         value={formData.pickupLocation}
                         onChange={e => setFormData(p => ({ ...p, pickupLocation: e.target.value }))}
-                        className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-xs'
+                        className='w-full bg-white border border-slate-200 rounded-lg px-3 py-3 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-base'
                         placeholder="اكتب مكان الاستلام..."
                       />
                     </div>

@@ -80,31 +80,50 @@ export default function OrderAttachments({ order }: OrderAttachmentsProps) {
           }
         })()}
 
-      {order.orderDocuments && order.orderDocuments.length > 0 && (
+      {/* New B2 Uploaded Documents (Document table) */}
+      {order.documents && order.documents.length > 0 && (
         <div className='mt-6 border-t pt-6'>
           <h3 className='text-lg font-semibold text-gray-900 mb-3 flex items-center'>
-            📄 المستندات المرفوعة
+            ☁️ المستندات المرفوعة (B2)
           </h3>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            {order.orderDocuments.map(doc => (
-              <div key={doc.id} className='border rounded-lg p-4 bg-gray-50'>
-                <div className='flex items-center justify-between'>
-                  <div>
-                    <p className='font-medium text-gray-900 text-xs truncate max-w-[150px]'>
-                      {doc.fileName}
-                    </p>
-                    <p className='text-xs text-gray-700'>{doc.documentType}</p>
+            {order.documents.map(doc => {
+              const isImage = doc.fileType.startsWith('image/');
+              return (
+                <div key={doc.id} className='border rounded-lg p-4 bg-purple-50 border-purple-100'>
+                  {isImage ? (
+                    <div className='mb-3'>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img 
+                        src={doc.filePath} 
+                        alt={doc.fileName} 
+                        className='w-full h-48 object-cover rounded-lg border border-purple-100'
+                      />
+                    </div>
+                  ) : null}
+                  <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-3'>
+                      <span className='text-2xl'>{isImage ? '🖼️' : '📄'}</span>
+                      <div>
+                        <p className='font-bold text-gray-900 text-sm truncate max-w-[150px]' title={doc.fileName}>
+                          {doc.fileName}
+                        </p>
+                        <p className='text-[10px] text-gray-500'>
+                          {(doc.fileSize / 1024 / 1024).toFixed(2)} MB • {new Date(doc.uploadedAt).toLocaleDateString('ar-EG')}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      href={doc.filePath}
+                      target='_blank'
+                      className='px-3 py-1.5 bg-white text-purple-600 rounded-lg text-xs font-bold shadow-sm hover:shadow-md transition-all border border-purple-100'
+                    >
+                      {isImage ? 'عرض كامل' : 'تحميل الملف'}
+                    </Link>
                   </div>
-                  <Link
-                    href={doc.filePath}
-                    target='_blank'
-                    className='text-blue-600 hover:text-blue-800 font-medium text-sm'
-                  >
-                    عرض
-                  </Link>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

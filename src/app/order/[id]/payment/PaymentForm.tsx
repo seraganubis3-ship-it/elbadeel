@@ -42,13 +42,22 @@ export default function PaymentForm({ orderId, totalAmount }: PaymentFormProps) 
 
     try {
       let screenshotPath = '';
+      let screenshotSize = 0;
+      let screenshotType = '';
+
       if (paymentScreenshot) {
         const formData = new FormData();
         formData.append('file', paymentScreenshot);
         const uploadResponse = await fetch('/api/upload', { method: 'POST', body: formData });
         if (uploadResponse.ok) {
           const uploadResult = await uploadResponse.json();
-          screenshotPath = uploadResult.filePath;
+          if (uploadResult.files && uploadResult.files.length > 0) {
+            // Use the Key (filename) for storage
+            const fileData = uploadResult.files[0];
+            screenshotPath = fileData.filename;
+            screenshotSize = fileData.fileSize;
+            screenshotType = fileData.fileType;
+          }
         }
       }
 
@@ -59,6 +68,8 @@ export default function PaymentForm({ orderId, totalAmount }: PaymentFormProps) 
           method: paymentMethod,
           senderPhone,
           paymentScreenshot: screenshotPath,
+          fileSize: screenshotSize,
+          fileType: screenshotType
         }),
       });
 

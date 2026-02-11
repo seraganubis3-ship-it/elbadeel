@@ -141,6 +141,15 @@ export interface FormData {
   translationLanguage?: string;
   destination?: string;
   title?: string;
+  uploadedDocuments?: UploadedDocument[];
+}
+
+export interface UploadedDocument {
+  originalName: string;
+  filename: string;
+  filePath: string;
+  fileSize: number;
+  fileType: string;
 }
 
 export const initialFormData: FormData = {
@@ -211,4 +220,5 @@ export const initialFormData: FormData = {
   translationLanguage: '',
   destination: '',
   title: '',
+  uploadedDocuments: [],
 };

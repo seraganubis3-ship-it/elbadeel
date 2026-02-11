@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import { join } from 'path';
+import { uploadToBackblaze } from '@/lib/s3';
+import { generatePresignedUrl } from '@/lib/presignedUrl';
 
 export async function GET(_request: NextRequest) {
   try {
@@ -31,7 +30,16 @@ export async function GET(_request: NextRequest) {
       orderBy: { orderIndex: 'asc' },
     });
 
-    return NextResponse.json({ success: true, categories });
+    // Process categories to add signed URLs for icons
+    const categoriesWithSignedUrls = await Promise.all(categories.map(async (category) => {
+        let iconUrl = category.icon;
+        if (iconUrl && !iconUrl.startsWith('/uploads/') && !iconUrl.startsWith('http')) {
+            iconUrl = await generatePresignedUrl(iconUrl);
+        }
+        return { ...category, icon: iconUrl };
+    }));
+
+    return NextResponse.json({ success: true, categories: categoriesWithSignedUrls });
   } catch (error) {
     // console.error("Error fetching categories:", error);
     return NextResponse.json({ error: 'حدث خطأ أثناء جلب الفئات' }, { status: 500 });
@@ -80,23 +88,13 @@ export async function POST(request: NextRequest) {
 
     let imagePath = null;
 
-    // Handle image upload
+    // Handle image upload with B2
     if (image && image.size > 0) {
-      const uploadsDir = join(process.cwd(), 'public', 'uploads', 'categories');
-
-      if (!existsSync(uploadsDir)) {
-        await mkdir(uploadsDir, { recursive: true });
-      }
-
-      const timestamp = Date.now();
-      const fileName = `${timestamp}_${image.name}`;
-      const filePath = join(uploadsDir, fileName);
-
-      const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      await writeFile(filePath, buffer);
-      imagePath = `/uploads/categories/${fileName}`;
+        try {
+            imagePath = await uploadToBackblaze(image, 'categories');
+        } catch (e) {
+            // Upload failed
+        }
     }
 
     const category = await prisma.category.create({

@@ -80,6 +80,15 @@ export interface Order {
     documentType: string;
     uploadedAt: Date;
   }>;
+  documents: Array<{
+    id: string;
+    orderId: string;
+    fileName: string;
+    filePath: string;
+    fileType: string;
+    fileSize: number;
+    uploadedAt: Date;
+  }>;
   createdByAdmin?: { id: string; name: string; email: string } | null;
 }
 

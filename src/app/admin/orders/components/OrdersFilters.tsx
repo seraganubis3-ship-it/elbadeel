@@ -73,6 +73,23 @@ export function OrdersFilters({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Debounce search term
+  const [localSearch, setLocalSearch] = useState(searchTerm);
+
+  useEffect(() => {
+    setLocalSearch(searchTerm);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== searchTerm) {
+        onSearchChange(localSearch);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [localSearch, onSearchChange, searchTerm]);
+
   return (
     <div className='bg-white/95 rounded-2xl shadow-xl border border-gray-100/50 p-4 lg:p-6 mb-6'>
       {/* Order Source Tabs */}
@@ -130,8 +147,8 @@ export function OrdersFilters({
           </div>
           <input
             type='text'
-            value={searchTerm}
-            onChange={e => onSearchChange(e.target.value)}
+            value={localSearch}
+            onChange={e => setLocalSearch(e.target.value)}
             placeholder='بحث بالاسم أو الهاتف أو رقم الطلب...'
             className='w-full pr-10 pl-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm'
           />

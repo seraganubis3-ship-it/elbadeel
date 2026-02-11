@@ -34,7 +34,7 @@ export default function PrintTranslationReport() {
       
       // Auto print after a short delay
       setTimeout(() => {
-        window.print();
+        // window.print(); // Auto-print disabled
       }, 500);
     }
 
@@ -46,7 +46,7 @@ export default function PrintTranslationReport() {
     if (workDate) {
        const parts = workDate.split('/');
        if (parts.length === 3) {
-          dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+          dateObj = new Date(parseInt(parts[2] || '0'), parseInt(parts[1] || '0') - 1, parseInt(parts[0] || '0'));
           dateStr = workDate;
        }
     }

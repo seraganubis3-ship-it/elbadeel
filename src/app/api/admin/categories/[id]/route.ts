@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { writeFile, mkdir, unlink } from 'fs/promises';
-import { existsSync } from 'fs';
-import { join } from 'path';
+import { uploadToBackblaze } from '@/lib/s3';
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -56,23 +54,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     let imagePath: string | undefined = undefined;
 
-    // Handle image upload
+    // Handle image upload with B2
     if (image && image.size > 0) {
-      const uploadsDir = join(process.cwd(), 'public', 'uploads', 'categories');
-
-      if (!existsSync(uploadsDir)) {
-        await mkdir(uploadsDir, { recursive: true });
-      }
-
-      const timestamp = Date.now();
-      const fileName = `${timestamp}_${image.name}`;
-      const filePath = join(uploadsDir, fileName);
-
-      const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      await writeFile(filePath, buffer);
-      imagePath = `/uploads/categories/${fileName}`;
+        try {
+            imagePath = await uploadToBackblaze(image, 'categories');
+        } catch (e) {
+            // Upload failed
+        }
     }
 
     const updateData: any = {

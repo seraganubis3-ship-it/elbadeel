@@ -620,12 +620,29 @@ export function useCreateOrder() {
           body: formDataUpload,
         });
         if (response.ok) {
-          setFormData(prev => ({
-            ...prev,
-            attachedDocuments: [...(prev.attachedDocuments || []), attachmentName.trim()],
-          }));
-          setUploadedFiles(prev => [...prev, attachmentFile]);
-          showSuccess('تم رفع المرفق بنجاح! 📁', `تم رفع "${attachmentName.trim()}" مع الملف`);
+          const data = await response.json();
+          // Assuming api/upload returns { success: true, files: [...] }
+          // and files item has { originalName, filename, filePath, fileSize, fileType }
+          // filePath is the URL
+          
+          if (data.files && data.files.length > 0) {
+             const uploadedFile = data.files[0];
+             setFormData(prev => ({
+                ...prev,
+                attachedDocuments: [...(prev.attachedDocuments || []), attachmentName.trim()],
+                uploadedDocuments: [...(prev.uploadedDocuments || []), {
+                   originalName: uploadedFile.originalName,
+                   filename: uploadedFile.filename,
+                   filePath: uploadedFile.filename, // Store Key (not signed URL) for DB
+                   fileSize: uploadedFile.fileSize,
+                   fileType: uploadedFile.fileType
+                }]
+             }));
+             setUploadedFiles(prev => [...prev, attachmentFile]);
+             showSuccess('تم رفع المرفق بنجاح! 📁', `تم رفع "${attachmentName.trim()}" مع الملف`);
+          } else {
+             showError('فشل في رفع الملف', 'لم يتم استرجاع معلومات الملف');
+          }
         } else {
           const error = await response.json();
           showError('فشل في رفع الملف', error.error || 'حدث خطأ أثناء رفع الملف');
@@ -652,6 +669,7 @@ export function useCreateOrder() {
     setFormData(prev => ({
       ...prev,
       attachedDocuments: (prev.attachedDocuments || []).filter((_, i) => i !== index),
+      uploadedDocuments: (prev.uploadedDocuments || []).filter((_, i) => i !== index),
     }));
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   }, []);
@@ -707,6 +725,15 @@ export function useCreateOrder() {
     setSearchResults([]);
     setSelectedFines([]);
     setManualServices({});
+    setUploadedFiles([]);
+    setFormData(prev => ({ ...initialFormData })); // Simplest reset to initial
+    // But since we are setting individual fields below, let's keep it consistent
+    // Actually, setFormData(initialFormData) is called at the top of handleReset
+    // setFormData(initialFormData); // Line 700 already does this.
+    
+    // Just ensuring we don't have stale state if we rely on uploadedFiles state (which is separate from formData, strangely)
+    // uploadedFiles state seems to be for visual "File" objects, while formData has string names.
+    // formData.uploadedDocuments will be cleared by setFormData(initialFormData).
     setUploadedFiles([]);
     setAttachmentName('');
     setAttachmentFile(null);
@@ -834,6 +861,7 @@ export function useCreateOrder() {
             : formData.serviceDetails,
           otherFees: formData.otherFees,
           attachedDocuments: formData.attachedDocuments,
+          uploadedDocuments: formData.uploadedDocuments, // Pass detailed file info
           hasAttachments: formData.hasAttachments,
           originalDocuments: formData.originalDocuments,
           policeStation: formData.policeStation,
@@ -908,6 +936,7 @@ export function useCreateOrder() {
       showSuccess,
       router,
       handleReset,
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     ]
   );
 

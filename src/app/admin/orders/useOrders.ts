@@ -312,7 +312,8 @@ export function useOrders(
     }, 500); // 500ms delay
 
     return () => clearTimeout(timer);
-  }, [fetchOrders, orders.length]); // fetchOrders depends on filter values, so this triggers on filter change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchOrders]); // Remove orders.length to avoid loops. fetchOrders checks filters.
 
   // Filter orders when data changes
   useEffect(() => {
