@@ -22,6 +22,7 @@ interface DelegateData {
 export default function PrintTranslationReport() {
   const [data, setData] = useState<TranslationReportData[]>([]);
   const [delegate, setDelegate] = useState<DelegateData | null>(null);
+  const [reportDate, setReportDate] = useState('');
 
   useEffect(() => {
     // Load data from localStorage
@@ -36,13 +37,23 @@ export default function PrintTranslationReport() {
         window.print();
       }, 500);
     }
-  }, []);
 
-  const currentDate = new Date().toLocaleDateString('ar-EG', {
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-  });
+    // Date Logic
+    const workDate = localStorage.getItem('adminWorkDate');
+    let dateObj = new Date();
+    let dateStr = dateObj.toLocaleDateString('en-GB');
+
+    if (workDate) {
+       const parts = workDate.split('/');
+       if (parts.length === 3) {
+          dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+          dateStr = workDate;
+       }
+    }
+    
+    const dayName = dateObj.toLocaleDateString('ar-EG', { weekday: 'long' });
+    setReportDate(`${dayName} - ${dateStr}`);
+  }, []);
 
   return (
     <div className="bg-white font-sans" dir="rtl">
@@ -65,24 +76,24 @@ export default function PrintTranslationReport() {
         }
       `}</style>
 
-      {/* Header Container */}
-      <div className="flex justify-between items-start mb-4 pb-2 border-b-2 border-gray-800">
+      {/* Header Container - Compacted */}
+      <div className="flex justify-between items-start mb-2 pb-1 border-b-2 border-gray-800">
         {/* Right Side (First in RTL): Report Header Image */}
-        <div className="w-1/3 text-right -mt-6">
+        <div className="w-1/3 text-right">
            <img 
              src="/images/report-header.png" 
              alt="Header" 
-             className="h-56 object-contain object-top"
+             className="h-32 object-contain object-top"
            />
         </div>
 
         {/* Center: Title */}
-        <div className="w-1/3 flex flex-col items-center pt-4">
-            <h2 className="text-xl font-bold bg-white text-black px-6 py-2 border border-black rounded-xl">
+        <div className="w-1/3 flex flex-col items-center pt-2">
+            <h2 className="text-lg font-bold bg-white text-black px-4 py-1 border border-black rounded-lg">
                كشف الترجمة
             </h2>
-             <div className="mt-2 bg-gray-200 rounded-lg px-4 py-1 border border-gray-400 font-bold text-lg">
-             {currentDate}
+             <div className="mt-1 bg-gray-200 rounded-md px-4 py-0.5 border border-gray-400 font-bold text-base">
+             {reportDate}
            </div>
         </div>
 
@@ -91,39 +102,39 @@ export default function PrintTranslationReport() {
         </div>
       </div>
 
-      {/* Sub Header */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-2">
-           <h3 className="text-base font-bold">السيد العميد / مدير مصلحة الأحوال المدنية</h3>
+      {/* Sub Header - Compacted */}
+      <div className="mb-2">
+        <div className="flex justify-between items-center mb-1">
+           <h3 className="text-sm font-bold">السيد العميد / مدير مصلحة الأحوال المدنية</h3>
         </div>
-        <p className="text-center text-lg font-bold mb-2">تحية طيبة وبعد</p>
-        <p className="text-justify text-base leading-relaxed mb-4 font-medium">
+        <p className="text-center text-base font-bold mb-1">تحية طيبة وبعد</p>
+        <p className="text-justify text-xs leading-snug mb-2 font-medium">
           أقر أنا / {delegate?.name || '................................'} مندوب البديل للخدمات الحكومية بانه تم تفويضي من قبل أصحاب الشأن لاستخراج المصدرات المدون أسمائهم في الكشف وتم أخذ إقرار من صاحب الشأن أمامي وإذا ظهر عكس ذلك أكون مسئول مسئولية كاملة وهذا اقرار مني بذلك / {delegate?.name || '................................'}
         </p>
       </div>
 
-      {/* Table */}
-      <div className="mb-4">
-        <table className="w-full border-collapse border border-gray-800 text-sm">
+      {/* Table - Compacted */}
+      <div className="mb-2">
+        <table className="w-full border-collapse border border-gray-800 text-xs">
           <thead>
             <tr className="bg-gray-300 text-gray-900 border-b border-gray-800">
-              <th className="border border-gray-800 p-1 w-10 text-center font-bold">م</th>
-              <th className="border border-gray-800 p-1 text-right font-bold">الاسم</th>
-              <th className="border border-gray-800 p-1 width-28 text-center font-bold">الرقم القومي</th>
-              <th className="border border-gray-800 p-1 w-28 text-center font-bold">المصدر</th>
-              <th className="border border-gray-800 p-1 w-16 text-center font-bold">العدد</th>
-              <th className="border border-gray-800 p-1 w-24 text-center font-bold">ترجمة</th>
+              <th className="border border-gray-800 p-0.5 w-8 text-center font-bold">م</th>
+              <th className="border border-gray-800 p-0.5 text-right font-bold">الاسم</th>
+              <th className="border border-gray-800 p-0.5 width-28 text-center font-bold">الرقم القومي</th>
+              <th className="border border-gray-800 p-0.5 w-24 text-center font-bold">المصدر</th>
+              <th className="border border-gray-800 p-0.5 w-12 text-center font-bold">العدد</th>
+              <th className="border border-gray-800 p-0.5 w-20 text-center font-bold">ترجمة</th>
             </tr>
           </thead>
           <tbody>
             {data.map((item, index) => (
               <tr key={index} className="border-b border-gray-800">
-                <td className="border border-gray-800 p-1 text-center font-bold">{index + 1}</td>
-                <td className="border border-gray-800 p-1 text-right font-bold">{item.name}</td>
-                <td className="border border-gray-800 p-1 text-center font-bold">{item.idNumber}</td>
-                <td className="border border-gray-800 p-1 text-center font-bold">{item.source}</td>
-                <td className="border border-gray-800 p-1 text-center font-bold">{item.quantity}</td>
-                <td className="border border-gray-800 p-1 text-center font-bold bg-gray-50">{item.language}</td>
+                <td className="border border-gray-800 p-0.5 text-center font-bold">{index + 1}</td>
+                <td className="border border-gray-800 p-0.5 text-right font-bold truncate max-w-[200px]">{item.name}</td>
+                <td className="border border-gray-800 p-0.5 text-center font-bold font-mono tracking-wider">{item.idNumber}</td>
+                <td className="border border-gray-800 p-0.5 text-center font-bold">{item.source}</td>
+                <td className="border border-gray-800 p-0.5 text-center font-bold">{item.quantity}</td>
+                <td className="border border-gray-800 p-0.5 text-center font-bold bg-gray-50">{item.language}</td>
               </tr>
             ))}
           </tbody>
