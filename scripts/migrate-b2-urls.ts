@@ -13,13 +13,20 @@ async function updateB2ImageUrls() {
     console.log('📦 Updating Service images...');
     const services = await prisma.service.findMany({
       where: {
-        icon: {
-          not: null,
-          // Only update if it's NOT already a full URL
-          not: {
-            startsWith: 'http'
+        AND: [
+          {
+            icon: {
+              not: null,
+            }
+          },
+          {
+            icon: {
+              not: {
+                startsWith: 'http'
+              }
+            }
           }
-        }
+        ]
       }
     });
 
@@ -40,12 +47,20 @@ async function updateB2ImageUrls() {
     console.log('\n📁 Updating Category images...');
     const categories = await prisma.category.findMany({
       where: {
-        icon: {
-          not: null,
-          not: {
-            startsWith: 'http'
+        AND: [
+          {
+            icon: {
+              not: null,
+            }
+          },
+          {
+            icon: {
+              not: {
+                startsWith: 'http'
+              }
+            }
           }
-        }
+        ]
       }
     });
 
