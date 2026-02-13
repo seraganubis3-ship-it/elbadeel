@@ -90,6 +90,8 @@ export interface Order {
     uploadedAt: Date;
   }>;
   createdByAdmin?: { id: string; name: string; email: string } | null;
+  paidAmount?: number;
+  remainingAmount?: number;
 }
 
 export interface OrderFilters {

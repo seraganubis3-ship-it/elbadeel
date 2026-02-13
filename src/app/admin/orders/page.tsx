@@ -64,6 +64,10 @@ export default function AdminOrdersPage() {
   const [whatsappOrder, setWhatsappOrder] = useState<Order | null>(null);
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
 
+  // Payment Alert State
+  const [showPaymentAlert, setShowPaymentAlert] = useState(false);
+  const [paymentAlertOrder, setPaymentAlertOrder] = useState<Order | null>(null);
+
   // WhatsApp handlers
   const handleWhatsAppClick = (order: Order) => {
     setWhatsappOrder(order);
@@ -731,6 +735,14 @@ export default function AdminOrdersPage() {
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
+    
+    // Check for outstanding balance when delivering
+    if (newStatus === 'settlement' && order && (order.remainingAmount || 0) > 0) {
+      setPaymentAlertOrder(order);
+      setShowPaymentAlert(true);
+      return;
+    }
+    
     if (newStatus === 'settlement' && order && isNationalIdOrder(order)) {
       setPendingWorkOrder({ type: 'single', orderId, newStatus });
       setShowWorkOrderModal(true);
@@ -958,6 +970,52 @@ export default function AdminOrdersPage() {
             sections={reportEditingState.sections || []} // Pass sections
             title={reportEditingState.title}
         />
+      )}
+
+      {/* Payment Alert Modal */}
+      {showPaymentAlert && paymentAlertOrder && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
+          <div className='bg-white rounded-2xl shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200'>
+            <div className='p-6 border-b bg-amber-50 rounded-t-2xl'>
+              <h3 className='text-xl font-bold text-amber-900 flex items-center gap-2'>
+                <span className='text-2xl'>⚠️</span>
+                يوجد مبالغ مستحقة
+              </h3>
+            </div>
+            
+            <div className='p-6'>
+              <p className='text-gray-700 mb-4'>
+                لا يزال هناك <span className='font-bold text-amber-600'>{((paymentAlertOrder.remainingAmount || 0) / 100).toFixed(2)} ج.م</span> مستحقة على هذا الطلب.
+              </p>
+              <p className='text-gray-600 text-sm'>
+                هل تريد تسجيل الدفع الآن؟
+              </p>
+            </div>
+
+            <div className='p-6 border-t bg-gray-50 rounded-b-2xl flex gap-3'>
+              <button
+                onClick={() => {
+                  window.location.href = `/admin/orders/${paymentAlertOrder.id}/payment?amount=${(paymentAlertOrder.remainingAmount || 0) / 100}`;
+                }}
+                className='flex-1 justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all active:scale-[0.98]'
+              >
+                أريد الدفع
+              </button>
+              <button
+                onClick={async () => {
+                  setShowPaymentAlert(false);
+                  if (paymentAlertOrder) {
+                    await updateOrderStatus(paymentAlertOrder.id, 'settlement');
+                  }
+                  setPaymentAlertOrder(null);
+                }}
+                className='flex-1 justify-center rounded-xl bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-200 hover:bg-gray-50 transition-all'
+              >
+                تسليم بدون دفع
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Toast Container */}
