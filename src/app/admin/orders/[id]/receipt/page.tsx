@@ -224,7 +224,7 @@ export default function ReceiptPage() {
                 />
                 <div className='text-[9px] leading-3 text-center max-w-xs font-bold'>
 طبقا لقرار رئيس مجلس الوزاراء
-رقم ١٥٥١ لستة ٢٠٠٨ بتصريح و ترخيص من وزارة الدولة للتنمية الادارية                </div>
+رقم ١٥٥١ لستة ٢٠٠٨ بتصريح و ترخيص من وزارة الاتصالات و تكنولوجيا المعلومات                 </div>
               </div>
             </div>
           </div>

@@ -17,7 +17,7 @@ export interface Service {
   description: string | null;
   slug: string;
   icon: string | null;
-  variants: ServiceVariant[];
+  variants?: ServiceVariant[]; // Made optional for homepage
   orderIndex?: number;
 }
 
@@ -62,9 +62,9 @@ export function ServiceCard({ service, index = 0, animateInView = true, classNam
   const { ref, isVisible } = useScrollAnimation();
 
   const minPrice =
-    service.variants.length > 0 ? Math.min(...service.variants.map(v => v.priceCents)) / 100 : null;
+    service.variants && service.variants.length > 0 ? Math.min(...service.variants.map(v => v.priceCents)) / 100 : null;
   const minDays =
-    service.variants.length > 0 ? Math.min(...service.variants.map(v => v.etaDays)) : null;
+    service.variants && service.variants.length > 0 ? Math.min(...service.variants.map(v => v.etaDays)) : null;
 
   const isValidImage = (src?: string | null) => {
     if (!src) return false;

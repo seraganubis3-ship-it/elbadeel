@@ -103,16 +103,16 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
       .footer-table tr:first-child td { background-color: #e5e7eb; font-size: 11px; } 
       .footer-table .val { font-size: 14px; font-weight: 900; }
       
-      .footer-contacts { position: absolute; bottom: 10px; left: 20px; right: auto; text-align: left; }
-      .footer-img { height: 200px; width: auto; object-fit: contain; display: block; }
+      .footer-contacts { position: absolute; bottom: 10px; left: 10px; right: auto; text-align: left; }
+      .footer-img { height: 150px; width: auto; object-fit: contain; display: block; }
 
       .delegate-section {
         position: absolute;
-        bottom: 50px;
+        bottom: 10px;
         left: 50%;
         transform: translateX(-50%);
-        width: 260px;
-        height: 160px;
+        width: 240px;
+        height: 150px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -123,8 +123,8 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
         max-height: 100%;
         object-fit: contain;
         border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 4px;
+        border-radius: 8px;
+        padding: 3px;
         background: white;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       }
@@ -132,13 +132,13 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
           width: 100%;
           height: 100%;
           border: 2px dashed #9ca3af;
-          border-radius: 12px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
           color: #9ca3af;
           font-weight: bold;
-          font-size: 14px;
+          font-size: 12px;
           background: #f9fafb;
       }
       

@@ -55,16 +55,7 @@ export default async function HomePage() {
           icon: true,
           description: true,
           orderIndex: true,
-          variants: {
-            where: { active: true },
-            orderBy: { priceCents: 'asc' },
-            select: {
-              id: true,
-              name: true,
-              priceCents: true,
-              etaDays: true,
-            },
-          },
+          // Removed variants - not needed for homepage display
         },
       },
     },
@@ -72,6 +63,7 @@ export default async function HomePage() {
 
   // Fetch system settings
   let settings = await prisma.systemSettings.findFirst();
+  
   if (!settings) {
     settings = await prisma.systemSettings.create({
       data: {

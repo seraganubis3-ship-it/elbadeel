@@ -268,7 +268,7 @@ export default function CollectiveReceiptPage() {
                 <img src='/images/egyptnisr.png' alt='شعار' style={{ height: 'auto' }} className={`mb-0.5 grayscale ${isCompact ? 'w-6' : 'w-8'}`} />
                 <div className={`leading-3 text-center max-w-[120px] font-bold ${isCompact ? 'text-[7px]' : 'text-[9px]'}`}>
 طبقا لقرار رئيس مجلس الوزاراء
-رقم ١٥٥١ لستة ٢٠٠٨ بتصريح و ترخيص من وزارة الدولة للتنمية الادارية                </div>
+رقم ١٥٥١ لستة ٢٠٠٨ بتصريح و ترخيص من وزارة الاتصالات و تكنولوجيا المعلومات                 </div>
               </div>
           </div>
 
