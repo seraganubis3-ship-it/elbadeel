@@ -313,7 +313,7 @@ export default function ReceiptPage() {
                   مصاريف أخرى
                 </div>
                 <div className='col-span-4 p-1.5 font-black'>
-                  {format((order.otherFees || 0) + fineFees + lostReportAmount)} ج.م
+                  {format((order.otherFees || 0) + lostReportAmount)} ج.م
                 </div>
               </div>
               <div className='grid grid-cols-12 text-xs border-t border-black'>
@@ -374,7 +374,7 @@ export default function ReceiptPage() {
               <div className='grid grid-cols-12 text-sm'>
                 <div className='col-span-2 border-l border-black p-2 font-black'>الإجمالي</div>
                 <div className='col-span-10 p-2 font-black text-lg text-left'>
-                  {format(order.totalCents + fineFees)} ج.م
+                  {format((order.paidAmount || 0) + (order.remainingAmount || 0))} ج.م
                 </div>
               </div>
             </div>

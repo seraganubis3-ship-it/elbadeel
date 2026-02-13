@@ -90,6 +90,24 @@ export function OrdersFilters({
     return () => clearTimeout(timer);
   }, [localSearch, onSearchChange, searchTerm]);
 
+  // Format date input with slashes (DD/MM/YYYY)
+  const formatDateInput = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length <= 2) return cleaned;
+    if (cleaned.length <= 4) return `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
+    return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
+  };
+
+  const handleDateFromChange = (value: string) => {
+    const formatted = formatDateInput(value);
+    onDateFromChange(formatted);
+  };
+
+  const handleDateToChange = (value: string) => {
+    const formatted = formatDateInput(value);
+    onDateToChange(formatted);
+  };
+
   return (
     <div className='bg-white/95 rounded-2xl shadow-xl border border-gray-100/50 p-4 lg:p-6 mb-6'>
       {/* Order Source Tabs */}
@@ -261,8 +279,9 @@ export function OrdersFilters({
           <input
             type='text'
             value={dateFrom}
-            onChange={e => onDateFromChange(e.target.value)}
+            onChange={e => handleDateFromChange(e.target.value)}
             placeholder='dd/mm/yyyy'
+            maxLength={10}
             className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm'
           />
         </div>
@@ -271,8 +290,9 @@ export function OrdersFilters({
           <input
             type='text'
             value={dateTo}
-            onChange={e => onDateToChange(e.target.value)}
+            onChange={e => handleDateToChange(e.target.value)}
             placeholder='dd/mm/yyyy'
+            maxLength={10}
             className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm'
           />
         </div>

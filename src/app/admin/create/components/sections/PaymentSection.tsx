@@ -245,7 +245,25 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
         </div>
 
         {/* Amounts Calculation */}
-        <div className='grid grid-cols-2 gap-5 pt-2'>
+        <div className='grid grid-cols-3 gap-4 pt-2'>
+          <div className='space-y-2'>
+            <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+              الخصم
+            </label>
+            <div className='relative group/discount'>
+              <input
+                type='number'
+                value={formData.discount}
+                onChange={e => setFormData(p => ({ ...p, discount: e.target.value }))}
+                className='w-full px-5 py-4 bg-amber-50/50 border border-amber-100 rounded-2xl focus:border-amber-500 focus:bg-white focus:ring-4 focus:ring-amber-500/10 transition-all font-black text-amber-700 shadow-sm text-lg outline-none'
+                placeholder='0'
+              />
+              <span className='absolute left-5 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-400'>
+                ج.م
+              </span>
+            </div>
+          </div>
+
           <div className='space-y-2'>
             <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
               المدفوع كاش
