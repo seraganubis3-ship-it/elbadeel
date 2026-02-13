@@ -12,8 +12,27 @@ export const QUEUE_NAMES = {
 } as const;
 
 // Queue options
+const getConnectionOptions = () => {
+  const options: any = {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+  };
+
+  if (process.env.REDIS_PASSWORD) {
+    options.password = process.env.REDIS_PASSWORD;
+  }
+
+  if (process.env.REDIS_URL?.startsWith('rediss://')) {
+    options.tls = {
+      rejectUnauthorized: false,
+    };
+  }
+
+  return options;
+};
+
 const defaultQueueOptions = {
-  connection: queueConnection,
+  connection: getConnectionOptions(),
   defaultJobOptions: {
     attempts: 3,
     backoff: {
