@@ -253,7 +253,10 @@ export default function ReceiptPage() {
                 <div className='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>
                   الخدمة
                 </div>
-                <div className='col-span-4 p-1.5 font-bold'>{order.service?.name}</div>
+                <div className='col-span-4 p-1.5 font-bold'>
+                  {order.service?.name}
+                  {order.variant?.name && ` (${order.variant.name})`}
+                </div>
               </div>
               <div className='grid grid-cols-12 text-xs border-t border-black'>
                 <div className='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>

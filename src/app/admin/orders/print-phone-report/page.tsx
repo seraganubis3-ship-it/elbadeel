@@ -43,18 +43,45 @@ export default function PrintPhoneReportPage() {
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => (
-            <tr key={index} className="print:break-inside-avoid h-8">
-              <td className="border border-gray-600 px-1 py-1 font-bold bg-gray-100 text-sm">{index + 1}</td>
-              <td className="border border-gray-600 px-2 py-1 font-bold text-base text-right leading-tight">{row.name}</td>
-              <td className="border border-gray-600 px-2 py-1 font-bold font-mono text-base" dir="ltr">
-                {row.phone}
-              </td>
-              <td className="border border-gray-600 px-2 py-1 font-bold text-base bg-gray-50 leading-tight">
-                {row.note}
-              </td>
-            </tr>
-          ))}
+          {(() => {
+            // Group data by phone number to detect duplicates
+            const phoneGroups = new Map<string, number[]>();
+            data.forEach((row, index) => {
+              const phone = row.phone || '';
+              if (!phoneGroups.has(phone)) {
+                phoneGroups.set(phone, []);
+              }
+              phoneGroups.get(phone)!.push(index);
+            });
+
+            // Determine which phones are duplicates
+            const duplicatePhones = new Set<string>();
+            phoneGroups.forEach((indices, phone) => {
+              if (indices.length > 1 && phone) {
+                duplicatePhones.add(phone);
+              }
+            });
+
+            return data.map((row, index) => {
+              const isDuplicate = duplicatePhones.has(row.phone || '');
+              const bgClass = isDuplicate 
+                ? 'bg-gray-300 print:bg-gray-300' 
+                : '';
+              
+              return (
+                <tr key={index} className={`print:break-inside-avoid h-8 ${bgClass}`}>
+                  <td className="border border-gray-600 px-1 py-1 font-bold bg-gray-100 text-sm">{index + 1}</td>
+                  <td className="border border-gray-600 px-2 py-1 font-bold text-base text-right leading-tight">{row.name}</td>
+                  <td className="border border-gray-600 px-2 py-1 font-bold font-mono text-base" dir="ltr">
+                    {row.phone}
+                  </td>
+                  <td className="border border-gray-600 px-2 py-1 font-bold text-base bg-gray-50 leading-tight">
+                    {row.note}
+                  </td>
+                </tr>
+              );
+            });
+          })()}
           {data.length === 0 && (
             <tr>
               <td colSpan={4} className="p-8 text-center text-gray-500">
@@ -81,6 +108,12 @@ export default function PrintPhoneReportPage() {
           }
           tr {
             page-break-inside: avoid;
+          }
+          /* Preserve background colors for duplicates */
+          .bg-gray-300 {
+            background-color: #d1d5db !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
         }
       `}</style>
