@@ -57,6 +57,13 @@ export const PREDEFINED_FINES: Fine[] = [
     amountCents: 5000, // 50 جنيه
     category: 'غرامات',
   },
+  {
+    id: 'fine_008',
+    name: 'أول مرة',
+    description: 'غرامة أول مرة',
+    amountCents: 10000, // 100 جنيه
+    category: 'غرامات',
+  },
   // خدمات
   {
     id: 'service_001',

@@ -72,26 +72,10 @@ export const printReceipt = (order: Order) => {
   // Calculate lost report amount
   const lostReportAmount = lostReport ? lostReport.amount || 0 : 0;
 
-  // Calculate additional fees for fines (10 EGP per fine, excluding lost report)
-  const calculateFineFees = () => {
-    if (!finesDetails || !Array.isArray(finesDetails) || finesDetails.length === 0) return 0;
-
-    let fineFees = 0;
-    finesDetails.forEach((fine: any) => {
-      // Add 10 EGP for each fine that is not a lost report
-      if (
-        fine.name &&
-        !fine.name.toLowerCase().includes('محضر') &&
-        !fine.name.toLowerCase().includes('فقد')
-      ) {
-        fineFees += 1000; // 10 EGP in cents
-      }
-    });
-    return fineFees;
-  };
-
-  const fineFees = calculateFineFees();
-  const totalAmount = order.totalCents + fineFees;
+  // Note: Fine expenses (10 EGP per fine) are already included in order.totalCents
+  // from the backend calculation, so we don't need to add them again here
+  // Calculate total from paidAmount + remainingAmount for accuracy
+  const totalAmount = (order.paidAmount || 0) + (order.remainingAmount || 0);
 
   const printStyles = `
     @media print {
@@ -371,7 +355,7 @@ export const printReceipt = (order: Order) => {
                   مصاريف أخرى
                 </div>
                 <div class='col-span-4 p-1.5 font-black'>
-                  ${format((order.otherFees || 0) + fineFees + lostReportAmount)} ج.م
+                  ${format((order.otherFees || 0) + lostReportAmount)} ج.م
                 </div>
               </div>
               <div class='grid grid-cols-12 text-xs border-t border-black'>
