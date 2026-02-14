@@ -392,7 +392,7 @@ export async function POST(request: NextRequest) {
         data: {
           name: customerName,
           email: customerEmail && customerEmail.trim() !== '' ? customerEmail : undefined,
-          password: hashedPassword, // Set password = phone
+          passwordHash: hashedPassword, // Set password = phone
           phone: normalizedPhone || customerPhone || undefined,
           additionalPhone: additionalPhone || undefined,
           address: address || undefined,
