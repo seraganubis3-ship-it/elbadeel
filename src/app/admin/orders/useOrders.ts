@@ -82,10 +82,14 @@ export function useOrders(
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [deliveryFilter, setDeliveryFilter] = useState('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  
+  // Initialize dates from localStorage (work date)
+  const initialWorkDate = typeof window !== 'undefined' ? localStorage.getItem('adminWorkDate') || '' : '';
+  const [dateFrom, setDateFrom] = useState(initialWorkDate);
+  const [dateTo, setDateTo] = useState(initialWorkDate);
+  
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
-  const [orderSourceFilter, setOrderSourceFilter] = useState('office');
+  const [orderSourceFilter, setOrderSourceFilter] = useState('all');
   const [categoryId, setCategoryId] = useState('');
   const [employeeId, setEmployeeId] = useState(createdByAdminIdParam);
 

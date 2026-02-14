@@ -34,6 +34,8 @@ export default function OrderServiceDetails({
     policeStation: order.policeStation || '',
     pickupLocation: order.pickupLocation || '',
     createdAt: order.createdAt ? new Date(order.createdAt).toISOString().split('T')[0] : '',
+    serviceSource: order.serviceSource || '',
+    destination: order.destination || '',
   });
 
   const handleSave = () => {
@@ -57,14 +59,12 @@ export default function OrderServiceDetails({
     (order.service?.name || '').includes('جواز');
 
   return (
-    <div className='group relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/60 p-8 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(245,158,11,0.1)]'>
-      <div className='absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-all duration-700'></div>
-
-      <div className='relative flex items-center justify-between mb-10'>
-        <div className='flex items-center'>
-          <div className='w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200/50 group-hover:scale-110 transition-transform duration-500'>
+    <div className='bg-white'>
+      <div className='flex items-center justify-between mb-8 pb-4 border-b border-slate-50'>
+        <div className='flex items-center gap-3'>
+          <div className='w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center'>
             <svg
-              className='w-7 h-7 text-white'
+              className='w-5 h-5'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'
@@ -77,252 +77,207 @@ export default function OrderServiceDetails({
               />
             </svg>
           </div>
-          <div className='mr-5'>
-            <h2 className='text-2xl font-black text-slate-800 tracking-tight'>تفاصيل الخدمة</h2>
-            <p className='text-slate-500 font-medium text-sm'>
-              بيانات التنفيذ ومواصفات الطلب الأساسية
-            </p>
+          <div>
+            <h2 className='text-xl font-bold text-slate-800'>بيانات تنفيذ الخدمة</h2>
+            <p className='text-slate-500 text-sm font-medium'>التوقيت والمواصفات والأقسام المرتبطة</p>
           </div>
         </div>
 
-        <div className='flex gap-2'>
-          {isEditing ? (
-            <>
-              <button
-                onClick={onToggleEdit}
-                disabled={updating}
-                className='px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-all font-bold text-sm'
-              >
-                إلغاء
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={updating}
-                className='px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all font-bold text-sm shadow-lg shadow-amber-200 flex items-center gap-2'
-              >
-                {updating && (
-                  <div className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
-                )}
-                حفظ التغييرات
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={onToggleEdit}
-              className='p-3 bg-white/80 hover:bg-amber-50 text-amber-600 rounded-xl transition-all duration-300 shadow-sm border border-amber-100/50 group/btn'
-            >
-              <svg
-                className='w-5 h-5 group-hover/btn:rotate-12 transition-transform'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
-                />
-              </svg>
-            </button>
-          )}
-        </div>
+        <button
+          onClick={onToggleEdit}
+          className={`px-4 py-2 rounded-xl transition-all font-bold text-sm ${
+            isEditing ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+          }`}
+        >
+          {isEditing ? 'إلغاء' : 'تعديل البيانات'}
+        </button>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-8 mb-10'>
-        <div className='space-y-6'>
-          <div className='p-6 bg-white/30 rounded-3xl border border-white/40'>
-            <h2 className='text-sm font-black text-amber-700 uppercase tracking-widest mb-6 border-b border-amber-100 pb-3'>
-              الكميات والمواصفات
-            </h2>
-            <div className='space-y-5'>
-              <div className='flex justify-between items-center group/field'>
-                <span className='text-slate-500 font-bold text-sm'>تاريخ الخدمة:</span>
-                {isEditing ? (
-                  <input
-                    type='date'
-                    value={formData.createdAt}
-                    onChange={e => setFormData({ ...formData, createdAt: e.target.value })}
-                    className='bg-white/80 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 font-bold text-sm outline-none focus:ring-2 focus:ring-amber-500 text-center'
-                  />
-                ) : (
-                  <span className='text-slate-800 font-black group-hover/field:text-amber-600 transition-colors'>
-                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString('ar-EG') : '----'}
-                  </span>
-                )}
-              </div>
-              <div className='flex justify-between items-center group/field'>
-                <span className='text-slate-500 font-bold text-sm'>العدد المطلوب:</span>
-                {isEditing ? (
-                  <input
-                    type='number'
-                    min='1'
-                    value={formData.quantity}
-                    onChange={e =>
-                      setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })
-                    }
-                    className='bg-white/80 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 font-bold text-sm outline-none focus:ring-2 focus:ring-amber-500 w-20 text-center'
-                  />
-                ) : (
-                  <span className='text-slate-800 font-black group-hover/field:text-amber-600 transition-colors'>
-                    {order.quantity || 1}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
+        <div className='p-6 bg-slate-50/50 rounded-2xl border border-slate-100'>
+          <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>تاريخ الخدمة</p>
+          {isEditing ? (
+            <input
+              type='date'
+              value={formData.createdAt}
+              onChange={e => setFormData({ ...formData, createdAt: e.target.value })}
+              className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-bold text-lg outline-none focus:ring-2 focus:ring-blue-500'
+            />
+          ) : (
+            <p className='text-xl font-black text-slate-800 tracking-tight'>
+              {order.createdAt ? new Date(order.createdAt).toLocaleDateString('ar-EG', { dateStyle: 'medium' }) : '----'}
+            </p>
+          )}
+        </div>
+
+        <div className='p-6 bg-slate-50/50 rounded-2xl border border-slate-100'>
+          <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>العدد المطلوب</p>
+          {isEditing ? (
+            <input
+              type='number'
+              min='1'
+              value={formData.quantity}
+              onChange={e => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
+              className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-bold text-lg outline-none focus:ring-2 focus:ring-blue-500'
+            />
+          ) : (
+            <p className='text-4xl font-black text-slate-800 tracking-tighter'>{order.quantity || 1}</p>
+          )}
+        </div>
+
+        <div className='p-6 bg-slate-50/50 rounded-2xl border border-slate-100'>
+          <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>المصدر</p>
+          {isEditing ? (
+            <input
+              type="text"
+              value={formData.serviceSource}
+              onChange={e => setFormData({ ...formData, serviceSource: e.target.value })}
+              className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-bold text-lg outline-none focus:ring-2 focus:ring-blue-500'
+            />
+          ) : (
+            <p className='text-2xl font-black text-slate-900 tracking-tight'>{order.serviceSource || '----'}</p>
+          )}
+        </div>
+
+        <div className='p-6 bg-slate-50/50 rounded-2xl border border-slate-100'>
+          <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>الجهة</p>
+          {isEditing ? (
+            <input
+              type="text"
+              value={formData.destination}
+              onChange={e => setFormData({ ...formData, destination: e.target.value })}
+              className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-bold text-lg outline-none focus:ring-2 focus:ring-blue-500'
+            />
+          ) : (
+            <p className='text-2xl font-black text-slate-900 tracking-tight'>{order.destination || '----'}</p>
+          )}
         </div>
 
         {isPassport && (
-          <div className='space-y-6'>
-            <div className='p-6 bg-white/30 rounded-3xl border border-white/40'>
-              <h2 className='text-sm font-black text-emerald-700 uppercase tracking-widest mb-6 border-b border-emerald-100 pb-3'>
-                بيانات الجوازات
-              </h2>
-              <div className='space-y-5'>
-                <div className='flex justify-between items-center group/field'>
-                  <span className='text-slate-500 font-bold text-sm'>قسم الجوازات:</span>
-                  {isEditing ? (
-                    <div className="relative">
-                      <select
-                        value={formData.policeStation}
-                        onChange={e => setFormData({ ...formData, policeStation: e.target.value })}
-                        className='bg-white/80 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 font-bold text-sm outline-none focus:ring-2 focus:ring-amber-500 appearance-none pr-8'
-                      >
-                        <option value="">اختر القسم...</option>
-                        <option value="الجيزة">الجيزة</option>
-                        <option value="بولاق الدكرور">بولاق الدكرور</option>
-                        <option value="6 أكتوبر">6 أكتوبر</option>
-                        <option value="الشيخ زايد">الشيخ زايد</option>
-                        <option value="العباسية">العباسية</option>
-                        <option value="العجوزة">العجوزة</option>
-                      </select>
-                      <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">▼</div>
-                    </div>
-                  ) : (
-                    <span className='text-slate-800 font-black group-hover/field:text-emerald-600 transition-colors'>
-                      {order.policeStation || '----'}
-                    </span>
-                  )}
-                </div>
-
-                <div className='flex justify-between items-center group/field'>
-                  <span className='text-slate-500 font-bold text-sm'>مكان الاستلام:</span>
-                  {isEditing ? (
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={formData.pickupLocation}
-                        onChange={e => setFormData({ ...formData, pickupLocation: e.target.value })}
-                        className='bg-white/80 border border-slate-200 rounded-lg px-2 py-1 text-slate-800 font-bold text-sm outline-none focus:ring-2 focus:ring-amber-500 w-full'
-                        placeholder="مكان الاستلام"
-                      />
-                    </div>
-                  ) : (
-                    <span className='text-slate-800 font-black group-hover/field:text-emerald-600 transition-colors'>
-                      {order.pickupLocation || '----'}
-                    </span>
-                  )}
-                </div>
-              </div>
+          <>
+            <div className='p-6 bg-slate-50/50 rounded-2xl border border-slate-100'>
+              <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>مكان الاستلام</p>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={formData.pickupLocation}
+                  onChange={e => setFormData({ ...formData, pickupLocation: e.target.value })}
+                  className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-bold text-lg outline-none focus:ring-2 focus:ring-blue-500'
+                />
+              ) : (
+                <p className='text-2xl font-black text-slate-900 tracking-tight'>{order.pickupLocation || '----'}</p>
+              )}
             </div>
-          </div>
+
+            <div className='p-6 bg-emerald-50/30 rounded-2xl border border-emerald-100'>
+              <p className='text-base font-bold text-emerald-600/70 uppercase tracking-wider mb-2'>قسم الشرطة</p>
+              {isEditing ? (
+                <select
+                  value={formData.policeStation}
+                  onChange={e => setFormData({ ...formData, policeStation: e.target.value })}
+                  className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 font-bold text-lg outline-none focus:ring-2 focus:ring-emerald-500'
+                >
+                  <option value="">اختر القسم...</option>
+                  <option value="الجيزة">الجيزة</option>
+                  <option value="بولاق الدكرور">بولاق الدكرور</option>
+                  <option value="6 أكتوبر">6 أكتوبر</option>
+                  <option value="الشيخ زايد">الشيخ زايد</option>
+                  <option value="العباسية">العباسية</option>
+                  <option value="العجوزة">العجوزة</option>
+                </select>
+              ) : (
+                <p className='text-2xl font-black text-slate-800 tracking-tight'>{order.policeStation || '----'}</p>
+              )}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Service Details Area */}
-      <div className='mb-10 bg-indigo-50/50 rounded-[2.5rem] p-8 border border-indigo-100'>
-        <div className='flex items-center gap-3 mb-6'>
-          <div className='w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200'>
-            <svg
-              className='w-5 h-5 text-white'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
-              />
-            </svg>
-          </div>
-          <h2 className='text-xl font-black text-slate-800'>تفاصيل الخدمة</h2>
+      <div className='mb-8'>
+        <div className='flex items-center gap-2 mb-3'>
+          <h3 className='text-base font-black text-slate-800 uppercase tracking-wider'>تفاصيل الخدمة الإضافية</h3>
+          <div className='h-[1px] flex-1 bg-slate-100'></div>
         </div>
         {isEditing ? (
           <textarea
             value={formData.serviceDetails}
             onChange={e => setFormData({ ...formData, serviceDetails: e.target.value })}
-            className='w-full bg-white border border-indigo-200 rounded-3xl p-6 text-slate-700 font-medium focus:ring-2 focus:ring-indigo-500 outline-none'
-            rows={4}
+            className='w-full bg-white border border-slate-200 rounded-2xl p-5 text-slate-800 font-bold focus:ring-2 focus:ring-blue-500 outline-none min-h-[120px] text-lg'
             placeholder='اكتب تفاصيل الخدمة هنا...'
           />
         ) : (
-          <div className='p-8 bg-white/80 rounded-[2rem] border border-indigo-100/50 whitespace-pre-wrap text-slate-700 font-black leading-loose shadow-sm'>
-            {order.serviceDetails || 'لا توجد ملاحظات إضافية'}
+          <div className='p-6 bg-slate-50/50 rounded-2xl border border-slate-100 text-slate-700 text-lg font-bold leading-relaxed italic'>
+            {order.serviceDetails || 'لا توجد ملاحظات إضافية مسجلة لهذه الخدمة'}
           </div>
         )}
       </div>
 
+      {isEditing && (
+        <div className='flex justify-end gap-3 pt-6 border-t border-slate-100'>
+          <button
+            onClick={onToggleEdit}
+            className='px-6 py-3 text-slate-500 font-bold text-base hover:bg-slate-50 rounded-xl transition-colors'
+          >
+            إلغاء التعديلات
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={updating}
+            className='px-8 py-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-all font-bold text-base shadow-lg shadow-slate-200 flex items-center gap-2'
+          >
+            {updating && <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>}
+            حفظ البيانات
+          </button>
+        </div>
+      )}
+
       {/* Form Serials Section */}
       {order.service?.name?.includes('بطاقة') && (
-        <div className='mt-8 border-t border-slate-100 pt-8'>
-          <h2 className='text-lg font-black text-slate-800 mb-6 flex items-center gap-2'>
-            <span className='w-2 h-2 bg-amber-500 rounded-full animate-ping'></span>
-            أرقام الاستمارات المرتبطة
-          </h2>
-          {order.formSerials && order.formSerials.length > 0 ? (
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              {order.formSerials.map(formSerial => (
-                <div
-                  key={formSerial.id}
-                  className='p-6 bg-emerald-50/50 border border-emerald-100 rounded-3xl group/scroll hover:bg-emerald-50 transition-colors'
-                >
-                  <div className='flex justify-between items-center'>
+        <div className='mt-8 pt-8 border-t border-slate-100'>
+          <div className='flex items-center justify-between mb-6'>
+            <h2 className='text-lg font-black text-slate-800 flex items-center gap-2'>
+              <span className='w-2 h-2 bg-blue-500 rounded-full'></span>
+              أرقام الاستمارات المرتبطة
+            </h2>
+          </div>
+          
+          <div className='space-y-4'>
+            {order.formSerials && order.formSerials.length > 0 ? (
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+                {order.formSerials.map(formSerial => (
+                  <div
+                    key={formSerial.id}
+                    className='p-6 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-sm'
+                  >
                     <div>
-                      <p className='text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1'>
-                        رقم الاستمارة
-                      </p>
-                      <p className='text-xl font-black text-slate-800 tracking-tighter'>
-                        {formSerial.serialNumber}
-                      </p>
-                    </div>
-                    <div className='text-left'>
-                      <p className='text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1'>
-                        الحالة
-                      </p>
-                      <span className='px-3 py-1 bg-white text-emerald-600 rounded-full text-[10px] font-black shadow-sm'>
-                        نشط
-                      </span>
+                      <p className='text-sm font-bold text-slate-400 mb-1 tracking-wider'>رقم الاستمارة</p>
+                      <p className='text-3xl font-black text-slate-900 tracking-tighter'>{formSerial.serialNumber}</p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className='p-8 bg-slate-50 border border-dashed border-slate-200 rounded-[2rem] text-center'>
-              <div className='max-w-md mx-auto'>
-                <div className='flex gap-3 mb-4'>
+                ))}
+              </div>
+            ) : (
+              <div className='p-6 bg-slate-50/50 border border-dashed border-slate-300 rounded-2xl'>
+                <div className='flex gap-3 max-w-md'>
                   <input
                     type='text'
                     value={formSerialNumber}
                     onChange={e => setFormSerialNumber(e.target.value)}
-                    className='flex-1 px-5 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 outline-none font-bold'
-                    placeholder='أدخل رقم الاستمارة للربط...'
+                    className='flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-lg font-black'
+                    placeholder='رقم الاستمارة...'
                   />
                   <button
                     onClick={onAddFormSerial}
                     disabled={!formSerialNumber.trim() || checkingSerial || updating}
-                    className='px-8 py-3 bg-slate-900 text-white rounded-2xl hover:bg-black transition-all font-bold shadow-lg shadow-slate-200 disabled:opacity-50'
+                    className='px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-all text-base font-bold disabled:opacity-50'
                   >
-                    {checkingSerial ? '...' : 'ربط'}
+                    {checkingSerial ? '...' : 'إضافة'}
                   </button>
                 </div>
-                {serialError && <p className='text-red-500 text-xs font-bold'>{serialError}</p>}
+                {serialError && <p className='mt-2 text-red-500 text-sm font-bold pr-2'>{serialError}</p>}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -34,7 +34,6 @@ async function startWhatsApp() {
   sock = makeWASocket({
     version,
     logger: pino({ level: 'silent' }),
-    printQRInTerminal: true, // Print QR in terminal for easy scanning
     auth: {
       creds: state.creds,
       keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })),
@@ -42,6 +41,10 @@ async function startWhatsApp() {
     // Fix for high load/instability
     browser: ['Ofa Admin', 'Chrome', '1.0.0'],
     generateHighQualityLinkPreview: true,
+    // Connection settings
+    connectTimeoutMs: 60000,
+    defaultQueryTimeoutMs: 60000,
+    keepAliveIntervalMs: 30000,
   });
 
   sock.ev.on('connection.update', async (update) => {
@@ -54,16 +57,32 @@ async function startWhatsApp() {
     }
 
     if (connection === 'close') {
-      const shouldReconnect =
-        (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
       
       console.log('Connection closed due to ', lastDisconnect?.error, ', reconnecting ', shouldReconnect);
       
+      // Handle 401 Unauthorized - delete corrupted session
+      if (statusCode === 401) {
+        console.log('⚠️ 401 Unauthorized - Deleting corrupted session files...');
+        try {
+          if (fs.existsSync('baileys_auth_info')) {
+            fs.rmSync('baileys_auth_info', { recursive: true, force: true });
+            console.log('✅ Session files deleted. Please scan QR code again.');
+          }
+        } catch (err) {
+          console.error('Error deleting session:', err);
+        }
+        // Reconnect with fresh session
+        setTimeout(() => startWhatsApp(), 2000);
+        return;
+      }
+      
       if (shouldReconnect) {
-        startWhatsApp();
+        setTimeout(() => startWhatsApp(), 5000); // Wait 5s before reconnecting
       }
     } else if (connection === 'open') {
-      console.log('opened connection');
+      console.log('✅ WhatsApp connection opened successfully');
       qrCodeData = null;
     }
   });

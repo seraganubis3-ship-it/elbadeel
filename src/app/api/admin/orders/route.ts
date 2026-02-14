@@ -3,6 +3,8 @@ import { requireAuth, requireAdminOrStaff, getWorkDate } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateUniqueOrderNumber } from '@/lib/orderNumbering';
 import { logger } from '@/lib/logger';
+import { checkWhatsAppStatus, sendWhatsAppMessage, NotificationTemplates } from '@/lib/whatsapp';
+import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
 // [FORCE_RELOAD] Updated Prisma client integration
@@ -368,11 +370,29 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    let isNewUserCreated = false;
+
+    // Double check if user exists by phone to prevent race conditions or logical errors
+    if (!existingUser && (normalizedPhone || customerPhone)) {
+      const phoneToCheck = normalizedPhone || customerPhone;
+      const userByPhone = await prisma.user.findFirst({
+        where: { phone: phoneToCheck }
+      });
+      if (userByPhone) {
+        existingUser = userByPhone;
+      }
+    }
+
     if (!existingUser) {
+      // Hash phone number as password for new users
+      const password = normalizedPhone || customerPhone;
+      const hashedPassword = await bcrypt.hash(password, 10);
+
       const created = await prisma.user.create({
         data: {
           name: customerName,
           email: customerEmail && customerEmail.trim() !== '' ? customerEmail : undefined,
+          password: hashedPassword, // Set password = phone
           phone: normalizedPhone || customerPhone || undefined,
           additionalPhone: additionalPhone || undefined,
           address: address || undefined,
@@ -406,6 +426,7 @@ export async function POST(request: NextRequest) {
         select: { id: true },
       });
       userId = created.id;
+      isNewUserCreated = true;
     } else {
       const u = existingUser;
       const updates: any = {};
@@ -653,6 +674,44 @@ export async function POST(request: NextRequest) {
         // Ignore dependent save errors
       }
     }
+
+    // 📱 Check if this is a NEW user and send welcome message with credentials
+    try {
+      const whatsappStatus = await checkWhatsAppStatus();
+      if (whatsappStatus.status === 'connected' && customerPhone && customerPhone !== '') {
+        // Only send "Welcome + Credentials" if we actually created a new user account
+        // and set their password to their phone number
+        if (isNewUserCreated) {
+          const service = await prisma.service.findUnique({
+            where: { id: serviceId },
+            select: { name: true }
+          });
+
+          const welcomeMsg = NotificationTemplates.welcomeNewCustomer(
+            customerName,
+            order.id,
+            service?.name || 'خدمة',
+            finalTotalCents,
+            customerPhone
+          );
+
+          await sendWhatsAppMessage({
+            phone: customerPhone,
+            message: welcomeMsg.message,
+          });
+
+          logger.info(`Welcome WhatsApp message sent to new user: ${customerPhone}`);
+        } else {
+          // For existing users, maybe count previous orders to see if we should say "First Order" without credentials?
+          // Or just standard new order notification?
+          // For now, let's skip sending credentials to existing users to avoid confusion.
+        }
+      }
+    } catch (whatsappError) {
+      // WhatsApp notification failed silently - don't block order creation
+      logger.error('Failed to send welcome WhatsApp message', whatsappError);
+    }
+
 
     return NextResponse.json({
       success: true,

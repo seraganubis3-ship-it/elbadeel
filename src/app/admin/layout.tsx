@@ -34,6 +34,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       document.body.style.overflow = '';
     };
   }, [mobileMenuOpen]);
+
+  // Auto-show work date modal on dashboard entry
+  useEffect(() => {
+    if (pathname === '/admin' && session?.user && ['ADMIN', 'STAFF'].includes((session.user as any).role)) {
+      const hasShown = sessionStorage.getItem('dashboardWorkDateShown');
+      if (!hasShown) {
+        setTempWorkDate(workDate || '');
+        setShowWorkDateModal(true);
+        sessionStorage.setItem('dashboardWorkDateShown', 'true');
+      }
+    }
+  }, [pathname, session, workDate]);
   // Check loading status
   if (status === 'loading') {
     return (

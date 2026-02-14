@@ -67,16 +67,32 @@ logs/
 pids/
 *.pid
 *.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
+*.pid.lock  apps: [
+    {
+      name: 'haiba-whatsapp',
+      script: 'whatsapp-bot.js',
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      max_memory_restart: '500M',
+      env: {
+        NODE_ENV: 'production',
+      },
+    },
+    {
+      name: 'haiba-web',
+      script: 'npm',
+      args: 'start',
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      max_memory_restart: '1G',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3000
+      },
+    },
+  ],
 
 # Optional npm cache directory
 .npm
@@ -120,11 +136,10 @@ jspm_packages/
 
 # Uploads
 public/uploads/
-.wwebjs_auth/
+.wwebjs_auth*/
 .wwebjs_cache/
+.simple-auth/
+baileys_auth_info/
 
 # Electron build
 electron-app/dist/
-
-# WhatsApp Baileys Auth Info
-baileys_auth_info/

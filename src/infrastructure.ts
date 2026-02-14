@@ -1,9 +1,6 @@
 // Application initialization and worker startup
-import { startWorkers } from './lib/queue/workers';
-import { initializeCronJobs } from './lib/cron/scheduler';
 import { initSentry } from './lib/monitoring/sentry';
 import { log } from './lib/monitoring/logger';
-import { checkRedisConnection } from './lib/queue/config';
 
 /**
  * Initialize application infrastructure
@@ -16,21 +13,13 @@ export async function initializeInfrastructure() {
     // Initialize Sentry
     initSentry();
 
-    // Check Redis connection
-    const redisConnected = await checkRedisConnection();
-    if (!redisConnected) {
-      log.warn('⚠️ Redis connection failed, queue and cache features will be disabled');
-      return;
-    }
-    log.info('✅ Redis connected');
-
-    // Start queue workers
-    startWorkers();
-
-    // Initialize cron jobs
-    initializeCronJobs();
-
-    log.info('✅ Infrastructure initialized successfully');
+    // Redis is disabled - skip queue and cache features
+    log.info('ℹ️ Redis is disabled - queue and cache features will not be available');
+    
+    // Note: Workers and cron jobs require Redis, so they are disabled
+    // If you need these features, enable Redis in .env
+    
+    log.info('✅ Infrastructure initialized successfully (Redis-free mode)');
   } catch (error) {
     log.error('❌ Infrastructure initialization failed', error as Error);
     throw error;
@@ -44,23 +33,9 @@ export async function shutdownInfrastructure() {
   log.info('🛑 Shutting down infrastructure...');
 
   try {
-    const { stopWorkers } = await import('./lib/queue/workers');
-    const { stopCronJobs } = await import('./lib/cron/scheduler');
-    const { closeRedisConnections } = await import('./lib/queue/config');
-    const { closeQueues } = await import('./lib/queue/queues');
-
-    // Stop workers
-    await stopWorkers();
-
-    // Stop cron jobs
-    stopCronJobs();
-
-    // Close queues
-    await closeQueues();
-
-    // Close Redis connections
-    await closeRedisConnections();
-
+    // Redis is disabled, no cleanup needed
+    log.info('ℹ️ Redis-free mode - no queue/cache cleanup needed');
+    
     log.info('✅ Infrastructure shutdown complete');
   } catch (error) {
     log.error('❌ Infrastructure shutdown failed', error as Error);

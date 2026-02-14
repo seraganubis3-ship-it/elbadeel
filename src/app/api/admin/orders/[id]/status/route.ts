@@ -49,6 +49,35 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         adminNotes: adminNotes || order.adminNotes,
         ...(workOrderNumber && { workOrderNumber: parseInt(workOrderNumber) }),
       },
+      include: {
+        service: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        variant: {
+          select: {
+            name: true,
+            priceCents: true,
+            etaDays: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        payment: true,
+        formSerials: {
+          include: {
+            formType: true,
+          },
+        },
+      },
     });
 
     if (status === 'cancelled' && order.payment) {

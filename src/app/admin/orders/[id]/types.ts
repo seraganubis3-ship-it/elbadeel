@@ -62,6 +62,9 @@ export interface Order {
   additionalPhone?: string;
   policeStation?: string;
   pickupLocation?: string;
+  translationLanguage?: string;
+  destination?: string;
+  title?: string;
 
   // Classification
   customerType?: string;

@@ -201,12 +201,75 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       orderDocuments,
       formSerials,
       createdByAdmin,
+      profession, // Remove unknown field
       ...updateData
     } = data;
 
+    // Helper to safely parse dates
+    const safeParseDate = (dateStr: string | null | undefined): Date | undefined | null => {
+      if (!dateStr || dateStr === '') return undefined;
+      try {
+        if (dateStr.includes('/')) {
+          const [day, month, year] = dateStr.split('/');
+          const date = new Date(`${year}-${month}-${day}`);
+          return isNaN(date.getTime()) ? undefined : date;
+        }
+        const date = new Date(dateStr);
+        return isNaN(date.getTime()) ? undefined : date;
+      } catch {
+        return undefined;
+      }
+    };
+
+    // Handle date fields specifically
+    const dateFields = ['birthDate', 'marriageDate', 'divorceDate', 'deathDate', 'photographyDate'];
+    const processedUpdateData: any = { ...updateData };
+
+    for (const field of dateFields) {
+      if (updateData[field] !== undefined) {
+         // If it's a string, try to parse it. If it's null/empty, set to null (or undefined to skip update if that's preferred, but usually we want to allow clearing)
+         // Based on error "premature end", it likely wants a Date object or proper ISO.
+         // If value is sent as string "2000-12-10", new Date("2000-12-10") works.
+         if (typeof updateData[field] === 'string' && updateData[field].trim() !== '') {
+             processedUpdateData[field] = safeParseDate(updateData[field]);
+         } else if (updateData[field] === '' || updateData[field] === null) {
+             processedUpdateData[field] = null;
+         }
+      }
+    }
+
     const updatedOrder = await prisma.order.update({
       where: { id },
-      data: updateData,
+      data: processedUpdateData,
+      include: {
+        service: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        variant: {
+          select: {
+            name: true,
+            priceCents: true,
+            etaDays: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        payment: true,
+        formSerials: {
+          include: {
+            formType: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json({

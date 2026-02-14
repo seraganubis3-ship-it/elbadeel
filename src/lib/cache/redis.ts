@@ -20,6 +20,10 @@ export const CACHE_TTL = {
  */
 export async function getCache<T>(key: string, prefix = 'cache'): Promise<T | null> {
   try {
+    if (!cacheConnection) {
+      return null; // Redis not configured
+    }
+    
     const fullKey = `${prefix}:${key}`;
     const value = await cacheConnection.get(fullKey);
     
@@ -43,6 +47,10 @@ export async function setCache<T>(
   options: CacheOptions = {}
 ): Promise<void> {
   try {
+    if (!cacheConnection) {
+      return; // Redis not configured, skip caching
+    }
+    
     const { ttl = 3600, prefix = 'cache' } = options;
     const fullKey = `${prefix}:${key}`;
     const serialized = JSON.stringify(value);
@@ -58,6 +66,10 @@ export async function setCache<T>(
  */
 export async function deleteCache(key: string, prefix = 'cache'): Promise<void> {
   try {
+    if (!cacheConnection) {
+      return; // Redis not configured
+    }
+    
     const fullKey = `${prefix}:${key}`;
     await cacheConnection.del(fullKey);
   } catch (error) {
@@ -70,6 +82,10 @@ export async function deleteCache(key: string, prefix = 'cache'): Promise<void> 
  */
 export async function deleteCachePattern(pattern: string, prefix = 'cache'): Promise<number> {
   try {
+    if (!cacheConnection) {
+      return 0; // Redis not configured
+    }
+    
     const fullPattern = `${prefix}:${pattern}`;
     const keys = await cacheConnection.keys(fullPattern);
     
@@ -114,6 +130,10 @@ export async function cacheAside<T>(
  */
 export async function getCacheStats() {
   try {
+    if (!cacheConnection) {
+      return null; // Redis not configured
+    }
+    
     const info = await cacheConnection.info('stats');
     const dbSize = await cacheConnection.dbsize();
     const memory = await cacheConnection.info('memory');
@@ -134,6 +154,10 @@ export async function getCacheStats() {
  */
 export async function clearAllCache(): Promise<void> {
   try {
+    if (!cacheConnection) {
+      return; // Redis not configured
+    }
+    
     await cacheConnection.flushdb();
   } catch (error) {
     console.error('Cache clear error:', error);

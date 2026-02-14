@@ -34,6 +34,7 @@ export function useOrderDetail(orderId: string) {
     senderPhone: '',
     paymentScreenshot: '',
     amount: 0,
+    discount: 0,
     notes: '',
   });
 
@@ -42,6 +43,9 @@ export function useOrderDetail(orderId: string) {
   const [whatsappMessage, setWhatsappMessage] = useState('');
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState('');
+
+  // Payment Alert State
+  const [showPaymentAlert, setShowPaymentAlert] = useState(false);
 
   const fetchOrderDetails = useCallback(async () => {
     try {
@@ -58,8 +62,14 @@ export function useOrderDetail(orderId: string) {
             senderPhone: data.order.payment.senderPhone || '',
             paymentScreenshot: data.order.payment.paymentScreenshot || '',
             amount: (data.order.payment.amount || 0) / 100,
+            discount: (data.order.discount || 0) / 100,
             notes: data.order.payment.notes || '',
           });
+        } else {
+          setPaymentData(prev => ({
+            ...prev,
+            discount: (data.order.discount || 0) / 100,
+          }));
         }
       } else {
         setTimeout(() => router.push('/admin/orders'), 2000);
@@ -196,6 +206,12 @@ export function useOrderDetail(orderId: string) {
   const updateOrder = async () => {
     if (!order) return;
 
+    // Check for outstanding balance when delivering
+    if (newStatus === 'settlement' && (order.remainingAmount || 0) > 0) {
+      setShowPaymentAlert(true);
+      return;
+    }
+
     setUpdating(true);
     try {
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
@@ -228,6 +244,7 @@ export function useOrderDetail(orderId: string) {
       const paymentRequestData = {
         ...paymentData,
         amount: Math.round(paymentData.amount * 100),
+        discount: Math.round(paymentData.discount * 100),
         workDate: getCurrentWorkDate(),
       };
 
@@ -246,6 +263,106 @@ export function useOrderDetail(orderId: string) {
       }
     } catch (error) {
       showError('خطأ في الاتصال', 'حدث خطأ أثناء تحديث معلومات الدفع. يرجى المحاولة مرة أخرى');
+    }
+  };
+
+  const uploadDocument = async (name: string, file: File | null) => {
+    if (!name.trim()) {
+      showError('بيانات ناقصة', 'يرجى إدخال اسم المرفق');
+      return;
+    }
+
+    if (!file) {
+      // Add to attachedDocuments text list
+      try {
+        const currentDocs = typeof order?.attachedDocuments === 'string'
+          ? JSON.parse(order.attachedDocuments)
+          : (order?.attachedDocuments || []);
+        
+        const newDocs = [...currentDocs, name.trim()];
+        
+        await updateOrderField({ 
+          attachedDocuments: JSON.stringify(newDocs),
+          hasAttachments: true 
+        });
+        showSuccess('تمت الإضافة', `تم إضافة "${name.trim()}" للمستندات`);
+        return;
+      } catch (error) {
+        showError('خطأ', 'فشل في تحديث قائمة المرفقات');
+        return;
+      }
+    }
+
+    setUpdating(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('files', file);
+
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formDataUpload });
+      if (!uploadRes.ok) throw new Error('فشل رفع الملف');
+      
+      const uploadData = await uploadRes.json();
+      const uploadedFile = uploadData.files[0];
+
+      const response = await fetch(`/api/admin/orders/${orderId}/documents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: name.trim(),
+          filePath: uploadedFile.filename,
+          fileSize: uploadedFile.fileSize,
+          fileType: uploadedFile.fileType,
+        }),
+      });
+
+      if (response.ok) {
+        showSuccess('تم رفع المستند بنجاح! 📁', `تمت إضافة "${name.trim()}" للطلب`);
+        fetchOrderDetails();
+      } else {
+        showError('فشل إضافة المستند', 'حدث خطأ أثناء ربط الملف بالطلب');
+      }
+    } catch (error) {
+      showError('خطأ في الرفع', 'تعذر رفع الملف في الوقت الحالي');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const deleteDocument = async (docId: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا المستند؟')) return;
+
+    setUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}/documents?docId=${docId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        showSuccess('تم حذف المستند بنجاح! 🗑️', 'تمت إزالة الملف من الطلب');
+        fetchOrderDetails();
+      } else {
+        showError('فشل الحذف', 'حدث خطأ أثناء حذف المستند');
+      }
+    } catch (error) {
+      showError('خطأ في الاتصال', 'تعذر حذف المستند في الوقت الحالي');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const removeAttachedDocument = async (index: number) => {
+    if (!order || !confirm('هل أنت متأكد من إزالة هذا المرفق؟')) return;
+
+    try {
+      const currentDocs = typeof order.attachedDocuments === 'string'
+        ? JSON.parse(order.attachedDocuments)
+        : (order.attachedDocuments || []);
+      
+      const newDocs = currentDocs.filter((_: any, i: number) => i !== index);
+      
+      await updateOrderField({ attachedDocuments: JSON.stringify(newDocs) });
+    } catch (error) {
+      showError('خطأ', 'فشل في تحديث قائمة المرفقات');
     }
   };
 
@@ -465,5 +582,10 @@ export function useOrderDetail(orderId: string) {
     deleteOrder,
     printWorkOrder,
     fetchOrderDetails,
+    showPaymentAlert,
+    setShowPaymentAlert,
+    uploadDocument,
+    deleteDocument,
+    removeAttachedDocument,
   };
 }

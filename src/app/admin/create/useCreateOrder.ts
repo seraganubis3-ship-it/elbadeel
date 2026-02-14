@@ -605,31 +605,27 @@ export function useCreateOrder() {
   }, []);
 
   // Handle save attachment
-  const handleSaveAttachment = useCallback(async () => {
-    if (!attachmentName.trim()) {
+  const handleSaveAttachment = useCallback(async (name: string, file: File | null) => {
+    if (!name.trim()) {
       showError('خطأ في الإدخال', 'يرجى إدخال اسم المرفق');
       return;
     }
 
     try {
-      if (attachmentFile) {
+      if (file) {
         const formDataUpload = new FormData();
-        formDataUpload.append('files', attachmentFile);
+        formDataUpload.append('files', file);
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formDataUpload,
         });
         if (response.ok) {
           const data = await response.json();
-          // Assuming api/upload returns { success: true, files: [...] }
-          // and files item has { originalName, filename, filePath, fileSize, fileType }
-          // filePath is the URL
-          
           if (data.files && data.files.length > 0) {
              const uploadedFile = data.files[0];
              setFormData(prev => ({
                 ...prev,
-                attachedDocuments: [...(prev.attachedDocuments || []), attachmentName.trim()],
+                attachedDocuments: [...(prev.attachedDocuments || []), name.trim()],
                 uploadedDocuments: [...(prev.uploadedDocuments || []), {
                    originalName: uploadedFile.originalName,
                    filename: uploadedFile.filename,
@@ -638,8 +634,8 @@ export function useCreateOrder() {
                    fileType: uploadedFile.fileType
                 }]
              }));
-             setUploadedFiles(prev => [...prev, attachmentFile]);
-             showSuccess('تم رفع المرفق بنجاح! 📁', `تم رفع "${attachmentName.trim()}" مع الملف`);
+             setUploadedFiles(prev => [...prev, file]);
+             showSuccess('تم رفع المرفق بنجاح! 📁', `تم رفع "${name.trim()}" مع الملف`);
           } else {
              showError('فشل في رفع الملف', 'لم يتم استرجاع معلومات الملف');
           }
@@ -651,18 +647,16 @@ export function useCreateOrder() {
       } else {
         setFormData(prev => ({
           ...prev,
-          attachedDocuments: [...(prev.attachedDocuments || []), attachmentName.trim()],
+          attachedDocuments: [...(prev.attachedDocuments || []), name.trim()],
         }));
         showSuccess(
           'تم إضافة المرفق بنجاح! 📄',
-          `تم إضافة "${attachmentName.trim()}" إلى قائمة المرفقات`
+          `تم إضافة "${name.trim()}" إلى قائمة المرفقات`
         );
       }
-      setAttachmentName('');
-      setAttachmentFile(null);
       setShowAttachmentModal(false);
     } catch {}
-  }, [attachmentName, attachmentFile, showSuccess, showError]);
+  }, [showSuccess, showError]);
 
   // Handle remove attachment
   const handleRemoveAttachment = useCallback((index: number) => {

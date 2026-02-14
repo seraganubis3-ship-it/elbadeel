@@ -152,11 +152,23 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
     </style>
   `;
 
+  // Determine report title based on content
+  const hasNationalIds = ordersToPrint.some(order => {
+    if (!order.service) return false;
+    const name = order.service.name.toLowerCase();
+    const slug = (order.service.slug || '').toLowerCase();
+    // Check if it's a national ID (but not translated)
+    const isNationalId = (name.includes('بطاقة') || slug === 'national-id') && !name.includes('مترجم');
+    return isNationalId;
+  });
+
+  const reportTitle = hasNationalIds ? 'كشف بطاقات رقم قومي' : 'كشف مستخرجات رسمية';
+
   const headerHtml = `
     <div class="top-header">
        <div class="logo-area"><img src="/images/report-header.png" class="logo-img" alt="البديل" /></div>
        <div class="report-center">
-         <div class="main-title">${ordersToPrint.length === 0 ? 'كشف مستخرجات رسمية' : ordersToPrint.length === 1 ? ordersToPrint[0]?.service?.name || 'كشف مستخرجات رسمية' : 'كشف مستخرجات رسمية'}</div>
+         <div class="main-title">${reportTitle}</div>
          <div class="date-range">${dateText}</div>
        </div>
        <div class="meta-info">

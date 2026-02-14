@@ -16,8 +16,8 @@ export default function AdminWorkDateWrapper({ children }: AdminWorkDateWrapperP
     if (status === 'authenticated' && session?.user) {
       const user = session.user as any;
 
-      // إذا كان المستخدم أدمن ولا يوجد تاريخ عمل
-      if (user.role === 'ADMIN' && !user.workDate) {
+      // إذا كان المستخدم أدمن أو موظف ولا يوجد تاريخ عمل
+      if ((user.role === 'ADMIN' || user.role === 'STAFF') && !user.workDate) {
         // التحقق من localStorage كبديل مؤقت
         const savedWorkDate = localStorage.getItem('adminWorkDate');
         if (!savedWorkDate) {
@@ -31,7 +31,7 @@ export default function AdminWorkDateWrapper({ children }: AdminWorkDateWrapperP
     }
   }, [session, status]);
 
-  // إذا كان المستخدم ليس أدمن، أظهر المحتوى عادي
+  // إذا كان المستخدم ليس أدمن أو موظف، أظهر المحتوى عادي
   if (status === 'loading') {
     return <div>جاري التحميل...</div>;
   }
@@ -41,7 +41,7 @@ export default function AdminWorkDateWrapper({ children }: AdminWorkDateWrapperP
   }
 
   const user = session.user as any;
-  if (user.role !== 'ADMIN') {
+  if (user.role !== 'ADMIN' && user.role !== 'STAFF') {
     return <>{children}</>;
   }
 

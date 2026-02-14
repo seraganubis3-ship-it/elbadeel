@@ -136,6 +136,31 @@ export const NotificationTemplates = {
       `🌐 منصة البديل`,
   }),
 
+  // Welcome message for new customers (first order)
+  welcomeNewCustomer: (
+    customerName: string,
+    orderId: string,
+    serviceName: string,
+    amount: number,
+    phone: string
+  ) => ({
+    message:
+      `🎉 *أهلاً بك في مكتب البديل!*\n\n` +
+      `مرحباً *${customerName}* 👋\n\n` +
+      `تم تسجيلك بنجاح في مكتب البديل للخدمات الحكومية\n\n` +
+      `📋 *تفاصيل طلبك الأول:*\n` +
+      `• رقم الطلب: #${orderId}\n` +
+      `• الخدمة: ${serviceName}\n` +
+      `• المبلغ: ${(amount / 100).toFixed(2)} جنيه\n\n` +
+      `🔐 *بيانات تسجيل الدخول:*\n` +
+      `• رقم الهاتف: ${phone}\n` +
+      `• كلمة المرور: ${phone}\n\n` +
+      `🌐 *رابط الموقع:*\n` +
+      `https://albadel.com.eg\n\n` +
+      `يمكنك تسجيل الدخول لمتابعة طلبك في أي وقت\n\n` +
+      `شكراً لثقتك في مكتب البديل 🏢`,
+  }),
+
   // Custom message
   custom: (customerName: string, text: string) => ({
     message:
