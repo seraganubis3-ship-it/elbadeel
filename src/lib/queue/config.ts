@@ -14,6 +14,7 @@ export const redisConfig = {
   retryStrategy: (times: number) => {
     // Only retry if we have a valid Redis URL or explicit host
     if (!process.env.REDIS_URL && !process.env.REDIS_HOST) {
+      // eslint-disable-next-line no-console
       console.warn('⚠️ No Redis URL configured, skipping retry');
       return null; // Stop retrying
     }
@@ -43,6 +44,7 @@ export const createRedisConnection = () => {
   }
   
   // If no REDIS_URL, don't create connection (avoid localhost attempts)
+  // eslint-disable-next-line no-console
   console.warn('⚠️ No REDIS_URL configured - Redis features will be disabled');
   return null as any; // Return null to prevent connection attempts
 };
@@ -61,6 +63,7 @@ export const rateLimitConnection = createRedisConnection();
 export async function checkRedisConnection(): Promise<boolean> {
   try {
     if (!queueConnection) {
+      // eslint-disable-next-line no-console
       console.warn('⚠️ Redis not configured - features will be disabled');
       return false;
     }
@@ -71,9 +74,11 @@ export async function checkRedisConnection(): Promise<boolean> {
     }
     
     await queueConnection.ping();
+    // eslint-disable-next-line no-console
     console.log('✅ Redis connected successfully');
     return true;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('❌ Redis connection failed:', error);
     return false;
   }

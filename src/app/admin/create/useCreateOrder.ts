@@ -926,9 +926,6 @@ export function useCreateOrder() {
       getCurrentWorkDate,
       showWarning,
       showError,
-      showSuccess,
-      router,
-      handleReset,
       // eslint-disable-next-line react-hooks/exhaustive-deps
     ]
   );

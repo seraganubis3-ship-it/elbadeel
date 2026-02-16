@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -98,7 +98,7 @@ export default function AnalyticsPage() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [dateRange, setDateRange] = useState<number>(30);
 
-  const fetchAnalytics = async (days: number = dateRange) => {
+  const fetchAnalytics = useCallback(async (days: number = dateRange) => {
     try {
       setLoading(true);
       const response = await fetch(`/api/admin/analytics?days=${days}`);
@@ -108,15 +108,16 @@ export default function AnalyticsPage() {
         setLastUpdate(new Date());
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch analytics:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange]);
 
   useEffect(() => {
     fetchAnalytics(dateRange);
-  }, [dateRange]);
+  }, [dateRange, fetchAnalytics]);
 
   const handleDateRangeChange = (days: number) => {
     setDateRange(days);

@@ -151,6 +151,7 @@ export default function PrintPhoneReportPage() {
           </div>
           
           <div className="absolute -right-12 -top-16">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/report-header.png" alt="Header" className="logo-img" />
           </div>
         </div>

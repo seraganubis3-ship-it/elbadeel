@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { RefreshCcw, LogOut, CheckCircle, Smartphone, AlertCircle, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -25,7 +25,20 @@ export default function WhatsAppPage() {
   // const WHATSAPP_API_URL = process.env.NEXT_PUBLIC_WHATSAPP_API_URL || 'http://127.0.0.1:3001';
 
   // Fetch WhatsApp status via our internal API proxy
-  const checkStatus = async () => {
+  const fetchQR = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/admin/whatsapp/qr?t=${Date.now()}`, {
+         cache: 'no-store',
+      });
+      const data = await response.json();
+      setStatus(data);
+    } catch (error) {
+       // eslint-disable-next-line no-console
+       console.error('WhatsApp QR Error:', error);
+    }
+  }, []);
+
+  const checkStatus = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/whatsapp/status?t=${Date.now()}`, {
         cache: 'no-store',
@@ -40,6 +53,7 @@ export default function WhatsAppPage() {
         setStatus(data);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('WhatsApp Status Error:', error);
       setStatus({
         status: 'disconnected',
@@ -49,25 +63,13 @@ export default function WhatsAppPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchQR = async () => {
-    try {
-      const response = await fetch(`/api/admin/whatsapp/qr?t=${Date.now()}`, {
-         cache: 'no-store',
-      });
-      const data = await response.json();
-      setStatus(data);
-    } catch (error) {
-       console.error('WhatsApp QR Error:', error);
-    }
-  };
+  }, [fetchQR]);
 
   useEffect(() => {
     checkStatus();
     const interval = setInterval(checkStatus, 5000); // Check every 5s
     return () => clearInterval(interval);
-  }, []);
+  }, [checkStatus]);
 
   const handleLogout = async () => {
     if (!confirm('هل أنت متأكد من تسجيل الخروج من WhatsApp؟ سيتم مسح الجلسة.')) return;
@@ -221,8 +223,8 @@ export default function WhatsAppPage() {
                   <ol className='list-decimal list-inside space-y-2 text-gray-600 text-sm'>
                     <li>افتح WhatsApp على موبايلك</li>
                     <li>اضغط على القائمة (⁝) أو الإعدادات</li>
-                    <li>اختر "الأجهزة المرتبطة" (Linked Devices)</li>
-                    <li>اضغط على "ربط جهاز" (Link a Device)</li>
+                    <li>اختر &quot;الأجهزة المرتبطة&quot; (Linked Devices)</li>
+                    <li>اضغط على &quot;ربط جهاز&quot; (Link a Device)</li>
                     <li>وجه الكاميرا نحو الـ QR Code</li>
                   </ol>
                 </div>

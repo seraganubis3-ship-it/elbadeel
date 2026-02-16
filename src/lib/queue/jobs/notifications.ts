@@ -39,6 +39,7 @@ export const emailWorker = new Worker(
         messageId: info.messageId,
       };
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Email job failed:', error);
       throw error;
     }
@@ -60,6 +61,7 @@ export const whatsappWorker = new Worker(
 
       // TODO: Integrate with WhatsApp bot
       // For now, just log
+      // eslint-disable-next-line no-console
       console.log(`📱 WhatsApp to ${phone}: ${message} (Order: ${orderId})`);
 
       await job.updateProgress(100);
@@ -70,6 +72,7 @@ export const whatsappWorker = new Worker(
         orderId,
       };
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('WhatsApp job failed:', error);
       throw error;
     }
@@ -82,19 +85,23 @@ export const whatsappWorker = new Worker(
 
 // Event handlers for email worker
 emailWorker.on('completed', (job: any) => {
+  // eslint-disable-next-line no-console
   console.log(`✅ Email job ${job.id} completed`);
 });
 
 emailWorker.on('failed', (job: any, err: Error) => {
+  // eslint-disable-next-line no-console
   console.error(`❌ Email job ${job?.id} failed:`, err.message);
 });
 
 // Event handlers for WhatsApp worker
 whatsappWorker.on('completed', (job: any) => {
+  // eslint-disable-next-line no-console
   console.log(`✅ WhatsApp job ${job.id} completed`);
 });
 
 whatsappWorker.on('failed', (job: any, err: Error) => {
+  // eslint-disable-next-line no-console
   console.error(`❌ WhatsApp job ${job?.id} failed:`, err.message);
 });
 

@@ -25,6 +25,7 @@ export async function GET() {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('WhatsApp Bot Status Error:', error);
     return NextResponse.json(
       { status: 'disconnected', error: 'Failed to connect to bot' },

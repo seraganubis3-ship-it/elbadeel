@@ -104,6 +104,7 @@ export async function checkRateLimit(
       blocked: false,
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Rate limit check failed:', error);
     // Fail open - allow request if Redis is down
     return {

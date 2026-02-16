@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/nextjs';
  */
 export function initSentry() {
   if (!process.env.SENTRY_DSN) {
+    // eslint-disable-next-line no-console
     console.warn('⚠️ Sentry DSN not configured, error tracking disabled');
     return;
   }
@@ -21,6 +22,7 @@ export function initSentry() {
     beforeSend(event: any, hint: any) {
       // Don't send errors in development
       if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
         console.error('Sentry Event:', event, hint);
         return null;
       }
@@ -35,6 +37,7 @@ export function initSentry() {
     ],
   });
 
+  // eslint-disable-next-line no-console
   console.log('✅ Sentry initialized');
 }
 

@@ -9,17 +9,21 @@ const activeCronJobs: Map<string, cron.ScheduledTask> = new Map();
  * Initialize all cron jobs
  */
 export function initializeCronJobs() {
+  // eslint-disable-next-line no-console
   console.log('🕐 Initializing cron jobs...');
 
   // Cleanup old files - Daily at 2 AM
   const cleanupJob = cron.schedule(
     '0 2 * * *',
     async () => {
+      // eslint-disable-next-line no-console
       console.log('🧹 Running file cleanup job...');
       try {
         await cleanupOldFiles();
+        // eslint-disable-next-line no-console
         console.log('✅ File cleanup completed');
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('❌ File cleanup failed:', error);
       }
     },
@@ -78,9 +82,11 @@ export function initializeCronJobs() {
         const { checkDatabaseHealth } = await import('@/lib/databaseMonitor');
         const health = await checkDatabaseHealth();
         if (!health.healthy) {
+          // eslint-disable-next-line no-console
           console.warn('⚠️ Database health issues detected:', health.issues);
         }
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('❌ Health check failed:', error);
       }
     },
@@ -91,6 +97,7 @@ export function initializeCronJobs() {
   );
   activeCronJobs.set('health-check', healthCheckJob);
 
+  // eslint-disable-next-line no-console
   console.log(`✅ ${activeCronJobs.size} cron jobs initialized`);
 }
 
@@ -98,9 +105,11 @@ export function initializeCronJobs() {
  * Stop all cron jobs
  */
 export function stopCronJobs() {
+  // eslint-disable-next-line no-console
   console.log('🛑 Stopping cron jobs...');
   activeCronJobs.forEach((job, name) => {
     job.stop();
+    // eslint-disable-next-line no-console
     console.log(`✅ Stopped: ${name}`);
   });
   activeCronJobs.clear();

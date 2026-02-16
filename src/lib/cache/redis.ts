@@ -33,6 +33,7 @@ export async function getCache<T>(key: string, prefix = 'cache'): Promise<T | nu
     
     return JSON.parse(value) as T;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Cache get error:', error);
     return null;
   }
@@ -57,6 +58,7 @@ export async function setCache<T>(
     
     await cacheConnection.setex(fullKey, ttl, serialized);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Cache set error:', error);
   }
 }
@@ -73,6 +75,7 @@ export async function deleteCache(key: string, prefix = 'cache'): Promise<void> 
     const fullKey = `${prefix}:${key}`;
     await cacheConnection.del(fullKey);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Cache delete error:', error);
   }
 }
@@ -96,6 +99,7 @@ export async function deleteCachePattern(pattern: string, prefix = 'cache'): Pro
     await cacheConnection.del(...keys);
     return keys.length;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Cache pattern delete error:', error);
     return 0;
   }
@@ -144,6 +148,7 @@ export async function getCacheStats() {
       memory,
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Cache stats error:', error);
     return null;
   }
@@ -160,6 +165,7 @@ export async function clearAllCache(): Promise<void> {
     
     await cacheConnection.flushdb();
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Cache clear error:', error);
   }
 }

@@ -33,9 +33,11 @@ export async function cleanupOldFiles() {
       }
     } catch (error) {
       // Directory might not exist
+      // eslint-disable-next-line no-console
       console.log('Temp directory not found, skipping...');
     }
 
+    // eslint-disable-next-line no-console
     console.log(`🧹 Cleanup complete: Deleted ${deletedCount} temporary files (${(totalSize / 1024 / 1024).toFixed(2)} MB)`);
     
     return {
@@ -43,6 +45,7 @@ export async function cleanupOldFiles() {
       totalSize,
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Cleanup job error:', error);
     throw error;
   }
@@ -53,5 +56,6 @@ export async function cleanupOldFiles() {
  */
 export async function cleanupOldSessions() {
   // TODO: Implement Redis session cleanup if needed
+  // eslint-disable-next-line no-console
   console.log('🧹 Session cleanup not yet implemented');
 }

@@ -36,14 +36,17 @@ export async function performDatabaseBackup() {
     // Create pg_dump command
     const command = `PGPASSWORD="${dbPassword}" pg_dump -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F c -f "${backupPath}"`;
 
+    // eslint-disable-next-line no-console
     console.log('💾 Creating database backup...');
     await execAsync(command);
 
     // Get file stats
     const stats = await fs.stat(backupPath);
+    // eslint-disable-next-line no-console
     console.log(`✅ Backup created: ${backupFileName} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`);
 
     // Upload to Backblaze B2
+    // eslint-disable-next-line no-console
     console.log('☁️ Uploading backup to B2...');
     const fileBuffer = await fs.readFile(backupPath);
     const file = new File([new Uint8Array(fileBuffer)], backupFileName, {
@@ -51,6 +54,7 @@ export async function performDatabaseBackup() {
     });
 
     const fileKey = await uploadToBackblaze(file, 'backups');
+    // eslint-disable-next-line no-console
     console.log(`✅ Backup uploaded to B2: ${fileKey}`);
 
     // Clean up old local backups (keep last 7 days)
@@ -62,6 +66,7 @@ export async function performDatabaseBackup() {
       fileKey,
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Backup job error:', error);
     throw error;
   }
@@ -86,10 +91,12 @@ async function cleanupOldBackups() {
 
       if (now - stats.mtimeMs > maxAgeMs) {
         await fs.unlink(filePath);
+        // eslint-disable-next-line no-console
         console.log(`🗑️ Deleted old backup: ${file}`);
       }
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error cleaning old backups:', error);
   }
 }

@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Queue status error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to get queue status' },

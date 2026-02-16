@@ -4,16 +4,21 @@ import { emailWorker, whatsappWorker, closeNotificationWorkers } from './jobs/no
 
 // Start all workers
 export function startWorkers() {
+  // eslint-disable-next-line no-console
   console.log('🚀 Starting queue workers...');
   
   // Workers are automatically started when imported
+  // eslint-disable-next-line no-console
   console.log('✅ Image upload worker started');
+  // eslint-disable-next-line no-console
   console.log('✅ Email worker started');
+  // eslint-disable-next-line no-console
   console.log('✅ WhatsApp worker started');
 }
 
 // Stop all workers gracefully
 export async function stopWorkers() {
+  // eslint-disable-next-line no-console
   console.log('🛑 Stopping queue workers...');
   
   await Promise.all([
@@ -21,6 +26,7 @@ export async function stopWorkers() {
     closeNotificationWorkers(),
   ]);
   
+  // eslint-disable-next-line no-console
   console.log('✅ All workers stopped');
 }
 

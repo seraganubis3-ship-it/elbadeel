@@ -157,9 +157,9 @@ export default function ServiceFieldsManager({
                         onChange={e => updateField(fIdx, 'type', e.target.value)}
                         className='w-full px-5 py-3 bg-purple-50/50 border border-purple-100 rounded-2xl focus:border-purple-500 outline-none font-bold text-gray-800 appearance-none'
                       >
-                         <option value="select">اختيارات (Dropdown)</option>
-                         <option value="text">نص قصير (Input)</option>
-                         <option value="textarea">نص طويل (Textarea)</option>
+                        <option value='select'>اختيارات (Dropdown)</option>
+                        <option value='text'>نص قصير (Input)</option>
+                        <option value='textarea'>نص طويل (Textarea)</option>
                       </select>
                     </div>
                     <div>
@@ -175,18 +175,18 @@ export default function ServiceFieldsManager({
                       />
                     </div>
                     {(field.type === 'text' || field.type === 'textarea') && (
-                       <div>
-                          <label className='block text-xs font-black text-purple-400 uppercase tracking-widest mb-2'>
-                            نص توضيحي (Placeholder)
-                          </label>
-                          <input
-                            type='text'
-                            value={field.placeholder || ''}
-                            onChange={e => updateField(fIdx, 'placeholder', e.target.value)}
-                            className='w-full px-5 py-3 bg-purple-50/50 border border-purple-100 rounded-2xl focus:border-purple-500 outline-none font-bold text-gray-800'
-                            placeholder='مثال: اكتب اسمك هنا...'
-                          />
-                       </div>
+                      <div>
+                        <label className='block text-xs font-black text-purple-400 uppercase tracking-widest mb-2'>
+                          نص توضيحي (Placeholder)
+                        </label>
+                        <input
+                          type='text'
+                          value={field.placeholder || ''}
+                          onChange={e => updateField(fIdx, 'placeholder', e.target.value)}
+                          className='w-full px-5 py-3 bg-purple-50/50 border border-purple-100 rounded-2xl focus:border-purple-500 outline-none font-bold text-gray-800'
+                          placeholder='مثال: اكتب اسمك هنا...'
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -208,94 +208,94 @@ export default function ServiceFieldsManager({
 
               {/* Options Section - ONLY SHOW FOR SELECT TYPE */}
               {field.type === 'select' && (
-              <div className='space-y-4'>
-                <div className='flex items-center justify-between'>
-                  <span className='text-xs font-black text-gray-400 uppercase tracking-widest'>
-                    الاختيارات المتاحة لهذا السؤال
-                  </span>
-                  <button
-                    type='button'
-                    onClick={() => addOption(fIdx)}
-                    className='text-xs font-black text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-xl border border-purple-200 transition-colors'
-                  >
-                    + إضافة اختيار
-                  </button>
-                </div>
-
-                <div className='grid grid-cols-1 gap-4'>
-                  {field.options.map((opt, oIdx) => (
-                    <div
-                      key={opt.id}
-                      className='p-6 bg-slate-50 border border-slate-100 rounded-2xl space-y-4'
+                <div className='space-y-4'>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-xs font-black text-gray-400 uppercase tracking-widest'>
+                      الاختيارات المتاحة لهذا السؤال
+                    </span>
+                    <button
+                      type='button'
+                      onClick={() => addOption(fIdx)}
+                      className='text-xs font-black text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-xl border border-purple-200 transition-colors'
                     >
-                      <div className='flex items-center gap-4'>
-                        <div className='flex-1'>
-                          <input
-                            type='text'
-                            value={opt.label}
-                            onChange={e => updateOption(fIdx, oIdx, 'label', e.target.value)}
-                            onBlur={() => updateOption(fIdx, oIdx, 'value', opt.label)}
-                            className='w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:border-purple-500 outline-none font-bold'
-                            placeholder='نص الاختيار (مثال: نعم، لأول مرة)'
-                          />
-                        </div>
-                        <button
-                          type='button'
-                          onClick={() => removeOption(fIdx, oIdx)}
-                          className='text-slate-400 hover:text-red-500 transition-colors'
-                        >
-                          <svg
-                            className='w-5 h-5'
-                            fill='none'
-                            stroke='currentColor'
-                            viewBox='0 0 24 24'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M6 18L18 6M6 6l12 12'
-                            />
-                          </svg>
-                        </button>
-                      </div>
+                      + إضافة اختيار
+                    </button>
+                  </div>
 
-                      {/* Required Documents for this option */}
-                      <div>
-                        <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3'>
-                          المستندات الإضافية المطلوبة عند اختيار هذا الرد:
-                        </label>
-                        <div className='flex flex-wrap gap-2'>
-                          {availableDocuments.map(doc => (
-                            <button
-                              key={doc.id}
-                              type='button'
-                              onClick={() => toggleDocForOption(fIdx, oIdx, doc.title)}
-                              className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-                                (opt.requiredDocs || []).includes(doc.title)
-                                  ? 'bg-purple-600 text-white border-purple-600 shadow-md'
-                                  : 'bg-white text-slate-600 border-slate-200 hover:border-purple-300'
-                              }`}
+                  <div className='grid grid-cols-1 gap-4'>
+                    {field.options.map((opt, oIdx) => (
+                      <div
+                        key={opt.id}
+                        className='p-6 bg-slate-50 border border-slate-100 rounded-2xl space-y-4'
+                      >
+                        <div className='flex items-center gap-4'>
+                          <div className='flex-1'>
+                            <input
+                              type='text'
+                              value={opt.label}
+                              onChange={e => updateOption(fIdx, oIdx, 'label', e.target.value)}
+                              onBlur={() => updateOption(fIdx, oIdx, 'value', opt.label)}
+                              className='w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:border-purple-500 outline-none font-bold'
+                              placeholder='نص الاختيار (مثال: نعم، لأول مرة)'
+                            />
+                          </div>
+                          <button
+                            type='button'
+                            onClick={() => removeOption(fIdx, oIdx)}
+                            className='text-slate-400 hover:text-red-500 transition-colors'
+                          >
+                            <svg
+                              className='w-5 h-5'
+                              fill='none'
+                              stroke='currentColor'
+                              viewBox='0 0 24 24'
                             >
-                              {doc.title}
-                            </button>
-                          ))}
-                          {availableDocuments.length === 0 && (
-                            <span className='text-xs text-slate-400 italic'>
-                              برجاء إضافة مستندات في تبويب المستندات أولاً ليتم ربطها هنا
-                            </span>
-                          )}
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                strokeWidth={2}
+                                d='M6 18L18 6M6 6l12 12'
+                              />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* Required Documents for this option */}
+                        <div>
+                          <label className='block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3'>
+                            المستندات الإضافية المطلوبة عند اختيار هذا الرد:
+                          </label>
+                          <div className='flex flex-wrap gap-2'>
+                            {availableDocuments.map(doc => (
+                              <button
+                                key={doc.id}
+                                type='button'
+                                onClick={() => toggleDocForOption(fIdx, oIdx, doc.title)}
+                                className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+                                  (opt.requiredDocs || []).includes(doc.title)
+                                    ? 'bg-purple-600 text-white border-purple-600 shadow-md'
+                                    : 'bg-white text-slate-600 border-slate-200 hover:border-purple-300'
+                                }`}
+                              >
+                                {doc.title}
+                              </button>
+                            ))}
+                            {availableDocuments.length === 0 && (
+                              <span className='text-xs text-slate-400 italic'>
+                                برجاء إضافة مستندات في تبويب المستندات أولاً ليتم ربطها هنا
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  {field.options.length === 0 && (
-                    <div className='p-4 text-center text-sm text-slate-400 font-bold border-2 border-dashed border-slate-100 rounded-2xl'>
-                      لم يتم إضافة اختيارات لهذا السؤال بعد
-                    </div>
-                  )}
+                    ))}
+                    {field.options.length === 0 && (
+                      <div className='p-4 text-center text-sm text-slate-400 font-bold border-2 border-dashed border-slate-100 rounded-2xl'>
+                        لم يتم إضافة اختيارات لهذا السؤال بعد
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
               )}
             </div>
           </div>

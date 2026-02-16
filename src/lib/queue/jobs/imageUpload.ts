@@ -34,6 +34,7 @@ export const imageUploadWorker = new Worker(
       };
     } catch (error) {
       // Log error
+      // eslint-disable-next-line no-console
       console.error('Image upload job failed:', error);
       throw error; // Will trigger retry
     }
@@ -62,15 +63,18 @@ function getFileType(fileName: string): string {
 
 // Event handlers
 imageUploadWorker.on('completed', (job: any) => {
+  // eslint-disable-next-line no-console
   console.log(`✅ Image upload job ${job.id} completed:`, job.returnvalue);
 });
 
 imageUploadWorker.on('failed', (job: any, err: Error) => {
+  // eslint-disable-next-line no-console
   console.error(`❌ Image upload job ${job?.id} failed:`, err.message);
 });
 
 imageUploadWorker.on('progress', (job: any, progress: any) => {
   const progressValue = typeof progress === 'number' ? progress : 0;
+  // eslint-disable-next-line no-console
   console.log(`📊 Image upload job ${job.id} progress: ${progressValue}%`);
 });
 

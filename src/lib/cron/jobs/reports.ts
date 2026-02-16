@@ -210,6 +210,7 @@ export async function generateDailyReports() {
       }
     }
 
+    // eslint-disable-next-line no-console
     console.log(`📊 Daily report generated and sent to ${admins.length} admins`);
 
     return {
@@ -221,6 +222,7 @@ export async function generateDailyReports() {
       adminCount: admins.length,
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Reports job error:', error);
     throw error;
   }
