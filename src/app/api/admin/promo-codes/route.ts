@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         usageLimit,
         usageLimitPerUser,
         isActive: true,
-      },
+      } as any,
     });
 
     return NextResponse.json({ success: true, promoCode });

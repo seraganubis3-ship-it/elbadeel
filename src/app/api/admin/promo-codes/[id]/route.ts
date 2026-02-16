@@ -33,7 +33,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         usageLimit,
         usageLimitPerUser,
         isActive,
-      },
+      } as any,
     });
 
     return NextResponse.json({ success: true, promoCode });
