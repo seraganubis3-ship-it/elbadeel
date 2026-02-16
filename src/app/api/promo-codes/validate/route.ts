@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check usage limit per user
-    if (promoCode.usageLimitPerUser && (userId || phone)) {
+    if ((promoCode as any).usageLimitPerUser && (userId || phone)) {
       const userUsageCount = await prisma.order.count({
         where: {
           promoCodeId: promoCode.id,
@@ -52,11 +52,11 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      if (userUsageCount >= promoCode.usageLimitPerUser) {
+      if (userUsageCount >= (promoCode as any).usageLimitPerUser) {
         return NextResponse.json({
           success: false,
           valid: false,
-          error: `عفواً، لقد تجاوزت الحد المسموح لاستخدام هذا الكوبون (${promoCode.usageLimitPerUser} مرة)`,
+          error: `عفواً، لقد تجاوزت الحد المسموح لاستخدام هذا الكوبون (${(promoCode as any).usageLimitPerUser} مرة)`,
         });
       }
     }
