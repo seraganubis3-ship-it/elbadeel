@@ -25,6 +25,7 @@ export default function OrderCustomerDetails({
     customerPhone: string;
     additionalPhone: string;
     profession: string;
+    customerFollowUp: string;
   }>({
     customerName: order.customerName || '',
     idNumber: order.idNumber || '',
@@ -32,6 +33,7 @@ export default function OrderCustomerDetails({
     customerPhone: order.customerPhone || '',
     additionalPhone: order.additionalPhone || '',
     profession: order.profession || '',
+    customerFollowUp: order.customerFollowUp || '',
   });
 
   const handleSave = () => {
@@ -86,6 +88,7 @@ export default function OrderCustomerDetails({
           { label: 'رقم الهاتف', value: order.customerPhone, key: 'customerPhone', type: 'tel' },
           { label: 'رقم هاتف إضافي', value: order.additionalPhone, key: 'additionalPhone', type: 'tel' },
           { label: 'المهنة', value: order.profession, key: 'profession', type: 'text' },
+          { label: 'التابع', value: order.customerFollowUp, key: 'customerFollowUp', type: 'text' },
         ].map((item) => (
           <div key={item.key} className='group/field p-4 bg-slate-50/30 rounded-2xl border border-slate-100'>
             <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>{item.label}</p>

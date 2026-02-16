@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { code, orderTotal } = body; // orderTotal in cents
+    const { code, orderTotal, userId, phone } = body; // orderTotal in cents
 
     if (!code) {
       return NextResponse.json({ success: false, error: 'كود الخصم مطلوب' }, { status: 400 });
@@ -33,12 +33,32 @@ export async function POST(request: NextRequest) {
     }
 
     if (promoCode.usageLimit && promoCode.currentUsage >= promoCode.usageLimit) {
-      // make check accurate by counting orders if needed, but currentUsage field is faster
       return NextResponse.json({
         success: false,
         valid: false,
         error: 'تم تجاوز حد الاستخدام لهذا الكوبون',
       });
+    }
+
+    // Check usage limit per user
+    if (promoCode.usageLimitPerUser && (userId || phone)) {
+      const userUsageCount = await prisma.order.count({
+        where: {
+          promoCodeId: promoCode.id,
+          OR: [
+            ...(userId ? [{ userId }] : []),
+            ...(phone ? [{ customerPhone: phone }] : []),
+          ],
+        },
+      });
+
+      if (userUsageCount >= promoCode.usageLimitPerUser) {
+        return NextResponse.json({
+          success: false,
+          valid: false,
+          error: `عفواً، لقد تجاوزت الحد المسموح لاستخدام هذا الكوبون (${promoCode.usageLimitPerUser} مرة)`,
+        });
+      }
     }
 
     if (promoCode.minOrderAmount && orderTotal < promoCode.minOrderAmount) {

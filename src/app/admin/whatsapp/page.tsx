@@ -1,391 +1,262 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { RefreshCcw, LogOut, CheckCircle, Smartphone, AlertCircle, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-interface ConnectionInfo {
-  phoneNumber: string;
-  name: string;
-  platform: string;
-}
-
 interface WhatsAppStatus {
-  status: 'connected' | 'disconnected' | 'loading' | 'qr_ready';
-  qrRequired?: boolean;
-  loading?: boolean;
-  connectionInfo?: ConnectionInfo;
+  status: 'connected' | 'disconnected' | 'qr_ready' | 'loading';
+  qrRequired: boolean;
   qrImage?: string;
+  user?: {
+    id: string;
+    name?: string;
+  };
   message?: string;
 }
 
 export default function WhatsAppPage() {
-  const { data: session } = useSession();
   const [status, setStatus] = useState<WhatsAppStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [testPhone, setTestPhone] = useState('');
-  const [testMessage, setTestMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [testing, setTesting] = useState(false);
 
-  const WHATSAPP_API_URL = process.env.NEXT_PUBLIC_WHATSAPP_API_URL || 'http://127.0.0.1:3001';
+  // We now use internal API proxy, so we don't need WHATSAPP_API_URL here
+  // const WHATSAPP_API_URL = process.env.NEXT_PUBLIC_WHATSAPP_API_URL || 'http://127.0.0.1:3001';
 
-  // Fetch WhatsApp status
-  const fetchStatus = useCallback(async () => {
+  // Fetch WhatsApp status via our internal API proxy
+  const checkStatus = async () => {
     try {
-      const response = await fetch(`${WHATSAPP_API_URL}/qr?t=${Date.now()}`, {
+      const response = await fetch(`/api/admin/whatsapp/status?t=${Date.now()}`, {
         cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' },
       });
+      
       const data = await response.json();
-      setStatus(data);
-      setStatus(data);
+      
+      if (data.qrRequired) {
+        // If QR is required, fetch the QR image via proxy
+        fetchQR();
+      } else {
+        setStatus(data);
+      }
     } catch (error) {
-      // console.error('WhatsApp Fetch Error:', error);
+      console.error('WhatsApp Status Error:', error);
       setStatus({
         status: 'disconnected',
-        message: `فشل الاتصال: ${(error as Error).message} (URL: ${WHATSAPP_API_URL})`,
+        qrRequired: false,
+        message: 'فشل الاتصال بالخدمة',
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [WHATSAPP_API_URL]);
+  };
 
-  // Auto-refresh status
-  useEffect(() => {
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 3000); // Refresh every 3 seconds
-    return () => clearInterval(interval);
-  }, [fetchStatus]);
-
-  useEffect(() => {
-    const handleFocus = () => fetchStatus();
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') fetchStatus();
-    };
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, [fetchStatus]);
-
-  // Handle logout
-  const handleLogout = async () => {
+  const fetchQR = async () => {
     try {
-      const response = await fetch(`${WHATSAPP_API_URL}/logout`, {
+      const response = await fetch(`/api/admin/whatsapp/qr?t=${Date.now()}`, {
+         cache: 'no-store',
+      });
+      const data = await response.json();
+      setStatus(data);
+    } catch (error) {
+       console.error('WhatsApp QR Error:', error);
+    }
+  };
+
+  useEffect(() => {
+    checkStatus();
+    const interval = setInterval(checkStatus, 5000); // Check every 5s
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLogout = async () => {
+    if (!confirm('هل أنت متأكد من تسجيل الخروج من WhatsApp؟ سيتم مسح الجلسة.')) return;
+
+    try {
+      const response = await fetch(`/api/admin/whatsapp/logout`, {
         method: 'POST',
       });
       const data = await response.json();
+      
       if (data.success) {
         toast.success('تم تسجيل الخروج من WhatsApp');
-        fetchStatus();
+        setStatus(null);
+        setLoading(true);
+        setTimeout(checkStatus, 2000);
       } else {
-        toast.error(data.message || 'فشل في تسجيل الخروج');
+        toast.error('فشل تسجيل الخروج');
       }
-    } catch {
-      toast.error('خطأ في الاتصال بالبوت');
+    } catch (error) {
+      toast.error('حدث خطأ أثناء تسجيل الخروج');
     }
   };
 
-  // Send test message
-  const handleSendTest = async () => {
-    if (!testPhone || !testMessage) {
-      toast.error('أدخل رقم الهاتف والرسالة');
-      return;
-    }
-
-    setIsSending(true);
+  const testConnection = async () => {
+    if (!status?.user?.id) return;
+    
+    setTesting(true);
     try {
-      const response = await fetch(`${WHATSAPP_API_URL}/send`, {
+      // Use the existing send API which is already proxied or server-side
+      const response = await fetch(`/api/admin/whatsapp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: testPhone, message: testMessage }),
+        body: JSON.stringify({
+           phone: status.user.id.split(':')[0], // Send to self
+           message: '✅ اختبار اتصال منصة البديل ناجح!' 
+        }),
       });
+
       const data = await response.json();
       if (data.success) {
-        toast.success('تم إرسال الرسالة بنجاح! ✅');
-        setTestMessage('');
+        toast.success('تم إرسال رسالة اختبار بنجاح');
       } else {
-        toast.error(data.error || 'فشل في إرسال الرسالة');
+        toast.error(data.error || 'فشل الاختبار');
       }
-    } catch {
-      toast.error('خطأ في الاتصال بالبوت');
+    } catch (error) {
+      toast.error('خطأ في الاتصال');
     } finally {
-      setIsSending(false);
+      setTesting(false);
     }
   };
 
-  // Check if user is admin
-  if (!session?.user || session.user.role !== 'ADMIN') {
-    return (
-      <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-green-50 to-slate-100'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold text-gray-900 mb-4'>غير مصرح</h1>
-          <p className='text-gray-600 mb-4'>هذه الصفحة للمديرين فقط</p>
-          <Link href='/admin' className='text-green-600 hover:underline'>
-            العودة للوحة التحكم
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-slate-100 p-4 md:p-8'>
-      <div className='max-w-4xl mx-auto'>
-        {/* Header */}
-        <div className='mb-8'>
-          <div className='flex items-center gap-4 mb-4'>
-            <Link
-              href='/admin'
-              className='p-2 bg-white rounded-lg shadow hover:shadow-md transition-all'
-            >
-              <svg
-                className='w-5 h-5 text-gray-600'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M10 19l-7-7m0 0l7-7m-7 7h18'
-                />
-              </svg>
-            </Link>
-            <div>
-              <h1 className='text-3xl font-bold text-gray-900 flex items-center gap-3'>
-                <span className='text-4xl'>📱</span>
-                إدارة WhatsApp
-              </h1>
-              <p className='text-gray-600 mt-1'>ربط WhatsApp لإرسال إشعارات تلقائية للعملاء</p>
-            </div>
-          </div>
+    <div className='p-6 max-w-4xl mx-auto'>
+      <div className='flex justify-between items-center mb-8'>
+        <div>
+          <h1 className='text-3xl font-bold text-gray-900 flex items-center gap-2'>
+            <Image src='/icons/whatsapp.png' width={40} height={40} alt='WhatsApp' />
+            إدارة WhatsApp
+          </h1>
+          <p className='text-gray-600 mt-1'>ربط WhatsApp لإرسال إشعارات تلقائية للعملاء</p>
         </div>
+        
+        <button 
+          onClick={() => { setLoading(true); checkStatus(); }}
+          className='p-2 hover:bg-gray-100 rounded-full transition-colors'
+          title='تحديث الحالة'
+        >
+          <RefreshCcw size={20} className={loading ? 'animate-spin text-gray-500' : 'text-gray-600'} />
+        </button>
+      </div>
 
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
         {/* Status Card */}
-        <div className='bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-6'>
-          <h2 className='text-xl font-bold text-gray-900 mb-4 flex items-center gap-2'>
-            <span className='text-2xl'>📊</span>
-            حالة الاتصال
-          </h2>
-
-          {isLoading ? (
-            <div className='flex items-center justify-center py-12'>
-              <div className='animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent'></div>
-              <span className='mr-4 text-gray-600'>جاري التحقق من الاتصال...</span>
+        <div className='bg-white rounded-xl shadow-sm border p-6'>
+          <h2 className='text-xl font-bold mb-4'>حالة الاتصال</h2>
+          
+          {loading && !status ? (
+            <div className='flex flex-col items-center justify-center py-12'>
+              <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4'></div>
+              <p className='text-gray-500'>جاري التحقق من الحالة...</p>
             </div>
           ) : status?.status === 'connected' ? (
-            // Connected State
             <div className='text-center py-8'>
-              <div className='w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-                <svg
-                  className='w-12 h-12 text-green-600'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M5 13l4 4L19 7'
-                  />
-                </svg>
+              <div className='w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <CheckCircle size={40} className='text-green-600' />
               </div>
-              <h3 className='text-2xl font-bold text-green-600 mb-2'>متصل ✅</h3>
-              <p className='text-gray-600 mb-4'>WhatsApp جاهز لإرسال الرسائل</p>
-
-              {status.connectionInfo && (
-                <div className='bg-green-50 rounded-xl p-4 inline-block text-right mb-6'>
-                  <p className='text-sm text-gray-600 mb-1'>
-                    <span className='font-semibold'>الاسم:</span>{' '}
-                    {status.connectionInfo.name || 'غير معروف'}
-                  </p>
-                  <p className='text-sm text-gray-600 mb-1'>
-                    <span className='font-semibold'>رقم الهاتف:</span> +
-                    {status.connectionInfo.phoneNumber}
-                  </p>
-                  <p className='text-sm text-gray-600'>
-                    <span className='font-semibold'>المنصة:</span> {status.connectionInfo.platform}
-                  </p>
-                </div>
-              )}
-
-              <button
-                onClick={handleLogout}
-                className='px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all'
-              >
-                تسجيل الخروج من WhatsApp
-              </button>
-            </div>
-          ) : status?.status === 'qr_ready' ? (
-            // QR Code State
-            <div className='text-center py-8'>
-              <div className='mb-4'>
-                <span className='text-5xl'>📲</span>
-              </div>
-              <h3 className='text-xl font-bold text-gray-900 mb-2'>امسح الـ QR Code</h3>
-              <p className='text-gray-600 mb-6'>{status.message}</p>
-
-              {/* QR Code Image - Using regular img for base64 reliability */}
-              <div className='bg-white p-4 rounded-2xl shadow-lg inline-block mb-6 border-4 border-green-500'>
-                {status.qrImage ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={status.qrImage}
-                    alt='WhatsApp QR Code'
-                    className='w-64 h-64 mx-auto'
-                    width={256}
-                    height={256}
-                  />
-                ) : (
-                  <div className='w-64 h-64 flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg'>
-                    <div className='text-center'>
-                      <div className='animate-spin rounded-full h-8 w-8 border-4 border-green-500 border-t-transparent mx-auto mb-2'></div>
-                      <p className='text-sm text-gray-400 font-medium'>جاري توليد الكود...</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className='bg-blue-50 rounded-xl p-4 max-w-md mx-auto text-right'>
-                <h4 className='font-bold text-blue-800 mb-2'>📋 خطوات الربط:</h4>
-                <ol className='text-sm text-blue-700 space-y-1 list-decimal list-inside'>
-                  <li>افتح WhatsApp على موبايلك</li>
-                  <li>اذهب للإعدادات ← الأجهزة المرتبطة</li>
-                  <li>اضغط على &quot;ربط جهاز&quot;</li>
-                  <li>امسح الـ QR Code اللي فوق</li>
-                </ol>
-              </div>
-
-              <p className='text-sm text-gray-500 mt-4 animate-pulse'>
-                ⏳ الكود بيتحدث تلقائياً كل فترة...
+              <h3 className='text-2xl font-bold text-green-700 mb-2'>متصل بنجاح</h3>
+              <p className='text-gray-600 mb-6'>
+                تم ربط الرقم: <span dir='ltr' className='font-mono font-semibold'>{status.user?.id?.split(':')[0]}</span>
               </p>
-            </div>
-          ) : status?.status === 'loading' ? (
-            // Loading State
-            <div className='text-center py-12'>
-              <div className='animate-spin rounded-full h-16 w-16 border-4 border-yellow-500 border-t-transparent mx-auto mb-4'></div>
-              <h3 className='text-xl font-bold text-gray-900 mb-2'>جاري تحميل WhatsApp</h3>
-              <p className='text-gray-600'>{status.message}</p>
-              <p className='text-sm text-gray-500 mt-2'>انتظر قليلاً حتى يظهر الـ QR Code...</p>
+              
+              <div className='flex flex-col gap-3'>
+                <button
+                  onClick={testConnection}
+                  disabled={testing}
+                  className='flex items-center justify-center gap-2 bg-blue-50 text-blue-700 py-3 rounded-lg hover:bg-blue-100 transition-colors'
+                >
+                  {testing ? (
+                    <span className='animate-spin'>⌛</span>
+                  ) : (
+                    <Send size={18} />
+                  )}
+                  إرسال رسالة اختبار
+                </button>
+                
+                <button 
+                  onClick={handleLogout}
+                  className='flex items-center justify-center gap-2 bg-red-50 text-red-700 py-3 rounded-lg hover:bg-red-100 transition-colors'
+                >
+                  <LogOut size={18} />
+                  تسجيل الخروج
+                </button>
+              </div>
             </div>
           ) : (
-            // Disconnected State
-            <div className='text-center py-12'>
-              <div className='w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-                <svg
-                  className='w-12 h-12 text-red-600'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M6 18L18 6M6 6l12 12'
-                  />
-                </svg>
+            <div className='text-center py-8'>
+              <div className='w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <Smartphone size={40} className='text-gray-400' />
               </div>
-              <h3 className='text-2xl font-bold text-red-600 mb-2'>غير متصل ❌</h3>
-              <p className='text-gray-600 mb-6'>{status?.message || 'البوت غير متصل'}</p>
-
-              <div className='bg-yellow-50 rounded-xl p-4 max-w-lg mx-auto text-right'>
-                <h4 className='font-bold text-yellow-800 mb-2'>⚠️ لتشغيل البوت:</h4>
-                <p className='text-sm text-yellow-700 mb-2'>افتح Terminal واكتب:</p>
-                <code className='bg-gray-900 text-green-400 px-4 py-2 rounded-lg block text-center font-mono'>
-                  npm run whatsapp
-                </code>
+              <p className='text-gray-600 mb-4'>WhatsApp غير متصل</p>
+              <div className='bg-yellow-50 text-yellow-800 p-4 rounded-lg text-sm'>
+                الرجاء مسح QR Code من القائمة الجانبية للربط
               </div>
             </div>
           )}
         </div>
 
-        {/* Test Message Card - Only show if connected */}
-        {status?.status === 'connected' && (
-          <div className='bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-6'>
-            <h2 className='text-xl font-bold text-gray-900 mb-4 flex items-center gap-2'>
-              <span className='text-2xl'>📤</span>
-              إرسال رسالة تجريبية
-            </h2>
-
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
-              <div>
-                <label className='block text-sm font-semibold text-gray-700 mb-2'>رقم الهاتف</label>
-                <input
-                  type='tel'
-                  value={testPhone}
-                  onChange={e => setTestPhone(e.target.value)}
-                  placeholder='01012345678'
-                  className='w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500'
-                  dir='ltr'
-                />
-              </div>
-              <div>
-                <label className='block text-sm font-semibold text-gray-700 mb-2'>الرسالة</label>
-                <input
-                  type='text'
-                  value={testMessage}
-                  onChange={e => setTestMessage(e.target.value)}
-                  placeholder='مرحباً! هذه رسالة تجريبية'
-                  className='w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500'
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleSendTest}
-              disabled={isSending || !testPhone || !testMessage}
-              className='w-full px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2'
-            >
-              {isSending ? (
-                <>
-                  <div className='animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent'></div>
-                  جاري الإرسال...
-                </>
-              ) : (
-                <>
-                  <span>📨</span>
-                  إرسال رسالة
-                </>
-              )}
-            </button>
-          </div>
-        )}
-
-        {/* Info Card */}
-        <div className='bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl shadow-lg border border-green-100 p-6'>
-          <h2 className='text-xl font-bold text-gray-900 mb-4 flex items-center gap-2'>
-            <span className='text-2xl'>💡</span>
-            معلومات مهمة
-          </h2>
-
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div className='bg-white rounded-xl p-4'>
-              <h3 className='font-bold text-green-700 mb-2'>✅ المميزات</h3>
-              <ul className='text-sm text-gray-600 space-y-1'>
-                <li>• إرسال إشعارات تلقائية للعملاء</li>
-                <li>• رسائل حالة الطلب</li>
-                <li>• تذكير بالدفع</li>
-                <li>• إشعار جاهزية الطلب</li>
-              </ul>
-            </div>
-            <div className='bg-white rounded-xl p-4'>
-              <h3 className='font-bold text-orange-700 mb-2'>⚠️ ملاحظات</h3>
-              <ul className='text-sm text-gray-600 space-y-1'>
-                <li>• استخدم رقم مخصص للمشروع</li>
-                <li>• البوت لازم يفضل شغال</li>
-                <li>• الجلسة بتتحفظ تلقائياً</li>
-                <li>• لا تغلق الـ Terminal</li>
-              </ul>
-            </div>
-          </div>
+        {/* QR Code Section */}
+        <div className='bg-white rounded-xl shadow-sm border p-6'>
+           <h2 className='text-xl font-bold mb-4'>ربط جهاز جديد</h2>
+           
+           {status?.status === 'connected' ? (
+             <div className='h-full flex flex-col items-center justify-center text-center py-12'>
+                <CheckCircle size={48} className='text-green-200 mb-4' />
+                <p className='text-gray-400'>الجهاز متصل بالفعل</p>
+                <p className='text-sm text-gray-300 mt-2'>لتغيير الرقم، قم بتسجيل الخروج أولاً</p>
+             </div>
+           ) : status?.qrImage ? (
+             <div className='flex flex-col items-center'>
+                <div className='bg-white p-4 rounded-xl shadow-lg border mb-6'>
+                  <Image 
+                    src={status.qrImage} 
+                    width={260} 
+                    height={260} 
+                    alt='WhatsApp QR Code'
+                    className='rounded-lg'
+                  />
+                </div>
+                <div className='text-right w-full max-w-xs'>
+                  <h3 className='font-bold mb-2'>خطوات الربط:</h3>
+                  <ol className='list-decimal list-inside space-y-2 text-gray-600 text-sm'>
+                    <li>افتح WhatsApp على موبايلك</li>
+                    <li>اضغط على القائمة (⁝) أو الإعدادات</li>
+                    <li>اختر "الأجهزة المرتبطة" (Linked Devices)</li>
+                    <li>اضغط على "ربط جهاز" (Link a Device)</li>
+                    <li>وجه الكاميرا نحو الـ QR Code</li>
+                  </ol>
+                </div>
+             </div>
+           ) : (
+             <div className='flex flex-col items-center justify-center h-64 text-center'>
+               {loading ? (
+                 <>
+                   <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4'></div>
+                   <p className='text-gray-500'>جاري تجهيز QR Code...</p>
+                 </>
+               ) : (
+                 <>
+                   <AlertCircle size={40} className='text-red-400 mb-3' />
+                   <div className='text-gray-600 mb-2'>
+                      <h3 className='text-xl font-bold text-gray-900 mb-2'>جاري تحميل WhatsApp</h3>
+                      <p>يرجى الانتظار حتى يتم تحميل البوت...</p>
+                      <p className='text-xs mt-2 text-gray-400' dir='ltr'>Status: Disconnected</p>
+                   </div>
+                   <div className='mt-4 text-xs text-gray-400 p-2 border rounded'>
+                      تأكد أن البوت يعمل في التيرمنال:
+                      <br/>
+                      <code className='bg-gray-100 p-1 rounded'>npm run whatsapp</code>
+                   </div>
+                   <button 
+                     onClick={() => checkStatus()}
+                     className='mt-4 text-blue-600 hover:underline text-sm'
+                   >
+                     إعادة المحاولة
+                   </button>
+                 </>
+               )}
+             </div>
+           )}
         </div>
       </div>
     </div>

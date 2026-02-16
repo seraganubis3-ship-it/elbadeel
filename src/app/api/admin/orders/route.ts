@@ -66,10 +66,29 @@ export async function GET(request: NextRequest) {
     const serviceIds = searchParams.getAll('serviceIds');
     const categoryId = searchParams.get('categoryId');
     const createdByAdmin = searchParams.get('createdByAdmin');
+    const search = searchParams.get('search');
+    const sortBy = searchParams.get('sortBy') || 'id_desc';
 
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const skip = (page - 1) * limit;
+
+    let orderBy: any = { id: 'desc' };
+    switch (sortBy) {
+      case 'id_asc':
+        orderBy = { id: 'asc' };
+        break;
+      case 'createdAt_desc':
+        orderBy = { createdAt: 'desc' };
+        break;
+      case 'createdAt_asc':
+        orderBy = { createdAt: 'asc' };
+        break;
+      case 'id_desc':
+      default:
+        orderBy = { id: 'desc' };
+        break;
+    }
 
     const whereClause: any = {
       ...(userId ? { userId } : {}),
@@ -86,6 +105,17 @@ export async function GET(request: NextRequest) {
       ...(categoryId ? { service: { categoryId } } : {}),
       ...(createdByAdmin === 'true' && !createdByAdminId ? { createdByAdminId: { not: null } } : {}),
       ...(createdByAdmin === 'false' ? { createdByAdminId: null } : {}),
+      ...(search
+        ? {
+            OR: [
+              { id: { contains: search, mode: 'insensitive' } },
+              { customerName: { contains: search, mode: 'insensitive' } },
+              { customerPhone: { contains: search } },
+              { user: { phone: { contains: search } } },
+              { user: { name: { contains: search, mode: 'insensitive' } } },
+            ],
+          }
+        : {}),
     };
 
     const [orders, total] = await Promise.all([
@@ -101,7 +131,7 @@ export async function GET(request: NextRequest) {
           },
           _count: { select: { orderDocuments: true } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         take: limit,
         skip: skip,
       }),

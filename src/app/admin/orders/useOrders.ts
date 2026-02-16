@@ -31,6 +31,8 @@ interface UseOrdersReturn {
   setCategoryId: (id: string) => void;
   setEmployeeId: (id: string) => void;
   toggleService: (serviceId: string) => void;
+  setSortBy: (sort: string) => void;
+  sortBy: string;
 
   // Pagination
   currentPage: number;
@@ -50,6 +52,7 @@ interface UseOrdersReturn {
 
   // Order actions
   updateOrderStatus: (orderId: string, newStatus: string, workOrderNumber?: string) => Promise<void>;
+  deleteOrder: (orderId: string) => Promise<void>;
 
   // Helpers
   hasFilter: boolean;
@@ -82,11 +85,11 @@ export function useOrders(
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [deliveryFilter, setDeliveryFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('id_desc');
   
   // Initialize dates from localStorage (work date)
-  const initialWorkDate = typeof window !== 'undefined' ? localStorage.getItem('adminWorkDate') || '' : '';
-  const [dateFrom, setDateFrom] = useState(initialWorkDate);
-  const [dateTo, setDateTo] = useState(initialWorkDate);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [orderSourceFilter, setOrderSourceFilter] = useState('all');
@@ -95,7 +98,7 @@ export function useOrders(
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 10;
+  const ordersPerPage = 50;
 
   // Selection
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
@@ -144,6 +147,7 @@ export function useOrders(
       }
 
       const params = new URLSearchParams();
+      if (searchTerm) params.set('search', searchTerm);
       if (userIdFilter) params.set('userId', userIdFilter);
       if (employeeId) params.set('createdByAdminId', employeeId);
       if (categoryId) params.set('categoryId', categoryId);
@@ -159,6 +163,8 @@ export function useOrders(
       } else if (orderSourceFilter === 'online') {
         params.set('createdByAdmin', 'false');
       }
+
+      params.set('sortBy', sortBy);
 
       // Add default limits to fetch more data for client-side filtering options
       params.set('limit', '100'); 
@@ -188,24 +194,13 @@ export function useOrders(
     dateTo,
     selectedServiceIds,
     orderSourceFilter,
+    searchTerm,
+    sortBy,
   ]);
 
   // Filter and sort orders
   const filterAndSortOrders = useCallback(() => {
     let filtered = orders;
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        order =>
-          (order.service?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (order.customerName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (order.customerEmail || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (order.id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (order.customerPhone || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (order.user?.phone || '').toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
 
     // Filter by status
     if (statusFilter !== 'all') {
@@ -248,19 +243,27 @@ export function useOrders(
       });
     }
 
-    // Sort by date desc
-    filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Sort by selection
+    if (sortBy === 'id_desc') {
+       filtered.sort((a, b) => b.id.localeCompare(a.id));
+    } else if (sortBy === 'id_asc') {
+       filtered.sort((a, b) => a.id.localeCompare(b.id));
+    } else if (sortBy === 'createdAt_desc') {
+       filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (sortBy === 'createdAt_asc') {
+       filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    }
 
     setFilteredOrders(filtered);
     setCurrentPage(1);
   }, [
     orders,
-    searchTerm,
     statusFilter,
     deliveryFilter,
     dateFrom,
     dateTo,
     deliveryTodayFilter,
+    sortBy,
   ]);
 
   // Fetch services
@@ -338,16 +341,19 @@ export function useOrders(
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
   const toggleOrderSelection = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (order?.status === 'cancelled') return;
+
     setSelectedOrders(prev =>
       prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId]
     );
   };
 
   const selectAllOrders = () => {
-    if (selectedOrders.length === currentOrders.length) {
+    if (selectedOrders.length === currentOrders.filter(o => o.status !== 'cancelled').length && selectedOrders.length > 0) {
       setSelectedOrders([]);
     } else {
-      setSelectedOrders(currentOrders.map(order => order.id));
+      setSelectedOrders(currentOrders.filter(o => o.status !== 'cancelled').map(order => order.id));
     }
   };
 
@@ -375,6 +381,30 @@ export function useOrders(
       }
     } catch (error) {
       // console.error('Error updating status:', error);
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
+  // Delete single order
+  const deleteOrder = async (orderId: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+    
+    setUpdatingStatus(orderId);
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
+        showSuccess('تم حذف الطلب بنجاح! 🗑️', 'تم إزالة الطلب من النظام نهائياً');
+      } else {
+        const errorData = await response.json();
+        showError('فشل في حذف الطلب', errorData.error || 'حدث خطأ غير متوقع');
+      }
+    } catch (error) {
+      showError('خطأ في الاتصال', 'حدث خطأ أثناء الاتصال بالخادم');
     } finally {
       setUpdatingStatus(null);
     }
@@ -456,6 +486,8 @@ export function useOrders(
     setCategoryId,
     setEmployeeId,
     toggleService,
+    setSortBy,
+    sortBy,
 
     // Pagination
     currentPage,
@@ -475,6 +507,7 @@ export function useOrders(
 
     // Order actions
     updateOrderStatus,
+    deleteOrder,
 
     // Helpers
     hasFilter,

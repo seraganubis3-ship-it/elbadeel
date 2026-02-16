@@ -22,6 +22,8 @@ interface ServiceSelectionSectionProps {
   formSerialNumber: string;
   serialValid: { ok: boolean; msg: string; } | null;
   validateSerialLive: (serial: string) => void;
+
+
 }
 
 export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = ({
@@ -39,6 +41,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
   formSerialNumber,
   serialValid,
   validateSerialLive,
+
 }) => {
   const serviceDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -286,6 +289,8 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                    </div>
                 </div>
              )}
+
+
 
              {/* Service Details Textarea */}
              {selectedService && (

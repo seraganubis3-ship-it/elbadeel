@@ -57,23 +57,75 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
   // Shared CSS Styles
   const reportStyles = `
     <style>
-      @page { size: A4; margin: 0; }
-      html, body { height: 100%; margin: 0; padding: 0; background: white; color: #000; direction: rtl; }
+      @page { 
+        size: A4; 
+        margin: 0; 
+      }
       
+      html, body { 
+        height: 100%; 
+        margin: 0; 
+        padding: 0; 
+        background: white; 
+        color: #000; 
+        direction: rtl; 
+      }
+      
+      /* Premium Ornate Frame */
+      .premium-frame {
+        position: fixed;
+        top: 3mm;
+        bottom: 3mm;
+        left: 3mm;
+        right: 3mm;
+        border: 2px solid #000;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      
+      .premium-frame::after {
+        content: '';
+        position: absolute;
+        top: 1.2mm;
+        bottom: 1.2mm;
+        left: 1.2mm;
+        right: 1.2mm;
+        border: 1px dashed #000;
+        opacity: 0.5;
+      }
+
+      .corner {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        z-index: 10000;
+      }
+
+      .corner-tl { top: -2px; left: -2px; }
+      .corner-tr { top: -2px; right: -2px; transform: scaleX(-1); }
+      .corner-bl { bottom: -2px; left: -2px; transform: scaleY(-1); }
+      .corner-br { bottom: -2px; right: -2px; transform: scale(-1); }
+
+      .ornate-svg {
+        width: 100%;
+        height: 100%;
+        fill: #000;
+      }
+
       .report-outer-container { width: 100%; height: 100%; border-collapse: collapse; table-layout: fixed; }
-      .header-space { height: 110px; }
+      .header-space { height: 170px; }
       .footer-space { height: 190px; }
-      .header-container { position: fixed; top: 0; width: 100%; height: 110px; background: white; z-index: 1000; }
+      .header-container { position: fixed; top: 0; width: 100%; height: 170px; background: white; z-index: 1000; }
       .footer-container { position: fixed; bottom: 0; width: 100%; height: 190px; background: white; z-index: 1000; }
 
       /* Header Layout */
-      .top-header { position: relative; height: 110px; border-bottom: 2px solid #ccc; margin: 0 15mm; }
-      .logo-area { position: absolute; right: -20px; top: -30px; text-align: right; }
-      .logo-img { height: 140px; } 
-      .report-center { position: absolute; left: 0; right: 0; top: 40px; text-align: center; }
+      .top-header { position: relative; height: 145px; border-bottom: 2px solid #ccc; margin: 0 15mm; }
+      .logo-area { position: absolute; right: -50px; top: -65px; text-align: right; }
+      .logo-img { height: 250px; } 
+      .report-center { position: absolute; left: 0; right: 0; top: 85px; text-align: center; }
       .report-center .main-title { font-size: 24px; font-weight: 900; margin-bottom: 5px; background: white; display: block; width: fit-content; margin: 0 auto 5px auto; padding: 5px 20px; border: 3px solid #000; border-radius: 8px; }
       .report-center .date-range { font-size: 16px; font-weight: bold; background: white; display: block; width: fit-content; margin: 0 auto; }
-      .meta-info { position: absolute; left: 0; top: 20px; text-align: left; font-size: 13px; font-weight: bold; line-height: 1.5; border: 1px solid #000; padding: 5px; border-radius: 4px; }
+      .meta-info { position: absolute; left: 0; top: 60px; text-align: left; font-size: 13px; font-weight: bold; line-height: 1.5; border: 1px solid #000; padding: 5px; border-radius: 4px; }
       
       /* Main Content Area */
       .main-content-cell { vertical-align: top; padding: 0; }
@@ -83,15 +135,16 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
       /* Groups */
       .group-section { margin-bottom: 15px; page-break-inside: auto; }
       .group-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; padding-bottom: 4px; page-break-after: avoid; }
-      .header-title { font-size: 20px; font-weight: 900; text-decoration: underline; }
+      .header-title { font-size: 18px; font-weight: 900; text-decoration: underline; }
       .header-order-num-container { display: flex; align-items: flex-end; gap: 10px; width: 300px; }
-      .order-label { font-size: 16px; font-weight: 900; white-space: nowrap; }
+      .order-label { font-size: 14px; font-weight: 900; white-space: nowrap; }
+      .order-label { font-size: 14px; font-weight: 900; white-space: nowrap; }
       .order-line { flex: 1; border-bottom: 2px dashed #000; margin-bottom: 4px; height: 1px; }
 
       /* Table Styling */
-      .data-table { width: 100%; border-collapse: collapse; font-size: 16px; border: 2px solid #000; margin-bottom: 10px; page-break-inside: auto; }
-      .data-table th { background-color: #d1d5db; border: 1px solid #000; padding: 6px; text-align: center; font-weight: 900; font-size: 17px; }
-      .data-table td { border: 1px solid #000; padding: 4px 6px; vertical-align: middle; line-height: 1.2; }
+      .data-table { width: 100%; border-collapse: collapse; font-size: 13px; border: 2px solid #000; margin-bottom: 10px; page-break-inside: auto; }
+      .data-table th { background-color: #d1d5db; border: 1px solid #000; padding: 3px; text-align: center; font-weight: 900; font-size: 14px; }
+      .data-table td { border: 1px solid #000; padding: 2px 4px; vertical-align: middle; line-height: 1.2; font-weight: 900; }
       .data-table tr { page-break-inside: avoid; page-break-after: auto; }
       .data-table tr:nth-child(even) { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; } 
       .count-row td { background-color: #fff !important; border-top: 2px solid #000; padding: 8px; font-size: 17px; }
@@ -104,11 +157,11 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
       .footer-table .val { font-size: 14px; font-weight: 900; }
       
       .footer-contacts { position: absolute; bottom: 10px; left: 10px; right: auto; text-align: left; }
-      .footer-img { height: 150px; width: auto; object-fit: contain; display: block; }
+      .footer-img { height: 170px; width: auto; object-fit: contain; display: block; }
 
       .delegate-section {
         position: absolute;
-        bottom: 10px;
+        bottom: 50px;
         left: 50%;
         transform: translateX(-50%);
         width: 240px;
@@ -484,6 +537,32 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
       ${reportStyles}
     </head>
     <body>
+      <div class="premium-frame">
+        <div class="corner corner-tl">
+          <svg class="ornate-svg" viewBox="0 0 100 100">
+            <path d="M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z" fill="black"/>
+            <path d="M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z" fill="black"/>
+          </svg>
+        </div>
+        <div class="corner corner-tr">
+          <svg class="ornate-svg" viewBox="0 0 100 100">
+            <path d="M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z" fill="black"/>
+            <path d="M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z" fill="black"/>
+          </svg>
+        </div>
+        <div class="corner corner-bl">
+          <svg class="ornate-svg" viewBox="0 0 100 100">
+            <path d="M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z" fill="black"/>
+            <path d="M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z" fill="black"/>
+          </svg>
+        </div>
+        <div class="corner corner-br">
+          <svg class="ornate-svg" viewBox="0 0 100 100">
+            <path d="M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z" fill="black"/>
+            <path d="M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z" fill="black"/>
+          </svg>
+        </div>
+      </div>
       <div class="header-container">${headerHtml}</div>
       <div class="footer-container">
         ${delegateHtml}

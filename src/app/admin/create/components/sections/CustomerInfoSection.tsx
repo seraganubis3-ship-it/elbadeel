@@ -23,6 +23,7 @@ interface CustomerInfoSectionProps {
   handleNationalIdChange: (id: string) => void;
 
   // Dependent Search
+  // Dependent Search
   searchingDependent: boolean;
   suggestedDependent: { id: string; name: string } | null;
   dependentSearchResults: { id: string; name: string }[];
@@ -39,6 +40,7 @@ interface CustomerInfoSectionProps {
   // Suggestion
   suggestion?: string;
   dependentSuggestion?: string;
+
   handleKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
@@ -55,6 +57,9 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
   selectCustomer,
   handleUpdateCustomerName,
   handleNationalIdChange,
+
+  
+  // Dependent Props
   searchingDependent,
   suggestedDependent,
   dependentSearchResults,
@@ -63,10 +68,12 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
   searchDependent,
   selectDependent,
   saveNewDependent,
+  
   showAddressModal,
   setShowAddressModal,
   suggestion,
   dependentSuggestion,
+
   handleKeyDown,
   selectedService,
 }) => {
@@ -336,7 +343,60 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
 
            <div className='grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6'>
               
-              <div className='space-y-1'>
+               <div className='md:col-span-1 space-y-1'>
+                 <label className='text-sm font-black text-black block mr-1 flex items-center gap-2'>
+                    تابع
+                    <span className="text-[10px] text-slate-400 font-normal">(اختياري)</span>
+                 </label>
+                 <div className='relative group'>
+                   {/* Background Layer */}
+                   <div className="absolute inset-0 bg-slate-50/50 rounded-2xl" />
+
+                   {/* Ghost Text */}
+                   {dependentSuggestion && formData.customerFollowUp && dependentSuggestion.toLowerCase().startsWith(formData.customerFollowUp.toLowerCase()) && (
+                     <div className='absolute inset-0 px-5 py-4 font-bold text-slate-400 pointer-events-none z-0 user-select-none opacity-50 flex'>
+                       <span className='opacity-0'>{formData.customerFollowUp}</span>
+                       <span>{dependentSuggestion.slice(formData.customerFollowUp.length)}</span>
+                     </div>
+                   )}
+
+                   <input
+                     type='text'
+                     value={formData.customerFollowUp}
+                     onChange={e => {
+                       setFormData(prev => ({ ...prev, customerFollowUp: e.target.value }));
+                       searchDependent(e.target.value);
+                     }}
+                     onKeyDown={(e) => {
+                       if ((e.key === 'Enter' || e.key === 'ArrowRight') && dependentSuggestion) {
+                         e.preventDefault();
+                         setFormData(prev => ({ ...prev, customerFollowUp: dependentSuggestion }));
+                         setShowDependentDropdown(false);
+                       }
+                     }}
+                     className='relative z-10 w-full px-5 py-4 lg:px-4 lg:py-3 bg-transparent border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white/50 transition-all font-bold text-slate-700 placeholder-transparent lg:text-base'
+                     placeholder='ابحث بالاسم...'
+                   />
+                   <div className={`absolute top-0 right-0 h-full flex items-center pr-5 pointer-events-none transition-opacity duration-200 ${formData.customerFollowUp ? 'opacity-0' : 'opacity-100'}`}>
+                     <span className="text-slate-400 font-bold">ابحث بالاسم...</span>
+                   </div>
+                   {showDependentDropdown && dependentSearchResults.length > 0 && (
+                     <div className='absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 p-1'>
+                       {dependentSearchResults.map(d => (
+                         <div
+                           key={d.id}
+                           onClick={() => selectDependent(d)}
+                           className='p-3 hover:bg-slate-50 rounded-xl cursor-pointer text-sm font-bold text-slate-700'
+                         >
+                           {d.name}
+                         </div>
+                       ))}
+                     </div>
+                   )}
+                 </div>
+               </div>
+
+               <div className='space-y-1'>
                  <label className='text-sm font-black text-black block mr-1'>الوظيفة أو المهنة</label>
                  <input
                    type='text'
@@ -347,79 +407,6 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                  />
               </div>
 
-              <div className='space-y-1'>
-                <label className='text-sm font-black text-black block mr-1 flex items-center gap-2'>
-                   تابع
-                   <span className="text-[10px] text-slate-400 font-normal">(اختياري)</span>
-                </label>
-                <div className='relative group'>
-                  {/* Background Layer */}
-                  <div className="absolute inset-0 bg-slate-50/50 rounded-2xl" />
-
-                  {/* Ghost Text */}
-                  {dependentSuggestion && formData.customerFollowUp && dependentSuggestion.toLowerCase().startsWith(formData.customerFollowUp.toLowerCase()) && (
-                    <div className='absolute inset-0 px-5 py-4 font-bold text-slate-400 pointer-events-none z-0 user-select-none opacity-50 flex'>
-                      <span className='opacity-0'>{formData.customerFollowUp}</span>
-                      <span>{dependentSuggestion.slice(formData.customerFollowUp.length)}</span>
-                    </div>
-                  )}
-
-                  <input
-                    type='text'
-                    value={formData.customerFollowUp}
-                    onChange={e => {
-                      setFormData(prev => ({ ...prev, customerFollowUp: e.target.value }));
-                      searchDependent(e.target.value);
-                    }}
-                    onKeyDown={(e) => {
-                      if ((e.key === 'Enter' || e.key === 'ArrowRight') && dependentSuggestion) {
-                        e.preventDefault();
-                        setFormData(prev => ({ ...prev, customerFollowUp: dependentSuggestion }));
-                        setShowDependentDropdown(false);
-                      }
-                    }}
-                    className='relative z-10 w-full px-5 py-4 lg:px-4 lg:py-3 bg-transparent border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white/50 transition-all font-bold text-slate-700 placeholder-transparent lg:text-base'
-                    placeholder='ابحث بالاسم...'
-                  />
-                  <div className={`absolute top-0 right-0 h-full flex items-center pr-5 pointer-events-none transition-opacity duration-200 ${formData.customerFollowUp ? 'opacity-0' : 'opacity-100'}`}>
-                    <span className="text-slate-400 font-bold">ابحث بالاسم...</span>
-                  </div>
-                  {showDependentDropdown && dependentSearchResults.length > 0 && (
-                    <div className='absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 p-1'>
-                      {dependentSearchResults.map(d => (
-                        <div
-                          key={d.id}
-                          onClick={() => selectDependent(d)}
-                          className='p-3 hover:bg-slate-50 rounded-xl cursor-pointer text-sm font-bold text-slate-700'
-                        >
-                          {d.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-
-
-              <div className='md:col-span-2 space-y-1'>
-                <label className='text-sm font-black text-black block mr-1'>العنوان المسجل</label>
-                <button
-                  type='button'
-                  onClick={() => setShowAddressModal(true)}
-                  className='w-full px-6 py-4 lg:p-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl hover:border-indigo-300 transition-all text-right group/addr flex items-center justify-between'
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover/addr:bg-indigo-100 group-hover/addr:text-indigo-600 transition-colors">📍</span>
-                    <span className='font-bold text-slate-600 lg:text-sm'>
-                      {formData.governorate ? `${formData.governorate} - ${formData.city}` : 'اضغط لتحديد المحافظة والمدينة...'}
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2 py-1.5 rounded-md">تعديل</span>
-                </button>
-              </div>
-
-              {/* Destination & Title */}
               <div className='md:col-span-1 space-y-1'>
                  <label className='text-sm font-black text-black block mr-1'>الجهة</label>
                  <input

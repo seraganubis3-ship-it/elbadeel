@@ -44,6 +44,8 @@ export default function AdminOrdersPage() {
     setCategoryId,
     setEmployeeId,
     toggleService,
+    setSortBy,
+    sortBy,
     currentPage,
     totalPages,
     paginate,
@@ -54,6 +56,7 @@ export default function AdminOrdersPage() {
     setBulkStatus,
     updateBulkStatus,
     updateOrderStatus,
+    deleteOrder,
     hasFilter,
   } = useOrders(showSuccess, showError);
 
@@ -67,7 +70,8 @@ export default function AdminOrdersPage() {
   // Payment Alert State
   const [showPaymentAlert, setShowPaymentAlert] = useState(false);
   const [paymentAlertOrder, setPaymentAlertOrder] = useState<Order | null>(null);
-
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const [quickPayMethod, setQuickPayMethod] = useState('CASH');
   // WhatsApp handlers
   const handleWhatsAppClick = (order: Order) => {
     setWhatsappOrder(order);
@@ -736,9 +740,10 @@ export default function AdminOrdersPage() {
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
     
-    // Check for outstanding balance when delivering
-    if (newStatus === 'settlement' && order && (order.remainingAmount || 0) > 0) {
+    // Check for outstanding balance when delivering or settling
+    if ((newStatus === 'settlement' || newStatus === 'delivered') && order && (order.remainingAmount || 0) > 0) {
       setPaymentAlertOrder(order);
+      setPendingStatus(newStatus); // Track intended status
       setShowPaymentAlert(true);
       return;
     }
@@ -887,6 +892,7 @@ export default function AdminOrdersPage() {
                     onSelect={toggleOrderSelection}
                     onStatusChange={handleStatusUpdate}
                     onWhatsAppClick={handleWhatsAppClick}
+                    onDelete={deleteOrder}
                     onPrintAuthorization={handlePrintAuthorization}
                   />
                 ))}
@@ -975,43 +981,80 @@ export default function AdminOrdersPage() {
       {/* Payment Alert Modal */}
       {showPaymentAlert && paymentAlertOrder && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
-          <div className='bg-white rounded-2xl shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200'>
-            <div className='p-6 border-b bg-amber-50 rounded-t-2xl'>
-              <h3 className='text-xl font-bold text-amber-900 flex items-center gap-2'>
-                <span className='text-2xl'>⚠️</span>
+          <div className='bg-white rounded-3xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200 overflow-hidden'>
+            <div className='p-8 border-b bg-amber-50 relative'>
+              <div className="absolute top-4 right-4 text-4xl opacity-20">⚠️</div>
+              <h3 className='text-2xl font-bold text-amber-900 mb-1'>
                 يوجد مبالغ مستحقة
               </h3>
+              <p className="text-amber-700 font-bold text-sm">لا يمكن التسليم بدون سداد الرصيد المتبقي</p>
             </div>
             
-            <div className='p-6'>
-              <p className='text-gray-700 mb-4'>
-                لا يزال هناك <span className='font-bold text-amber-600'>{((paymentAlertOrder.remainingAmount || 0) / 100).toFixed(2)} ج.م</span> مستحقة على هذا الطلب.
-              </p>
-              <p className='text-gray-600 text-sm'>
-                هل تريد تسجيل الدفع الآن؟
-              </p>
+            <div className='p-8'>
+              <div className="bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-100 italic">
+                <p className='text-slate-700 font-bold'>
+                  لا يزال هناك <span className='font-bold text-amber-600 text-xl mx-1'>{((paymentAlertOrder.remainingAmount || 0) / 100).toFixed(2)} ج.م</span> مستحقة على هذا الطلب.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-sm font-black text-slate-700">اختر طريقة الدفع للسداد الآن:</label>
+                <select 
+                  value={quickPayMethod}
+                  onChange={(e) => setQuickPayMethod(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                >
+                  <option value="CASH">💵 كاش</option>
+                  <option value="INSTAPAY">🏦 إنستا باي</option>
+                  <option value="WALLET">📱 محفظة إلكترونية</option>
+                </select>
+              </div>
             </div>
 
-            <div className='p-6 border-t bg-gray-50 rounded-b-2xl flex gap-3'>
-              <button
-                onClick={() => {
-                  window.location.href = `/admin/orders/${paymentAlertOrder.id}/payment?amount=${(paymentAlertOrder.remainingAmount || 0) / 100}`;
-                }}
-                className='flex-1 justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all active:scale-[0.98]'
-              >
-                أريد الدفع
-              </button>
+            <div className='p-8 border-t bg-slate-50 flex flex-col gap-3'>
               <button
                 onClick={async () => {
-                  setShowPaymentAlert(false);
-                  if (paymentAlertOrder) {
-                    await updateOrderStatus(paymentAlertOrder.id, 'settlement');
+                  try {
+                    // 1. Record payment
+                    const payRes = await fetch(`/api/admin/orders/${paymentAlertOrder.id}/payment`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        method: quickPayMethod,
+                        amount: paymentAlertOrder.remainingAmount || 0,
+                        discount: 0,
+                        notes: 'دفع سريع عند التسليم',
+                        workDate: new Date().toLocaleDateString('en-GB').replace(/\//g, '-'), // Basic fallback
+                      }),
+                    });
+
+                    if (!payRes.ok) throw new Error('فشل تسجيل الدفع');
+
+                    // 2. Update status
+                    if (pendingStatus) {
+                      await updateOrderStatus(paymentAlertOrder.id, pendingStatus);
+                    }
+                    
+                    setShowPaymentAlert(false);
+                    setPaymentAlertOrder(null);
+                    setPendingStatus(null);
+                  } catch (error) {
+                    showError('خطأ', 'حدث خطأ أثناء معالجة الدفع السريع');
                   }
-                  setPaymentAlertOrder(null);
                 }}
-                className='flex-1 justify-center rounded-xl bg-white px-4 py-3 text-sm font-bold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-200 hover:bg-gray-50 transition-all'
+                className='w-full justify-center rounded-2xl bg-emerald-600 px-6 py-4 text-lg font-black text-white shadow-xl shadow-emerald-100 hover:bg-emerald-500 transition-all active:scale-[0.98] flex items-center gap-2'
               >
-                تسليم بدون دفع
+                ✅ تسجيل الدفع والتسليم
+              </button>
+              <button
+                onClick={() => {
+                  setShowPaymentAlert(false);
+                  setPaymentAlertOrder(null);
+                  setPendingStatus(null);
+                }}
+                className='w-full justify-center rounded-2xl bg-white px-6 py-4 text-lg font-black text-red-600 shadow-sm ring-1 ring-inset ring-red-100 hover:bg-red-50 transition-all flex items-center gap-2'
+              >
+                ✖️ إلغاء
               </button>
             </div>
           </div>

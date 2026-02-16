@@ -654,7 +654,6 @@ export function useCreateOrder() {
           `تم إضافة "${name.trim()}" إلى قائمة المرفقات`
         );
       }
-      setShowAttachmentModal(false);
     } catch {}
   }, [showSuccess, showError]);
 

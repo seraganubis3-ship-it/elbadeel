@@ -384,6 +384,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* User Info and Mobile Menu Button */}
           <div className='flex items-center gap-2 sm:gap-4'>
             {/* Work Date Display */}
+            {/* Create Order Button - Positioned Right of Work Date (First in RTL) */}
+            {(session.user.role === 'ADMIN' || session.user.role === 'STAFF') && (
+              <Link
+                href="/admin/create"
+                className='hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-bold rounded-xl border border-white/20 hover:from-emerald-500 hover:to-teal-500 transition-all duration-300 shadow-lg group relative overflow-hidden'
+              >
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>إنشاء طلب</span>
+              </Link>
+            )}
             {(session.user.role === 'ADMIN' || session.user.role === 'STAFF') && workDate && (
               <button
                 onClick={() => {
@@ -407,6 +420,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </svg>
               </button>
             )}
+
+
 
             {/* Back to Website Button */}
             <Link

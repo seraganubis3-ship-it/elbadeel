@@ -98,14 +98,44 @@ export function OrdersFilters({
     return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
   };
 
+  // Debounce date inputs
+  const [localDateFrom, setLocalDateFrom] = useState(dateFrom);
+  const [localDateTo, setLocalDateTo] = useState(dateTo);
+
+  useEffect(() => {
+    setLocalDateFrom(dateFrom);
+  }, [dateFrom]);
+
+  useEffect(() => {
+    setLocalDateTo(dateTo);
+  }, [dateTo]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localDateFrom !== dateFrom) {
+        onDateFromChange(localDateFrom);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localDateFrom, onDateFromChange, dateFrom]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localDateTo !== dateTo) {
+        onDateToChange(localDateTo);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localDateTo, onDateToChange, dateTo]);
+
   const handleDateFromChange = (value: string) => {
     const formatted = formatDateInput(value);
-    onDateFromChange(formatted);
+    setLocalDateFrom(formatted);
   };
 
   const handleDateToChange = (value: string) => {
     const formatted = formatDateInput(value);
-    onDateToChange(formatted);
+    setLocalDateTo(formatted);
   };
 
   return (
@@ -278,7 +308,7 @@ export function OrdersFilters({
           <label className='block text-sm font-medium text-gray-700 mb-1'>من تاريخ</label>
           <input
             type='text'
-            value={dateFrom}
+            value={localDateFrom}
             onChange={e => handleDateFromChange(e.target.value)}
             placeholder='dd/mm/yyyy'
             maxLength={10}
@@ -289,7 +319,7 @@ export function OrdersFilters({
           <label className='block text-sm font-medium text-gray-700 mb-1'>إلى تاريخ</label>
           <input
             type='text'
-            value={dateTo}
+            value={localDateTo}
             onChange={e => handleDateToChange(e.target.value)}
             placeholder='dd/mm/yyyy'
             maxLength={10}

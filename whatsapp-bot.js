@@ -18,7 +18,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
 // ================== BAILEYS SETUP ==================
 
@@ -122,6 +122,26 @@ app.get('/qr', async (req, res) => {
     qrImage: qrImage,
     message: isConnected ? 'تم الاتصال بنجاح' : (qrCodeData ? 'امسح الكود' : 'جاري التحميل...')
   });
+});
+
+// Logout
+app.post('/logout', async (req, res) => {
+  try {
+    if (sock) {
+      await sock.logout();
+      if (fs.existsSync('baileys_auth_info')) {
+        fs.rmSync('baileys_auth_info', { recursive: true, force: true });
+      }
+      sock = null;
+      startWhatsApp(); // Restart to generate new QR
+      res.json({ success: true, message: 'Logged out successfully' });
+    } else {
+      res.json({ success: false, error: 'No active session' });
+    }
+  } catch (err) {
+    console.error('Logout Error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // Send text message

@@ -9,8 +9,17 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const body = await request.json();
     const { id } = params;
 
-    const { type, value, minOrderAmount, maxDiscount, startDate, endDate, usageLimit, isActive } =
-      body;
+    const {
+      type,
+      value,
+      minOrderAmount,
+      maxDiscount,
+      startDate,
+      endDate,
+      usageLimit,
+      usageLimitPerUser,
+      isActive,
+    } = body;
 
     const promoCode = await prisma.promoCode.update({
       where: { id },
@@ -22,6 +31,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         usageLimit,
+        usageLimitPerUser,
         isActive,
       },
     });

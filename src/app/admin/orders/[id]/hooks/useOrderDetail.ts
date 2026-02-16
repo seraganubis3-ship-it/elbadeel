@@ -203,11 +203,11 @@ export function useOrderDetail(orderId: string) {
     }
   };
 
-  const updateOrder = async () => {
+  const updateOrder = async (force = false) => {
     if (!order) return;
 
-    // Check for outstanding balance when delivering
-    if (newStatus === 'settlement' && (order.remainingAmount || 0) > 0) {
+    // Check for outstanding balance when delivering or settling
+    if (!force && (newStatus === 'settlement' || newStatus === 'delivered') && (order.remainingAmount || 0) > 0) {
       setShowPaymentAlert(true);
       return;
     }
@@ -263,6 +263,55 @@ export function useOrderDetail(orderId: string) {
       }
     } catch (error) {
       showError('خطأ في الاتصال', 'حدث خطأ أثناء تحديث معلومات الدفع. يرجى المحاولة مرة أخرى');
+    }
+  };
+
+  const quickPayAndDeliver = async (method: string) => {
+    if (!order) return;
+    setUpdating(true);
+    try {
+      // 1. Record payment for full remaining amount
+      const remainingAmount = order.remainingAmount || 0;
+      const paymentRequestData = {
+        method,
+        amount: remainingAmount,
+        discount: 0,
+        notes: 'دفع سريع عند التسليم',
+        workDate: getCurrentWorkDate(),
+      };
+
+      const payRes = await fetch(`/api/admin/orders/${orderId}/payment`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentRequestData),
+      });
+
+      if (!payRes.ok) {
+        throw new Error('فشل تسجيل الدفع');
+      }
+
+      // 2. Update status to the intended newStatus (delivered or settlement)
+      const statusRes = await fetch(`/api/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: newStatus,
+          adminNotes: newAdminNotes,
+        }),
+      });
+
+      if (statusRes.ok) {
+        const updatedOrder = await statusRes.json();
+        setOrder(updatedOrder.order);
+        showSuccess('تم الدفع والتسليم بنجاح! ✅', 'تم تحديث حالة الطلب وتسجيل الدفع');
+        setShowPaymentAlert(false);
+      } else {
+        showError('فشل تحديث الحالة', 'تم تسجيل الدفع ولكن فشل تحديث حالة الطلب');
+      }
+    } catch (error) {
+      showError('خطأ', 'حدث خطأ أثناء معالجة الطلب');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -585,6 +634,7 @@ export function useOrderDetail(orderId: string) {
     showPaymentAlert,
     setShowPaymentAlert,
     uploadDocument,
+    quickPayAndDeliver,
     deleteDocument,
     removeAttachedDocument,
   };

@@ -158,11 +158,20 @@ export function BulkActions({
                 className='px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm'
               >
                 <option value=''>تغيير الحالة...</option>
-                {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                  <option key={key} value={key}>
-                    {config.icon} {config.text}
-                  </option>
-                ))}
+                {Object.entries(STATUS_CONFIG)
+                  .filter(([key]) => {
+                    // Hide review statuses for bulk actions as they are mostly for online flow
+                    // and might confuse office users.
+                    const reviewStatuses = ['waiting_confirmation', 'waiting_payment'];
+                    if (reviewStatuses.includes(key)) return false;
+                    
+                    return true;
+                  })
+                  .map(([key, config]) => (
+                    <option key={key} value={key}>
+                      {config.icon} {config.text}
+                    </option>
+                  ))}
               </select>
 
               <button

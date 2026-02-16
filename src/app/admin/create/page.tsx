@@ -178,6 +178,8 @@ export default function CreateOrderPage() {
                 selectCustomer={selectCustomer}
                 handleUpdateCustomerName={handleUpdateCustomerName}
                 handleNationalIdChange={handleNationalIdChange}
+                
+                // Dependent Props
                 searchingDependent={searchingDependent}
                 suggestedDependent={suggestedDependent}
                 dependentSearchResults={dependentSearchResults}
@@ -186,10 +188,11 @@ export default function CreateOrderPage() {
                 searchDependent={searchDependent}
                 selectDependent={selectDependent}
                 saveNewDependent={saveNewDependent}
+                dependentSuggestion={dependentSuggestion}
+
                 showAddressModal={showAddressModal}
                 setShowAddressModal={setShowAddressModal}
                 suggestion={suggestion}
-                dependentSuggestion={dependentSuggestion}
                 handleKeyDown={handleKeyDown}
                 selectedService={selectedService}
               />

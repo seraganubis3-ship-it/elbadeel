@@ -1,0 +1,29 @@
+import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+
+const WHATSAPP_BOT_URL = process.env.WHATSAPP_API_URL || 'http://127.0.0.1:4000';
+
+export async function POST() {
+  try {
+    const session = await requireAuth();
+    if (!session?.user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const response = await fetch(`${WHATSAPP_BOT_URL}/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('WhatsApp Bot Logout Error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to connect to bot' },
+      { status: 503 }
+    );
+  }
+}

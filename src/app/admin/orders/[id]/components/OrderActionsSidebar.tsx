@@ -13,6 +13,7 @@ interface OrderActionsSidebarProps {
   onUpdateOrder: () => void;
   onCallCustomer: () => void;
   onWhatsAppClick: () => void;
+  onDelete?: () => void;
 }
 
 import { useState, useEffect } from 'react';
@@ -34,6 +35,7 @@ export default function OrderActionsSidebar({
   onUpdateOrder,
   onCallCustomer,
   onWhatsAppClick,
+  onDelete,
 }: OrderActionsSidebarProps) {
   const [showDelegateModal, setShowDelegateModal] = useState(false);
   const [delegates, setDelegates] = useState<Delegate[]>([]);
@@ -94,14 +96,31 @@ export default function OrderActionsSidebar({
             <label className='block text-sm font-medium text-gray-700 mb-1'>الحالة الجديدة</label>
             <select
               value={newStatus}
-              onChange={e => setNewStatus(e.target.value)}
-              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm'
+              onChange={e => {
+                if (e.target.value === 'delete_order') {
+                  onDelete?.();
+                } else {
+                  setNewStatus(e.target.value);
+                }
+              }}
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm font-bold'
             >
-              {Object.entries(ORDER_STATUS_CONFIG).map(([key, config]) => (
-                <option key={key} value={key}>
-                  {config.text}
-                </option>
-              ))}
+              {Object.entries(ORDER_STATUS_CONFIG)
+                .filter(([key]) => {
+                  // Hide specific statuses for office orders
+                  if (order.createdByAdmin) {
+                     const hiddenForOffice = ['waiting_confirmation', 'waiting_payment'];
+                     if (hiddenForOffice.includes(key)) return false;
+                  }
+                  
+                  return true;
+                })
+                .map(([key, config]) => (
+                  <option key={key} value={key}>
+                    {config.text}
+                  </option>
+                ))}
+              <option value="delete_order" className="text-red-600 font-bold">❌ إلغاء نهائي (حذف)</option>
             </select>
           </div>
 

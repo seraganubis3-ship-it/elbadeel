@@ -171,7 +171,12 @@ export default function OrderForm({
       const response = await fetch('/api/promo-codes/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, orderTotal }),
+        body: JSON.stringify({
+          code,
+          orderTotal,
+          userId: user?.id,
+          phone: formData.customerPhone,
+        }),
       });
       const data = await response.json();
 

@@ -1,7 +1,9 @@
 // WhatsApp API Client for Next.js
 // This file provides functions to send WhatsApp messages through the bot service
 
-const WHATSAPP_API_URL = process.env.NEXT_PUBLIC_WHATSAPP_API_URL || 'http://127.0.0.1:4000';
+// When running on the server (API routes), we can connect directly to the bot port
+// When running on the client (browser), we should NOT use this URL directly, but go through our Next.js API proxies
+const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || 'http://127.0.0.1:4000';
 
 export interface WhatsAppMessage {
   phone: string;
@@ -25,6 +27,8 @@ export interface WhatsAppResponse {
 }
 
 // Check if WhatsApp bot is connected
+// NOTE: This function is primarily for SERVER-SIDE use.
+// For client-side checks, use /api/admin/whatsapp/status
 export async function checkWhatsAppStatus(): Promise<{ status: string; qrRequired: boolean }> {
   try {
     const response = await fetch(`${WHATSAPP_API_URL}/health`, {

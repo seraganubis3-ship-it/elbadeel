@@ -40,9 +40,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
       <div className='p-5 space-y-4'>
         {/* Original Documents */}
         <div className='space-y-1.5'>
-          <label className='text-[9px] font-black text-black uppercase tracking-widest'>
-            أصل المستندات المرفقة
-          </label>
           <textarea
             value={formData.originalDocuments}
             onChange={e => setFormData(p => ({ ...p, originalDocuments: e.target.value }))}

@@ -24,6 +24,7 @@ export default function PromoCodeForm({ initialData, onClose, onSuccess }: Promo
       : '',
     endDate: initialData?.endDate ? new Date(initialData.endDate).toISOString().split('T')[0] : '',
     usageLimit: initialData?.usageLimit || '',
+    usageLimitPerUser: initialData?.usageLimitPerUser || '',
     isActive: initialData?.isActive ?? true,
   });
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,7 @@ export default function PromoCodeForm({ initialData, onClose, onSuccess }: Promo
           : null,
         maxDiscount: formData.maxDiscount ? Math.round(Number(formData.maxDiscount) * 100) : null,
         usageLimit: formData.usageLimit ? Number(formData.usageLimit) : null,
+        usageLimitPerUser: formData.usageLimitPerUser ? Number(formData.usageLimitPerUser) : null,
         startDate: formData.startDate ? new Date(formData.startDate).toISOString() : null,
         endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
       };
@@ -164,10 +166,10 @@ export default function PromoCodeForm({ initialData, onClose, onSuccess }: Promo
         </div>
 
         {/* Min Order & Usage Limit */}
-        <div className='grid grid-cols-2 gap-4'>
+        <div className='grid grid-cols-3 gap-4'>
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              أقل قيمة للطلب (ج.م) - اختياري
+              أقل قيمة للطلب (ج.م)
             </label>
             <input
               type='number'
@@ -179,12 +181,24 @@ export default function PromoCodeForm({ initialData, onClose, onSuccess }: Promo
           </div>
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
-              الحد الأقصى لعدد مرات الاستخدام - اختياري
+              الحد الكلي للاستخدام
             </label>
             <input
               type='number'
               value={formData.usageLimit}
               onChange={e => setFormData({ ...formData, usageLimit: e.target.value })}
+              className='w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500'
+              placeholder='بلا حد'
+            />
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-1'>
+              حد الاستخدام للعميل
+            </label>
+            <input
+              type='number'
+              value={formData.usageLimitPerUser}
+              onChange={e => setFormData({ ...formData, usageLimitPerUser: e.target.value })}
               className='w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500'
               placeholder='بلا حد'
             />

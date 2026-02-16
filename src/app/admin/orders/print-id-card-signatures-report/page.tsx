@@ -54,104 +54,185 @@
     }, []);
   
     return (
-      <div className="bg-white font-sans" dir="rtl">
-        <style jsx global>{`
-          @media print {
-            @page {
-              size: A4;
-              margin: 0;
-            }
-            body {
-              print-color-adjust: exact;
-              -webkit-print-color-adjust: exact;
-            }
-            .no-print {
-              display: none !important;
-            }
-            ::-webkit-scrollbar {
-              display: none;
-            }
+    <div className="bg-white" dir="rtl">
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+        
+        @media print {
+          @page {
+            size: A4;
+            margin: 0;
           }
-        `}</style>
-  
-        {/* Header Container - Compacted */}
-        <div className="flex justify-between items-start mb-2 pb-1 border-b-2 border-gray-800">
-          {/* Right Side (First in RTL): Report Header Image */}
-          <div className="w-1/3 text-right">
-             <img 
-               src="/images/report-header.png" 
-               alt="Header" 
-               className="h-32 object-contain object-top"
-             />
+          body {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            font-family: 'Tajawal', sans-serif !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          ::-webkit-scrollbar {
+            display: none;
+          }
+        }
+
+        body {
+          font-family: 'Tajawal', sans-serif;
+        }
+
+        /* Premium Ornate Frame */
+        .premium-frame {
+          position: fixed;
+          top: 3mm;
+          bottom: 3mm;
+          left: 3mm;
+          right: 3mm;
+          border: 2px solid #000;
+          pointer-events: none;
+          z-index: 9999;
+        }
+        
+        .premium-frame::after {
+          content: '';
+          position: absolute;
+          top: 1.2mm;
+          bottom: 1.2mm;
+          left: 1.2mm;
+          right: 1.2mm;
+          border: 1px dashed #000;
+          opacity: 0.5;
+        }
+
+        .corner {
+          position: absolute;
+          width: 60px;
+          height: 60px;
+          z-index: 10000;
+        }
+
+        .corner-tl { top: -2px; left: -2px; }
+        .corner-tr { top: -2px; right: -2px; transform: scaleX(-1); }
+        .corner-bl { bottom: -2px; left: -2px; transform: scaleY(-1); }
+        .corner-br { bottom: -2px; right: -2px; transform: scale(-1); }
+
+        .ornate-svg {
+          width: 100%;
+          height: 100%;
+          fill: #000;
+        }
+
+        .report-content {
+          padding: 10mm 15mm;
+          position: relative;
+          z-index: 10;
+        }
+
+        .logo-img {
+          height: 250px;
+          object-fit: contain;
+        }
+
+        .data-table th {
+          background-color: #d1d5db !important;
+          color: #000 !important;
+          font-weight: 900 !important;
+          font-size: 13px;
+          padding: 3px !important;
+        }
+        
+        .data-table td {
+          font-weight: 900;
+          font-size: 12px;
+          padding: 3px !important;
+        }
+
+        .signature-cell {
+           min-width: 150px;
+        }
+      `}</style>
+
+      <div className="premium-frame">
+        {[ 'tl', 'tr', 'bl', 'br' ].map(pos => (
+          <div key={pos} className={`corner corner-${pos}`}>
+            <svg className="ornate-svg" viewBox="0 0 100 100">
+              <path d="M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z" fill="black"/>
+              <path d="M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z" fill="black"/>
+            </svg>
           </div>
-  
-          {/* Center: Title */}
-          <div className="w-1/3 flex flex-col items-center pt-2">
-              <h2 className="text-lg font-bold bg-white text-black px-4 py-1 border border-black rounded-lg">
-                 كشف توقيعات البطاقة
-              </h2>
-               <div className="mt-1 bg-gray-200 rounded-md px-4 py-0.5 border border-gray-400 font-bold text-base">
-               {reportDate}
-             </div>
+        ))}
+      </div>
+
+      <div className="report-content">
+        {/* Header Section */}
+        <div className="relative h-40 mb-6 flex justify-between items-start border-b-2 border-gray-200">
+          <div className="flex flex-col items-center flex-1 pt-12">
+            <h2 className="text-2xl font-black bg-white text-black px-6 py-2 border-2 border-black rounded-xl shadow-sm">
+              كشف توقيعات البطاقة
+            </h2>
+            <div className="mt-2 bg-gray-100 rounded-lg px-6 py-1 border border-gray-300 font-extrabold text-lg">
+              {reportDate}
+            </div>
           </div>
-  
-          {/* Left Side (Last in RTL): Empty */}
-          <div className="w-1/3 text-left">
+          
+          <div className="absolute -right-12 -top-16">
+            <img src="/images/report-header.png" alt="Header" className="logo-img" />
           </div>
         </div>
-  
-        {/* Sub Header - Compacted */}
-        <div className="mb-2">
-          <div className="flex justify-between items-center mb-1">
-             <h3 className="text-sm font-bold">السيد العميد / مدير مصلحة الأحوال المدنية بالجيزة</h3>
+
+        {/* Info Section */}
+        <div className="mb-4 space-y-2">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-black underline decoration-2 underline-offset-4">السيد العميد / مدير مصلحة الأحوال المدنية بالجيزة</h3>
           </div>
-          <p className="text-center text-base font-bold mb-1">تحية طيبة وبعد</p>
-          <p className="text-justify text-xs leading-snug mb-2 font-medium">
-            أقر أنا / {delegate?.name || '................................'} مندوب البديل للخدمات الحكومية بأنه تم تفويضي من قبل أصحاب الشأن المدون اسمائهم في الكشف لاستخراج واستلام بطاقات الرقم القومي واذ ظهر عكس ذلك أكون مسئول مسئولية كاملة وهذا اقرار مني بذلك / {delegate?.name || '................................'}
+          <p className="text-center text-xl font-bold">تحية طيبة وبعد</p>
+          <p className="text-justify text-sm leading-relaxed font-bold bg-gray-50 p-3 rounded-xl border border-gray-200">
+            أقر أنا / <span className="text-blue-900 mx-1">{delegate?.name || '................................'}</span> مندوب البديل للخدمات الحكومية بأنه تم تفويضي من قبل أصحاب الشأن المدون اسمائهم في الكشف لاستخراج واستلام بطاقات الرقم القومي واذ ظهر عكس ذلك أكون مسئول مسئولية كاملة وهذا اقرار مني بذلك / <span className="text-blue-900 mx-1">{delegate?.name || '................................'}</span>
           </p>
         </div>
-  
-        {/* Table - Compacted */}
-        <div className="mb-2">
-          <table className="w-full border-collapse border border-gray-800 text-xs">
+
+        {/* Table Section */}
+        <div className="mb-6">
+          <table className="w-full border-collapse border-2 border-black data-table">
             <thead>
-              <tr className="bg-gray-300 text-gray-900 border-b border-gray-800">
-                <th className="border border-gray-800 p-0.5 w-8 text-center font-bold">م</th>
-                <th className="border border-gray-800 p-0.5 text-right font-bold w-[35%]">الاسم</th>
-                <th className="border border-gray-800 p-0.5 w-28 text-center font-bold">الرقم القومي</th>
-                <th className="border border-gray-800 p-0.5 w-20 text-center font-bold">نوع البطاقة</th>
-                <th className="border border-gray-800 p-0.5 text-center font-bold">توقيع صاحب الشأن</th>
+              <tr className="bg-gray-200">
+                <th className="border-2 border-black p-2 w-10 text-center font-black">م</th>
+                <th className="border-2 border-black p-2 text-right font-black">الاسم</th>
+                <th className="border-2 border-black p-2 w-44 text-center font-black">الرقم القومي</th>
+                <th className="border-2 border-black p-2 w-28 text-center font-black">نوع البطاقة</th>
+                <th className="border-2 border-black p-2 text-center font-black">توقيع صاحب الشأن</th>
               </tr>
             </thead>
             <tbody>
               {data.map((item, index) => (
-                <tr key={index} className="border-b border-gray-800 h-8">
-                  <td className="border border-gray-800 p-0.5 text-center font-bold">{index + 1}</td>
-                  <td className="border border-gray-800 p-0.5 text-right font-bold truncate max-w-[200px]">{item.name}</td>
-                  <td className="border border-gray-800 p-0.5 text-center font-bold font-mono tracking-wider">{item.idNumber}</td>
-                  <td className="border border-gray-800 p-0.5 text-center font-bold">{item.cardType}</td>
-                  <td className="border border-gray-800 p-0.5 text-center font-bold"></td>
+                <tr key={index} className={`h-10 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                  <td className="border border-black p-2 text-center font-black">{index + 1}</td>
+                  <td className="border border-black p-2 text-right font-black">{item.name}</td>
+                  <td className="border border-black p-2 text-center font-black font-mono tracking-tighter">{item.idNumber}</td>
+                  <td className="border border-black p-2 text-center font-black">{item.cardType}</td>
+                  <td className="border border-black p-2 text-center font-black signature-cell"></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-      {/* Footer / Dynamic ID Card Image */}
-      <div className="mt-4 flex justify-center items-center h-48 no-break-inside">
-         {delegate?.unionCard ? (
-           <img 
-             src={delegate.unionCard} 
-             alt="Delegate ID" 
-             className="max-h-full max-w-full object-contain border border-gray-300 rounded-lg shadow-sm"
-           />
-         ) : (
-            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 text-center text-gray-400 w-64 h-32 flex items-center justify-center">
-               لا توجد صورة للمندوب
-            </div>
-         )}
+        {/* Footer Section Section */}
+        <div className="flex flex-col items-center">
+          <div className="h-40 w-full flex justify-center">
+            {delegate?.unionCard ? (
+              <img 
+                src={delegate.unionCard} 
+                alt="Delegate ID" 
+                className="max-h-full max-w-sm object-contain border-2 border-black rounded-xl shadow-lg p-1 bg-white"
+              />
+            ) : (
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 text-center text-gray-400 w-72 flex items-center justify-center font-black">
+                لا توجد صورة مسجلة للمندوب
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
     </div>
   );
 }

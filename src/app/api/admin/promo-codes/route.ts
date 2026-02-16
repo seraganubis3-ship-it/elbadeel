@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       startDate,
       endDate,
       usageLimit,
+      usageLimitPerUser,
     } = body;
 
     if (!code || !type || value === undefined) {
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         usageLimit,
+        usageLimitPerUser,
         isActive: true,
       },
     });

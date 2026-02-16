@@ -11,6 +11,7 @@ interface OrderCardProps {
   onSelect: (orderId: string) => void;
   onStatusChange: (orderId: string, status: string) => void;
   onWhatsAppClick: (order: Order) => void;
+  onDelete: (orderId: string) => void;
   onPrintAuthorization?: (order: Order) => void;
 }
 
@@ -21,6 +22,7 @@ export function OrderCard({
   onSelect,
   onStatusChange,
   onWhatsAppClick,
+  onDelete,
   onPrintAuthorization,
 }: OrderCardProps) {
   const statusConfig =
@@ -42,21 +44,29 @@ export function OrderCard({
         <div className='flex flex-wrap items-center justify-between gap-2'>
           <div className='flex items-center gap-3'>
             {/* Checkbox */}
-            <input
-              type='checkbox'
-              checked={isSelected}
-              onChange={() => onSelect(order.id)}
-              className='w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500'
-            />
+            {order.status !== 'cancelled' ? (
+              <input
+                type='checkbox'
+                checked={isSelected}
+                onChange={() => onSelect(order.id)}
+                className='w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500'
+              />
+            ) : (
+              <div className="w-5" />
+            )}
 
             {/* Order ID Badge */}
             <div className='flex items-center gap-2'>
               <span className='px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-mono font-bold'>
                 #{order.id.slice(-6)}
               </span>
-              {order.createdByAdmin && (
-                <span className='px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium'>
+              {order.createdByAdmin ? (
+                <span className='px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-bold'>
                   🏢 مكتب
+                </span>
+              ) : (
+                <span className='px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-bold'>
+                  🌐 أونلاين
                 </span>
               )}
             </div>
@@ -73,79 +83,34 @@ export function OrderCard({
       <div className='p-4'>
         {/* Service Info */}
         <div className='mb-4'>
-          <h3 className='font-bold text-gray-900 text-lg mb-1'>
+          <h3 className='font-bold text-gray-900 text-2xl mb-1'>
             {order.service?.name || 'خدمة غير محددة'}
           </h3>
           <p className='text-sm text-gray-500'>{order.variant?.name || 'نوع غير محدد'}</p>
         </div>
 
-        {order.serviceDetails && (
-          <div className='mb-4 p-3 bg-purple-50/50 border border-purple-100 rounded-xl'>
-            <div className='flex items-center gap-2 mb-1.5'>
-              <span className='text-[10px] bg-purple-600 text-white px-1.5 py-0.5 rounded uppercase font-black tracking-tighter'>
-                إجابات
-              </span>
-            </div>
-            <p className='text-[11px] text-purple-900 font-bold whitespace-pre-wrap leading-relaxed opacity-80 max-h-40 overflow-y-auto custom-scrollbar'>
-              {order.serviceDetails}
-            </p>
-          </div>
-        )}
-
-        {/* Fines Badge */}
-        {(order.selectedFines || order.finesDetails) && (
-          <div className='mb-4 p-3 bg-rose-50/50 border border-rose-100 rounded-xl'>
-            <div className='flex items-center gap-2 mb-1.5'>
-               <span className='text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded uppercase font-black tracking-tighter'>
-                  غرامات
-               </span>
-            </div>
-            {order.selectedFines && (() => {
-               try {
-                  const fIds = JSON.parse(order.selectedFines) as string[];
-                  const fines = fIds.map(id => PREDEFINED_FINES.find(f => f.id === id)).filter(Boolean);
-                  if (fines.length === 0) return null;
-                  return (
-                     <div className="flex flex-wrap gap-1 mb-2">
-                        {fines.map(f => (
-                           <span key={f!.id} className="text-[10px] bg-white border border-rose-200 text-rose-700 px-1.5 py-0.5 rounded-md font-bold">
-                              {f!.name}
-                           </span>
-                        ))}
-                     </div>
-                  );
-               } catch (e) { return null; }
-            })()}
-            {order.finesDetails && (
-               <p className='text-[11px] text-rose-900 font-bold whitespace-pre-wrap leading-relaxed opacity-80'>
-                  {order.finesDetails.startsWith('"') ? JSON.parse(order.finesDetails) : order.finesDetails}
-               </p>
-            )}
-          </div>
-        )}
-
         {/* Customer Info Grid */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4'>
-          <div className='flex items-center gap-2 text-sm'>
-            <span className='text-gray-400'>👤</span>
-            <span className='text-gray-700 truncate'>
+        <div className='grid grid-cols-1 gap-3 mb-4'>
+          <div className='flex items-center gap-2'>
+            <span className='text-gray-400 text-xl'>👤</span>
+            <span className='text-gray-800 text-xl font-bold truncate'>
               {order.customerName}
               {order.customerFollowUp && (
-                <span className='bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded mx-2 font-bold inline-block'>
+                <span className='bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded mx-2 font-bold inline-block align-middle'>
                   تابع
                 </span>
               )}
             </span>
           </div>
-          <div className='flex items-center gap-2 text-sm'>
-            <span className='text-gray-400'>📱</span>
-            <span className='text-gray-700 truncate' dir='ltr'>
-              {phone}
-            </span>
+          <div className='flex items-center gap-2'>
+             <span className='text-gray-400 text-lg'>📱</span>
+             <span className='text-gray-700 text-lg font-bold truncate' dir='ltr'>
+               {phone}
+             </span>
           </div>
-          <div className='flex items-center gap-2 text-sm'>
-            <span className='text-gray-400'>📅</span>
-            <span className='text-gray-700'>
+          <div className='flex items-center gap-2'>
+            <span className='text-gray-400 text-lg'>📅</span>
+            <span className='text-gray-700 text-lg font-bold'>
               {new Date(order.createdAt).toLocaleDateString('ar-EG')}
             </span>
           </div>
@@ -163,15 +128,32 @@ export function OrderCard({
         <div className='mb-4'>
           <select
             value={order.status}
-            onChange={e => onStatusChange(order.id, e.target.value)}
+            onChange={e => {
+              if (e.target.value === 'delete_order') {
+                onDelete(order.id);
+              } else {
+                onStatusChange(order.id, e.target.value);
+              }
+            }}
             disabled={isUpdating}
-            className='w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50'
+            className='w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 font-bold'
           >
-            {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-              <option key={key} value={key}>
-                {config.icon} {config.text}
-              </option>
-            ))}
+            {Object.entries(STATUS_CONFIG)
+              .filter(([key]) => {
+                // Hide specific statuses for office orders
+                if (order.createdByAdmin) {
+                  const hiddenForOffice = ['waiting_confirmation', 'waiting_payment'];
+                  if (hiddenForOffice.includes(key)) return false;
+                }
+                
+                return true;
+              })
+              .map(([key, config]) => (
+                <option key={key} value={key}>
+                  {config.icon} {config.text}
+                </option>
+              ))}
+            <option value="delete_order" className="text-red-600 font-bold">❌ إلغاء نهائي (حذف)</option>
           </select>
         </div>
 
