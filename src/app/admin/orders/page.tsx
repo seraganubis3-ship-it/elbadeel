@@ -226,8 +226,10 @@ export default function AdminOrdersPage() {
         
         groupedOrders.NATIONAL_ID.forEach(order => {
             const vName = order.variant?.name || 'عادية';
-            if (!variants[vName]) variants[vName] = [];
-            variants[vName].push(order);
+            if (!variants[vName]) {
+                variants[vName] = [];
+            }
+            variants[vName]!.push(order);
         });
 
         Object.entries(variants).forEach(([variantName, variantOrders]) => {
@@ -832,7 +834,6 @@ export default function AdminOrdersPage() {
     o => o.status !== 'completed' && o.status !== 'cancelled'
   ).length;
   const completedOrdersCount = filteredOrders.filter(o => o.status === 'completed').length;
-  const totalValue = Math.floor(filteredOrders.reduce((sum, o) => sum + o.totalCents, 0) / 100);
 
   // Loading state
   if (loading) {

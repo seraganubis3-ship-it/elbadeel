@@ -82,6 +82,7 @@ export function LastOrderAlert({ searchTerm }: LastOrderAlertProps) {
         setLastCheckTerm(searchTerm);
 
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error checking last order:', error);
       }
     };
