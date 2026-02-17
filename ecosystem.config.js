@@ -22,6 +22,8 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
+        // Force internal connection to bot
+        WHATSAPP_API_URL: 'http://127.0.0.1:4000',
       },
     },
   ],
