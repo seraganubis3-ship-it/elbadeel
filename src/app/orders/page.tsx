@@ -388,14 +388,6 @@ function OrdersContent() {
                       </div>
                       <div className='bg-gray-50 p-2 sm:p-3 rounded-lg border border-gray-200'>
                         <span className='text-gray-600 block mb-1 text-xs font-medium'>
-                          البريد الإلكتروني:
-                        </span>
-                        <p className='font-medium text-gray-900 text-xs sm:text-sm break-all'>
-                          {order.customerEmail}
-                        </p>
-                      </div>
-                      <div className='bg-gray-50 p-2 sm:p-3 rounded-lg border border-gray-200'>
-                        <span className='text-gray-600 block mb-1 text-xs font-medium'>
                           تاريخ الطلب:
                         </span>
                         <p className='font-medium text-gray-900 text-xs sm:text-sm'>
