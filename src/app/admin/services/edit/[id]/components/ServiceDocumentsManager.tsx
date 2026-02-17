@@ -88,21 +88,20 @@ export default function ServiceDocumentsManager({
                     placeholder='تعليمات للعميل عند رفع المستند...'
                   />
                 </div>
-                
-                 {/* Logic Builder Integration */}
-                  <div className='pt-2 border-t border-slate-100'>
-                    <LogicBuilder 
-                      value={doc.showIf || ''}
-                      onChange={(val) => updateDocument(index, 'showIf', val)}
-                      fields={fields.map(f => ({ 
-                        name: f.name || `question_${f.id}`, 
-                        label: f.label,
-                        type: f.type,
-                        options: f.options?.map(o => ({ label: o.label, value: o.value }))
-                      }))}
-                    />
-                  </div>
 
+                {/* Logic Builder Integration */}
+                <div className='pt-2 border-t border-slate-100'>
+                  <LogicBuilder
+                    value={doc.showIf || ''}
+                    onChange={val => updateDocument(index, 'showIf', val)}
+                    fields={fields.map(f => ({
+                      name: f.name || `question_${f.id}`,
+                      label: f.label,
+                      type: f.type,
+                      options: f.options?.map(o => ({ label: o.label, value: o.value })),
+                    }))}
+                  />
+                </div>
               </div>
 
               <div className='flex flex-col justify-between items-end gap-4 min-w-[120px]'>

@@ -115,7 +115,10 @@ export async function PUT(req: NextRequest) {
     const formData = await req.formData();
     const name = formData.get('name') as string;
     const emailRaw = formData.get('email') as string;
-    const email = emailRaw && emailRaw.trim() !== '' && emailRaw !== 'undefined' && emailRaw !== 'null' ? emailRaw : null;
+    const email =
+      emailRaw && emailRaw.trim() !== '' && emailRaw !== 'undefined' && emailRaw !== 'null'
+        ? emailRaw
+        : null;
     const phone = formData.get('phone') as string;
     const newRole = formData.get('role') as string;
     const password = formData.get('password') as string;
@@ -153,7 +156,7 @@ export async function PUT(req: NextRequest) {
       const { hash } = await import('bcryptjs');
       updateData.passwordHash = await hash(password, 12);
     }
-    
+
     // تحديث المستخدم
     const updatedUser = await prisma.user.update({
       where: { id: userId },

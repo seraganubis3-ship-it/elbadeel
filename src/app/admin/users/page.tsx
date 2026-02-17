@@ -269,12 +269,12 @@ export default function AdminUsersPage() {
       form.append('email', editForm.email);
       form.append('phone', editForm.phone);
       form.append('role', editForm.role);
-      
+
       // إضافة كلمة المرور الجديدة إذا تم إدخالها
       if (editForm.newPassword) {
         form.append('password', editForm.newPassword);
       }
-      
+
       // isActive غير مدعوم حالياً في الـ API
       // form.append("isActive", String(editForm.isActive));
 
@@ -1251,34 +1251,44 @@ export default function AdminUsersPage() {
                 )}
               </div>
 
-                {/* Password Reset Field - Only show when editing */}
-                {isEditing && (
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                       <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                       </svg>
-                       تغيير كلمة المرور
-                    </h3>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        كلمة المرور الجديدة (اختياري)
-                      </label>
-                      <input
-                        type="text"
-                        value={editForm.newPassword || ''}
-                        onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-left"
-                        dir="ltr"
-                        placeholder="اتركه فارغاً إذا لم ترد التغيير"
-                        autoComplete="new-password"
+              {/* Password Reset Field - Only show when editing */}
+              {isEditing && (
+                <div className='mt-6 pt-6 border-t border-gray-100'>
+                  <h3 className='text-sm font-bold text-gray-900 mb-4 flex items-center gap-2'>
+                    <svg
+                      className='w-4 h-4 text-amber-500'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z'
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        أدخل 4 أحرف على الأقل لتغيير كلمة المرور.
-                      </p>
-                    </div>
+                    </svg>
+                    تغيير كلمة المرور
+                  </h3>
+                  <div>
+                    <label className='block text-sm font-medium text-gray-700 mb-1'>
+                      كلمة المرور الجديدة (اختياري)
+                    </label>
+                    <input
+                      type='text'
+                      value={editForm.newPassword || ''}
+                      onChange={e => setEditForm({ ...editForm, newPassword: e.target.value })}
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-left'
+                      dir='ltr'
+                      placeholder='اتركه فارغاً إذا لم ترد التغيير'
+                      autoComplete='new-password'
+                    />
+                    <p className='text-xs text-gray-500 mt-1'>
+                      أدخل 4 أحرف على الأقل لتغيير كلمة المرور.
+                    </p>
                   </div>
-                )}
+                </div>
+              )}
 
               <div className='flex gap-3 mt-6'>
                 {isEditing ? (

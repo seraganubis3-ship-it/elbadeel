@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         phone,
         passwordHash: hashedPassword,
         role: 'USER',
-        emailVerified: new Date(), // Auto-verify phone accounts? Or leave null? 
+        emailVerified: new Date(), // Auto-verify phone accounts? Or leave null?
         // User requested simplification. Usually phone users are considered verified if no SMS verification is implemented yet.
         // Assuming auto-verify for now or just proceed.
       },

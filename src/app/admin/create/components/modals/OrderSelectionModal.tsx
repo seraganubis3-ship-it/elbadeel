@@ -33,11 +33,11 @@ export const OrderSelectionModal: React.FC<OrderSelectionModalProps> = ({
       // Reuse the existing API but maybe we need a param to list regular orders?
       // Since we don't have a dedicated API for "list orders by customer and date" that returns simple JSON for selection,
       // we might need to rely on the existing collective-receipt API or just fetch from orders endpoint if possible.
-      // However, the user asked for "search for customer -> show services". 
+      // However, the user asked for "search for customer -> show services".
       // Use the collective-receipt API to fetch ALL orders for this customer (no date param)
       const cleanCustomerId = encodeURIComponent(customer!.id.trim());
       const res = await fetch(`/api/admin/collective-receipt?customerId=${cleanCustomerId}`);
-      
+
       if (res.ok) {
         const data = await res.json();
         // The API returns { orders: [...] }
@@ -45,7 +45,7 @@ export const OrderSelectionModal: React.FC<OrderSelectionModalProps> = ({
         // Default select all
         setSelectedOrders(new Set(data.orders.map((o: any) => o.id)));
       } else {
-         setError('فشل في جلب الطلبات');
+        setError('فشل في جلب الطلبات');
       }
     } catch (err) {
       setError('حدث خطأ أثناء الاتصال');
@@ -79,7 +79,7 @@ export const OrderSelectionModal: React.FC<OrderSelectionModalProps> = ({
     const orderIds = Array.from(selectedOrders).join(',');
     const today = new Date().toISOString().split('T')[0];
     const cleanCustomerId = encodeURIComponent(customer!.id.trim());
-    
+
     // Construct URL with orderIds
     const url = `/admin/collective-receipt?customerId=${cleanCustomerId}&date=${today}&orderIds=${orderIds}`;
     window.open(url, '_blank');
@@ -95,52 +95,76 @@ export const OrderSelectionModal: React.FC<OrderSelectionModalProps> = ({
           <div>
             <h3 className='text-lg font-black text-slate-900'>طباعة إيصال مجمع</h3>
             <p className='text-xs font-bold text-slate-500 mt-1'>
-               حدد الخدمات التي تريد طباعتها للعميل: {customer?.name}
+              حدد الخدمات التي تريد طباعتها للعميل: {customer?.name}
             </p>
           </div>
-          <button onClick={onClose} className='text-slate-400 hover:text-rose-500 transition-colors'>
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+          <button
+            onClick={onClose}
+            className='text-slate-400 hover:text-rose-500 transition-colors'
+          >
+            <svg className='w-6 h-6' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2.5}
+                d='M6 18L18 6M6 6l12 12'
+              />
             </svg>
           </button>
         </div>
 
         <div className='p-6 max-h-[60vh] overflow-y-auto custom-scrollbar'>
           {loading ? (
-             <div className="flex justify-center py-8">
-                <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-             </div>
+            <div className='flex justify-center py-8'>
+              <div className='w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin'></div>
+            </div>
           ) : error ? (
-             <div className="text-center py-8 text-rose-500 font-bold">{error}</div>
+            <div className='text-center py-8 text-rose-500 font-bold'>{error}</div>
           ) : orders.length === 0 ? (
-             <div className="text-center py-8 text-slate-400 font-bold">لا توجد طلبات مسجلة لهذا العميل اليوم</div>
+            <div className='text-center py-8 text-slate-400 font-bold'>
+              لا توجد طلبات مسجلة لهذا العميل اليوم
+            </div>
           ) : (
             <div className='space-y-3'>
-              {orders.map((order) => {
+              {orders.map(order => {
                 const isSelected = selectedOrders.has(order.id);
                 return (
-                  <div 
+                  <div
                     key={order.id}
                     onClick={() => toggleOrder(order.id)}
                     className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${
-                      isSelected 
-                        ? 'border-emerald-500 bg-emerald-50/30' 
+                      isSelected
+                        ? 'border-emerald-500 bg-emerald-50/30'
                         : 'border-slate-100 hover:border-emerald-200 hover:bg-slate-50'
                     }`}
                   >
-                     <div className="flex items-center gap-4">
-                        <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${
-                           isSelected ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 bg-white group-hover:border-emerald-400'
-                        }`}>
-                           {isSelected && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
+                    <div className='flex items-center gap-4'>
+                      <div
+                        className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${
+                          isSelected
+                            ? 'bg-emerald-500 border-emerald-500 text-white'
+                            : 'border-slate-300 bg-white group-hover:border-emerald-400'
+                        }`}
+                      >
+                        {isSelected && (
+                          <svg
+                            className='w-4 h-4'
+                            fill='none'
+                            viewBox='0 0 24 24'
+                            stroke='currentColor'
+                            strokeWidth={3}
+                          >
+                            <path d='M5 13l4 4L19 7' />
+                          </svg>
+                        )}
+                      </div>
+                      <div>
+                        <div className='font-bold text-slate-800 text-sm'>{order.serviceName}</div>
+                        <div className='text-[10px] font-bold text-slate-400 mt-0.5' dir='ltr'>
+                          {(order.totalCents / 100).toFixed(2)} EGP
                         </div>
-                        <div>
-                           <div className="font-bold text-slate-800 text-sm">{order.serviceName}</div>
-                           <div className="text-[10px] font-bold text-slate-400 mt-0.5" dir="ltr">
-                              {(order.totalCents / 100).toFixed(2)} EGP
-                           </div>
-                        </div>
-                     </div>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -149,19 +173,19 @@ export const OrderSelectionModal: React.FC<OrderSelectionModalProps> = ({
         </div>
 
         <div className='p-6 border-t border-slate-100 bg-slate-50/50 flex gap-3'>
-           <button
-             onClick={handlePrint}
-             disabled={selectedOrders.size === 0}
-             className='flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-slate-200'
-           >
-             طباعة ({selectedOrders.size})
-           </button>
-           <button
-             onClick={onClose}
-             className='px-6 py-3 bg-white border-2 border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all'
-           >
-             إلغاء
-           </button>
+          <button
+            onClick={handlePrint}
+            disabled={selectedOrders.size === 0}
+            className='flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-slate-200'
+          >
+            طباعة ({selectedOrders.size})
+          </button>
+          <button
+            onClick={onClose}
+            className='px-6 py-3 bg-white border-2 border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all'
+          >
+            إلغاء
+          </button>
         </div>
       </div>
     </div>

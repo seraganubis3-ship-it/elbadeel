@@ -9,20 +9,37 @@ const MySwal = withReactContent(Swal);
 
 interface LastOrderAlertProps {
   searchTerm: string;
+  customerId?: string | undefined;
 }
 
-export function LastOrderAlert({ searchTerm }: LastOrderAlertProps) {
+export function LastOrderAlert({ searchTerm, customerId }: LastOrderAlertProps) {
   const [lastCheckTerm, setLastCheckTerm] = useState('');
+  const [lastCheckId, setLastCheckId] = useState('');
 
   useEffect(() => {
-    // Only search if term is long enough to be a phone or significant name part
-    if (!searchTerm || searchTerm.length < 4 || searchTerm === lastCheckTerm) return;
+    // If we have a customerId, we check that.
+    // If not, we check searchTerm but ONLY if it looks like a phone number (to avoid generic name matches)
+    const isPhoneSearch = /^[0-9]{8,}/.test(searchTerm);
+    const shouldCheck = customerId || (searchTerm && isPhoneSearch && searchTerm.length >= 10);
+
+    // Prevent re-checking same data
+    if (
+      (customerId && customerId === lastCheckId) ||
+      (!customerId && searchTerm === lastCheckTerm)
+    ) {
+      return;
+    }
+
+    if (!shouldCheck) return;
 
     const checkLastOrder = async () => {
       try {
-        // Use the existing search API but limit to 1 and sort by date desc
         const params = new URLSearchParams();
-        params.set('search', searchTerm);
+        if (customerId) {
+          params.set('userId', customerId);
+        } else {
+          params.set('search', searchTerm);
+        }
         params.set('limit', '1');
         params.set('sortBy', 'createdAt_desc');
 
@@ -34,9 +51,9 @@ export function LastOrderAlert({ searchTerm }: LastOrderAlertProps) {
 
         if (orders.length > 0) {
           const lastOrder = orders[0];
-          
+
           await MySwal.fire({
-            title: '🔎 تم العثور على عميل سابق',
+            title: '🔎 آخر طلب مسجل للعميل',
             html: `
               <div style="direction: rtl; text-align: right; font-size: 0.95rem;">
                 <div style="margin-bottom: 8px;">
@@ -44,7 +61,7 @@ export function LastOrderAlert({ searchTerm }: LastOrderAlertProps) {
                    <span style="font-weight: bold; color: #0f172a;">${lastOrder?.customerName}</span>
                 </div>
                 <div style="margin-bottom: 8px;">
-                   <span style="color: #64748b;">آخر خدمة:</span>
+                   <span style="color: #64748b;">الخدمة:</span>
                    <span style="font-weight: bold; color: #0f172a;">${lastOrder?.service?.name || 'غير محدد'}</span>
                 </div>
                 <div style="margin-bottom: 8px;">
@@ -61,26 +78,19 @@ export function LastOrderAlert({ searchTerm }: LastOrderAlertProps) {
             toast: true,
             position: 'top-end',
             showConfirmButton: false,
-            timer: 5000,
+            timer: 15000,
             timerProgressBar: true,
             customClass: {
-                popup: 'colored-toast'
+              popup: 'colored-toast',
             },
             background: '#e0f2fe',
             color: '#0369a1',
-            didOpen: (toast) => {
-              if (lastOrder && lastOrder.customerName) {
-                  toast.addEventListener('click', () => {
-                     window.location.href = `/admin/orders?search=${encodeURIComponent(lastOrder.customerName)}`;
-                  });
-              }
-            }
+            // No click navigation as requested
           });
         }
-        
-        // Only set this AFTER successful check to prevent re-runs
-        setLastCheckTerm(searchTerm);
 
+        setLastCheckTerm(searchTerm);
+        if (customerId) setLastCheckId(customerId);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error checking last order:', error);
@@ -88,11 +98,11 @@ export function LastOrderAlert({ searchTerm }: LastOrderAlertProps) {
     };
 
     const timer = setTimeout(() => {
-        checkLastOrder();
-    }, 1000); // 1s debounce to avoid spamming while typing
+      checkLastOrder();
+    }, 1000);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, lastCheckTerm]);
+  }, [searchTerm, customerId, lastCheckTerm, lastCheckId]);
 
-  return null; // Logic only component
+  return null;
 }

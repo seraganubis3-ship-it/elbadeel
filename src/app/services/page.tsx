@@ -9,7 +9,8 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'الخدمات - البديل للخدمات الحكومية',
-  description: 'تصفح جميع الخدمات الحكومية المتاحة - استخراج شهادات، رخص، أوراق رسمية وأكثر. خدمات سريعة وموثوقة بأفضل الأسعار.',
+  description:
+    'تصفح جميع الخدمات الحكومية المتاحة - استخراج شهادات، رخص، أوراق رسمية وأكثر. خدمات سريعة وموثوقة بأفضل الأسعار.',
   keywords: [
     'خدمات حكومية',
     'استخراج شهادات',
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     'أوراق رسمية',
     'خدمات البديل',
     'خدمات مصر',
-    'مستندات حكومية'
+    'مستندات حكومية',
   ],
   alternates: {
     canonical: 'https://albadel.com.eg/services',
@@ -137,13 +138,25 @@ export default async function ServicesPage() {
                   <div className='absolute -bottom-3 -right-3 bg-white px-3 py-2 sm:px-5 sm:py-3 rounded-xl shadow-xl border border-emerald-100'>
                     <div className='flex items-center gap-3'>
                       <div className='w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center'>
-                        <svg className='w-4 h-4 sm:w-5 sm:h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                        <svg
+                          className='w-4 h-4 sm:w-5 sm:h-5 text-white'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M5 13l4 4L19 7'
+                          />
                         </svg>
                       </div>
                       <div className='text-right'>
                         <p className='text-emerald-600 font-black text-xs sm:text-sm'>+100000</p>
-                        <p className='text-slate-500 text-[10px] sm:text-xs font-medium'>طلب مكتمل</p>
+                        <p className='text-slate-500 text-[10px] sm:text-xs font-medium'>
+                          طلب مكتمل
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -210,7 +223,9 @@ export default async function ServicesPage() {
                   <span className='w-2 h-2 bg-emerald-400 rounded-full animate-pulse'></span>
                   <span className='text-emerald-300 text-xs font-bold'>انضم إلينا الآن</span>
                 </div>
-                <h2 className='text-2xl sm:text-3xl lg:text-4xl font-black text-white mb-2'>أهلاً بك في منصة البديل</h2>
+                <h2 className='text-2xl sm:text-3xl lg:text-4xl font-black text-white mb-2'>
+                  أهلاً بك في منصة البديل
+                </h2>
                 <p className='text-emerald-100/70 text-base sm:text-lg max-w-md'>
                   سجل حسابك الآن واستمتع بتجربة سلسة في استخراج أوراقك الرسمية
                 </p>

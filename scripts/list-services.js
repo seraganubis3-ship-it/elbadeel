@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   const services = await prisma.service.findMany({
-    select: { name: true, slug: true }
+    select: { name: true, slug: true },
   });
   console.log('Services:', JSON.stringify(services, null, 2));
 }

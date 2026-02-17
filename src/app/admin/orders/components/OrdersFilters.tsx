@@ -15,6 +15,7 @@ interface OrdersFiltersProps {
 
   categoryId: string;
   employeeId: string;
+  photographyDate?: string;
 
   // Setters
   onSearchChange: (value: string) => void;
@@ -26,6 +27,7 @@ interface OrdersFiltersProps {
   onOrderSourceChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
   onEmployeeChange: (value: string) => void;
+  onPhotographyDateChange: (value: string) => void;
 
   // Data
   services: Service[];
@@ -44,6 +46,7 @@ export function OrdersFilters({
   orderSourceFilter,
   categoryId,
   employeeId,
+  photographyDate,
   onSearchChange,
   onStatusChange,
   onDeliveryChange,
@@ -52,7 +55,9 @@ export function OrdersFilters({
   onServiceToggle,
   onOrderSourceChange,
   onCategoryChange,
+
   onEmployeeChange,
+  onPhotographyDateChange,
   services,
   categories,
   admins,
@@ -79,16 +84,6 @@ export function OrdersFilters({
   useEffect(() => {
     setLocalSearch(searchTerm);
   }, [searchTerm]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearch !== searchTerm) {
-        onSearchChange(localSearch);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [localSearch, onSearchChange, searchTerm]);
 
   // Format date input with slashes (DD/MM/YYYY)
   const formatDateInput = (value: string) => {
@@ -138,6 +133,26 @@ export function OrdersFilters({
     setLocalDateTo(formatted);
   };
 
+  // Photography Date Logic
+  const [localPhotographyDate, setLocalPhotographyDate] = useState(photographyDate || '');
+
+  useEffect(() => {
+    setLocalPhotographyDate(photographyDate || '');
+  }, [photographyDate]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localPhotographyDate !== photographyDate) {
+        onPhotographyDateChange(localPhotographyDate);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localPhotographyDate, onPhotographyDateChange, photographyDate]);
+
+  const handlePhotographyDateChange = (value: string) => {
+    const formatted = formatDateInput(value);
+    setLocalPhotographyDate(formatted);
+  };
   return (
     <div className='bg-white/95 rounded-2xl shadow-xl border border-gray-100/50 p-4 lg:p-6 mb-6'>
       {/* Order Source Tabs */}
@@ -177,29 +192,38 @@ export function OrdersFilters({
       {/* Filters Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
         {/* Search - Row 1, Col 1 */}
-        <div className='relative'>
-          <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
-            <svg
-              className='w-5 h-5 text-gray-400'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-              />
-            </svg>
+        <div className='relative flex gap-2'>
+          <div className='relative flex-1'>
+            <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
+              <svg
+                className='w-5 h-5 text-gray-400'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+                />
+              </svg>
+            </div>
+            <input
+              type='text'
+              value={localSearch}
+              onChange={e => setLocalSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && onSearchChange(localSearch)}
+              placeholder='بحث بالاسم أو الهاتف...'
+              className='w-full pr-10 pl-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm'
+            />
           </div>
-          <input
-            type='text'
-            value={localSearch}
-            onChange={e => setLocalSearch(e.target.value)}
-            placeholder='بحث بالاسم أو الهاتف أو رقم الطلب...'
-            className='w-full pr-10 pl-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm'
-          />
+          <button
+            onClick={() => onSearchChange(localSearch)}
+            className='px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-black text-lg shadow-lg hover:shadow-xl active:scale-95 min-w-[140px]'
+          >
+            بحث 🔍
+          </button>
         </div>
 
         {/* Status Filter - Row 1, Col 2 */}
@@ -275,31 +299,46 @@ export function OrdersFilters({
 
         {/* Category Filter - Row 2, Col 1-2 (Spans 2) */}
         <select
-            value={categoryId}
-            onChange={e => onCategoryChange(e.target.value)}
-            className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer md:col-span-2'
+          value={categoryId}
+          onChange={e => onCategoryChange(e.target.value)}
+          className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer md:col-span-2'
         >
-            <option value=''>جميع الفئات</option>
-            {categories.map(category => (
+          <option value=''>جميع الفئات</option>
+          {categories.map(category => (
             <option key={category.id} value={category.id}>
-                📂 {category.name}
+              📂 {category.name}
             </option>
-            ))}
+          ))}
         </select>
 
         {/* Employee Filter - Row 2, Col 3-4 (Spans 2) */}
         <select
-            value={employeeId}
-            onChange={e => onEmployeeChange(e.target.value)}
-            className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer md:col-span-2'
+          value={employeeId}
+          onChange={e => onEmployeeChange(e.target.value)}
+          className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm appearance-none cursor-pointer md:col-span-2'
         >
-            <option value=''>جميع الموظفين</option>
-            {admins.map(admin => (
+          <option value=''>جميع الموظفين</option>
+          {admins.map(admin => (
             <option key={admin.id} value={admin.id}>
-                👤 {admin.name}
+              👤 {admin.name}
             </option>
-            ))}
+          ))}
         </select>
+
+        {/* Photography Date Filter - Row 2, Col 3-4 (Spans 2) */}
+        <div className='relative md:col-span-2'>
+          <input
+            type='text' // Using text for consistency with other date inputs, or date type if preferred?
+            // Actually existing date inputs are text with "dd/mm/yyyy" placeholder logic in handleDateFromChange
+            // But for photography date, which is a single date, maybe just a standard date picker or the same logic?
+            // Let's use the same logic for consistency: localPhotographyDate
+            value={localPhotographyDate}
+            onChange={e => handlePhotographyDateChange(e.target.value)}
+            placeholder='ت. التصوير (يوم/شهر/سنة)'
+            maxLength={10}
+            className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm'
+          />
+        </div>
       </div>
 
       {/* Date Range */}

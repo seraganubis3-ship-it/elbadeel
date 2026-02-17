@@ -88,7 +88,7 @@ export const ActionsSection: React.FC<ActionsSectionProps> = ({
         </div>
       </div>
 
-      <OrderSelectionModal 
+      <OrderSelectionModal
         isOpen={showOrderModal}
         onClose={() => setShowOrderModal(false)}
         customer={customer}

@@ -9,7 +9,6 @@ export const s3Client = new S3Client({
   credentials: {
     accessKeyId: process.env.B2_APPLICATION_KEY_ID || '',
     secretAccessKey: process.env.B2_APPLICATION_KEY || '',
-
   },
 });
 
@@ -31,13 +30,13 @@ export async function uploadToBackblaze(file: File, folder: string): Promise<str
   });
 
   await upload.done();
-  
+
   // Return full B2 URL instead of just the file path
   const bucketName = process.env.B2_BUCKET_NAME;
   const region = process.env.B2_REGION || 'us-east-005';
-  
+
   // B2 friendly URL format: https://f005.backblazeb2.com/file/<bucket>/<key>
   const fullUrl = `https://f005.backblazeb2.com/file/${bucketName}/${fileName}`;
-  
+
   return fullUrl;
 }

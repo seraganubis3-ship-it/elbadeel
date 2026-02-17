@@ -109,7 +109,6 @@ export default function OrderDetailsPage() {
     );
   }
 
-
   return (
     <div className='min-h-screen bg-[#F8FAFC] pb-20'>
       {/* Background patterns */}
@@ -118,30 +117,39 @@ export default function OrderDetailsPage() {
         <div className='absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-blue-50 rounded-full blur-[120px]'></div>
       </div>
 
-      <OrderDetailHeader order={order} onDelete={deleteOrder} onPrint={() => printReceipt(order as any)} />
+      <OrderDetailHeader
+        order={order}
+        onDelete={deleteOrder}
+        onPrint={() => printReceipt(order as any)}
+      />
 
       <main className='max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 relative'>
         <div className='grid grid-cols-1 xl:grid-cols-12 gap-8'>
-          
           {/* Main Content Area (8 Cols) */}
           <div className='xl:col-span-8 space-y-8'>
-            
             {/* Quick Metrics Row - Always Visible */}
             <OrderStatusMetrics order={order} />
 
             {/* Service Details Section */}
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-3 bg-slate-50/50">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            <div className='bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden'>
+              <div className='px-6 py-4 border-b border-slate-50 flex items-center gap-3 bg-slate-50/50'>
+                <div className='w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center'>
+                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
+                    />
+                  </svg>
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-slate-800">تفاصيل الخدمة</h2>
-                  <p className="text-slate-500 text-xs">بيانات الطلب والخدمة المقدمة</p>
+                  <h2 className='text-base font-bold text-slate-800'>تفاصيل الخدمة</h2>
+                  <p className='text-slate-500 text-xs'>بيانات الطلب والخدمة المقدمة</p>
                 </div>
               </div>
-              <div className="p-6">
-                 <OrderServiceDetails
+              <div className='p-6'>
+                <OrderServiceDetails
                   order={order}
                   formSerialNumber={formSerialNumber}
                   setFormSerialNumber={setFormSerialNumber}
@@ -155,10 +163,10 @@ export default function OrderDetailsPage() {
                 />
               </div>
             </div>
-            
+
             {/* Attachments & Initial Notes */}
-            <OrderAttachments 
-              order={order} 
+            <OrderAttachments
+              order={order}
               onUpload={uploadDocument}
               onDelete={deleteDocument}
               onRemoveAttached={removeAttachedDocument}
@@ -166,20 +174,29 @@ export default function OrderDetailsPage() {
             <OrderNotes order={order} />
 
             {/* Combined Customer Section */}
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-               <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-3 bg-slate-50/50">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <div className='bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden'>
+              <div className='px-6 py-4 border-b border-slate-50 flex items-center gap-3 bg-slate-50/50'>
+                <div className='w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center'>
+                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
+                    />
+                  </svg>
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-slate-800">بيانات العميل</h2>
-                  <p className="text-slate-500 text-xs">المعلومات الشخصية والعنوان</p>
+                  <h2 className='text-base font-bold text-slate-800'>بيانات العميل</h2>
+                  <p className='text-slate-500 text-xs'>المعلومات الشخصية والعنوان</p>
                 </div>
               </div>
 
-              <div className="divide-y divide-slate-50">
-                <div className="p-6">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">بيانات الاتصال</h3>
+              <div className='divide-y divide-slate-50'>
+                <div className='p-6'>
+                  <h3 className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-4'>
+                    بيانات الاتصال
+                  </h3>
                   <OrderCustomerDetails
                     order={order}
                     isEditing={!!editingSections['customer']}
@@ -188,10 +205,12 @@ export default function OrderDetailsPage() {
                     updating={updating}
                   />
                 </div>
-                
-                <div className="p-6">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">البيانات الشخصية</h3>
-                   <OrderPersonalDetails
+
+                <div className='p-6'>
+                  <h3 className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-4'>
+                    البيانات الشخصية
+                  </h3>
+                  <OrderPersonalDetails
                     order={order}
                     isEditing={!!editingSections['personal']}
                     onToggleEdit={() => toggleEditing('personal')}
@@ -199,9 +218,11 @@ export default function OrderDetailsPage() {
                     updating={updating}
                   />
                 </div>
-                
-                <div className="p-6">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">العنوان</h3>
+
+                <div className='p-6'>
+                  <h3 className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-4'>
+                    العنوان
+                  </h3>
                   <OrderAddressDetails
                     order={order}
                     isEditing={!!editingSections['address']}
@@ -214,8 +235,8 @@ export default function OrderDetailsPage() {
             </div>
 
             {/* Financial Section */}
-            <div className="space-y-8">
-              <OrderSummary order={order} />  
+            <div className='space-y-8'>
+              <OrderSummary order={order} />
               <OrderPaymentDetails
                 order={order}
                 showPaymentForm={showPaymentForm}
@@ -230,7 +251,6 @@ export default function OrderDetailsPage() {
           {/* Sidebar Area (4 Cols) - Sticky */}
           <div className='xl:col-span-4 space-y-8'>
             <div className='sticky top-24 space-y-6'>
-              
               {/* Actions Card */}
               <OrderActionsSidebar
                 order={order}
@@ -253,24 +273,37 @@ export default function OrderDetailsPage() {
                 <h3 className='text-sm font-black text-slate-400 uppercase tracking-widest mb-4'>
                   إجراءات سريعة
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className='grid grid-cols-2 gap-3'>
                   <button
                     onClick={() => printReceipt(order as any)}
                     className='flex items-center justify-center gap-2 p-3 bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-100 transition-colors text-sm font-semibold border border-slate-100'
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z'
+                      />
+                    </svg>
                     طباعة إيصال
                   </button>
                   <button
                     onClick={() => printWorkOrder()}
                     className='flex items-center justify-center gap-2 p-3 bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-100 transition-colors text-sm font-semibold border border-slate-100'
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                      />
+                    </svg>
                     أمر شغل
                   </button>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -292,30 +325,34 @@ export default function OrderDetailsPage() {
           <div className='fixed inset-0 z-[3000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
             <div className='bg-white rounded-3xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200 overflow-hidden'>
               <div className='p-8 border-b bg-amber-50 relative'>
-                <div className="absolute top-4 right-4 text-4xl opacity-20">⚠️</div>
-                <h3 className='text-2xl font-black text-amber-900 mb-1'>
-                  مبالغ مستحقة!
-                </h3>
-                <p className="text-amber-700 font-bold text-sm">لا يمكن التسليم بدون سداد الرصيد</p>
+                <div className='absolute top-4 right-4 text-4xl opacity-20'>⚠️</div>
+                <h3 className='text-2xl font-black text-amber-900 mb-1'>مبالغ مستحقة!</h3>
+                <p className='text-amber-700 font-bold text-sm'>لا يمكن التسليم بدون سداد الرصيد</p>
               </div>
-              
+
               <div className='p-8'>
-                <div className="bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-100 italic">
+                <div className='bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-100 italic'>
                   <p className='text-slate-700 font-bold'>
-                    لا يزال هناك <span className='text-amber-600 text-xl mx-1'>{((order.remainingAmount || 0) / 100).toFixed(2)} ج.م</span> مستحقة على هذا الطلب.
+                    لا يزال هناك{' '}
+                    <span className='text-amber-600 text-xl mx-1'>
+                      {((order.remainingAmount || 0) / 100).toFixed(2)} ج.م
+                    </span>{' '}
+                    مستحقة على هذا الطلب.
                   </p>
                 </div>
-                
-                <div className="space-y-4">
-                  <label className="block text-sm font-black text-slate-700">اختر طريقة الدفع للسداد الآن:</label>
-                  <select 
-                    id="quickPayMethod"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-                    defaultValue="CASH"
+
+                <div className='space-y-4'>
+                  <label className='block text-sm font-black text-slate-700'>
+                    اختر طريقة الدفع للسداد الآن:
+                  </label>
+                  <select
+                    id='quickPayMethod'
+                    className='w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 transition-all'
+                    defaultValue='CASH'
                   >
-                    <option value="CASH">💵 كاش</option>
-                    <option value="INSTAPAY">🏦 إنستا باي</option>
-                    <option value="WALLET">📱 محفظة إلكترونية</option>
+                    <option value='CASH'>💵 كاش</option>
+                    <option value='INSTAPAY'>🏦 إنستا باي</option>
+                    <option value='WALLET'>📱 محفظة إلكترونية</option>
                   </select>
                 </div>
               </div>
@@ -323,7 +360,8 @@ export default function OrderDetailsPage() {
               <div className='p-8 border-t bg-slate-50 flex flex-col gap-3'>
                 <button
                   onClick={async () => {
-                    const method = (document.getElementById('quickPayMethod') as HTMLSelectElement).value;
+                    const method = (document.getElementById('quickPayMethod') as HTMLSelectElement)
+                      .value;
                     await quickPayAndDeliver(method);
                   }}
                   className='w-full justify-center rounded-2xl bg-emerald-600 px-6 py-4 text-lg font-black text-white shadow-xl shadow-emerald-100 hover:bg-emerald-500 transition-all active:scale-[0.98] flex items-center gap-2'

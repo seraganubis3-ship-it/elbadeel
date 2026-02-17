@@ -45,10 +45,7 @@ export async function POST(request: NextRequest) {
       const userUsageCount = await prisma.order.count({
         where: {
           promoCodeId: promoCode.id,
-          OR: [
-            ...(userId ? [{ userId }] : []),
-            ...(phone ? [{ customerPhone: phone }] : []),
-          ],
+          OR: [...(userId ? [{ userId }] : []), ...(phone ? [{ customerPhone: phone }] : [])],
         },
       });
 

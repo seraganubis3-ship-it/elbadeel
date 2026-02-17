@@ -33,7 +33,14 @@ export default function OrderFollowUpDetails({
   const fields = [
     {
       label: 'نوع العميل',
-      value: order.customerType === 'INDIVIDUAL' ? 'فرد' : order.customerType === 'COMPANY' ? 'شركة' : order.customerType === 'GOVERNMENT' ? 'حكومي' : 'غير محدد',
+      value:
+        order.customerType === 'INDIVIDUAL'
+          ? 'فرد'
+          : order.customerType === 'COMPANY'
+            ? 'شركة'
+            : order.customerType === 'GOVERNMENT'
+              ? 'حكومي'
+              : 'غير محدد',
       key: 'customerType',
       type: 'select',
       options: [
@@ -44,7 +51,14 @@ export default function OrderFollowUpDetails({
     },
     {
       label: 'طريقة المتابعة',
-      value: order.customerFollowUp === 'DIRECT' ? 'مباشر' : order.customerFollowUp === 'AGENT' ? 'وكيل' : order.customerFollowUp === 'LAWYER' ? 'محامي' : 'غير محدد',
+      value:
+        order.customerFollowUp === 'DIRECT'
+          ? 'مباشر'
+          : order.customerFollowUp === 'AGENT'
+            ? 'وكيل'
+            : order.customerFollowUp === 'LAWYER'
+              ? 'محامي'
+              : 'غير محدد',
       key: 'customerFollowUp',
       type: 'select',
       options: [
@@ -95,7 +109,9 @@ export default function OrderFollowUpDetails({
           </div>
           <div className='mr-5'>
             <h2 className='text-3xl font-black text-slate-800 tracking-tight'>التصنيف والمتابعة</h2>
-            <p className='text-slate-500 font-bold text-lg'>توصيف العميل ونوع العلاقة والبيانات الإضافية</p>
+            <p className='text-slate-500 font-bold text-lg'>
+              توصيف العميل ونوع العلاقة والبيانات الإضافية
+            </p>
           </div>
         </div>
 
@@ -132,7 +148,7 @@ export default function OrderFollowUpDetails({
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-        {fields.map((item) => (
+        {fields.map(item => (
           <div
             key={item.key}
             className='p-6 bg-slate-50/50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300'

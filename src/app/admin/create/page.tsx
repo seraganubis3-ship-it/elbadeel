@@ -18,8 +18,10 @@ import {
   CustomerInfoSection,
   DocumentsSection,
   PaymentSection,
+  ReviewSection,
   ActionsSection,
   SuccessModal,
+  Tabs,
 } from './components';
 import { ServiceSelectionSection } from './components/sections/ServiceSelectionSection';
 
@@ -110,6 +112,8 @@ export default function CreateOrderPage() {
   const removeFile = handleRemoveAttachment;
   const toggleFine = handleFineToggle;
 
+  const [activeTab, setActiveTab] = useState('customer');
+
   if (loading) return <LoadingState />;
 
   return (
@@ -143,7 +147,7 @@ export default function CreateOrderPage() {
                 />
               </svg>
             </Link>
-            
+
             <div className='flex items-center gap-4'>
               <div className='w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-200'>
                 📝
@@ -160,169 +164,257 @@ export default function CreateOrderPage() {
           </div>
         </div>
 
+        <Tabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          tabs={[
+            { id: 'customer', label: '1. بيانات العميل', icon: '👤' },
+            { id: 'service', label: '2. تفاصيل الخدمة', icon: '⚡' },
+            { id: 'details', label: '3. تفاصيل الطلب والمرفقات', icon: '📄' },
+            { id: 'financials', label: '4. الحسابات والدفع', icon: '💰' },
+            { id: 'review', label: '5. المراجعة والتأكيد', icon: '✅' },
+          ]}
+        />
+
         <form onSubmit={handleSubmit}>
-          {/* Balanced 2-Column Layout */}
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 items-start'>
-            {/* Right Column (Customer & Documents) */}
-            <div className='space-y-4'>
-              <CustomerInfoSection
-                formData={formData}
-                setFormData={setFormData}
-                customer={customer}
-                searching={searching}
-                suggestedUser={suggestedUser}
-                searchResults={searchResults}
-                showSearchDropdown={showSearchDropdown}
-                setShowSearchDropdown={setShowSearchDropdown}
-                searchCustomer={searchCustomer}
-                selectCustomer={selectCustomer}
-                handleUpdateCustomerName={handleUpdateCustomerName}
-                handleNationalIdChange={handleNationalIdChange}
-                
-                // Dependent Props
-                searchingDependent={searchingDependent}
-                suggestedDependent={suggestedDependent}
-                dependentSearchResults={dependentSearchResults}
-                showDependentDropdown={showDependentDropdown}
-                setShowDependentDropdown={setShowDependentDropdown}
-                searchDependent={searchDependent}
-                selectDependent={selectDependent}
-                saveNewDependent={saveNewDependent}
-                dependentSuggestion={dependentSuggestion}
+          {/* Tab Content Container */}
+          <div className='bg-white/50 backdrop-blur-sm rounded-3xl p-1'>
+            {/* Tab 1: Customer Info */}
+            {activeTab === 'customer' && (
+              <div className='space-y-4 animate-fadeIn'>
+                <CustomerInfoSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  customer={customer}
+                  searching={searching}
+                  suggestedUser={suggestedUser}
+                  searchResults={searchResults}
+                  showSearchDropdown={showSearchDropdown}
+                  setShowSearchDropdown={setShowSearchDropdown}
+                  searchCustomer={searchCustomer}
+                  selectCustomer={selectCustomer}
+                  handleUpdateCustomerName={handleUpdateCustomerName}
+                  handleNationalIdChange={handleNationalIdChange}
+                  // Dependent Props
+                  searchingDependent={searchingDependent}
+                  suggestedDependent={suggestedDependent}
+                  dependentSearchResults={dependentSearchResults}
+                  showDependentDropdown={showDependentDropdown}
+                  setShowDependentDropdown={setShowDependentDropdown}
+                  searchDependent={searchDependent}
+                  selectDependent={selectDependent}
+                  saveNewDependent={saveNewDependent}
+                  dependentSuggestion={dependentSuggestion}
+                  showAddressModal={showAddressModal}
+                  setShowAddressModal={setShowAddressModal}
+                  suggestion={suggestion}
+                  handleKeyDown={handleKeyDown}
+                  selectedService={selectedService}
+                />
 
-                showAddressModal={showAddressModal}
-                setShowAddressModal={setShowAddressModal}
-                suggestion={suggestion}
-                handleKeyDown={handleKeyDown}
-                selectedService={selectedService}
-              />
-              
-              <DocumentsSection
-                formData={formData}
-                setFormData={setFormData}
-                setShowAttachmentModal={setShowAttachmentModal}
-                handleRemoveAttachment={handleRemoveAttachment}
-                uploadedFiles={uploadedFiles}
-                requiredDocuments={requiredDocuments}
-              />
-            </div>
-
-            {/* Left Column (Service & Payment) */}
-            <div className='space-y-4'>
-              <ServiceSelectionSection
-                formData={formData}
-                setFormData={setFormData}
-                selectedService={selectedService}
-                serviceSearchTerm={serviceSearchTerm}
-                setServiceSearchTerm={setServiceSearchTerm}
-                showServiceDropdown={showServiceDropdown}
-                setShowServiceDropdown={setShowServiceDropdown}
-                filteredServices={filteredServices}
-                selectService={selectService}
-                selectedVariant={selectedVariant}
-                handleVariantChange={handleVariantChange}
-                formSerialNumber={formSerialNumber}
-                serialValid={serialValid}
-                validateSerialLive={validateSerialLive}
-              />
-
-              <PaymentSection
-                formData={formData}
-                setFormData={setFormData}
-                selectedVariant={selectedVariant}
-                calculateTotal={calculateTotal}
-                selectedFines={selectedFines}
-                showFinesDropdown={showFinesDropdown}
-                setShowFinesDropdown={setShowFinesDropdown}
-                showServicesDropdown={showServicesDropdown}
-                setShowServicesDropdown={setShowServicesDropdown}
-                finesSearchTerm={finesSearchTerm}
-                setFinesSearchTerm={setFinesSearchTerm}
-                servicesSearchTerm={servicesSearchTerm}
-                setServicesSearchTerm={setServicesSearchTerm}
-                manualServices={manualServices}
-                handleFineToggle={handleFineToggle}
-                handleManualServiceChange={handleManualServiceChange}
-              />
-
-              <div className='bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 overflow-hidden relative group'>
-                {/* Visual Accent */}
-                <div className='absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600'></div>
-
-                <div className='p-6'>
-                  <h3 className='text-xl font-black text-slate-900 mb-6 flex items-center justify-between'>
-                    <span>تأكيد العملية</span>
-                    <div className='flex items-center gap-2'>
-                      <div className='w-2 h-2 bg-emerald-500 rounded-full animate-pulse'></div>
-                      <span className='text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-full'>
-                        جاهز للتسجيل
-                      </span>
-                    </div>
-                  </h3>
-
-                  {/* Summary Details */}
-                  <div className='space-y-4 mb-6'>
-                    <div className='space-y-4 px-2'>
-                      <div className='flex justify-between items-center text-sm'>
-                        <span className='text-slate-500 font-bold'>سعر الخدمة الأساسي</span>
-                        <span className='text-slate-900 font-black'>
-                          {(selectedVariant?.priceCents || 0) / 100} ج.م
-                        </span>
-                      </div>
-
-                      {selectedFines.length > 0 && (
-                        <div className='flex justify-between items-center text-sm'>
-                          <span className='text-slate-500 font-bold'>إضافات وغرامات</span>
-                          <span className='text-rose-600 font-black'>
-                            +
-                            {(
-                              selectedFines.reduce((acc: number, id: string) => {
-                                const f = PREDEFINED_FINES.find(p => p.id === id);
-                                if (f?.id === 'service_001') {
-                                  return acc + calculateFineExpenses(selectedFines);
-                                }
-                                return acc + (manualServices[id] || f?.amountCents || 0);
-                              }, 0) / 100
-                            ).toFixed(0)}{' '}
-                            ج.م
-                          </span>
-                        </div>
-                      )}
-
-                      {formData.deliveryFee > 0 && (
-                        <div className='flex justify-between items-center text-sm'>
-                          <span className='text-slate-500 font-bold'>رسوم التوصيل</span>
-                          <span className='text-indigo-600 font-black'>
-                            +{formData.deliveryFee} ج.م
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Passport Fee Summary */}
-                      {selectedService && selectedVariant && 
-                       (selectedService.slug.toLowerCase().includes('passport') || selectedService.name.toLowerCase().includes('passport') || selectedService.name.includes('جواز')) &&
-                       (selectedVariant.name.includes('عادي') || selectedVariant.name.includes('سريع')) &&
-                       ['العجوزة', 'الشيخ زايد', '6 أكتوبر'].includes(formData.policeStation) && (
-                        <div className='flex justify-between items-center text-sm'>
-                          <span className='text-slate-500 font-bold'>رسوم منطقة جوازات</span>
-                          <span className='text-emerald-600 font-black'>
-                            +200 ج.م
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <ActionsSection
-                    formData={formData}
-                    setFormData={setFormData}
-                    customer={customer}
-                    submitting={submitting}
-                    handleReset={handleReset}
-                  />
+                <div className='flex justify-end pt-4 gap-3'>
+                  <button
+                    type='button'
+                    onClick={() => setActiveTab('service')}
+                    className='px-8 py-3 bg-cyan-600 text-white rounded-xl shadow-lg hover:bg-cyan-700 transition-all font-bold flex items-center gap-2'
+                  >
+                    <span>التالي: تفاصيل الخدمة</span>
+                    <svg
+                      className='w-5 h-5 rotate-180'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M9 5l7 7-7 7'
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Tab 2: Service Selection */}
+            {activeTab === 'service' && (
+              <div className='space-y-4 animate-fadeIn'>
+                <ServiceSelectionSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  selectedService={selectedService}
+                  serviceSearchTerm={serviceSearchTerm}
+                  setServiceSearchTerm={setServiceSearchTerm}
+                  showServiceDropdown={showServiceDropdown}
+                  setShowServiceDropdown={setShowServiceDropdown}
+                  filteredServices={filteredServices}
+                  selectService={selectService}
+                  selectedVariant={selectedVariant}
+                  handleVariantChange={handleVariantChange}
+                  formSerialNumber={formSerialNumber}
+                  serialValid={serialValid}
+                  validateSerialLive={validateSerialLive}
+                />
+
+                <div className='flex justify-between pt-4 gap-3'>
+                  <button
+                    type='button'
+                    onClick={() => setActiveTab('customer')}
+                    className='px-6 py-3 bg-white text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all font-medium'
+                  >
+                    السابق
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => setActiveTab('details')}
+                    className='px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all font-bold flex items-center gap-2'
+                  >
+                    <span>التالي: تفاصيل الطلب</span>
+                    <svg
+                      className='w-5 h-5 rotate-180'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M9 5l7 7-7 7'
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2: Order Details */}
+            {activeTab === 'details' && (
+              <div className='space-y-4 animate-fadeIn'>
+                <DocumentsSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  setShowAttachmentModal={setShowAttachmentModal}
+                  handleRemoveAttachment={handleRemoveAttachment}
+                  uploadedFiles={uploadedFiles}
+                  requiredDocuments={requiredDocuments}
+                />
+
+                <div className='flex justify-between pt-4 gap-3'>
+                  <button
+                    type='button'
+                    onClick={() => setActiveTab('service')}
+                    className='px-6 py-3 bg-white text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all font-medium'
+                  >
+                    السابق
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => setActiveTab('financials')}
+                    className='px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all font-bold flex items-center gap-2'
+                  >
+                    <span>التالي: الحسابات</span>
+                    <svg
+                      className='w-5 h-5 rotate-180'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M9 5l7 7-7 7'
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 3: Financials */}
+            {activeTab === 'financials' && (
+              <div className='space-y-4 animate-fadeIn'>
+                <PaymentSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  selectedVariant={selectedVariant}
+                  calculateTotal={calculateTotal}
+                  selectedFines={selectedFines}
+                  showFinesDropdown={showFinesDropdown}
+                  setShowFinesDropdown={setShowFinesDropdown}
+                  showServicesDropdown={showServicesDropdown}
+                  setShowServicesDropdown={setShowServicesDropdown}
+                  finesSearchTerm={finesSearchTerm}
+                  setFinesSearchTerm={setFinesSearchTerm}
+                  servicesSearchTerm={servicesSearchTerm}
+                  setServicesSearchTerm={setServicesSearchTerm}
+                  manualServices={manualServices}
+                  handleFineToggle={handleFineToggle}
+                  handleManualServiceChange={handleManualServiceChange}
+                />
+
+                <div className='flex justify-between pt-4 gap-3'>
+                  <button
+                    type='button'
+                    onClick={() => setActiveTab('details')}
+                    className='px-6 py-3 bg-white text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all font-medium'
+                  >
+                    السابق
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => setActiveTab('review')}
+                    className='px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all font-bold flex items-center gap-2'
+                  >
+                    <span>التالي: المراجعة</span>
+                    <svg
+                      className='w-5 h-5 rotate-180'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M9 5l7 7-7 7'
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 4: Review */}
+            {activeTab === 'review' && (
+              <div className='space-y-4 animate-fadeIn'>
+                <ReviewSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  customer={customer}
+                  selectedService={selectedService}
+                  selectedVariant={selectedVariant}
+                  selectedFines={selectedFines}
+                  manualServices={manualServices}
+                  calculateTotal={calculateTotal}
+                  submitting={submitting}
+                  handleReset={handleReset}
+                  setActiveTab={setActiveTab}
+                />
+
+                <div className='flex justify-start pt-4'>
+                  <button
+                    type='button'
+                    onClick={() => setActiveTab('financials')}
+                    className='px-6 py-3 bg-white text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all font-medium'
+                  >
+                    السابق: الحسابات
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </form>
       </div>
@@ -352,7 +444,6 @@ export default function CreateOrderPage() {
       />
 
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-      
     </div>
   );
 }

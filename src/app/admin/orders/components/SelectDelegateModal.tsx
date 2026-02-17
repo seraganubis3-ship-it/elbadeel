@@ -13,7 +13,11 @@ interface Delegate {
 interface SelectDelegateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (delegate?: Delegate, authType?: 'passport' | 'work-permit', reportDate?: string) => void;
+  onConfirm: (
+    delegate?: Delegate,
+    authType?: 'passport' | 'work-permit',
+    reportDate?: string
+  ) => void;
   mode?: 'default' | 'authorization';
   isOptional?: boolean;
 }
@@ -45,14 +49,14 @@ export function SelectDelegateModal({
     // Remove non-numeric characters
     const digits = value.replace(/\D/g, '');
     let formatted = digits;
-    
+
     if (digits.length > 2) {
       formatted = digits.slice(0, 2) + '/' + digits.slice(2);
     }
     if (digits.length > 4) {
       formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
     }
-    
+
     return formatted.slice(0, 10);
   };
 
@@ -73,7 +77,7 @@ export function SelectDelegateModal({
 
   const handleConfirm = () => {
     const delegate = delegates.find(d => d.id === selectedDelegateId);
-    
+
     // Prepend day name automatically
     let finalReportDate = reportDate;
     try {
@@ -92,8 +96,8 @@ export function SelectDelegateModal({
 
     // If optional and no delegate, confirm with undefined
     if (isOptional && !delegate) {
-        onConfirm(undefined, undefined, finalReportDate);
-        return;
+      onConfirm(undefined, undefined, finalReportDate);
+      return;
     }
 
     if (delegate) {
@@ -116,20 +120,18 @@ export function SelectDelegateModal({
           </h3>
 
           {loading ? (
-             <div className="flex justify-center p-4">
-               <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-             </div>
+            <div className='flex justify-center p-4'>
+              <div className='w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin'></div>
+            </div>
           ) : (
             <div className='space-y-4'>
               {/* Date Selection */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  تاريخ الكشف
-                </label>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>تاريخ الكشف</label>
                 <input
                   type='text'
                   value={reportDate}
-                  onChange={(e) => setReportDate(formatDateInput(e.target.value))}
+                  onChange={e => setReportDate(formatDateInput(e.target.value))}
                   className='w-full px-4 py-2 bg-blue-50/50 border border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-blue-700'
                   placeholder='14/10/2008'
                 />
@@ -140,7 +142,7 @@ export function SelectDelegateModal({
                   <label className='block text-sm font-medium text-gray-700 mb-2'>
                     نوع التفويض
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className='grid grid-cols-2 gap-2'>
                     <button
                       onClick={() => setAuthType('passport')}
                       className={`py-2 px-3 rounded-lg font-bold text-sm transition-all ${
@@ -166,16 +168,16 @@ export function SelectDelegateModal({
               )}
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
-                  المندوب
-                </label>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>المندوب</label>
                 <select
                   value={selectedDelegateId}
-                  onChange={(e) => setSelectedDelegateId(e.target.value)}
+                  onChange={e => setSelectedDelegateId(e.target.value)}
                   className='w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all'
                 >
-                  <option value=''>{isOptional ? 'بدون مندوب (طباعة مباشرة)' : 'اختر المندوب...'}</option>
-                  {delegates.map((delegate) => (
+                  <option value=''>
+                    {isOptional ? 'بدون مندوب (طباعة مباشرة)' : 'اختر المندوب...'}
+                  </option>
+                  {delegates.map(delegate => (
                     <option key={delegate.id} value={delegate.id}>
                       {delegate.name}
                     </option>

@@ -5,12 +5,14 @@ async function main() {
   const orders = await prisma.order.findMany({
     take: 20,
     orderBy: { createdAt: 'desc' },
-    include: { service: true }
+    include: { service: true },
   });
-  
+
   console.log('Recent Orders (first 20):');
   orders.forEach(o => {
-      console.log(`Order ID: ${o.id}, WorkDate: ${o.workDate}, Service: ${o.service.name} (Slug: ${o.service.slug}), WorkOrderNum: ${o.workOrderNumber}`);
+    console.log(
+      `Order ID: ${o.id}, WorkDate: ${o.workDate}, Service: ${o.service.name} (Slug: ${o.service.slug}), WorkOrderNum: ${o.workOrderNumber}`
+    );
   });
 }
 

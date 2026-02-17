@@ -1,4 +1,3 @@
-
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -12,8 +11,8 @@ async function main() {
         { name: { contains: 'ترجم' } },
         { name: { contains: 'translat', mode: 'insensitive' } },
         { name: { contains: 'مترجم' } },
-        { slug: { contains: 'translat', mode: 'insensitive' } }
-      ]
+        { slug: { contains: 'translat', mode: 'insensitive' } },
+      ],
     },
     select: {
       id: true,
@@ -22,10 +21,10 @@ async function main() {
       variants: {
         select: {
           name: true,
-          priceCents: true
-        }
-      }
-    }
+          priceCents: true,
+        },
+      },
+    },
   });
 
   console.log('\n📊 Found Services:');
@@ -36,7 +35,9 @@ async function main() {
       console.log(`- [${s.name}] (Slug: ${s.slug})`);
       if (s.variants.length > 0) {
         console.log('  Variants:');
-        s.variants.forEach(v => console.log(`    • ${v.name} - ${(v.priceCents / 100).toFixed(2)} EGP`));
+        s.variants.forEach(v =>
+          console.log(`    • ${v.name} - ${(v.priceCents / 100).toFixed(2)} EGP`)
+        );
       } else {
         console.log('  Subject to variants: None');
       }

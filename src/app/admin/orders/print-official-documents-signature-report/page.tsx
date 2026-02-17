@@ -1,5 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
-  /* eslint-disable @next/next/no-img-element */
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from 'react';
 
@@ -27,7 +28,7 @@ export default function PrintOfficialDocumentsSignatureReport() {
     // Load data from localStorage
     const storedData = localStorage.getItem('temp_official_docs_signature_report_data');
     let customDate = '';
-    
+
     if (storedData) {
       const parsed = JSON.parse(storedData);
       setData(parsed.orders || []);
@@ -37,57 +38,157 @@ export default function PrintOfficialDocumentsSignatureReport() {
 
     // Date Logic
     if (customDate) {
-       setReportDate(customDate);
+      setReportDate(customDate);
     } else {
       const workDate = localStorage.getItem('adminWorkDate');
       let dateObj = new Date();
       if (workDate) {
-         const parts = workDate.split('/');
-         if (parts.length === 3) {
-            dateObj = new Date(parseInt(parts[2] || '0'), parseInt(parts[1] || '0') - 1, parseInt(parts[0] || '0'));
-         }
+        const parts = workDate.split('/');
+        if (parts.length === 3) {
+          dateObj = new Date(
+            parseInt(parts[2] || '0'),
+            parseInt(parts[1] || '0') - 1,
+            parseInt(parts[0] || '0')
+          );
+        }
       }
-      const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      };
       const formatted = dateObj.toLocaleDateString('ar-EG', options).replace(/،/g, ' -');
       setReportDate(formatted);
     }
   }, []);
 
   return (
-    <div className="bg-white min-h-screen p-0 w-full" dir="rtl">
+    <div className='bg-white p-0 w-full' dir='rtl'>
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Arial:wght@400;700;900&display=swap');
+
         @media print {
           @page {
             size: A4;
-            margin: 10mm !important;
+            margin: 0mm !important;
           }
           body {
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
-            font-family: 'Tajawal', sans-serif !important;
+            font-family: 'Arial', sans-serif !important;
             margin: 0 !important;
             padding: 0 !important;
             background: white !important;
+            font-size: 12px !important;
           }
           .no-print {
             display: none !important;
           }
+          .report-title {
+            font-size: 24px !important;
+          }
+          .date-badge {
+            font-size: 16px !important;
+            padding: 4px 20px !important;
+          }
+          .recipient-title {
+            font-size: 18px !important;
+          }
+          .greeting {
+            font-size: 20px !important;
+          }
+          .declaration-text {
+            font-size: 16px !important;
+          }
+          .data-table th {
+            font-size: 14px !important;
+            padding: 3px !important;
+          }
+          .col-id {
+            font-size: 16px !important;
+            font-weight: 900 !important;
+            letter-spacing: 1px !important;
+            font-family: monospace !important;
+          }
+          .signature-cell {
+            height: 50px !important;
+          }
+          tfoot {
+            display: table-footer-group;
+          }
+          thead {
+            display: table-header-group;
+          }
         }
 
         body {
-          font-family: 'Tajawal', sans-serif;
+          font-family: 'Arial', sans-serif;
           margin: 0;
           padding: 0;
           background: white;
           color: #000;
         }
 
+        /* Premium Ornate Frame */
+        .premium-frame {
+          position: fixed;
+          top: 0mm;
+          bottom: 0mm;
+          left: 0mm;
+          right: 0mm;
+          border: 2px solid #000;
+          pointer-events: none;
+          z-index: 9999;
+        }
+
+        .premium-frame::after {
+          content: '';
+          position: absolute;
+          top: 0mm;
+          bottom: 0mm;
+          left: 0mm;
+          right: 0mm;
+          opacity: 0.5;
+        }
+
+        .corner {
+          position: absolute;
+          width: 50px;
+          height: 50px;
+          z-index: 10000;
+        }
+
+        .corner-tl {
+          top: -1px;
+          left: -1px;
+        }
+        .corner-tr {
+          top: -1px;
+          right: -1px;
+          transform: scaleX(-1);
+        }
+        .corner-bl {
+          bottom: -1px;
+          left: -1px;
+          transform: scaleY(-1);
+        }
+        .corner-br {
+          bottom: -1px;
+          right: -1px;
+          transform: scale(-1);
+        }
+
+        .ornate-svg {
+          width: 100%;
+          height: 100%;
+          fill: #000;
+        }
+
         .report-wrapper {
           position: relative;
           width: 100%;
-          padding: 0;
+          padding: 10mm;
           margin: 0;
           box-sizing: border-box;
         }
@@ -97,14 +198,14 @@ export default function PrintOfficialDocumentsSignatureReport() {
           justify-content: space-between;
           align-items: flex-start;
           width: 100%;
-          margin-bottom: 2mm;
+          margin-bottom: 1mm;
         }
 
         .logo-container {
           position: absolute;
-          top: 0;
-          right: 0;
-          width: 320px;
+          top: -100px;
+          right: -20px;
+          width: 450px;
           z-index: 100;
         }
 
@@ -117,58 +218,54 @@ export default function PrintOfficialDocumentsSignatureReport() {
         .header-titles {
           width: 100%;
           text-align: center;
-          padding-top: 15mm;
-          margin-bottom: 8mm;
+          padding-top: 5mm;
+          margin-bottom: 3mm;
         }
 
         .report-title {
-          font-size: 32px;
+          font-size: 20px;
           font-weight: 900;
-          margin-bottom: 3mm;
+          margin-bottom: 1mm;
           color: #000;
         }
 
         .date-badge {
           display: inline-block;
-          border: 3px solid #000;
-          padding: 6px 25px;
-          font-size: 19px;
+          padding: 4px 20px;
+          font-size: 14px;
           font-weight: 900;
           background: #fff;
         }
 
         .recipient-section {
-          margin-bottom: 5mm;
+          margin-bottom: 2mm;
           padding-right: 2mm;
         }
 
         .recipient-title {
-          font-size: 20px;
+          font-size: 15px;
           font-weight: 900;
           text-decoration: underline;
-          text-underline-offset: 5px;
-          margin-bottom: 3mm;
+          text-underline-offset: 4px;
+          margin-bottom: 1mm;
         }
 
         .greeting {
-          font-size: 26px;
+          font-size: 16px;
           font-weight: 900;
           text-align: center;
           font-style: italic;
-          margin-bottom: 4mm;
+          margin-bottom: 2mm;
         }
 
         .declaration-box {
-          border: 4px solid #000;
-          padding: 12px 15px;
-          background-color: #f9fafb;
-          margin-bottom: 6mm;
-          border-radius: 4px;
+          padding: 8px 0;
+          margin-bottom: 3mm;
         }
 
         .declaration-text {
-          font-size: 19px;
-          line-height: 1.5;
+          font-size: 14px;
+          line-height: 1.4;
           text-align: justify;
           font-weight: 800;
           color: #000;
@@ -184,42 +281,78 @@ export default function PrintOfficialDocumentsSignatureReport() {
           width: 100%;
           border-collapse: collapse;
           table-layout: fixed;
-          border: 3px solid #000;
+          font-size: 13px;
+          margin-bottom: 10px;
+          page-break-inside: auto;
         }
-
-        .data-table thead {
-          display: table-header-group;
-        }
-
         .data-table th {
-          background-color: #f3f4f6 !important;
-          border: 2px solid #000;
-          padding: 8px 1px;
+          background-color: #d1d5db;
+          border: 1px solid #000;
+          padding: 3px;
+          text-align: center;
           font-weight: 900;
           font-size: 14px;
+        }
+        .data-table td {
+          border: 1px solid #000;
+          padding: 0px 4px !important;
+          vertical-align: middle;
+          line-height: 1;
+          font-weight: 900;
+          font-size: 16px !important;
+        }
+        .data-table tr {
+          page-break-inside: avoid;
+          page-break-after: auto;
+        }
+        .data-table tr:nth-child(even) {
+          background-color: #f3f4f6 !important;
+          -webkit-print-color-adjust: exact;
+        }
+
+        .col-index {
+          width: 25px;
+          min-width: 25px;
           text-align: center;
         }
-        
-        .data-table td {
-          border: 2px solid #000;
-          padding: 6px 4px;
-          font-weight: 800;
-          font-size: 15px;
-          word-wrap: break-word;
-          overflow: hidden;
-          vertical-align: middle;
+        .col-name {
+          width: 35%;
+          min-width: 200px;
+          text-align: right;
+          font-weight: bold;
+        }
+        .col-id {
+          width: 25%;
+          min-width: 140px;
+          text-align: center;
+          font-family: monospace;
+          font-size: 16px;
+          font-weight: 900;
+          letter-spacing: 1px;
+        }
+        .col-source {
+          width: 15%;
+          min-width: 80px;
+          text-align: center;
+        }
+        .col-qty {
+          width: 10%;
+          min-width: 60px;
+          text-align: center;
+        }
+        .col-role {
+          width: 15%;
+          min-width: 80px;
+          text-align: center;
+        }
+        .col-signature {
+          width: 25%;
+          min-width: 120px;
+          text-align: center;
         }
 
-        .col-index { width: 30px; }
-        .col-name { width: auto; }
-        .col-id { width: 160px; }
-        .col-source { width: 75px; }
-        .col-qty { width: 40px; }
-        .col-role { width: 80px; }
-        .col-signature { width: 130px; }
-
         .signature-cell {
-           height: 60px;
+          height: 20px;
         }
 
         .nowrap {
@@ -227,18 +360,16 @@ export default function PrintOfficialDocumentsSignatureReport() {
         }
 
         .delegate-card-container {
-          margin-top: 15mm;
+          margin-top: 1mm;
           display: flex;
           justify-content: center;
           page-break-inside: avoid;
         }
 
         .delegate-card-frame {
-          border: 5px solid #000;
-          padding: 8px;
           background: #fff;
-          width: 450px;
-          height: 280px;
+          width: 300px;
+          height: 180px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -251,65 +382,134 @@ export default function PrintOfficialDocumentsSignatureReport() {
         }
       `}</style>
 
-      <div className="report-wrapper">
-        <div className="logo-container">
-          <img src="/images/report-header.png" alt="Header" className="logo-img" />
-        </div>
-
-        <div className="header-titles">
-          <h1 className="report-title">كشف توقيعات المستخرجات</h1>
-          <div className="date-badge">
-            {reportDate}
+      <div className='report-wrapper'>
+        {/* Premium Frame */}
+        <div className='premium-frame'>
+          <div className='corner corner-tl'>
+            <svg className='ornate-svg' viewBox='0 0 100 100'>
+              <path
+                d='M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z'
+                fill='black'
+              />
+              <path d='M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z' fill='black' />
+            </svg>
+          </div>
+          <div className='corner corner-tr'>
+            <svg className='ornate-svg' viewBox='0 0 100 100'>
+              <path
+                d='M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z'
+                fill='black'
+              />
+              <path d='M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z' fill='black' />
+            </svg>
+          </div>
+          <div className='corner corner-bl'>
+            <svg className='ornate-svg' viewBox='0 0 100 100'>
+              <path
+                d='M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z'
+                fill='black'
+              />
+              <path d='M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z' fill='black' />
+            </svg>
+          </div>
+          <div className='corner corner-br'>
+            <svg className='ornate-svg' viewBox='0 0 100 100'>
+              <path
+                d='M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z'
+                fill='black'
+              />
+              <path d='M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z' fill='black' />
+            </svg>
           </div>
         </div>
 
-        <section className="recipient-section">
-          <h2 className="recipient-title">السيد العميد / مدير مصلحة الأحوال المدنية بالجيزة</h2>
-          <p className="greeting">تحية طيبة وبعد ،،،</p>
-        </section>
-
-        <section className="declaration-box">
-          <p className="declaration-text">
-            أقر أنا / <span className="delegate-highlight">{delegate?.name || '................................'}</span> مندوب البديل للخدمات الحكومية بأنه تم تفويضي من قبل أصحاب الشأن المدون اسمائهم في الكشف وتم أخذ اقرار من صاحب الشأن أمامي وإذا ظهر عكس ذلك أكون مسئول مسئولية كاملة وهذا اقرار مني بذلك / <span className="delegate-highlight">{delegate?.name || '................................'}</span>
-          </p>
-        </section>
-
-        <table className="data-table">
+        <table className='data-table'>
           <thead>
+            {/* Full Header Row - Repeats on every page */}
             <tr>
-              <th className="col-index">م</th>
-              <th className="col-name text-right px-4">الاسم</th>
-              <th className="col-id">الرقم القومي</th>
-              <th className="col-source">المصدر</th>
-              <th className="col-qty">العدد</th>
-              <th className="col-role">الصفة</th>
-              <th className="col-signature">توقيع صاحب الشأن</th>
+              <td colSpan={7} className='border-0 p-0 text-right'>
+                <div className='logo-container'>
+                  <img src='/images/report-header.png' alt='Header' className='logo-img' />
+                </div>
+
+                <div className='header-titles'>
+                  <h1 className='report-title'>كشف توقيعات المستخرجات</h1>
+                  <div className='date-badge'>{reportDate}</div>
+                </div>
+
+                <section className='recipient-section'>
+                  <h2 className='recipient-title'>
+                    السيد العميد / مدير مصلحة الأحوال المدنية بالجيزة
+                  </h2>
+                  <p className='greeting'>تحية طيبة وبعد ،،،</p>
+                </section>
+
+                <section className='declaration-box'>
+                  <p className='declaration-text'>
+                    أقر أنا /{' '}
+                    <span className='delegate-highlight'>
+                      {delegate?.name || '................................'}
+                    </span>{' '}
+                    مندوب البديل للخدمات الحكومية بأنه تم تفويضي من قبل أصحاب الشأن المدون اسمائهم
+                    في الكشف وتم أخذ اقرار من صاحب الشأن أمامي وإذا ظهر عكس ذلك أكون مسئول مسئولية
+                    كاملة وهذا اقرار مني بذلك /{' '}
+                    <span className='delegate-highlight'>
+                      {delegate?.name || '................................'}
+                    </span>
+                  </p>
+                </section>
+              </td>
+            </tr>
+            {/* Column Headers Row */}
+            <tr>
+              <th className='col-index'>م</th>
+              <th className='col-name text-right px-4'>الاسم</th>
+              <th className='col-id'>الرقم القومي</th>
+              <th className='col-source'>المصدر</th>
+              <th className='col-qty'>العدد</th>
+              <th className='col-role'>الصفة</th>
+              <th className='col-signature'>توقيع صاحب الشأن</th>
             </tr>
           </thead>
           <tbody>
             {data.map((item, index) => (
               <tr key={index}>
-                <td className="text-center font-black">{index + 1}</td>
-                <td className="text-right font-black px-4 nowrap">{item.name}</td>
-                <td className="text-center font-mono tracking-tighter font-black nowrap">{item.idNumber}</td>
-                <td className="text-center">{item.source}</td>
-                <td className="text-center">{item.quantity}</td>
-                <td className="text-center">{item.relation}</td>
-                <td className="signature-cell"></td>
+                <td className='col-index'>{index + 1}</td>
+                <td className='col-name'>{item.name}</td>
+                <td className='col-id'>{item.idNumber}</td>
+                <td className='col-source'>{item.source}</td>
+                <td className='col-qty'>{item.quantity}</td>
+                <td className='col-role'>{item.relation}</td>
+                <td className='signature-cell'></td>
               </tr>
             ))}
           </tbody>
-        </table>
+          <tfoot>
+            <tr>
+              <td colSpan={7} className='p-0 border-t-2 border-black'>
+                <div className='flex justify-between items-center px-8 py-1 bg-white'>
+                  {/* Delegate Card */}
+                  <div className='delegate-card-frame'>
+                    {delegate?.unionCard ? (
+                      <img
+                        src={delegate.unionCard}
+                        alt='Delegate ID'
+                        className='delegate-card-img'
+                      />
+                    ) : (
+                      <div className='text-sm font-black text-gray-400'>لا يوجد كارت مسجل</div>
+                    )}
+                  </div>
 
-        <div className="delegate-card-container">
-          <div className="delegate-card-frame">
-            {delegate?.unionCard ? (
-              <img src={delegate.unionCard} alt="Delegate ID" className="delegate-card-img" />
-            ) : (
-              <div className="text-xl font-black text-gray-400">لا يوجد كارت مسجل</div>
-            )}
-          </div>
-        </div>
+                  {/* Signature */}
+                  <div className='text-center ml-10'>
+                    <div className='text-2xl font-black mb-1'>يعتمد</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     </div>
   );

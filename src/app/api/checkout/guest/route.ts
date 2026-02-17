@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hash } from 'bcryptjs';
@@ -9,10 +8,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Validate Input
     if (!orderData || !userData) {
-      return NextResponse.json(
-        { error: 'Missing required data' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required data' }, { status: 400 });
     }
 
     // 2. Check if user already exists
@@ -34,7 +30,7 @@ export async function POST(req: NextRequest) {
     // Generate a secure password hash
     const hashedPassword = await hash(userData.password, 12);
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async tx => {
       // Fetch default delivery fee if not provided
       let deliveryFee = orderData.deliveryFee || 0;
       if (deliveryFee === 0 && orderData.deliveryType !== 'OFFICE') {
@@ -75,7 +71,7 @@ export async function POST(req: NextRequest) {
           variantId: orderData.variantId,
           status: 'PENDING',
           totalPrice: orderData.totalPrice, // Consider recounting on server for security, but trusting client for now for speed
-          totalCents: orderData.totalPrice * 100, 
+          totalCents: orderData.totalPrice * 100,
           customerName: orderData.customerName,
           customerPhone: orderData.customerPhone,
           customerEmail: userData.email,
@@ -105,12 +101,8 @@ export async function POST(req: NextRequest) {
       orderId: result.order.id,
       userId: result.user.id,
     });
-
   } catch (error: any) {
     // console.error('Error creating guest order:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

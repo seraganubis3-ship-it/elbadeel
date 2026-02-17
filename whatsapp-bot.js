@@ -1,4 +1,3 @@
-
 const {
   default: makeWASocket,
   DisconnectReason,
@@ -28,7 +27,7 @@ let qrCodeData = null;
 async function startWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
   const { version, isLatest } = await fetchLatestBaileysVersion();
-  
+
   console.log(`Using WhatsApp v${version.join('.')}, isLatest: ${isLatest}`);
 
   sock = makeWASocket({
@@ -47,7 +46,7 @@ async function startWhatsApp() {
     keepAliveIntervalMs: 30000,
   });
 
-  sock.ev.on('connection.update', async (update) => {
+  sock.ev.on('connection.update', async update => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
@@ -59,9 +58,14 @@ async function startWhatsApp() {
     if (connection === 'close') {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-      
-      console.log('Connection closed due to ', lastDisconnect?.error, ', reconnecting ', shouldReconnect);
-      
+
+      console.log(
+        'Connection closed due to ',
+        lastDisconnect?.error,
+        ', reconnecting ',
+        shouldReconnect
+      );
+
       // Handle 401 Unauthorized - delete corrupted session
       if (statusCode === 401) {
         console.log('⚠️ 401 Unauthorized - Deleting corrupted session files...');
@@ -77,7 +81,7 @@ async function startWhatsApp() {
         setTimeout(() => startWhatsApp(), 2000);
         return;
       }
-      
+
       if (shouldReconnect) {
         setTimeout(() => startWhatsApp(), 5000); // Wait 5s before reconnecting
       }
@@ -106,7 +110,7 @@ app.get('/health', (req, res) => {
 app.get('/qr', async (req, res) => {
   const isConnected = !!sock?.user;
   let qrImage = null;
-  
+
   if (!isConnected && qrCodeData) {
     try {
       qrImage = await QRCode.toDataURL(qrCodeData);
@@ -116,11 +120,11 @@ app.get('/qr', async (req, res) => {
   }
 
   res.json({
-    status: isConnected ? 'connected' : (qrCodeData ? 'qr_ready' : 'loading'),
+    status: isConnected ? 'connected' : qrCodeData ? 'qr_ready' : 'loading',
     qrRequired: !isConnected,
     user: sock?.user,
     qrImage: qrImage,
-    message: isConnected ? 'تم الاتصال بنجاح' : (qrCodeData ? 'امسح الكود' : 'جاري التحميل...')
+    message: isConnected ? 'تم الاتصال بنجاح' : qrCodeData ? 'امسح الكود' : 'جاري التحميل...',
   });
 });
 
@@ -155,7 +159,7 @@ app.post('/send', async (req, res) => {
   try {
     const formattedPhone = formatToWhatsappId(phone);
     // Add 1s delay to seem human
-    await delay(1000); 
+    await delay(1000);
     const sentMsg = await sock.sendMessage(formattedPhone, { text: message });
     res.json({ success: true, messageId: sentMsg.key.id });
   } catch (error) {

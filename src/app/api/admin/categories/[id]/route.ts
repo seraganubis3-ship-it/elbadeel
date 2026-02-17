@@ -56,11 +56,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Handle image upload with B2
     if (image && image.size > 0) {
-        try {
-            imagePath = await uploadToBackblaze(image, 'categories');
-        } catch (e) {
-            // Upload failed
-        }
+      try {
+        imagePath = await uploadToBackblaze(image, 'categories');
+      } catch (e) {
+        // Upload failed
+      }
     }
 
     const updateData: any = {

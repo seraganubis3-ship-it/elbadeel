@@ -98,8 +98,9 @@ export interface OrderFilters {
   searchTerm: string;
   statusFilter: string;
   deliveryFilter: string;
-  dateFrom: string;
-  dateTo: string;
+  dateFrom?: string;
+  dateTo?: string;
+  photographyDate?: string;
   selectedServiceIds: string[];
   orderSourceFilter: string;
   userIdFilter: string;

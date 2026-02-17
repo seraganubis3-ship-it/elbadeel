@@ -16,7 +16,7 @@ export const getCustomerStatus = (status: string): CustomerStatus => {
         bgColor: 'bg-yellow-100',
         icon: '⏳',
       };
-    
+
     case ORDER_STATUS.WAITING_PAYMENT:
       return {
         label: 'تم مراجعة (في انتظار الدفع)',
@@ -97,14 +97,14 @@ export const CUSTOMER_PROGRESS_STEPS = [
     label: 'انتظار المراجعة',
     description: 'جاري مراجعة طلبك',
     icon: '⏳',
-    statuses: [ORDER_STATUS.WAITING_CONFIRMATION]
+    statuses: [ORDER_STATUS.WAITING_CONFIRMATION],
   },
   {
     id: 'payment',
     label: 'انتظار الدفع',
     description: 'يرجى سداد رسوم الخدمة',
     icon: '💳',
-    statuses: [ORDER_STATUS.WAITING_PAYMENT, ORDER_STATUS.PAYMENT_REVIEW]
+    statuses: [ORDER_STATUS.WAITING_PAYMENT, ORDER_STATUS.PAYMENT_REVIEW],
   },
   {
     id: 'processing',
@@ -116,23 +116,23 @@ export const CUSTOMER_PROGRESS_STEPS = [
       ORDER_STATUS.PARTIAL_PAYMENT,
       ORDER_STATUS.SETTLEMENT,
       ORDER_STATUS.FULFILLMENT,
-      ORDER_STATUS.PROCESSING
-    ]
+      ORDER_STATUS.PROCESSING,
+    ],
   },
   {
     id: 'ready',
     label: 'جاهز للتسليم',
     description: 'طلبك جاهز للاستلام/التوصيل',
     icon: '🎉',
-    statuses: [ORDER_STATUS.SUPPLY, ORDER_STATUS.READY]
+    statuses: [ORDER_STATUS.SUPPLY, ORDER_STATUS.READY],
   },
   {
     id: 'delivered',
     label: 'تم التسليم',
     description: 'تم تسليم الطلب بنجاح',
     icon: '🚚',
-    statuses: [ORDER_STATUS.DELIVERED]
-  }
+    statuses: [ORDER_STATUS.DELIVERED],
+  },
 ];
 
 export const getCurrentStepIndex = (status: string): number => {
@@ -141,13 +141,13 @@ export const getCurrentStepIndex = (status: string): number => {
     return -1; // Special state
   }
 
-  const index = CUSTOMER_PROGRESS_STEPS.findIndex(step => 
+  const index = CUSTOMER_PROGRESS_STEPS.findIndex(step =>
     (step.statuses as readonly string[]).includes(status)
   );
 
-  // If status not found (shouldn't happen matching above), try to find nearest previous step logic? 
+  // If status not found (shouldn't happen matching above), try to find nearest previous step logic?
   // For now return 0 if waiting, or last if completed not in list?
   // Let's stick to explicit match.
-  
+
   return index;
 };

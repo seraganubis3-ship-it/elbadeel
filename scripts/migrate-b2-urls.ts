@@ -17,17 +17,17 @@ async function updateB2ImageUrls() {
           {
             icon: {
               not: null,
-            }
+            },
           },
           {
             icon: {
               not: {
-                startsWith: 'http'
-              }
-            }
-          }
-        ]
-      }
+                startsWith: 'http',
+              },
+            },
+          },
+        ],
+      },
     });
 
     console.log(`Found ${services.length} services with old image paths`);
@@ -37,7 +37,7 @@ async function updateB2ImageUrls() {
         const newUrl = `${baseUrl}/${service.icon}`;
         await prisma.service.update({
           where: { id: service.id },
-          data: { icon: newUrl }
+          data: { icon: newUrl },
         });
         console.log(`✅ Updated service: ${service.name} -> ${newUrl}`);
       }
@@ -51,17 +51,17 @@ async function updateB2ImageUrls() {
           {
             icon: {
               not: null,
-            }
+            },
           },
           {
             icon: {
               not: {
-                startsWith: 'http'
-              }
-            }
-          }
-        ]
-      }
+                startsWith: 'http',
+              },
+            },
+          },
+        ],
+      },
     });
 
     console.log(`Found ${categories.length} categories with old image paths`);
@@ -71,7 +71,7 @@ async function updateB2ImageUrls() {
         const newUrl = `${baseUrl}/${category.icon}`;
         await prisma.category.update({
           where: { id: category.id },
-          data: { icon: newUrl }
+          data: { icon: newUrl },
         });
         console.log(`✅ Updated category: ${category.name} -> ${newUrl}`);
       }
@@ -105,7 +105,7 @@ async function updateB2ImageUrls() {
       if (Object.keys(updates).length > 0) {
         await prisma.delegate.update({
           where: { id: delegate.id },
-          data: updates
+          data: updates,
         });
         console.log(`✅ Updated delegate: ${delegate.name}`);
       }
@@ -116,7 +116,6 @@ async function updateB2ImageUrls() {
     console.log(`   - Services updated: ${services.length}`);
     console.log(`   - Categories updated: ${categories.length}`);
     console.log(`   - Delegate images updated: ${delegateCount}`);
-
   } catch (error) {
     console.error('❌ Error during migration:', error);
     throw error;
@@ -131,7 +130,7 @@ updateB2ImageUrls()
     console.log('\n✅ All done!');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('\n❌ Migration failed:', error);
     process.exit(1);
   });

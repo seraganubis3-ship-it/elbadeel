@@ -69,7 +69,7 @@ export default function PaymentForm({ orderId, totalAmount }: PaymentFormProps) 
           senderPhone,
           paymentScreenshot: screenshotPath,
           fileSize: screenshotSize,
-          fileType: screenshotType
+          fileType: screenshotType,
         }),
       });
 

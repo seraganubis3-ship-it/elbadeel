@@ -62,10 +62,12 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 });
     }
 
-    const enhancedDocuments = await Promise.all(order.documents.map(async (doc) => {
-      const signedUrl = await generatePresignedUrl(doc.filePath);
-      return { ...doc, filePath: signedUrl };
-    }));
+    const enhancedDocuments = await Promise.all(
+      order.documents.map(async doc => {
+        const signedUrl = await generatePresignedUrl(doc.filePath);
+        return { ...doc, filePath: signedUrl };
+      })
+    );
 
     return NextResponse.json({
       success: true,
@@ -227,14 +229,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     for (const field of dateFields) {
       if (updateData[field] !== undefined) {
-         // If it's a string, try to parse it. If it's null/empty, set to null (or undefined to skip update if that's preferred, but usually we want to allow clearing)
-         // Based on error "premature end", it likely wants a Date object or proper ISO.
-         // If value is sent as string "2000-12-10", new Date("2000-12-10") works.
-         if (typeof updateData[field] === 'string' && updateData[field].trim() !== '') {
-             processedUpdateData[field] = safeParseDate(updateData[field]);
-         } else if (updateData[field] === '' || updateData[field] === null) {
-             processedUpdateData[field] = null;
-         }
+        // If it's a string, try to parse it. If it's null/empty, set to null (or undefined to skip update if that's preferred, but usually we want to allow clearing)
+        // Based on error "premature end", it likely wants a Date object or proper ISO.
+        // If value is sent as string "2000-12-10", new Date("2000-12-10") works.
+        if (typeof updateData[field] === 'string' && updateData[field].trim() !== '') {
+          processedUpdateData[field] = safeParseDate(updateData[field]);
+        } else if (updateData[field] === '' || updateData[field] === null) {
+          processedUpdateData[field] = null;
+        }
       }
     }
 

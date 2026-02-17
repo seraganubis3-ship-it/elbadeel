@@ -1,4 +1,3 @@
-
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -7,13 +6,13 @@ async function main() {
   const id = 'cmkmqy8tj0019ux1dyksanwh4';
   await prisma.service.update({
     where: { id },
-    data: { slug: 'birth-certificate' }
+    data: { slug: 'birth-certificate' },
   });
   console.log('Force updated Birth Certificate slug to "birth-certificate"');
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error(e);
     process.exit(1);
   })

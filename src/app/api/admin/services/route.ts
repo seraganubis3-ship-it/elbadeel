@@ -20,20 +20,19 @@ export async function GET(_request: NextRequest) {
         variants: true,
         documents: true,
       },
-      orderBy: [
-        { orderIndex: 'asc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ orderIndex: 'asc' }, { createdAt: 'desc' }],
     });
 
     // Process services to add signed URLs for icons
-    const servicesWithSignedUrls = await Promise.all(services.map(async (service) => {
+    const servicesWithSignedUrls = await Promise.all(
+      services.map(async service => {
         let iconUrl = service.icon;
         if (iconUrl && !iconUrl.startsWith('/uploads/') && !iconUrl.startsWith('http')) {
-            iconUrl = await generatePresignedUrl(iconUrl);
+          iconUrl = await generatePresignedUrl(iconUrl);
         }
         return { ...service, icon: iconUrl };
-    }));
+      })
+    );
 
     return NextResponse.json({ success: true, services: servicesWithSignedUrls });
   } catch (error) {
@@ -89,13 +88,13 @@ export async function POST(request: NextRequest) {
 
     // Handle image upload with B2
     if (image && image.size > 0) {
-        try {
-            imagePath = await uploadToBackblaze(image, 'services');
-        } catch (e) {
-            // Upload failed
-            // Non-blocking? Or blocking? Typically blocking.
-            // But if it fails, we might just continue without image or error.
-        }
+      try {
+        imagePath = await uploadToBackblaze(image, 'services');
+      } catch (e) {
+        // Upload failed
+        // Non-blocking? Or blocking? Typically blocking.
+        // But if it fails, we might just continue without image or error.
+      }
     }
 
     // Create service

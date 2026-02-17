@@ -129,14 +129,14 @@ export async function addCleanupJob(data: CleanupJobData) {
 export async function getJobStatus(queueName: string, jobId: string) {
   const queue = getQueueByName(queueName);
   const job = await queue.getJob(jobId);
-  
+
   if (!job) {
     return { status: 'not_found' };
   }
 
   const state = await job.getState();
   const progress = job.progress;
-  
+
   return {
     status: state,
     progress,
@@ -166,7 +166,7 @@ function getQueueByName(name: string): Queue {
 // Queue statistics
 export async function getQueueStats(queueName: string) {
   const queue = getQueueByName(queueName);
-  
+
   const [waiting, active, completed, failed, delayed] = await Promise.all([
     queue.getWaitingCount(),
     queue.getActiveCount(),

@@ -21,7 +21,12 @@ export default function OrderDetailHeader({ order, onDelete, onPrint }: OrderDet
               title='العودة لقائمة الطلبات'
             >
               <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M10 19l-7-7m0 0l7-7m-7 7h18' />
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M10 19l-7-7m0 0l7-7m-7 7h18'
+                />
               </svg>
             </Link>
             <div>
@@ -34,7 +39,8 @@ export default function OrderDetailHeader({ order, onDelete, onPrint }: OrderDet
                 </span>
               </div>
               <p className='text-slate-500 text-base font-bold mt-1.5'>
-                {new Date(order.createdAt).toLocaleDateString('ar-EG', { dateStyle: 'long' })} • {order.variant?.name || 'نوع غير محدد'}
+                {new Date(order.createdAt).toLocaleDateString('ar-EG', { dateStyle: 'long' })} •{' '}
+                {order.variant?.name || 'نوع غير محدد'}
               </p>
             </div>
           </div>
@@ -44,8 +50,18 @@ export default function OrderDetailHeader({ order, onDelete, onPrint }: OrderDet
               onClick={onPrint}
               className='px-4 py-2 bg-white text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all font-bold text-sm flex items-center gap-2'
             >
-              <svg className='w-4 h-4 text-slate-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z' />
+              <svg
+                className='w-4 h-4 text-slate-400'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z'
+                />
               </svg>
               <span>طباعة الإيصال</span>
             </button>
@@ -55,7 +71,12 @@ export default function OrderDetailHeader({ order, onDelete, onPrint }: OrderDet
               title='حذف الطلب'
             >
               <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                />
               </svg>
             </button>
           </div>

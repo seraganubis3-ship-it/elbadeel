@@ -51,12 +51,7 @@ export default function OrderPersonalDetails({
       <div className='flex items-center justify-between mb-8 pb-4 border-b border-slate-50'>
         <div className='flex items-center gap-3'>
           <div className='w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center'>
-            <svg
-              className='w-5 h-5'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
+            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path
                 strokeLinecap='round'
                 strokeLinejoin='round'
@@ -67,14 +62,18 @@ export default function OrderPersonalDetails({
           </div>
           <div>
             <h2 className='text-xl font-bold text-slate-800'>المعلومات الشخصية والعائلية</h2>
-            <p className='text-slate-500 text-sm font-medium'>بيانات الأبوين، الجنسية، والحالة الاجتماعية</p>
+            <p className='text-slate-500 text-sm font-medium'>
+              بيانات الأبوين، الجنسية، والحالة الاجتماعية
+            </p>
           </div>
         </div>
 
         <button
           onClick={onToggleEdit}
           className={`px-4 py-2 rounded-xl transition-all font-bold text-sm ${
-            isEditing ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+            isEditing
+              ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
           }`}
         >
           {isEditing ? 'إلغاء' : 'تعديل البيانات'}
@@ -87,28 +86,44 @@ export default function OrderPersonalDetails({
           { label: 'اسم الأم', value: order.motherName, key: 'motherName', type: 'text' },
           { label: 'الجنسية', value: order.nationality, key: 'nationality', type: 'text' },
           { label: 'اسم الزوج/الزوجة', value: order.wifeName, key: 'wifeName', type: 'text' },
-          { label: 'والدة الزوج/الزوجة', value: order.wifeMotherName, key: 'wifeMotherName', type: 'text' },
-          { 
-            label: 'تاريخ الزواج', 
-            value: order.marriageDate ? new Date(order.marriageDate).toLocaleDateString('ar-EG', { dateStyle: 'medium' }) : '----', 
-            key: 'marriageDate', 
-            type: 'date' 
+          {
+            label: 'والدة الزوج/الزوجة',
+            value: order.wifeMotherName,
+            key: 'wifeMotherName',
+            type: 'text',
           },
-          { 
-            label: 'تاريخ الطلاق', 
-            value: order.divorceDate ? new Date(order.divorceDate).toLocaleDateString('ar-EG', { dateStyle: 'medium' }) : '----', 
-            key: 'divorceDate', 
-            type: 'date' 
+          {
+            label: 'تاريخ الزواج',
+            value: order.marriageDate
+              ? new Date(order.marriageDate).toLocaleDateString('ar-EG', { dateStyle: 'medium' })
+              : '----',
+            key: 'marriageDate',
+            type: 'date',
           },
-          { 
-            label: 'تاريخ الوفاة', 
-            value: order.deathDate ? new Date(order.deathDate).toLocaleDateString('ar-EG', { dateStyle: 'medium' }) : '----', 
-            key: 'deathDate', 
-            type: 'date' 
+          {
+            label: 'تاريخ الطلاق',
+            value: order.divorceDate
+              ? new Date(order.divorceDate).toLocaleDateString('ar-EG', { dateStyle: 'medium' })
+              : '----',
+            key: 'divorceDate',
+            type: 'date',
           },
-        ].map((item) => (
-          <div key={item.key} className='group/field p-4 bg-slate-50/30 rounded-2xl border border-slate-100'>
-            <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>{item.label}</p>
+          {
+            label: 'تاريخ الوفاة',
+            value: order.deathDate
+              ? new Date(order.deathDate).toLocaleDateString('ar-EG', { dateStyle: 'medium' })
+              : '----',
+            key: 'deathDate',
+            type: 'date',
+          },
+        ].map(item => (
+          <div
+            key={item.key}
+            className='group/field p-4 bg-slate-50/30 rounded-2xl border border-slate-100'
+          >
+            <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>
+              {item.label}
+            </p>
             {isEditing ? (
               <input
                 type={item.type}
@@ -138,7 +153,9 @@ export default function OrderPersonalDetails({
             disabled={updating}
             className='px-8 py-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-all font-bold text-base shadow-lg shadow-slate-200 flex items-center gap-2'
           >
-            {updating && <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>}
+            {updating && (
+              <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
+            )}
             حفظ البيانات
           </button>
         </div>

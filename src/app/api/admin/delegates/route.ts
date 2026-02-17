@@ -9,42 +9,42 @@ export const dynamic = 'force-dynamic';
 export async function GET(_request: NextRequest) {
   try {
     const session = await requireAuth();
-    if (!session) { // requireAuth throws if invalid but safe check
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session) {
+      // requireAuth throws if invalid but safe check
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const delegates = await prisma.delegate.findMany({
       orderBy: { name: 'asc' },
     });
 
-    const delegatesWithSignedUrls = await Promise.all(delegates.map(async (d) => {
-      const signOrReturn = async (path: string | null) => {
-        if (!path) return null;
-        if (path.startsWith('/uploads/') || path.startsWith('http')) return path; // Return local or already absolute paths
-        return await generatePresignedUrl(path);
-      };
+    const delegatesWithSignedUrls = await Promise.all(
+      delegates.map(async d => {
+        const signOrReturn = async (path: string | null) => {
+          if (!path) return null;
+          if (path.startsWith('/uploads/') || path.startsWith('http')) return path; // Return local or already absolute paths
+          return await generatePresignedUrl(path);
+        };
 
-      return {
-        ...d,
-        idCardFront: await signOrReturn(d.idCardFront),
-        idCardBack: await signOrReturn(d.idCardBack),
-        unionCardFront: await signOrReturn(d.unionCardFront),
-        unionCardBack: await signOrReturn(d.unionCardBack),
-      };
-    }));
+        return {
+          ...d,
+          idCardFront: await signOrReturn(d.idCardFront),
+          idCardBack: await signOrReturn(d.idCardBack),
+          unionCardFront: await signOrReturn(d.unionCardFront),
+          unionCardBack: await signOrReturn(d.unionCardBack),
+        };
+      })
+    );
 
     return NextResponse.json({ delegates: delegatesWithSignedUrls });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Error fetching delegates' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error fetching delegates' }, { status: 500 });
   }
 }
 
 async function saveFile(file: File): Promise<string | null> {
-    if (!file || file.size === 0) return null;
-    return await uploadToBackblaze(file, 'delegates');
+  if (!file || file.size === 0) return null;
+  return await uploadToBackblaze(file, 'delegates');
 }
 
 export async function POST(req: NextRequest) {
@@ -52,11 +52,11 @@ export async function POST(req: NextRequest) {
     await requireAuth();
 
     const formData = await req.formData();
-    
+
     const name = formData.get('name') as string;
     const idNumber = formData.get('idNumber') as string;
     const licenseNumber = formData.get('licenseNumber') as string;
-    
+
     // Handle files
     const idCardFrontFile = formData.get('idCardFront') as File | null;
     const idCardBackFile = formData.get('idCardBack') as File | null;
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     const unionCardBackFile = formData.get('unionCardBack') as File | null;
 
     if (!name || !idNumber) {
-        return NextResponse.json({ error: 'Name and ID Number are required' }, { status: 400 });
+      return NextResponse.json({ error: 'Name and ID Number are required' }, { status: 400 });
     }
 
     const idCardFront = idCardFrontFile ? await saveFile(idCardFrontFile) : null;
@@ -88,10 +88,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ delegate });
   } catch (error) {
     // Error creating delegate
-    return NextResponse.json(
-      { error: 'Error creating delegate' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error creating delegate' }, { status: 500 });
   }
 }
 
@@ -101,15 +98,15 @@ export async function PUT(req: NextRequest) {
 
     const formData = await req.formData();
     const id = formData.get('id') as string;
-    
+
     if (!id) {
-        return NextResponse.json({ error: 'Delegate ID is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Delegate ID is required' }, { status: 400 });
     }
 
     const name = formData.get('name') as string;
     const idNumber = formData.get('idNumber') as string;
     const licenseNumber = formData.get('licenseNumber') as string;
-    
+
     // Handle files
     const idCardFrontFile = formData.get('idCardFront') as File | null;
     const idCardBackFile = formData.get('idCardBack') as File | null;
@@ -117,28 +114,28 @@ export async function PUT(req: NextRequest) {
     const unionCardBackFile = formData.get('unionCardBack') as File | null;
 
     if (!name || !idNumber) {
-        return NextResponse.json({ error: 'Name and ID Number are required' }, { status: 400 });
+      return NextResponse.json({ error: 'Name and ID Number are required' }, { status: 400 });
     }
 
     // Prepare update data
     const updateData: any = {
-        name,
-        idNumber,
-        licenseNumber,
+      name,
+      idNumber,
+      licenseNumber,
     };
 
     // Save and update files only if new ones are uploaded
     if (idCardFrontFile && idCardFrontFile.size > 0) {
-        updateData.idCardFront = await saveFile(idCardFrontFile);
+      updateData.idCardFront = await saveFile(idCardFrontFile);
     }
     if (idCardBackFile && idCardBackFile.size > 0) {
-        updateData.idCardBack = await saveFile(idCardBackFile);
+      updateData.idCardBack = await saveFile(idCardBackFile);
     }
     if (unionCardFrontFile && unionCardFrontFile.size > 0) {
-        updateData.unionCardFront = await saveFile(unionCardFrontFile);
+      updateData.unionCardFront = await saveFile(unionCardFrontFile);
     }
     if (unionCardBackFile && unionCardBackFile.size > 0) {
-        updateData.unionCardBack = await saveFile(unionCardBackFile);
+      updateData.unionCardBack = await saveFile(unionCardBackFile);
     }
 
     const delegate = await prisma.delegate.update({
@@ -149,10 +146,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ delegate });
   } catch (error) {
     // Error updating delegate
-    return NextResponse.json(
-      { error: 'Error updating delegate' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error updating delegate' }, { status: 500 });
   }
 }
 
@@ -173,9 +167,6 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Error deleting delegate' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error deleting delegate' }, { status: 500 });
   }
 }

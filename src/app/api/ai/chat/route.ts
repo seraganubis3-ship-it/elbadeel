@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { STATIC_KNOWLEDGE_BASE } from '@/lib/ai-knowledge';
+import { getDynamicKnowledgeBase } from '@/lib/ai-knowledge';
 import { GoogleGenAI } from '@google/genai';
 
 // ============================================================================
@@ -37,6 +37,7 @@ interface UserSession {
 
 // Global definition for TypeScript
 declare global {
+  // eslint-disable-next-line no-var
   var sessionStore: Map<string, UserSession> | undefined;
 }
 
@@ -57,7 +58,7 @@ class ContextBuilder {
     const timeOfDay = this.getTimeGreeting();
 
     return `
-${this.getSystemPrompt(timeOfDay)}
+${await this.getSystemPrompt(timeOfDay)}
 
 === 🏢 COMPANY KNOWLEDGE BASE ===
 ${businessData}
@@ -78,7 +79,12 @@ ${this.getSessionHistory(request)}
     return 'Evening';
   }
 
-  private static getSystemPrompt(timeOfDay: string): string {
+  private static async getSystemPrompt(timeOfDay: string): Promise<string> {
+    // Fetch System Settings
+    const settings = await prisma.systemSettings.findUnique({
+      where: { id: 'main' },
+    });
+
     return `
 === IDENTITY ===
 Name: **Ahmed** (أحمد)
@@ -95,7 +101,7 @@ Current Time Context: It is currently ${timeOfDay}.
 3. **PRIORITY:** The **COMPANY KNOWLEDGE BASE** (DB) overrides the **CORE KNOWLEDGE BASE** (Static) if there is a conflict regarding prices or documents.
 
 === 🧠 CORE KNOWLEDGE BASE (STATIC INFO) ===
-${STATIC_KNOWLEDGE_BASE}
+${getDynamicKnowledgeBase(settings)}
 
 === 🔗 LINK FORMATTING RULES ===
 BASE URL: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}
@@ -152,12 +158,12 @@ If the answer isn't in the Knowledge Base or DB, say: "للتفاصيل الدق
             where: { active: true },
             select: { name: true, priceCents: true, etaDays: true },
           },
-          // @ts-ignore - Fields relation exists in runtime but IDE might not see it yet
+
           documents: {
             where: { active: true },
             select: { title: true, description: true, required: true, showIf: true },
           },
-          // @ts-ignore
+
           fields: {
             where: { active: true },
             select: {
@@ -181,7 +187,6 @@ If the answer isn't in the Knowledge Base or DB, say: "للتفاصيل الدق
             )
             .join('\n  ');
 
-          // @ts-ignore
           const docs = (s.documents || [])
             .map(
               (d: any) =>
@@ -189,7 +194,6 @@ If the answer isn't in the Knowledge Base or DB, say: "للتفاصيل الدق
             )
             .join('\n  ');
 
-          // @ts-ignore
           const fields = (s.fields || [])
             .map((f: any) => {
               const options = f.options?.map((o: any) => o.label).join(', ');
@@ -329,11 +333,11 @@ class GeminiService {
         // console.log(`[AI] Response received from ${model}`);
 
         // Try getting text from common paths
-        // @ts-ignore
+
         const text = response.text || response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
         // Check for blocked response
-        // @ts-ignore
+
         if (response?.candidates?.[0]?.finishReason === 'SAFETY') {
           // console.warn(`[AI] Response blocked by safety filter on model ${model}`);
           throw new Error('Response blocked by safety filter');

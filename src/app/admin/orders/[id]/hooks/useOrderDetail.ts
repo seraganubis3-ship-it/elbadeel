@@ -207,7 +207,11 @@ export function useOrderDetail(orderId: string) {
     if (!order) return;
 
     // Check for outstanding balance when delivering or settling
-    if (!force && (newStatus === 'settlement' || newStatus === 'delivered') && (order.remainingAmount || 0) > 0) {
+    if (
+      !force &&
+      (newStatus === 'settlement' || newStatus === 'delivered') &&
+      (order.remainingAmount || 0) > 0
+    ) {
       setShowPaymentAlert(true);
       return;
     }
@@ -324,15 +328,16 @@ export function useOrderDetail(orderId: string) {
     if (!file) {
       // Add to attachedDocuments text list
       try {
-        const currentDocs = typeof order?.attachedDocuments === 'string'
-          ? JSON.parse(order.attachedDocuments)
-          : (order?.attachedDocuments || []);
-        
+        const currentDocs =
+          typeof order?.attachedDocuments === 'string'
+            ? JSON.parse(order.attachedDocuments)
+            : order?.attachedDocuments || [];
+
         const newDocs = [...currentDocs, name.trim()];
-        
-        await updateOrderField({ 
+
+        await updateOrderField({
           attachedDocuments: JSON.stringify(newDocs),
-          hasAttachments: true 
+          hasAttachments: true,
         });
         showSuccess('تمت الإضافة', `تم إضافة "${name.trim()}" للمستندات`);
         return;
@@ -349,7 +354,7 @@ export function useOrderDetail(orderId: string) {
 
       const uploadRes = await fetch('/api/upload', { method: 'POST', body: formDataUpload });
       if (!uploadRes.ok) throw new Error('فشل رفع الملف');
-      
+
       const uploadData = await uploadRes.json();
       const uploadedFile = uploadData.files[0];
 
@@ -403,12 +408,13 @@ export function useOrderDetail(orderId: string) {
     if (!order || !confirm('هل أنت متأكد من إزالة هذا المرفق؟')) return;
 
     try {
-      const currentDocs = typeof order.attachedDocuments === 'string'
-        ? JSON.parse(order.attachedDocuments)
-        : (order.attachedDocuments || []);
-      
+      const currentDocs =
+        typeof order.attachedDocuments === 'string'
+          ? JSON.parse(order.attachedDocuments)
+          : order.attachedDocuments || [];
+
       const newDocs = currentDocs.filter((_: any, i: number) => i !== index);
-      
+
       await updateOrderField({ attachedDocuments: JSON.stringify(newDocs) });
     } catch (error) {
       showError('خطأ', 'فشل في تحديث قائمة المرفقات');
@@ -456,7 +462,10 @@ export function useOrderDetail(orderId: string) {
       }
     } catch (error) {
       // console.error('WhatsApp Error:', error);
-      showError('خطأ في الاتصال', 'تأكد من أن بوت الواتساب متصل. التفاصيل: ' + (error as Error).message);
+      showError(
+        'خطأ في الاتصال',
+        'تأكد من أن بوت الواتساب متصل. التفاصيل: ' + (error as Error).message
+      );
     } finally {
       setSendingWhatsApp(false);
     }

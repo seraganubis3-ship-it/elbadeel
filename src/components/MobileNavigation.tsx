@@ -156,17 +156,17 @@ export default function MobileNavigation() {
                         session.user.role === 'ADMIN'
                           ? 'bg-purple-500/20 text-purple-400'
                           : session.user.role === 'STAFF'
-                          ? 'bg-blue-500/20 text-blue-400'
-                          : 'bg-emerald-500/20 text-emerald-400'
+                            ? 'bg-blue-500/20 text-blue-400'
+                            : 'bg-emerald-500/20 text-emerald-400'
                       }`}
                     >
-                      {session.user.role === 'ADMIN' 
-                        ? '👑 مدير' 
+                      {session.user.role === 'ADMIN'
+                        ? '👑 مدير'
                         : session.user.role === 'STAFF'
-                        ? '👔 موظف'
-                        : session.user.role === 'VIEWER'
-                        ? '👀 مشاهد'
-                        : '✓ عميل'}
+                          ? '👔 موظف'
+                          : session.user.role === 'VIEWER'
+                            ? '👀 مشاهد'
+                            : '✓ عميل'}
                     </span>
                   </div>
                 </div>

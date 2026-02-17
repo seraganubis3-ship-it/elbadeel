@@ -286,7 +286,7 @@ export default function AIChatWidget() {
             <button
               onClick={() => setIsOpen(true)}
               className='flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg shadow-blue-500/40 hover:shadow-blue-600/60 transition-all duration-300 relative group'
-              aria-label="المساعد الذكي"
+              aria-label='المساعد الذكي'
             >
               <div className='absolute inset-0 rounded-full border-2 border-white/20 animate-ping opacity-20'></div>
               <Bot className='w-6 h-6 sm:w-8 sm:h-8 drop-shadow-md' />

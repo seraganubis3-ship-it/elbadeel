@@ -14,7 +14,12 @@ export default function OrderNotes({ order }: OrderNotesProps) {
       <div className='flex items-center gap-4 mb-8 pb-4 border-b border-slate-50'>
         <div className='w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center'>
           <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' />
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
+            />
           </svg>
         </div>
         <div>
@@ -28,7 +33,9 @@ export default function OrderNotes({ order }: OrderNotesProps) {
           <div className='group p-6 bg-blue-50/50 rounded-3xl border border-blue-100 hover:bg-blue-50 transition-colors'>
             <div className='flex items-center gap-2 mb-3'>
               <span className='w-2 h-2 bg-blue-500 rounded-full'></span>
-              <h3 className='font-black text-blue-900 text-lg uppercase tracking-wider'>ملاحظات العميل</h3>
+              <h3 className='font-black text-blue-900 text-lg uppercase tracking-wider'>
+                ملاحظات العميل
+              </h3>
             </div>
             <p className='text-xl font-bold text-slate-700 leading-relaxed pr-4'>{order.notes}</p>
           </div>
@@ -38,9 +45,13 @@ export default function OrderNotes({ order }: OrderNotesProps) {
           <div className='group p-6 bg-emerald-50/50 rounded-3xl border border-emerald-100 hover:bg-emerald-50 transition-colors'>
             <div className='flex items-center gap-2 mb-3'>
               <span className='w-2 h-2 bg-emerald-500 rounded-full'></span>
-              <h3 className='font-black text-emerald-900 text-lg uppercase tracking-wider'>ملاحظات الإدارة</h3>
+              <h3 className='font-black text-emerald-900 text-lg uppercase tracking-wider'>
+                ملاحظات الإدارة
+              </h3>
             </div>
-            <p className='text-xl font-bold text-slate-700 leading-relaxed pr-4'>{order.adminNotes}</p>
+            <p className='text-xl font-bold text-slate-700 leading-relaxed pr-4'>
+              {order.adminNotes}
+            </p>
           </div>
         )}
       </div>

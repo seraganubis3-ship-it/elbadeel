@@ -26,6 +26,7 @@ interface UseOrdersReturn {
   setDeliveryFilter: (delivery: string) => void;
   setDateFrom: (date: string) => void;
   setDateTo: (date: string) => void;
+  setPhotographyDate: (date: string) => void;
   setSelectedServiceIds: (ids: string[]) => void;
   setOrderSourceFilter: (source: string) => void;
   setCategoryId: (id: string) => void;
@@ -52,7 +53,11 @@ interface UseOrdersReturn {
   updateBulkStatus: (workOrderNumber?: string) => Promise<void>;
 
   // Order actions
-  updateOrderStatus: (orderId: string, newStatus: string, workOrderNumber?: string) => Promise<void>;
+  updateOrderStatus: (
+    orderId: string,
+    newStatus: string,
+    workOrderNumber?: string
+  ) => Promise<void>;
   deleteOrder: (orderId: string) => Promise<void>;
 
   // Helpers
@@ -87,11 +92,39 @@ export function useOrders(
   const [statusFilter, setStatusFilter] = useState('all');
   const [deliveryFilter, setDeliveryFilter] = useState('all');
   const [sortBy, setSortBy] = useState('id_desc');
-  
+
   // Initialize dates from localStorage (work date)
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  
+  const [dateFrom, setDateFrom] = useState(() => {
+    // Default to today on server/initial render to avoid hydration mismatch
+    // verify if window is defined (client-side)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('adminWorkDate');
+      if (saved) return saved;
+    }
+    const d = new Date();
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  });
+
+  const [dateTo, setDateTo] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('adminWorkDate');
+      if (saved) return saved;
+    }
+    const d = new Date();
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  });
+
+  const [photographyDate, setPhotographyDate] = useState('');
+
+  // Ensure we stick to the Work Date from localStorage if available upon mounting
+  useEffect(() => {
+    const savedWorkDate = localStorage.getItem('adminWorkDate');
+    if (savedWorkDate) {
+      setDateFrom(savedWorkDate);
+      setDateTo(savedWorkDate);
+    }
+  }, []);
+
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [orderSourceFilter, setOrderSourceFilter] = useState('all');
   const [categoryId, setCategoryId] = useState('');
@@ -109,6 +142,7 @@ export function useOrders(
   // Compute hasFilter
   const hasFilter = Boolean(
     (dateFrom && dateTo) ||
+      photographyDate ||
       searchTerm ||
       userIdFilter ||
       employeeId ||
@@ -136,69 +170,77 @@ export function useOrders(
   };
 
   // Fetch orders
-  const fetchOrders = useCallback(async (isBackground = false) => {
-    try {
-      if (!isBackground) setLoading(true);
-      else setIsRefetching(true);
+  const fetchOrders = useCallback(
+    async (isBackground = false) => {
+      try {
+        if (!isBackground) setLoading(true);
+        else setIsRefetching(true);
 
-      if (!hasFilter) {
-        setOrders([]);
+        if (!hasFilter) {
+          setOrders([]);
+          setLoading(false);
+          setIsRefetching(false);
+          return;
+        }
+
+        const params = new URLSearchParams();
+        if (searchTerm) params.set('search', searchTerm);
+        if (userIdFilter) params.set('userId', userIdFilter);
+        if (employeeId) params.set('createdByAdminId', employeeId);
+        if (categoryId) params.set('categoryId', categoryId);
+        if (dateFrom && dateTo) {
+          params.set('from', dateFrom);
+          params.set('to', dateTo);
+        }
+        if (selectedServiceIds.length > 0) {
+          selectedServiceIds.forEach(id => params.append('serviceIds', id));
+        }
+        if (orderSourceFilter === 'office') {
+          params.set('createdByAdmin', 'true');
+        } else if (orderSourceFilter === 'online') {
+          params.set('createdByAdmin', 'false');
+        }
+
+        if (photographyDate) {
+          params.set('photographyDate', photographyDate);
+        }
+
+        params.set('sortBy', sortBy);
+
+        // Add default limits to fetch more data for client-side filtering options
+        params.set('limit', '100');
+
+        const response = await fetch(
+          `/api/admin/orders${params.toString() ? `?${params.toString()}` : ''}`,
+          {
+            cache: 'no-store',
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setOrders(data.orders || []);
+        }
+      } catch (error) {
+        // console.error('Error fetching orders:', error);
+      } finally {
         setLoading(false);
         setIsRefetching(false);
-        return;
       }
-
-      const params = new URLSearchParams();
-      if (searchTerm) params.set('search', searchTerm);
-      if (userIdFilter) params.set('userId', userIdFilter);
-      if (employeeId) params.set('createdByAdminId', employeeId);
-      if (categoryId) params.set('categoryId', categoryId);
-      if (dateFrom && dateTo) {
-        params.set('from', dateFrom);
-        params.set('to', dateTo);
-      }
-      if (selectedServiceIds.length > 0) {
-        selectedServiceIds.forEach(id => params.append('serviceIds', id));
-      }
-      if (orderSourceFilter === 'office') {
-        params.set('createdByAdmin', 'true');
-      } else if (orderSourceFilter === 'online') {
-        params.set('createdByAdmin', 'false');
-      }
-
-      params.set('sortBy', sortBy);
-
-      // Add default limits to fetch more data for client-side filtering options
-      params.set('limit', '100'); 
-
-      const response = await fetch(
-        `/api/admin/orders${params.toString() ? `?${params.toString()}` : ''}`,
-        {
-          cache: 'no-store',
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data.orders || []);
-      }
-    } catch (error) {
-      // console.error('Error fetching orders:', error);
-    } finally {
-      setLoading(false);
-      setIsRefetching(false);
-    }
-  }, [
-    hasFilter,
-    userIdFilter,
-    employeeId,
-    categoryId,
-    dateFrom,
-    dateTo,
-    selectedServiceIds,
-    orderSourceFilter,
-    searchTerm,
-    sortBy,
-  ]);
+    },
+    [
+      hasFilter,
+      userIdFilter,
+      employeeId,
+      categoryId,
+      dateFrom,
+      dateTo,
+      photographyDate,
+      selectedServiceIds,
+      orderSourceFilter,
+      searchTerm,
+      sortBy,
+    ]
+  );
 
   // Filter and sort orders
   const filterAndSortOrders = useCallback(() => {
@@ -247,26 +289,18 @@ export function useOrders(
 
     // Sort by selection
     if (sortBy === 'id_desc') {
-       filtered.sort((a, b) => b.id.localeCompare(a.id));
+      filtered.sort((a, b) => b.id.localeCompare(a.id));
     } else if (sortBy === 'id_asc') {
-       filtered.sort((a, b) => a.id.localeCompare(b.id));
+      filtered.sort((a, b) => a.id.localeCompare(b.id));
     } else if (sortBy === 'createdAt_desc') {
-       filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } else if (sortBy === 'createdAt_asc') {
-       filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
 
     setFilteredOrders(filtered);
     setCurrentPage(1);
-  }, [
-    orders,
-    statusFilter,
-    deliveryFilter,
-    dateFrom,
-    dateTo,
-    deliveryTodayFilter,
-    sortBy,
-  ]);
+  }, [orders, statusFilter, deliveryFilter, dateFrom, dateTo, deliveryTodayFilter, sortBy]);
 
   // Fetch services
   useEffect(() => {
@@ -344,19 +378,20 @@ export function useOrders(
 
   const toggleOrderSelection = (orderId: string) => {
     // Check main orders list first, then fallback to selectedOrdersData to avoiding losing data
-    const order = orders.find(o => o.id === orderId) || selectedOrdersData.find(o => o.id === orderId);
+    const order =
+      orders.find(o => o.id === orderId) || selectedOrdersData.find(o => o.id === orderId);
     if (order?.status === 'cancelled') return;
 
     if (selectedOrders.includes(orderId)) {
-        // Remove
-        setSelectedOrders(prev => prev.filter(id => id !== orderId));
-        setSelectedOrdersData(prev => prev.filter(o => o.id !== orderId));
+      // Remove
+      setSelectedOrders(prev => prev.filter(id => id !== orderId));
+      setSelectedOrdersData(prev => prev.filter(o => o.id !== orderId));
     } else {
-        // Add
-        if (order) {
-            setSelectedOrders(prev => [...prev, orderId]);
-            setSelectedOrdersData(prev => [...prev, order]);
-        }
+      // Add
+      if (order) {
+        setSelectedOrders(prev => [...prev, orderId]);
+        setSelectedOrdersData(prev => [...prev, order]);
+      }
     }
   };
 
@@ -365,22 +400,26 @@ export function useOrders(
     const allSelected = validOrders.every(o => selectedOrders.includes(o.id));
 
     if (allSelected) {
-       // Deselect current visible orders
-       const idsToRemove = validOrders.map(o => o.id);
-       setSelectedOrders(prev => prev.filter(id => !idsToRemove.includes(id)));
-       setSelectedOrdersData(prev => prev.filter(o => !idsToRemove.includes(o.id)));
+      // Deselect current visible orders
+      const idsToRemove = validOrders.map(o => o.id);
+      setSelectedOrders(prev => prev.filter(id => !idsToRemove.includes(id)));
+      setSelectedOrdersData(prev => prev.filter(o => !idsToRemove.includes(o.id)));
     } else {
-       // Select all visible orders
-       const newOrders = validOrders.filter(o => !selectedOrders.includes(o.id));
-       const newIds = newOrders.map(o => o.id);
-       
-       setSelectedOrders(prev => [...prev, ...newIds]);
-       setSelectedOrdersData(prev => [...prev, ...newOrders]);
+      // Select all visible orders
+      const newOrders = validOrders.filter(o => !selectedOrders.includes(o.id));
+      const newIds = newOrders.map(o => o.id);
+
+      setSelectedOrders(prev => [...prev, ...newIds]);
+      setSelectedOrdersData(prev => [...prev, ...newOrders]);
     }
   };
 
   // Update single order status
-  const updateOrderStatus = async (orderId: string, newStatus: string, workOrderNumber?: string) => {
+  const updateOrderStatus = async (
+    orderId: string,
+    newStatus: string,
+    workOrderNumber?: string
+  ) => {
     if (!newStatus) return;
     setUpdatingStatus(orderId);
 
@@ -396,8 +435,8 @@ export function useOrders(
           prevOrders.map(order => (order.id === orderId ? { ...order, status: newStatus } : order))
         );
         // Also update selectedOrdersData
-        setSelectedOrdersData(prev => 
-            prev.map(order => (order.id === orderId ? { ...order, status: newStatus } : order))
+        setSelectedOrdersData(prev =>
+          prev.map(order => (order.id === orderId ? { ...order, status: newStatus } : order))
         );
         const statusText = getStatusText(newStatus);
         showSuccess('تم تحديث حالة الطلب بنجاح! 🎉', `تم تغيير حالة الطلب إلى "${statusText}"`);
@@ -415,7 +454,7 @@ export function useOrders(
   // Delete single order
   const deleteOrder = async (orderId: string) => {
     if (!confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) return;
-    
+
     setUpdatingStatus(orderId);
     try {
       const response = await fetch(`/api/admin/orders/${orderId}`, {
@@ -459,7 +498,7 @@ export function useOrders(
         // Also update selectedOrdersData if we were keeping them, but here we clear selection usually?
         // Code clears selection below: setSelectedOrders([]);
         // So we should also clear selectedOrdersData
-        
+
         const statusText = getStatusText(bulkStatus);
         showSuccess(
           'تم تحديث الطلبات بنجاح! 🚀',
@@ -501,6 +540,7 @@ export function useOrders(
       deliveryFilter,
       dateFrom,
       dateTo,
+      photographyDate,
       selectedServiceIds,
       orderSourceFilter,
       userIdFilter,
@@ -514,6 +554,7 @@ export function useOrders(
     setDeliveryFilter,
     setDateFrom,
     setDateTo,
+    setPhotographyDate,
     setSelectedServiceIds,
     setOrderSourceFilter,
     setCategoryId,

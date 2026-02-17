@@ -5,20 +5,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://albadel.com.eg';
 
   // 1. Static Routes
-  const routes = [
-    '',
-    '/services',
-    '/about',
-    '/contact',
-    '/faq',
-    '/register',
-    '/login',
-  ].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily' as const,
-    priority: route === '' ? 1 : 0.8,
-  }));
+  const routes = ['', '/services', '/about', '/contact', '/faq', '/register', '/login'].map(
+    route => ({
+      url: `${baseUrl}${route}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: route === '' ? 1 : 0.8,
+    })
+  );
 
   try {
     // 2. Dynamic Service Routes
@@ -27,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true, updatedAt: true },
     });
 
-    const serviceUrls = services.map((service) => ({
+    const serviceUrls = services.map(service => ({
       url: `${baseUrl}/service/${service.slug}`,
       lastModified: service.updatedAt,
       changeFrequency: 'weekly' as const,

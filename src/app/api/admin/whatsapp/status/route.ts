@@ -19,7 +19,7 @@ export async function GET() {
     });
 
     if (!response.ok) {
-        throw new Error(`Bot returned ${response.status}`);
+      throw new Error(`Bot returned ${response.status}`);
     }
 
     const data = await response.json();

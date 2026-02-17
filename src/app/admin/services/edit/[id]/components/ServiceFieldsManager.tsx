@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Button from '@/components/Button';
+import LogicBuilder from './LogicBuilder';
 
 import { ServiceField, ServiceDocument, ServiceFieldOption } from '../types';
 
@@ -99,21 +100,21 @@ export default function ServiceFieldsManager({
     // Handle parsing from JSON string if it's stored that way, or use as array if local state allows
     let currentDocs: string[] = [];
     try {
-        if (Array.isArray(option.requiredDocs)) {
-            currentDocs = option.requiredDocs;
-        } else if (typeof option.requiredDocs === 'string') {
-            currentDocs = JSON.parse(option.requiredDocs || '[]');
-        }
+      if (Array.isArray(option.requiredDocs)) {
+        currentDocs = option.requiredDocs;
+      } else if (typeof option.requiredDocs === 'string') {
+        currentDocs = JSON.parse(option.requiredDocs || '[]');
+      }
     } catch {
-        currentDocs = [];
+      currentDocs = [];
     }
 
     const newDocs = currentDocs.includes(docTitle)
       ? currentDocs.filter(d => d !== docTitle)
       : [...currentDocs, docTitle];
 
-    // We store it as a JSON string to match the type definition if needed, 
-    // OR if the component state allows arrays, we keep it as array. 
+    // We store it as a JSON string to match the type definition if needed,
+    // OR if the component state allows arrays, we keep it as array.
     // Given types.ts says string, we should probably stick to string to be safe for backend.
     // BUT, for local editing convenience, keeping it as string is annoying.
     // Let's coerce to string for the update.
@@ -190,7 +191,7 @@ export default function ServiceFieldsManager({
                         placeholder='request_type'
                       />
                     </div>
-                    {(field.type === 'text' || field.type === 'textarea') && (
+                    {field.type === 'text' || field.type === 'textarea' ? (
                       <div>
                         <label className='block text-xs font-black text-purple-400 uppercase tracking-widest mb-2'>
                           نص توضيحي (Placeholder)
@@ -203,7 +204,23 @@ export default function ServiceFieldsManager({
                           placeholder='مثال: اكتب اسمك هنا...'
                         />
                       </div>
-                    )}
+                    ) : null}
+
+                    {/* Question Logic Builder */}
+                    <div className='col-span-1 md:col-span-2 pt-4 border-t border-purple-100 mt-2'>
+                      <LogicBuilder
+                        value={field.showIf || ''}
+                        onChange={val => updateField(fIdx, 'showIf', val)}
+                        fields={fields
+                          .filter((_, i) => i !== fIdx) // Can't depend on itself
+                          .map(f => ({
+                            name: f.name || `question_${f.id}`,
+                            label: f.label,
+                            type: f.type,
+                            options: f.options?.map(o => ({ label: o.label, value: o.value })),
+                          }))}
+                      />
+                    </div>
                   </div>
                 </div>
                 <button
@@ -289,16 +306,20 @@ export default function ServiceFieldsManager({
                                 onClick={() => toggleDocForOption(fIdx, oIdx, doc.title)}
                                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
                                   (() => {
-                                      let docs: string[] = [];
-                                      try {
-                                          if (Array.isArray(opt.requiredDocs)) docs = opt.requiredDocs;
-                                          else if (typeof opt.requiredDocs === 'string') docs = JSON.parse(opt.requiredDocs || '[]');
-                                      } catch (e) {
-                                          if (typeof opt.requiredDocs === 'string' && opt.requiredDocs) {
-                                              docs = [opt.requiredDocs]; // Fallback for plain string non-json
-                                          }
+                                    let docs: string[] = [];
+                                    try {
+                                      if (Array.isArray(opt.requiredDocs)) docs = opt.requiredDocs;
+                                      else if (typeof opt.requiredDocs === 'string')
+                                        docs = JSON.parse(opt.requiredDocs || '[]');
+                                    } catch (e) {
+                                      if (
+                                        typeof opt.requiredDocs === 'string' &&
+                                        opt.requiredDocs
+                                      ) {
+                                        docs = [opt.requiredDocs]; // Fallback for plain string non-json
                                       }
-                                      return docs.includes(doc.title);
+                                    }
+                                    return docs.includes(doc.title);
                                   })()
                                     ? 'bg-purple-600 text-white border-purple-600 shadow-md'
                                     : 'bg-white text-slate-600 border-slate-200 hover:border-purple-300'

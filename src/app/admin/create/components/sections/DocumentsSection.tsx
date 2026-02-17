@@ -19,20 +19,19 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   requiredDocuments,
 }) => {
   return (
-    <div
-      id='documents-section'
-      className='bg-white rounded-[1.5rem] shadow-lg border border-emerald-100 overflow-hidden mb-0'
-    >
-      <div className='bg-emerald-50/50 border-b border-emerald-100 p-4'>
-        <div className='flex items-center gap-3'>
-          <div className='w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-emerald-200 text-xl'>
-            📂
+    <div className='bg-white/60 backdrop-blur-md rounded-[2rem] border border-white/50 shadow-sm overflow-hidden relative group transition-all duration-300 hover:shadow-md'>
+      {/* Visual Accent - Top */}
+      <div className='absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500/80 via-indigo-500/80 to-blue-600/80 opacity-90'></div>
+
+      <div className='p-6 space-y-6'>
+        {/* Header */}
+        <div className='flex items-center gap-4 mb-4'>
+          <div className='w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-blue-100 text-blue-600'>
+            <span>📄</span>
           </div>
           <div>
-            <h2 className='text-lg font-black text-slate-900 leading-none'>المستندات</h2>
-            <p className='text-emerald-500 text-[9px] mt-1 font-black uppercase tracking-widest'>
-              الأوراق والملفات
-            </p>
+            <h2 className='text-xl font-bold text-slate-800'>المستندات المطلوبة</h2>
+            <p className='text-xs text-slate-500 font-medium'>الوثائق والمرفقات</p>
           </div>
         </div>
       </div>
@@ -40,20 +39,20 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
       <div className='p-5 space-y-4'>
         {/* Required Documents List */}
         {requiredDocuments.length > 0 && (
-          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
-             <div className="flex items-center gap-2 mb-2">
-                <span className="text-amber-500 text-lg">⚠️</span>
-                <h3 className="text-xs font-black text-amber-700 uppercase tracking-widest">
-                   المستندات المطلوبة لهذه الخدمة
-                </h3>
-             </div>
-             <ul className="space-y-1 pr-5 list-disc marker:text-amber-400">
-                {requiredDocuments.map((doc, i) => (
-                   <li key={i} className="text-[11px] font-bold text-slate-600">
-                      {doc}
-                   </li>
-                ))}
-             </ul>
+          <div className='bg-amber-50 border border-amber-100 rounded-xl p-3'>
+            <div className='flex items-center gap-2 mb-2'>
+              <span className='text-amber-500 text-lg'>⚠️</span>
+              <h3 className='text-xs font-black text-amber-700 uppercase tracking-widest'>
+                المستندات المطلوبة لهذه الخدمة
+              </h3>
+            </div>
+            <ul className='space-y-1 pr-5 list-disc marker:text-amber-400'>
+              {requiredDocuments.map((doc, i) => (
+                <li key={i} className='text-[11px] font-bold text-slate-600'>
+                  {doc}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
         <div className='space-y-1.5'>
@@ -117,38 +116,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
               </div>
             )}
           </div>
-        </div>
-
-        {/* Toggles */}
-        <div className='flex items-center gap-4 pt-1'>
-          <label className='flex items-center gap-1.5 cursor-pointer group'>
-            <div
-              className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${!formData.hasAttachments ? 'border-sky-500 bg-sky-500 ring-2 ring-sky-500/10' : 'border-slate-300'}`}
-            ></div>
-            <input
-              type='radio'
-              checked={!formData.hasAttachments}
-              onChange={() => setFormData(p => ({ ...p, hasAttachments: false }))}
-              className='hidden'
-            />
-            <span className='text-[10px] font-bold text-slate-500 group-hover:text-slate-700'>
-              بدون مرفقات
-            </span>
-          </label>
-          <label className='flex items-center gap-1.5 cursor-pointer group'>
-            <div
-              className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${formData.hasAttachments ? 'border-sky-500 bg-sky-500 ring-2 ring-sky-500/10' : 'border-slate-300'}`}
-            ></div>
-            <input
-              type='radio'
-              checked={formData.hasAttachments}
-              onChange={() => setFormData(p => ({ ...p, hasAttachments: true }))}
-              className='hidden'
-            />
-            <span className='text-[10px] font-bold text-slate-500 group-hover:text-slate-700'>
-              بمرفقات
-            </span>
-          </label>
         </div>
       </div>
     </div>

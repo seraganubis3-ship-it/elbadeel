@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -28,7 +29,7 @@ export default function WorkPermitAuthorizationPrintPage() {
   // Image Loading State
   const [imagesLoaded, setImagesLoaded] = useState(0);
   const [totalImages, setTotalImages] = useState(1); // Start with 1 for header
-  
+
   const fetchData = useCallback(async () => {
     try {
       // Fetch Order
@@ -42,21 +43,20 @@ export default function WorkPermitAuthorizationPrintPage() {
 
       // API returns { success: true, order: {...} }, so we need to extract the order
       const actualOrder = orderData.order || orderData;
-      
+
       // Order data loaded successfully
 
       setOrder(actualOrder);
       setDelegate(selectedDelegate || null);
 
       if (selectedDelegate) {
-          let count = 1; // Header
-          if (selectedDelegate.idCardFront) count++;
-          if (selectedDelegate.idCardBack) count++;
-          if (selectedDelegate.unionCardFront) count++;
-          if (selectedDelegate.unionCardBack) count++;
-          setTotalImages(count);
+        let count = 1; // Header
+        if (selectedDelegate.idCardFront) count++;
+        if (selectedDelegate.idCardBack) count++;
+        if (selectedDelegate.unionCardFront) count++;
+        if (selectedDelegate.unionCardBack) count++;
+        setTotalImages(count);
       }
-
     } catch (error) {
       // Error fetching data
     } finally {
@@ -71,125 +71,187 @@ export default function WorkPermitAuthorizationPrintPage() {
   }, [orderId, delegateId, fetchData]);
 
   const handleImageLoad = () => {
-      setImagesLoaded(prev => prev + 1);
+    setImagesLoaded(prev => prev + 1);
   };
 
   useEffect(() => {
-      if (!loading && order && delegate) {
-          // If all images loaded OR 3 seconds passed (fallback)
-          if (imagesLoaded >= totalImages) {
-              // Small delay to ensure rendering
-               setTimeout(() => {
-                  // window.print(); // Auto-print disabled
-              }, 500);
-          }
+    if (!loading && order && delegate) {
+      // If all images loaded OR 3 seconds passed (fallback)
+      if (imagesLoaded >= totalImages) {
+        // Small delay to ensure rendering
+        setTimeout(() => {
+          // window.print(); // Auto-print disabled
+        }, 500);
       }
+    }
   }, [imagesLoaded, totalImages, loading, order, delegate]);
 
   // Fallback timeout in case images fail to load
   useEffect(() => {
-      if (!loading && order && delegate) {
-          const timer = setTimeout(() => {
-              // window.print(); // Auto-print disabled
-          }, 4000); 
-          return () => clearTimeout(timer);
-      }
+    if (!loading && order && delegate) {
+      const timer = setTimeout(() => {
+        // window.print(); // Auto-print disabled
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
   }, [loading, order, delegate]);
 
-  if (loading) return <div className="flex justify-center p-12">جار تحميل البيانات...</div>;
-  if (!order || !delegate) return <div className="flex justify-center p-12 text-red-500">بيانات غير مكتملة (تأكد من اختيار المندوب والطلب)</div>;
+  if (loading) return <div className='flex justify-center p-12'>جار تحميل البيانات...</div>;
+  if (!order || !delegate)
+    return (
+      <div className='flex justify-center p-12 text-red-500'>
+        بيانات غير مكتملة (تأكد من اختيار المندوب والطلب)
+      </div>
+    );
 
   return (
-    <div className="bg-white text-black" style={{ direction: 'rtl' }}>
+    <div className='bg-white text-black' style={{ direction: 'rtl' }}>
       {/* Print Styles */}
       <style jsx global>{`
         @media print {
-          @page { size: A4; margin: 0; }
-          body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
-          .no-print { display: none; }
-          ::-webkit-scrollbar { display: none; }
+          @page {
+            size: A4;
+            margin: 0;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+          }
+          .no-print {
+            display: none;
+          }
+          ::-webkit-scrollbar {
+            display: none;
+          }
         }
       `}</style>
-      
-      <div className="w-[210mm] mx-auto p-[10mm]">
+
+      <div className='w-[210mm] mx-auto p-[10mm]'>
         {/* Header - Logo Only (Top Right) */}
-        <div className="flex justify-start mb-6">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-                src="/images/report-header.png" 
-                alt="Header Logo" 
-                className="h-44 object-contain" 
-                onLoad={handleImageLoad}
-                onError={handleImageLoad}
-            />
+        <div className='flex justify-start mb-6'>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src='/images/report-header.png'
+            alt='Header Logo'
+            className='h-44 object-contain'
+            onLoad={handleImageLoad}
+            onError={handleImageLoad}
+          />
         </div>
 
         {/* Content */}
         <div>
-            <h3 className="text-xl font-bold text-center mb-6">السادة / الإدارة العامة لتصاريح العمل</h3>
-            
-            <p className="text-center font-bold mb-6">تحية طيبة وبعد ،،،</p>
+          <h3 className='text-xl font-bold text-center mb-6'>
+            السادة / الإدارة العامة لتصاريح العمل
+          </h3>
 
-            <div className="leading-loose text-justify font-medium text-lg mb-6">
-                فوضنا نحن <span className="font-bold">البديل للخدمات الحكومية</span> / 
-                <span className="font-bold mx-2 border-b border-black">{delegate.name}</span>
-                مندوب البديل للخدمات الحكومية ويحمل رقم قومي 
-                <span className="font-bold mx-2 ltr inline-block">({delegate.idNumber})</span>
-                وكارنيه وزارة الاتصالات وتكنولوجيا المعلومات لـ <span className="font-bold">استخراج تصريح عمل</span> بالنيابة عن المواطنين طالبي الخدمة المذكورين أدناه:
-            </div>
+          <p className='text-center font-bold mb-6'>تحية طيبة وبعد ،،،</p>
 
-            {/* Customer Table */}
-            <table className="w-full mb-8 border-2 border-black text-center text-lg">
-                <thead>
-                    <tr className="bg-slate-100 border-b-2 border-black">
-                        <th className="border-l-2 border-black py-2 px-4 w-12">م</th>
-                        <th className="border-l-2 border-black py-2 px-4">الاسم</th>
-                        <th className="py-2 px-4">الرقم القومي</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td className="border-l-2 border-black border-t border-black py-3 font-bold">١</td>
-                        <td className="border-l-2 border-black border-t border-black py-3 font-bold">{order.customerName}</td>
-                        <td className="border-t border-black py-3 font-bold ltr">{order.idNumber || '---'}</td>
-                    </tr>
-                </tbody>
-            </table>
+          <div className='leading-loose text-justify font-medium text-lg mb-6'>
+            فوضنا نحن <span className='font-bold'>البديل للخدمات الحكومية</span> /
+            <span className='font-bold mx-2 border-b border-black'>{delegate.name}</span>
+            مندوب البديل للخدمات الحكومية ويحمل رقم قومي
+            <span className='font-bold mx-2 ltr inline-block'>({delegate.idNumber})</span>
+            وكارنيه وزارة الاتصالات وتكنولوجيا المعلومات لـ{' '}
+            <span className='font-bold'>استخراج تصريح عمل</span> بالنيابة عن المواطنين طالبي الخدمة
+            المذكورين أدناه:
+          </div>
+
+          {/* Customer Table */}
+          <table className='w-full mb-8 border-2 border-black text-center text-lg'>
+            <thead>
+              <tr className='bg-slate-100 border-b-2 border-black'>
+                <th className='border-l-2 border-black py-2 px-4 w-12'>م</th>
+                <th className='border-l-2 border-black py-2 px-4'>الاسم</th>
+                <th className='py-2 px-4'>الرقم القومي</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className='border-l-2 border-black border-t border-black py-3 font-bold'>١</td>
+                <td className='border-l-2 border-black border-t border-black py-3 font-bold'>
+                  {order.customerName}
+                </td>
+                <td className='border-t border-black py-3 font-bold ltr'>
+                  {order.idNumber || '---'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         {/* Delegate Cards Section */}
-        <div className="grid grid-cols-2 gap-6 mt-6">
-            <div className="space-y-3">
-                 <div className="h-40 flex items-center justify-center">
-                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                     {delegate.idCardFront ? <img src={delegate.idCardFront} alt="ID Card Front" className="max-h-full max-w-full object-contain" onLoad={handleImageLoad} onError={handleImageLoad} /> : null}
-                 </div>
-                 <div className="h-40 flex items-center justify-center">
-                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                     {delegate.idCardBack ? <img src={delegate.idCardBack} alt="ID Card Back" className="max-h-full max-w-full object-contain" onLoad={handleImageLoad} onError={handleImageLoad} /> : null}
-                 </div>
+        <div className='grid grid-cols-2 gap-6 mt-6'>
+          <div className='space-y-3'>
+            <div className='h-40 flex items-center justify-center'>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {delegate.idCardFront ? (
+                <img
+                  src={delegate.idCardFront}
+                  alt='ID Card Front'
+                  className='max-h-full max-w-full object-contain'
+                  onLoad={handleImageLoad}
+                  onError={handleImageLoad}
+                />
+              ) : null}
             </div>
+            <div className='h-40 flex items-center justify-center'>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {delegate.idCardBack ? (
+                <img
+                  src={delegate.idCardBack}
+                  alt='ID Card Back'
+                  className='max-h-full max-w-full object-contain'
+                  onLoad={handleImageLoad}
+                  onError={handleImageLoad}
+                />
+              ) : null}
+            </div>
+          </div>
 
-            <div className="space-y-3">
-                <div className="h-40 flex items-center justify-center">
-                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                     {delegate.unionCardFront ? <img src={delegate.unionCardFront} alt="Union Card Front" className="max-h-full max-w-full object-contain" onLoad={handleImageLoad} onError={handleImageLoad} /> : null}
-                </div>
-                 <div className="h-40 flex items-center justify-center">
-                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                     {delegate.unionCardBack ? <img src={delegate.unionCardBack} alt="Union Card Back" className="max-h-full max-w-full object-contain" onLoad={handleImageLoad} onError={handleImageLoad} /> : null}
-                </div>
+          <div className='space-y-3'>
+            <div className='h-40 flex items-center justify-center'>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {delegate.unionCardFront ? (
+                <img
+                  src={delegate.unionCardFront}
+                  alt='Union Card Front'
+                  className='max-h-full max-w-full object-contain'
+                  onLoad={handleImageLoad}
+                  onError={handleImageLoad}
+                />
+              ) : null}
             </div>
+            <div className='h-40 flex items-center justify-center'>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {delegate.unionCardBack ? (
+                <img
+                  src={delegate.unionCardBack}
+                  alt='Union Card Back'
+                  className='max-h-full max-w-full object-contain'
+                  onLoad={handleImageLoad}
+                  onError={handleImageLoad}
+                />
+              ) : null}
+            </div>
+          </div>
         </div>
 
         {/* Action Button (No Print) */}
-        <div className="fixed top-4 left-4 no-print flex gap-2">
-            <button onClick={() => window.print()} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-xl">
-                🖨️ طباعة
-            </button>
-            <button onClick={() => window.close()} className="bg-slate-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700 shadow-xl">
-                إغلاق
-            </button>
+        <div className='fixed top-4 left-4 no-print flex gap-2'>
+          <button
+            onClick={() => window.print()}
+            className='bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-xl'
+          >
+            🖨️ طباعة
+          </button>
+          <button
+            onClick={() => window.close()}
+            className='bg-slate-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700 shadow-xl'
+          >
+            إغلاق
+          </button>
         </div>
       </div>
     </div>

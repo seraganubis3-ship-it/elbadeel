@@ -75,15 +75,18 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Verify it belongs to this form type for safety
     const serial = await (prisma as any).formSerial.findFirst({
-        where: { id: serialId, formTypeId: id }
+      where: { id: serialId, formTypeId: id },
     });
 
     if (!serial) {
-        return NextResponse.json({ error: 'عفوا، الرقم غير موجود أو لا ينتمي لهذا النموذج' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'عفوا، الرقم غير موجود أو لا ينتمي لهذا النموذج' },
+        { status: 404 }
+      );
     }
 
     if (serial.consumed) {
-         return NextResponse.json({ error: 'لا يمكن حذف رقم تم استهلاكه بالفعل' }, { status: 400 });
+      return NextResponse.json({ error: 'لا يمكن حذف رقم تم استهلاكه بالفعل' }, { status: 400 });
     }
 
     await (prisma as any).formSerial.delete({

@@ -30,23 +30,19 @@ export function WorkOrderModal({ isOpen, onClose, onSubmit, count }: WorkOrderMo
     <div className='fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
       <div className='bg-white rounded-2xl shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200'>
         <form onSubmit={handleSubmit} className='p-6'>
-          <h2 className='text-xl font-bold text-gray-900 mb-4 text-center'>
-            إدخال رقم أمر الشغل
-          </h2>
-          
-          <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-sm mb-4 text-center">
+          <h2 className='text-xl font-bold text-gray-900 mb-4 text-center'>إدخال رقم أمر الشغل</h2>
+
+          <div className='bg-blue-50 text-blue-800 p-3 rounded-lg text-sm mb-4 text-center'>
             سيتم تعيين رقم أمر الشغل لـ <strong>{count}</strong> طلب
           </div>
 
           <div className='space-y-4'>
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                رقم أمر الشغل
-              </label>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>رقم أمر الشغل</label>
               <input
                 type='text'
                 value={workOrderNumber}
-                onChange={(e) => {
+                onChange={e => {
                   setWorkOrderNumber(e.target.value);
                   setError('');
                 }}

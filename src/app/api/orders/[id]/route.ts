@@ -50,25 +50,28 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 });
     }
 
-    const enhancedDocuments = await Promise.all(order.documents.map(async (doc) => {
-      // Generate Signed URL
-      const signedUrl = await generatePresignedUrl(doc.filePath);
+    const enhancedDocuments = await Promise.all(
+      order.documents.map(async doc => {
+        // Generate Signed URL
+        const signedUrl = await generatePresignedUrl(doc.filePath);
 
-      // Extract documentType from filePath (which contains the generated unique name)
-      // Format: .../orders/id/type_timestamp.ext
-      const generatedFileName = doc.filePath.split('/').pop() || '';
-      const lastUnderscoreIndex = generatedFileName.lastIndexOf('_');
-      
-      const documentType = lastUnderscoreIndex !== -1 
-        ? generatedFileName.substring(0, lastUnderscoreIndex) 
-        : 'unknown';
-        
-      return { 
-        ...doc, 
-        filePath: signedUrl, // Replace Key with Signed URL for frontend
-        documentType 
-      };
-    }));
+        // Extract documentType from filePath (which contains the generated unique name)
+        // Format: .../orders/id/type_timestamp.ext
+        const generatedFileName = doc.filePath.split('/').pop() || '';
+        const lastUnderscoreIndex = generatedFileName.lastIndexOf('_');
+
+        const documentType =
+          lastUnderscoreIndex !== -1
+            ? generatedFileName.substring(0, lastUnderscoreIndex)
+            : 'unknown';
+
+        return {
+          ...doc,
+          filePath: signedUrl, // Replace Key with Signed URL for frontend
+          documentType,
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,

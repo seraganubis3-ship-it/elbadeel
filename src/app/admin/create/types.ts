@@ -93,8 +93,6 @@ export interface FormData {
   idNumber: string;
   motherName: string;
 
-
-
   wifeName: string;
   wifeMotherName: string;
   marriageDate: string;
@@ -173,7 +171,6 @@ export const initialFormData: FormData = {
   fatherName: '',
   idNumber: '',
   motherName: '',
-
 
   wifeName: '',
   wifeMotherName: '',

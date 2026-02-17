@@ -4,7 +4,11 @@ export { default as Card } from '../Card';
 // Card sub-components for shadcn-like API
 import React from 'react';
 
-export function CardHeader({ className = '', children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function CardHeader({
+  className = '',
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={`flex flex-col space-y-1.5 p-6 ${className}`} {...props}>
       {children}
@@ -12,7 +16,11 @@ export function CardHeader({ className = '', children, ...props }: React.HTMLAtt
   );
 }
 
-export function CardTitle({ className = '', children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+export function CardTitle({
+  className = '',
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3 className={`text-2xl font-semibold leading-none tracking-tight ${className}`} {...props}>
       {children}
@@ -20,7 +28,11 @@ export function CardTitle({ className = '', children, ...props }: React.HTMLAttr
   );
 }
 
-export function CardDescription({ className = '', children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
+export function CardDescription({
+  className = '',
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p className={`text-sm text-muted-foreground ${className}`} {...props}>
       {children}
@@ -28,7 +40,11 @@ export function CardDescription({ className = '', children, ...props }: React.HT
   );
 }
 
-export function CardContent({ className = '', children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function CardContent({
+  className = '',
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={`p-6 pt-0 ${className}`} {...props}>
       {children}
@@ -36,7 +52,11 @@ export function CardContent({ className = '', children, ...props }: React.HTMLAt
   );
 }
 
-export function CardFooter({ className = '', children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function CardFooter({
+  className = '',
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={`flex items-center p-6 pt-0 ${className}`} {...props}>
       {children}

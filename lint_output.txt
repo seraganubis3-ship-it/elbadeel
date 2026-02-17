@@ -1,0 +1,6 @@
+﻿
+C:\Users\serag\Downloads\Ofa\web\src\app\api\ai\chat\route.ts
+  40:3  error  Unexpected var, use let or const instead  no-var
+
+Γ£û 1 problem (1 error, 0 warnings)
+

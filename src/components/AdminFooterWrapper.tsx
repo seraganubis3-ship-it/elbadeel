@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { ReactNode } from 'react';
 import Link from 'next/link';
 
-import { Facebook, Instagram } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
 
 interface AdminFooterWrapperProps {
   children: ReactNode;
@@ -53,11 +53,12 @@ export default function AdminFooterWrapper({ children, settings }: AdminFooterWr
                   </div>
                 </div>
                 <p className='text-slate-200/90 leading-relaxed text-sm'>
-                  {settings?.siteDescription || 'منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية مع ضمان الجودة والسرعة.'}
+                  {settings?.siteDescription ||
+                    'منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية مع ضمان الجودة والسرعة.'}
                 </p>
-                
+
                 {/* Social Media Links */}
-                <div className='flex gap-4 mt-6'>
+                <div className='flex gap-4 mt-6 flex-wrap'>
                   {settings?.facebookUrl && (
                     <a
                       href={settings.facebookUrl}
@@ -78,6 +79,41 @@ export default function AdminFooterWrapper({ children, settings }: AdminFooterWr
                       aria-label='Instagram'
                     >
                       <Instagram className='w-5 h-5' />
+                    </a>
+                  )}
+                  {settings?.tiktokUrl && (
+                    <a
+                      href={settings.tiktokUrl}
+                      target='_blank'
+                      rel='noreferrer'
+                      className='w-10 h-10 bg-white/10 hover:bg-black rounded-full flex items-center justify-center transition-all hover:scale-110'
+                      aria-label='TikTok'
+                    >
+                      <svg className='w-5 h-5 fill-current' viewBox='0 0 24 24'>
+                        <path d='M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z' />
+                      </svg>
+                    </a>
+                  )}
+                  {settings?.twitterUrl && (
+                    <a
+                      href={settings.twitterUrl}
+                      target='_blank'
+                      rel='noreferrer'
+                      className='w-10 h-10 bg-white/10 hover:bg-blue-400 rounded-full flex items-center justify-center transition-all hover:scale-110'
+                      aria-label='Twitter'
+                    >
+                      <Twitter className='w-5 h-5' />
+                    </a>
+                  )}
+                  {settings?.linkedinUrl && (
+                    <a
+                      href={settings.linkedinUrl}
+                      target='_blank'
+                      rel='noreferrer'
+                      className='w-10 h-10 bg-white/10 hover:bg-blue-700 rounded-full flex items-center justify-center transition-all hover:scale-110'
+                      aria-label='LinkedIn'
+                    >
+                      <Linkedin className='w-5 h-5' />
                     </a>
                   )}
                 </div>
@@ -112,24 +148,92 @@ export default function AdminFooterWrapper({ children, settings }: AdminFooterWr
                   {/* Phone */}
                   <div className='flex items-center'>
                     <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
-                      <svg className='w-4.5 h-4.5' viewBox='0 0 24 24' fill='none' stroke='currentColor'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M3 5a2 2 0 012-2h3.28a1 1 0 01.95.69l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.69.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z' />
+                      <svg
+                        className='w-4.5 h-4.5'
+                        viewBox='0 0 24 24'
+                        fill='none'
+                        stroke='currentColor'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='1.5'
+                          d='M3 5a2 2 0 012-2h3.28a1 1 0 01.95.69l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11.04 11.04 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.69.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z'
+                        />
                       </svg>
                     </div>
-                    <a href={`tel:${settings?.contactPhone}`} className='font-medium hover:text-emerald-300 transition-colors'>
+                    <a
+                      href={`tel:${settings?.contactPhone}`}
+                      className='font-medium hover:text-emerald-300 transition-colors'
+                    >
                       {settings?.contactPhone || '01021606893'}
                     </a>
+                  </div>
+
+                  {/* Complaints Phone */}
+                  <div className='flex items-center'>
+                    <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
+                      <svg
+                        className='w-4.5 h-4.5 text-amber-400'
+                        viewBox='0 0 24 24'
+                        fill='none'
+                        stroke='currentColor'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='1.5'
+                          d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'
+                        />
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='1.5'
+                          d='M12 8v4'
+                        />
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='1.5'
+                          d='M12 16h.01'
+                        />
+                      </svg>
+                    </div>
+                    <div className='flex flex-col'>
+                      <span className='text-xs text-amber-400/80 font-medium'>
+                        للشكاوى والمقترحات
+                      </span>
+                      <a
+                        href={`tel:${settings?.complaintsPhone || '01001544258'}`}
+                        className='font-medium text-amber-400 hover:text-amber-300 transition-colors'
+                      >
+                        {settings?.complaintsPhone || '01001544258'}
+                      </a>
+                    </div>
                   </div>
 
                   {/* Email */}
                   {settings?.contactEmail && (
                     <div className='flex items-center'>
                       <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
-                        <svg className='w-4.5 h-4.5' viewBox='0 0 24 24' fill='none' stroke='currentColor'>
-                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' />
+                        <svg
+                          className='w-4.5 h-4.5'
+                          viewBox='0 0 24 24'
+                          fill='none'
+                          stroke='currentColor'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth='1.5'
+                            d='M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'
+                          />
                         </svg>
                       </div>
-                      <a href={`mailto:${settings.contactEmail}`} className='font-medium hover:text-emerald-300 transition-colors'>
+                      <a
+                        href={`mailto:${settings.contactEmail}`}
+                        className='font-medium hover:text-emerald-300 transition-colors'
+                      >
                         {settings.contactEmail}
                       </a>
                     </div>
@@ -138,9 +242,24 @@ export default function AdminFooterWrapper({ children, settings }: AdminFooterWr
                   {/* Address */}
                   <div className='flex items-center'>
                     <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
-                      <svg className='w-4.5 h-4.5' viewBox='0 0 24 24' fill='none' stroke='currentColor'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z' />
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M15 11a3 3 0 11-6 0 3 3 0 016 0z' />
+                      <svg
+                        className='w-4.5 h-4.5'
+                        viewBox='0 0 24 24'
+                        fill='none'
+                        stroke='currentColor'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='1.5'
+                          d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
+                        />
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='1.5'
+                          d='M15 11a3 3 0 11-6 0 3 3 0 016 0z'
+                        />
                       </svg>
                     </div>
                     <a
@@ -150,15 +269,26 @@ export default function AdminFooterWrapper({ children, settings }: AdminFooterWr
                       className='font-medium hover:text-emerald-300 transition-colors cursor-pointer'
                       title='افتح في جوجل مابس'
                     >
-                      {settings?.address || 'شارع صالح قناوى, وليم ناشد, شارع الملك فيصل 15 مدكور، الملك فيصل، 12111'}
+                      {settings?.address ||
+                        'شارع صالح قناوى, وليم ناشد, شارع الملك فيصل 15 مدكور، الملك فيصل، 12111'}
                     </a>
                   </div>
 
                   {/* WhatsApp */}
                   <div className='flex items-center'>
                     <div className='w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center ml-3'>
-                      <svg className='w-4.5 h-4.5' viewBox='0 0 24 24' fill='none' stroke='currentColor'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M2 5a2 2 0 012-2h2.6a2 2 0 011.78 1.1l.86 1.72A2 2 0 0011 7h2a2 2 0 011.76 1.03l.88 1.54A2 2 0 0017 11v2a2 2 0 01-2 2h-1' />
+                      <svg
+                        className='w-4.5 h-4.5'
+                        viewBox='0 0 24 24'
+                        fill='none'
+                        stroke='currentColor'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='1.5'
+                          d='M2 5a2 2 0 012-2h2.6a2 2 0 011.78 1.1l.86 1.72A2 2 0 0011 7h2a2 2 0 011.76 1.03l.88 1.54A2 2 0 0017 11v2a2 2 0 01-2 2h-1'
+                        />
                       </svg>
                     </div>
                     <a
@@ -177,7 +307,8 @@ export default function AdminFooterWrapper({ children, settings }: AdminFooterWr
             {/* Bottom bar */}
             <div className='mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3'>
               <p className='text-slate-300 text-sm'>
-                جميع الحقوق محفوظة © {new Date().getFullYear()} {settings?.siteName || 'منصة البديل'}
+                جميع الحقوق محفوظة © {new Date().getFullYear()}{' '}
+                {settings?.siteName || 'منصة البديل'}
               </p>
               <div className='flex items-center gap-2 text-sm'>
                 <span className='text-slate-300'>صنع بواسطة</span>

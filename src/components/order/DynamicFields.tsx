@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { evaluateLogic } from '@/lib/logicEvaluator';
 
 interface FieldOption {
   id: string;
@@ -28,15 +29,7 @@ interface DynamicFieldsProps {
 export default function DynamicFields({ fields, values, onChange }: DynamicFieldsProps) {
   // Check if a field should be visible based on conditional logic
   const isFieldVisible = (field: DynamicField): boolean => {
-    if (!field.showIf) return true;
-
-    try {
-      const condition = JSON.parse(field.showIf);
-      const dependentValue = values[condition.field];
-      return dependentValue === condition.value;
-    } catch {
-      return true;
-    }
+    return evaluateLogic(field.showIf, values);
   };
 
   const visibleFields = fields.filter(isFieldVisible);

@@ -21,33 +21,36 @@ export async function GET(request: NextRequest) {
 
     const orderIdsParam = searchParams.get('orderIds');
     let targetDate = new Date();
-    
+
     // Build where clause
     const whereClause: any = {
       userId: customerId,
     };
 
     if (date) {
-        targetDate = new Date(date);
-        const startOfDay = new Date(targetDate);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(targetDate);
-        endOfDay.setHours(23, 59, 59, 999);
-        
-        whereClause.createdAt = {
-            gte: startOfDay,
-            lte: endOfDay,
-        };
+      targetDate = new Date(date);
+      const startOfDay = new Date(targetDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(targetDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      whereClause.createdAt = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
     }
 
     // If specific orders are requested, filter by them (Override/Refine Date)
     if (orderIdsParam) {
-      const orderIds = orderIdsParam.split(',').map(id => id.trim()).filter(Boolean);
+      const orderIds = orderIdsParam
+        .split(',')
+        .map(id => id.trim())
+        .filter(Boolean);
       if (orderIds.length > 0) {
         // If IDs provided, we strictly look for them, regardless of date filter unless explicitly combined?
         // User says "All services not by date". So if we are selecting, we likely want to ignore date.
-        // But here we are deciding the API logic. 
-        // If orderIds are present, we should probably ignore the date filter that might have been set above, 
+        // But here we are deciding the API logic.
+        // If orderIds are present, we should probably ignore the date filter that might have been set above,
         // OR simply rely on the fact that the Modal won't send date if it wants all.
         // Let's force ID filter if present.
         delete whereClause.createdAt; // Remove date filter if specific IDs are asked

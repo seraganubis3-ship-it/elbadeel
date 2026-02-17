@@ -402,6 +402,10 @@ model SystemSettings {
   facebookUrl        String?
   instagramUrl       String?
   logoUrl            String?
+  tiktokUrl          String?
+  twitterUrl         String?
+  linkedinUrl        String?
+  complaintsPhone    String?  @default("01001544258")
   
   updatedAt          DateTime @updatedAt
 }

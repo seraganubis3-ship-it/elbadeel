@@ -111,9 +111,7 @@ export default function RegisterPage() {
           <form onSubmit={onSubmit} className='space-y-5'>
             {/* Name */}
             <div>
-              <label className='block text-sm font-bold text-slate-700 mb-2'>
-                الاسم الكامل
-              </label>
+              <label className='block text-sm font-bold text-slate-700 mb-2'>الاسم الكامل</label>
               <div className='relative'>
                 <input
                   type='text'
@@ -125,12 +123,7 @@ export default function RegisterPage() {
                   placeholder='أدخل اسمك الكامل'
                 />
                 <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
-                  <svg
-                    className='w-5 h-5'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
+                  <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                     <path
                       strokeLinecap='round'
                       strokeLinejoin='round'
@@ -156,12 +149,7 @@ export default function RegisterPage() {
                   placeholder='01xxxxxxxxx'
                 />
                 <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
-                  <svg
-                    className='w-5 h-5'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
+                  <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                     <path
                       strokeLinecap='round'
                       strokeLinejoin='round'
@@ -193,12 +181,7 @@ export default function RegisterPage() {
                   className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors'
                 >
                   {showPassword ? (
-                    <svg
-                      className='w-5 h-5'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
+                    <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                       <path
                         strokeLinecap='round'
                         strokeLinejoin='round'
@@ -207,12 +190,7 @@ export default function RegisterPage() {
                       />
                     </svg>
                   ) : (
-                    <svg
-                      className='w-5 h-5'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
+                    <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                       <path
                         strokeLinecap='round'
                         strokeLinejoin='round'
@@ -247,12 +225,7 @@ export default function RegisterPage() {
                   placeholder='أعد إدخال كلمة المرور'
                 />
                 <div className='absolute right-4 top-1/2 -translate-y-1/2 text-slate-400'>
-                  <svg
-                    className='w-5 h-5'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
+                  <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                     <path
                       strokeLinecap='round'
                       strokeLinejoin='round'
@@ -292,12 +265,7 @@ export default function RegisterPage() {
               ) : (
                 <span className='flex items-center justify-center gap-2'>
                   إنشاء الحساب
-                  <svg
-                    className='w-5 h-5'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
+                  <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                     <path
                       strokeLinecap='round'
                       strokeLinejoin='round'

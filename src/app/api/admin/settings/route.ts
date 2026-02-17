@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
@@ -12,7 +11,7 @@ export async function GET() {
     if (!settings) {
       settings = await prisma.systemSettings.create({
         data: {
-          id: 'main', 
+          id: 'main',
           siteName: 'البديل',
         },
       });
@@ -20,10 +19,7 @@ export async function GET() {
 
     return NextResponse.json(settings);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch settings' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
   }
 }
 
@@ -52,6 +48,10 @@ export async function POST(request: NextRequest) {
         facebookUrl: body.facebookUrl,
         instagramUrl: body.instagramUrl,
         logoUrl: body.logoUrl,
+        tiktokUrl: body.tiktokUrl,
+        twitterUrl: body.twitterUrl,
+        linkedinUrl: body.linkedinUrl,
+        complaintsPhone: body.complaintsPhone,
       },
       create: {
         id: 'main',
@@ -70,15 +70,16 @@ export async function POST(request: NextRequest) {
         facebookUrl: body.facebookUrl,
         instagramUrl: body.instagramUrl,
         logoUrl: body.logoUrl,
+        tiktokUrl: body.tiktokUrl,
+        twitterUrl: body.twitterUrl,
+        linkedinUrl: body.linkedinUrl,
+        complaintsPhone: body.complaintsPhone || '01001544258',
       },
     });
 
     return NextResponse.json(settings);
   } catch (error) {
     // console.error('Settings Update Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to update settings' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
   }
 }

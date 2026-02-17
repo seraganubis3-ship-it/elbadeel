@@ -2,7 +2,9 @@
 import { Redis } from 'ioredis';
 
 // Check if using Upstash REST API or traditional Redis
-const isUpstashRest = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+const isUpstashRest = !!(
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+);
 
 // Redis connection options
 export const redisConfig = {
@@ -36,19 +38,20 @@ export const createRedisConnection = () => {
     return new Redis(process.env.REDIS_URL, {
       maxRetriesPerRequest: null,
       enableReadyCheck: false,
-      tls: process.env.REDIS_URL.startsWith('rediss://') ? {
-        rejectUnauthorized: false,
-      } : undefined,
+      tls: process.env.REDIS_URL.startsWith('rediss://')
+        ? {
+            rejectUnauthorized: false,
+          }
+        : undefined,
       lazyConnect: true, // Don't connect immediately
     });
   }
-  
+
   // If no REDIS_URL, don't create connection (avoid localhost attempts)
   // eslint-disable-next-line no-console
   console.warn('⚠️ No REDIS_URL configured - Redis features will be disabled');
   return null as any; // Return null to prevent connection attempts
 };
-
 
 // Queue-specific Redis connection
 export const queueConnection = createRedisConnection();
@@ -67,12 +70,12 @@ export async function checkRedisConnection(): Promise<boolean> {
       console.warn('⚠️ Redis not configured - features will be disabled');
       return false;
     }
-    
+
     // Connect if lazy
     if (queueConnection.status === 'wait') {
       await queueConnection.connect();
     }
-    
+
     await queueConnection.ping();
     // eslint-disable-next-line no-console
     console.log('✅ Redis connected successfully');
@@ -87,7 +90,7 @@ export async function checkRedisConnection(): Promise<boolean> {
 // Graceful shutdown
 export async function closeRedisConnections() {
   const promises = [];
-  
+
   if (queueConnection) {
     promises.push(queueConnection.quit().catch(() => {}));
   }
@@ -97,6 +100,6 @@ export async function closeRedisConnections() {
   if (rateLimitConnection) {
     promises.push(rateLimitConnection.quit().catch(() => {}));
   }
-  
+
   await Promise.all(promises);
 }

@@ -43,7 +43,9 @@ export async function performDatabaseBackup() {
     // Get file stats
     const stats = await fs.stat(backupPath);
     // eslint-disable-next-line no-console
-    console.log(`✅ Backup created: ${backupFileName} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`);
+    console.log(
+      `✅ Backup created: ${backupFileName} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`
+    );
 
     // Upload to Backblaze B2
     // eslint-disable-next-line no-console

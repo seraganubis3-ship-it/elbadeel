@@ -365,15 +365,20 @@ export function useCreateOrder() {
     total += formData.otherFees * 100;
 
     // Passport Surcharge: 200 EGP for Agouza, Zayed, 6 October (Normal/Urgent only)
-    const isPassportService = selectedService?.slug?.toLowerCase().includes('passport') || 
-                              selectedService?.name?.toLowerCase().includes('passport') || 
-                              selectedService?.name?.includes('جواز');
+    const isPassportService =
+      selectedService?.slug?.toLowerCase().includes('passport') ||
+      selectedService?.name?.toLowerCase().includes('passport') ||
+      selectedService?.name?.includes('جواز');
 
-    if (isPassportService && selectedVariant && (selectedVariant.name.includes('عادي') || selectedVariant.name.includes('سريع'))) {
-       const station = formData.policeStation?.trim();
-       if (['العجوزة', 'الشيخ زايد', '6 أكتوبر'].includes(station)) {
-          total += 20000;
-       }
+    if (
+      isPassportService &&
+      selectedVariant &&
+      (selectedVariant.name.includes('عادي') || selectedVariant.name.includes('سريع'))
+    ) {
+      const station = formData.policeStation?.trim();
+      if (['العجوزة', 'الشيخ زايد', '6 أكتوبر'].includes(station)) {
+        total += 20000;
+      }
     }
 
     // Discount
@@ -605,57 +610,60 @@ export function useCreateOrder() {
   }, []);
 
   // Handle save attachment
-  const handleSaveAttachment = useCallback(async (name: string, file: File | null) => {
-    if (!name.trim()) {
-      showError('خطأ في الإدخال', 'يرجى إدخال اسم المرفق');
-      return;
-    }
+  const handleSaveAttachment = useCallback(
+    async (name: string, file: File | null) => {
+      if (!name.trim()) {
+        showError('خطأ في الإدخال', 'يرجى إدخال اسم المرفق');
+        return;
+      }
 
-    try {
-      if (file) {
-        const formDataUpload = new FormData();
-        formDataUpload.append('files', file);
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formDataUpload,
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.files && data.files.length > 0) {
-             const uploadedFile = data.files[0];
-             setFormData(prev => ({
+      try {
+        if (file) {
+          const formDataUpload = new FormData();
+          formDataUpload.append('files', file);
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formDataUpload,
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.files && data.files.length > 0) {
+              const uploadedFile = data.files[0];
+              setFormData(prev => ({
                 ...prev,
                 attachedDocuments: [...(prev.attachedDocuments || []), name.trim()],
-                uploadedDocuments: [...(prev.uploadedDocuments || []), {
-                   originalName: uploadedFile.originalName,
-                   filename: uploadedFile.filename,
-                   filePath: uploadedFile.filename, // Store Key (not signed URL) for DB
-                   fileSize: uploadedFile.fileSize,
-                   fileType: uploadedFile.fileType
-                }]
-             }));
-             setUploadedFiles(prev => [...prev, file]);
-             showSuccess('تم رفع المرفق بنجاح! 📁', `تم رفع "${name.trim()}" مع الملف`);
+                uploadedDocuments: [
+                  ...(prev.uploadedDocuments || []),
+                  {
+                    originalName: uploadedFile.originalName,
+                    filename: uploadedFile.filename,
+                    filePath: uploadedFile.filename, // Store Key (not signed URL) for DB
+                    fileSize: uploadedFile.fileSize,
+                    fileType: uploadedFile.fileType,
+                  },
+                ],
+              }));
+              setUploadedFiles(prev => [...prev, file]);
+              showSuccess('تم رفع المرفق بنجاح! 📁', `تم رفع "${name.trim()}" مع الملف`);
+            } else {
+              showError('فشل في رفع الملف', 'لم يتم استرجاع معلومات الملف');
+            }
           } else {
-             showError('فشل في رفع الملف', 'لم يتم استرجاع معلومات الملف');
+            const error = await response.json();
+            showError('فشل في رفع الملف', error.error || 'حدث خطأ أثناء رفع الملف');
+            return;
           }
         } else {
-          const error = await response.json();
-          showError('فشل في رفع الملف', error.error || 'حدث خطأ أثناء رفع الملف');
-          return;
+          setFormData(prev => ({
+            ...prev,
+            attachedDocuments: [...(prev.attachedDocuments || []), name.trim()],
+          }));
+          showSuccess('تم إضافة المرفق بنجاح! 📄', `تم إضافة "${name.trim()}" إلى قائمة المرفقات`);
         }
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          attachedDocuments: [...(prev.attachedDocuments || []), name.trim()],
-        }));
-        showSuccess(
-          'تم إضافة المرفق بنجاح! 📄',
-          `تم إضافة "${name.trim()}" إلى قائمة المرفقات`
-        );
-      }
-    } catch {}
-  }, [showSuccess, showError]);
+      } catch {}
+    },
+    [showSuccess, showError]
+  );
 
   // Handle remove attachment
   const handleRemoveAttachment = useCallback((index: number) => {
@@ -704,8 +712,6 @@ export function useCreateOrder() {
     return null;
   }, [session]);
 
-
-  
   // Handle form reset
   const handleReset = useCallback(() => {
     setFormData(initialFormData);
@@ -723,7 +729,7 @@ export function useCreateOrder() {
     // But since we are setting individual fields below, let's keep it consistent
     // Actually, setFormData(initialFormData) is called at the top of handleReset
     // setFormData(initialFormData); // Line 700 already does this.
-    
+
     // Just ensuring we don't have stale state if we rely on uploadedFiles state (which is separate from formData, strangely)
     // uploadedFiles state seems to be for visual "File" objects, while formData has string names.
     // formData.uploadedDocuments will be cleared by setFormData(initialFormData).
@@ -757,7 +763,7 @@ export function useCreateOrder() {
         showWarning('رقم الهاتف مطلوب', 'يرجى إدخال رقم الهاتف');
         return;
       }
-      
+
       const hasIdNumber = formData.idNumber && formData.idNumber.length === 14;
       const hasBirthDate = formData.birthDate && formData.birthDate.trim().length > 0;
 
@@ -771,26 +777,26 @@ export function useCreateOrder() {
 
       if (serviceName.includes('ميلاد')) {
         if (!formData.motherName?.trim()) {
-           showWarning('نقص في البيانات', 'اسم الأم مطلوب لاستخراج شهادة الميلاد');
-           return;
+          showWarning('نقص في البيانات', 'اسم الأم مطلوب لاستخراج شهادة الميلاد');
+          return;
         }
         if (!formData.birthDate?.trim()) {
-           showWarning('نقص في البيانات', 'تاريخ الميلاد مطلوب لاستخراج شهادة الميلاد');
-           return;
+          showWarning('نقص في البيانات', 'تاريخ الميلاد مطلوب لاستخراج شهادة الميلاد');
+          return;
         }
       }
 
       if (serviceName.includes('وفاة')) {
         if (!formData.deathDate?.trim()) {
-           showWarning('نقص في البيانات', 'تاريخ الوفاة مطلوب لاستخراج شهادة الوفاة');
-           return;
+          showWarning('نقص في البيانات', 'تاريخ الوفاة مطلوب لاستخراج شهادة الوفاة');
+          return;
         }
       }
 
       if (serviceName.includes('زواج') || serviceName.includes('طلاق')) {
         if (!formData.wifeName?.trim()) {
-           showWarning('نقص في البيانات', 'اسم الزوج/الزوجة مطلوب');
-           return;
+          showWarning('نقص في البيانات', 'اسم الزوج/الزوجة مطلوب');
+          return;
         }
       }
 
@@ -849,7 +855,7 @@ export function useCreateOrder() {
           deathDate: formData.deathDate,
           customerFollowUp: formData.customerFollowUp,
           wifeMotherName: formData.wifeMotherName,
-          serviceDetails: formData.translationLanguage 
+          serviceDetails: formData.translationLanguage
             ? `${formData.serviceDetails || ''}\n\nلغة الترجمة: ${formData.translationLanguage}`.trim()
             : formData.serviceDetails,
           otherFees: formData.otherFees,

@@ -32,7 +32,7 @@ export default function PaymentPage() {
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
-    }
+    };
   }, [previewUrl]);
 
   const fetchOrder = async () => {
@@ -55,7 +55,7 @@ export default function PaymentPage() {
       showError('خطأ', 'يرجى إدخال رقم هاتف صحيح');
       return;
     }
-    
+
     if (!screenshot) {
       showError('خطأ', 'يرجى إرفاق صورة التحويل');
       return;
@@ -134,7 +134,8 @@ export default function PaymentPage() {
             <div className='text-center mb-8'>
               <p className='text-slate-500 mb-2'>المبلغ المطلوب دفا</p>
               <div className='text-4xl font-extrabold text-slate-800'>
-                {(order.totalCents / 100).toFixed(2)} <span className='text-lg text-slate-500'>ج.م</span>
+                {(order.totalCents / 100).toFixed(2)}{' '}
+                <span className='text-lg text-slate-500'>ج.م</span>
               </div>
             </div>
 
@@ -169,9 +170,15 @@ export default function PaymentPage() {
               <div className='bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm'>
                 <p className='font-bold text-slate-700 mb-2'>تعليمات الدفع:</p>
                 {method === 'VODAFONE_CASH' ? (
-                  <p className='text-slate-600'>يرجى التحويل على الرقم: <span className='font-mono font-bold select-all'>01001544258</span></p>
+                  <p className='text-slate-600'>
+                    يرجى التحويل على الرقم:{' '}
+                    <span className='font-mono font-bold select-all'>01001544258</span>
+                  </p>
                 ) : (
-                   <p className='text-slate-600'>يرجى التحويل على الرقم: <span className='font-mono font-bold select-all'>01001544258</span></p>
+                  <p className='text-slate-600'>
+                    يرجى التحويل على الرقم:{' '}
+                    <span className='font-mono font-bold select-all'>01001544258</span>
+                  </p>
                 )}
               </div>
 
@@ -180,65 +187,69 @@ export default function PaymentPage() {
                 <label className='block text-sm font-medium text-slate-700 mb-2'>
                   صورة التحويل (سكرين شوت)
                 </label>
-                
+
                 {previewUrl ? (
-                  <div className="relative rounded-2xl overflow-hidden border-2 border-slate-200 group">
-                    <div className="relative w-full h-64 bg-slate-100">
-                        <Image
-                            src={previewUrl}
-                            alt="Payment Preview"
-                            fill
-                            className="object-contain"
-                        />
+                  <div className='relative rounded-2xl overflow-hidden border-2 border-slate-200 group'>
+                    <div className='relative w-full h-64 bg-slate-100'>
+                      <Image
+                        src={previewUrl}
+                        alt='Payment Preview'
+                        fill
+                        className='object-contain'
+                      />
                     </div>
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                       <button
-                         type="button" 
-                         onClick={removeImage}
-                         className="bg-red-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-red-600 transition-colors"
-                       >
-                         حذف الصورة 🗑️
-                       </button>
+                    <div className='absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4'>
+                      <button
+                        type='button'
+                        onClick={removeImage}
+                        className='bg-red-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-red-600 transition-colors'
+                      >
+                        حذف الصورة 🗑️
+                      </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className='grid grid-cols-2 gap-4'>
                     {/* Camera Option */}
-                    <div className="relative">
-                      <input 
-                        type="file" 
-                        id="camera-upload" 
-                        accept="image/*" 
-                        capture="environment"
-                        className="hidden" 
+                    <div className='relative'>
+                      <input
+                        type='file'
+                        id='camera-upload'
+                        accept='image/*'
+                        capture='environment'
+                        className='hidden'
                         onChange={handleFileChange}
                       />
-                      <label 
-                        htmlFor="camera-upload"
-                        className="flex flex-col items-center justify-center p-6 border-2 border-slate-200 border-dashed rounded-2xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all h-full"
+                      <label
+                        htmlFor='camera-upload'
+                        className='flex flex-col items-center justify-center p-6 border-2 border-slate-200 border-dashed rounded-2xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all h-full'
                       >
-                         <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl mb-2">📸</div>
-                         <span className="font-bold text-slate-700">تصوير</span>
-                         <span className="text-xs text-slate-500 mt-1">التقط صورة مباشرة</span>
+                        <div className='w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl mb-2'>
+                          📸
+                        </div>
+                        <span className='font-bold text-slate-700'>تصوير</span>
+                        <span className='text-xs text-slate-500 mt-1'>التقط صورة مباشرة</span>
                       </label>
                     </div>
 
                     {/* Gallery Option */}
-                    <div className="relative">
-                       <input 
-                        type="file" 
-                        id="gallery-upload" 
-                        accept="image/*" 
-                        className="hidden" 
+                    <div className='relative'>
+                      <input
+                        type='file'
+                        id='gallery-upload'
+                        accept='image/*'
+                        className='hidden'
                         onChange={handleFileChange}
                       />
-                      <label 
-                        htmlFor="gallery-upload"
-                        className="flex flex-col items-center justify-center p-6 border-2 border-slate-200 border-dashed rounded-2xl cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all h-full"
+                      <label
+                        htmlFor='gallery-upload'
+                        className='flex flex-col items-center justify-center p-6 border-2 border-slate-200 border-dashed rounded-2xl cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all h-full'
                       >
-                         <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl mb-2">🖼️</div>
-                         <span className="font-bold text-slate-700">المعرض</span>
-                         <span className="text-xs text-slate-500 mt-1">اختر من الملفات</span>
+                        <div className='w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl mb-2'>
+                          🖼️
+                        </div>
+                        <span className='font-bold text-slate-700'>المعرض</span>
+                        <span className='text-xs text-slate-500 mt-1'>اختر من الملفات</span>
                       </label>
                     </div>
                   </div>
@@ -253,7 +264,7 @@ export default function PaymentPage() {
                 <input
                   type='text'
                   value={senderPhone}
-                  onChange={(e) => setSenderPhone(e.target.value)}
+                  onChange={e => setSenderPhone(e.target.value)}
                   placeholder='010xxxxxxxx'
                   className='w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-left'
                   dir='ltr'
@@ -269,12 +280,15 @@ export default function PaymentPage() {
                 {submitting ? 'جاري التأكيد...' : 'تأكيد عملية الدفع'}
               </button>
             </form>
-            
-             <div className="mt-6 text-center">
-                <Link href={`/orders/${order.id}`} className="text-sm text-slate-500 hover:text-slate-700">
-                    العودة لتفاصيل الطلب
-                </Link>
-             </div>
+
+            <div className='mt-6 text-center'>
+              <Link
+                href={`/orders/${order.id}`}
+                className='text-sm text-slate-500 hover:text-slate-700'
+              >
+                العودة لتفاصيل الطلب
+              </Link>
+            </div>
           </div>
         </div>
       </div>

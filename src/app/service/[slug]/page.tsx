@@ -114,7 +114,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: 'باقات الخدمة',
-      itemListElement: service.variants.map((variant) => ({
+      itemListElement: service.variants.map(variant => ({
         '@type': 'Offer',
         itemOffered: {
           '@type': 'Service',
@@ -135,7 +135,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
         type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      
+
       {/* Hero Section - Matching Services Page Style */}
       <div className='relative w-full pt-24 sm:pt-28 pb-32 sm:pb-40 overflow-hidden'>
         {/* Background Gradient */}
@@ -145,14 +145,14 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
         <div className='absolute inset-0 overflow-hidden'>
           <div className='absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4'></div>
           <div className='absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-400/15 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4'></div>
-          <div className="absolute inset-0 opacity-[0.08]">
-             <Image 
-                src="/images/government-services-bg.jpg" 
-                alt="خلفية الخدمات الحكومية" 
-                fill 
-                className="object-cover object-center"
-                priority
-             />
+          <div className='absolute inset-0 opacity-[0.08]'>
+            <Image
+              src='/images/government-services-bg.jpg'
+              alt='خلفية الخدمات الحكومية'
+              fill
+              className='object-cover object-center'
+              priority
+            />
           </div>
         </div>
 

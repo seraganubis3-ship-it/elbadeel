@@ -59,8 +59,13 @@ export default function OptimizedImage({
 
   if (!isValidUrl) {
     return (
-      <div className={`relative overflow-hidden flex items-center justify-center bg-gray-50 ${className}`} style={{ width, height }}>
-         <span style={{ fontSize: width ? Math.min(width, height || width) * 0.6 : '2rem' }}>{src || '🖼️'}</span>
+      <div
+        className={`relative overflow-hidden flex items-center justify-center bg-gray-50 ${className}`}
+        style={{ width, height }}
+      >
+        <span style={{ fontSize: width ? Math.min(width, height || width) * 0.6 : '2rem' }}>
+          {src || '🖼️'}
+        </span>
       </div>
     );
   }

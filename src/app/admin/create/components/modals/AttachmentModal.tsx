@@ -9,9 +9,9 @@ interface AttachmentModalProps {
 }
 
 export function AttachmentModal({ isOpen, onClose, onSave }: AttachmentModalProps) {
-  const [attachments, setAttachments] = useState<{ id: number; name: string; file: File | null }[]>([
-    { id: 1, name: '', file: null },
-  ]);
+  const [attachments, setAttachments] = useState<{ id: number; name: string; file: File | null }[]>(
+    [{ id: 1, name: '', file: null }]
+  );
   const [saving, setSaving] = useState(false);
 
   if (!isOpen) return null;
@@ -25,9 +25,7 @@ export function AttachmentModal({ isOpen, onClose, onSave }: AttachmentModalProp
   };
 
   const updateAttachment = (id: number, field: 'name' | 'file', value: any) => {
-    setAttachments(prev =>
-      prev.map(item => (item.id === id ? { ...item, [field]: value } : item))
-    );
+    setAttachments(prev => prev.map(item => (item.id === id ? { ...item, [field]: value } : item)));
   };
 
   const handleSave = async () => {
@@ -77,7 +75,7 @@ export function AttachmentModal({ isOpen, onClose, onSave }: AttachmentModalProp
                   </svg>
                 </button>
               )}
-              
+
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 {/* اسم المرفق */}
                 <div>
@@ -105,9 +103,7 @@ export function AttachmentModal({ isOpen, onClose, onSave }: AttachmentModalProp
                     className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100'
                   />
                   {att.file && (
-                    <p className='text-xs text-green-600 mt-1 truncate'>
-                       {att.file.name}
-                    </p>
+                    <p className='text-xs text-green-600 mt-1 truncate'>{att.file.name}</p>
                   )}
                 </div>
               </div>

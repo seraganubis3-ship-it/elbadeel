@@ -42,10 +42,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (!allowedTypes.includes(file.type)) {
-        return NextResponse.json(
-          { error: `نوع الملف ${file.name} غير مسموح به` },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: `نوع الملف ${file.name} غير مسموح به` }, { status: 400 });
       }
 
       // Upload to B2
@@ -64,10 +61,10 @@ export async function POST(request: NextRequest) {
             Key: fileName,
             Body: buffer,
             ContentType: file.type,
-            // ACL: 'public-read', // Depends on bucket settings, usually B2 buckets are private by default or public. 
-            // If private, we might need presigned URLs. Assuming Public for now based on "elbadeel" (likely public assets) 
+            // ACL: 'public-read', // Depends on bucket settings, usually B2 buckets are private by default or public.
+            // If private, we might need presigned URLs. Assuming Public for now based on "elbadeel" (likely public assets)
             // OR we store the Key and generate Presigned URLs on read.
-            // Requirement says "linked to Backblaze B2". 
+            // Requirement says "linked to Backblaze B2".
             // I'll return the Public URL structure for B2: https://f005.backblazeb2.com/file/<bucket_name>/<key>
             // derived from Endpoint.
           },
@@ -77,31 +74,27 @@ export async function POST(request: NextRequest) {
 
         // Construct Public URL (Assuming F-series or S3 endpoint)
         // B2 S3 Enpoint: s3.us-east-005.backblazeb2.com
-        // Friendly URL: https://<bucket_name>.s3.<region>.backblazeb2.com/<key> 
+        // Friendly URL: https://<bucket_name>.s3.<region>.backblazeb2.com/<key>
         // OR https://f005.backblazeb2.com/file/<bucket_name>/<key>
-        
+
         // Let's use the S3 standard URL if possible, or build it.
         // Safest is to return the full URL if public, or just the Key.
         // I will return a standard URL format.
-        
+
         // Generate Signed URL for immediate display
         const signedUrl = await generatePresignedUrl(fileName);
 
         uploadedFiles.push({
           originalName: file.name,
           filename: fileName, // The Key
-          filePath: signedUrl,  // Temporary Signed URL for immediate display
+          filePath: signedUrl, // Temporary Signed URL for immediate display
           key: fileName, // Explicit key for DB storage if needed
           fileSize: file.size,
           fileType: file.type,
         });
-
       } catch (uploadError) {
         // B2 Upload Error
-        return NextResponse.json(
-          { error: `فشل في رفع الملف ${file.name}` },
-          { status: 500 }
-        );
+        return NextResponse.json({ error: `فشل في رفع الملف ${file.name}` }, { status: 500 });
       }
     }
 
@@ -113,9 +106,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     // Upload API Error
-    return NextResponse.json(
-      { error: 'حدث خطأ أثناء رفع الملفات' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'حدث خطأ أثناء رفع الملفات' }, { status: 500 });
   }
 }

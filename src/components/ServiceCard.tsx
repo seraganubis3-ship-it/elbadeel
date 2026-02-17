@@ -58,24 +58,35 @@ interface ServiceCardProps {
   className?: string;
 }
 
-export function ServiceCard({ service, index = 0, animateInView = true, className = '' }: ServiceCardProps) {
+export function ServiceCard({
+  service,
+  index = 0,
+  animateInView = true,
+  className = '',
+}: ServiceCardProps) {
   const { ref, isVisible } = useScrollAnimation();
 
   const minPrice =
-    service.variants && service.variants.length > 0 ? Math.min(...service.variants.map(v => v.priceCents)) / 100 : null;
+    service.variants && service.variants.length > 0
+      ? Math.min(...service.variants.map(v => v.priceCents)) / 100
+      : null;
   const minDays =
-    service.variants && service.variants.length > 0 ? Math.min(...service.variants.map(v => v.etaDays)) : null;
+    service.variants && service.variants.length > 0
+      ? Math.min(...service.variants.map(v => v.etaDays))
+      : null;
 
   const isValidImage = (src?: string | null) => {
     if (!src) return false;
     return src.startsWith('/') || src.startsWith('http');
   };
 
-  const animationStyle = animateInView ? {
-    opacity: isVisible ? 1 : 0,
-    transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-    transitionDelay: `${(index % 3) * 100}ms`,
-  } : {};
+  const animationStyle = animateInView
+    ? {
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+        transitionDelay: `${(index % 3) * 100}ms`,
+      }
+    : {};
 
   return (
     <div
@@ -126,9 +137,7 @@ export function ServiceCard({ service, index = 0, animateInView = true, classNam
           {/* CTA - Clean without extra details */}
           <div
             className={`mt-auto pt-5 rounded-2xl transition-all duration-300 ${
-              isValidImage(service.icon)
-                ? 'p-4 -mx-2 mb-1'
-                : 'border-t border-gray-100 mt-2'
+              isValidImage(service.icon) ? 'p-4 -mx-2 mb-1' : 'border-t border-gray-100 mt-2'
             }`}
           >
             <div

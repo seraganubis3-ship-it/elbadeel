@@ -24,45 +24,55 @@ interface Order {
   paidAmount?: number | null;
   remainingAmount?: number | null;
   createdByAdmin?: { name: string } | null;
+  photographyDate?: string | Date | null; // Add date
 }
 
 export const printReceipt = (order: Order) => {
   const printWindow = window.open('', '_blank');
+
   if (!printWindow) return;
 
   const width = 800;
   const height = 600;
   const left = (window.screen.width - width) / 2;
   const top = (window.screen.height - height) / 2;
-  
+
   // Resize and position the window
   printWindow.resizeTo(width, height);
   printWindow.moveTo(left, top);
 
   const isPassport =
     order.service?.slug === 'passports' || (order.service?.name || '').includes('جواز');
-  
-  const isNationalId = 
+
+  const isNationalId =
     order.service?.slug === 'national-id' || (order.service?.name || '').includes('بطاقة');
 
   // Format helper
   const format = (cents?: number | null) => ((cents || 0) / 100).toFixed(2);
 
   // Parse fines and services details
-  const finesDetails = order.finesDetails ? (typeof order.finesDetails === "string" ? JSON.parse(order.finesDetails) : order.finesDetails) : [];
-  
-  // Separate lost report from other fines
-  const lostReport = Array.isArray(finesDetails) ? finesDetails.find(
-    (fine: any) =>
-      fine.name &&
-      (fine.name.toLowerCase().includes('محضر') || fine.name.toLowerCase().includes('فقد'))
-  ) : null;
+  const finesDetails = order.finesDetails
+    ? typeof order.finesDetails === 'string'
+      ? JSON.parse(order.finesDetails)
+      : order.finesDetails
+    : [];
 
-  const otherFines = Array.isArray(finesDetails) ? finesDetails.filter(
-    (fine: any) =>
-      !fine.name ||
-      (!fine.name.toLowerCase().includes('محضر') && !fine.name.toLowerCase().includes('فقد'))
-  ) : [];
+  // Separate lost report from other fines
+  const lostReport = Array.isArray(finesDetails)
+    ? finesDetails.find(
+        (fine: any) =>
+          fine.name &&
+          (fine.name.toLowerCase().includes('محضر') || fine.name.toLowerCase().includes('فقد'))
+      )
+    : null;
+
+  const otherFines = Array.isArray(finesDetails)
+    ? finesDetails.filter(
+        (fine: any) =>
+          !fine.name ||
+          (!fine.name.toLowerCase().includes('محضر') && !fine.name.toLowerCase().includes('فقد'))
+      )
+    : [];
 
   // Calculate total fines amount (excluding lost report)
   const totalFinesAmount = otherFines.reduce((total: number, fine: any) => {
@@ -317,7 +327,23 @@ export const printReceipt = (order: Order) => {
                   ${new Date(order.createdAt).toLocaleDateString('ar-EG')}
                 </div>
               </div>
-              ${isPassport ? `
+              ${
+                order.photographyDate
+                  ? `
+                <div class='grid grid-cols-12 text-xs border-t border-black'>
+                  <div class='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>
+                    ميعاد التصوير
+                  </div>
+                  <div class='col-span-10 p-1.5 font-black text-lg'>
+                    ${new Date(order.photographyDate).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </div>
+                </div>
+              `
+                  : ''
+              }
+              ${
+                isPassport
+                  ? `
                 <div class='grid grid-cols-12 text-xs border-t border-black'>
                   <div class='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>
                     القسم
@@ -330,7 +356,9 @@ export const printReceipt = (order: Order) => {
                   </div>
                   <div class='col-span-4 p-1.5 font-bold'>${order.pickupLocation || '—'}</div>
                 </div>
-              ` : ''}
+              `
+                  : ''
+              }
             </div>
 
             <!-- Financial Information Section -->
@@ -393,18 +421,29 @@ export const printReceipt = (order: Order) => {
             <div class='border-b border-black p-2 bg-white'>
               <div class='text-[10px] font-black mb-1'>تفاصيل إضافية وإضافات:</div>
               <div class='flex flex-wrap gap-2 mb-2'>
-                ${Array.isArray(finesDetails) ? finesDetails.map((f: any) => 
-                  `<span class='text-[10px] font-bold border border-black px-1.5 py-0.5 rounded'>${f.name}</span>`
-                ).join('') : ''}
-                ${order.hasAttachments ? 
-                  `<span class='text-[10px] font-black border-2 border-black px-1.5 py-0.5 rounded'>✓ تشمل مرفقات</span>` 
-                : ''}
+                ${
+                  Array.isArray(finesDetails)
+                    ? finesDetails
+                        .map(
+                          (f: any) =>
+                            `<span class='text-[10px] font-bold border border-black px-1.5 py-0.5 rounded'>${f.name}</span>`
+                        )
+                        .join('')
+                    : ''
+                }
+                ${
+                  order.hasAttachments
+                    ? `<span class='text-[10px] font-black border-2 border-black px-1.5 py-0.5 rounded'>✓ تشمل مرفقات</span>`
+                    : ''
+                }
               </div>
-              ${order.serviceDetails ? 
-                `<div class='text-[9px] font-bold whitespace-pre-wrap border-t border-dotted border-black pt-1 leading-relaxed'>
+              ${
+                order.serviceDetails
+                  ? `<div class='text-[9px] font-bold whitespace-pre-wrap border-t border-dotted border-black pt-1 leading-relaxed'>
                   ${order.serviceDetails}
-                </div>` 
-              : ''}
+                </div>`
+                  : ''
+              }
             </div>
 
             <!-- Total Section -->
@@ -423,21 +462,25 @@ export const printReceipt = (order: Order) => {
             <div class='space-y-1'>
               <div class='font-black underline mb-1'>ملاحظات هامة:</div>
               <ol class='list-decimal pr-4 space-y-0.5 font-bold'>
-                ${isNationalId ? 
-                   `<li class="font-black text-[12px]">
+                ${
+                  isNationalId
+                    ? `<li class="font-black text-[12px]">
                      تفاصيل التصوير: التصوير 9 صباحا فقط - سجل الهرم الدور الرابع (الدخول من اخر باب) في الشارع الجانبى للسجل - دفع ١٥ج عند التصوير. واوقت الانتظار (ساعه) لفحص ومراجعه الاستمارة من وقت وصولك للمندوب.
-                   </li>` 
-                : ''}
+                   </li>`
+                    : ''
+                }
                 <li>التعامل في استلام الخدمة بهذا الإيصال الأصلي فقط.</li>
                 ${!isNationalId ? `<li>المبلغ يشمل الرسوم الحكومية ومقابل أداء الخدمة.</li>` : ''}
                 <li>لا تحتسب الإجازات الرسمية ضمن مدة الاستلام.</li>
-                ${isPassport ? 
-                  `<li>
+                ${
+                  isPassport
+                    ? `<li>
                     (جوازات السفر) يسلم الإيصال للعميل في اليوم التالي من تاريخ الإيصال على أن يقوم
                     العميل بالتوجه إلى إدارة الجوازات التابعة للعنوان المذكور ببطاقة الرقم القومي
                     لاستلام جواز السفر بشخصه.
-                  </li>` 
-                : ''}
+                  </li>`
+                    : ''
+                }
               </ol>
             </div>
             <div class='text-center flex flex-col justify-center gap-1 border-r border-black font-bold'>

@@ -40,8 +40,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     // Handle Payment Screenshot (Already uploaded to B2 via client)
     if (paymentScreenshot) {
-       // Create Document record for the receipt
-       await prisma.document.create({
+      // Create Document record for the receipt
+      await prisma.document.create({
         data: {
           orderId: id,
           fileName: `payment_${method}_${Date.now()}.jpg`, // Construct a name that implies type if needed, or just descriptive
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       where: { id },
       data: { status: 'payment_review' },
     });
-    
+
     return NextResponse.json({
       success: true,
       paymentId: payment.id,

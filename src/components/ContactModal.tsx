@@ -68,11 +68,13 @@ export default function ContactModal({ isOpen, onClose, settings }: ContactModal
                         <Phone className='w-5 h-5' />
                       </div>
                       <div>
-                        <div className='font-black text-slate-800 text-lg'>{settings?.contactPhone || '01021606893'}</div>
+                        <div className='font-black text-slate-800 text-lg'>
+                          {settings?.contactPhone || '01021606893'}
+                        </div>
                         <div className='text-xs text-slate-500 font-bold'>الخط الساخن 1</div>
                       </div>
                     </a>
-                    
+
                     {settings?.additionalPhone && (
                       <a
                         href={`tel:${settings.additionalPhone}`}
@@ -82,13 +84,55 @@ export default function ContactModal({ isOpen, onClose, settings }: ContactModal
                           <Phone className='w-5 h-5' />
                         </div>
                         <div>
-                          <div className='font-black text-slate-800 text-lg'>{settings.additionalPhone}</div>
+                          <div className='font-black text-slate-800 text-lg'>
+                            {settings.additionalPhone}
+                          </div>
                           <div className='text-xs text-slate-500 font-bold'>الخط الساخن 2</div>
                         </div>
                       </a>
                     )}
+
+                    {/* Complaints Number */}
+                    <a
+                      href={`tel:${settings?.complaintsPhone || '01001544258'}`}
+                      className='flex items-center gap-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl hover:bg-amber-100 hover:border-amber-200 transition-all group'
+                    >
+                      <div className='w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-amber-500 group-hover:scale-110 transition-transform'>
+                        <svg
+                          className='w-5 h-5'
+                          viewBox='0 0 24 24'
+                          fill='none'
+                          stroke='currentColor'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth='1.5'
+                            d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'
+                          />
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth='1.5'
+                            d='M12 8v4'
+                          />
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth='1.5'
+                            d='M12 16h.01'
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className='font-black text-slate-800 text-lg'>
+                          {settings?.complaintsPhone || '01001544258'}
+                        </div>
+                        <div className='text-xs text-amber-600 font-bold'>للشكاوى والمقترحات</div>
+                      </div>
+                    </a>
                   </div>
-                  
+
                   {/* WhatsApp Buttons - Side by Side */}
                   <div className='space-y-2'>
                     <h3 className='text-sm font-black text-slate-400 uppercase tracking-widest text-center'>
@@ -103,9 +147,11 @@ export default function ContactModal({ isOpen, onClose, settings }: ContactModal
                         title={`واتساب: ${settings?.whatsappPhone || '01021606893'}`}
                       >
                         <MessageCircle className='w-7 h-7' />
-                        <span className='absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>1</span>
+                        <span className='absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>
+                          1
+                        </span>
                       </a>
-                      
+
                       {settings?.secondaryWhatsappPhone && (
                         <a
                           href={`https://wa.me/${settings.secondaryWhatsappPhone.replace(/^0/, '2')}`}
@@ -115,7 +161,9 @@ export default function ContactModal({ isOpen, onClose, settings }: ContactModal
                           title={`واتساب: ${settings.secondaryWhatsappPhone}`}
                         >
                           <MessageCircle className='w-7 h-7' />
-                          <span className='absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>2</span>
+                          <span className='absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-green-500 flex items-center justify-center text-green-600 text-xs font-bold'>
+                            2
+                          </span>
                         </a>
                       )}
                     </div>

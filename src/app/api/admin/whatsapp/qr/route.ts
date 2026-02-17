@@ -17,9 +17,9 @@ export async function GET() {
       headers: { 'Content-Type': 'application/json' },
       cache: 'no-store',
     });
-    
+
     if (!response.ok) {
-        throw new Error(`Bot returned ${response.status}`);
+      throw new Error(`Bot returned ${response.status}`);
     }
 
     const data = await response.json();

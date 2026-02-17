@@ -179,11 +179,27 @@ export default function CreateAdminPage() {
         <div className='bg-white rounded-2xl p-8 shadow-sm border'>
           <div className='max-w-2xl mx-auto'>
             <div className='space-y-6'>
-              
-                <div>
-                  <label className='block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2'>
+              <div>
+                <label className='block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2'>
+                  <svg
+                    className='w-4 h-4 text-emerald-600'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
+                    />
+                  </svg>
+                  الاسم الكامل *
+                </label>
+                <div className='relative'>
+                  <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
                     <svg
-                      className='w-4 h-4 text-emerald-600'
+                      className='w-5 h-5 text-gray-400'
                       fill='none'
                       stroke='currentColor'
                       viewBox='0 0 24 24'
@@ -195,35 +211,16 @@ export default function CreateAdminPage() {
                         d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
                       />
                     </svg>
-                    الاسم الكامل *
-                  </label>
-                  <div className='relative'>
-                    <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
-                      <svg
-                        className='w-5 h-5 text-gray-400'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      type='text'
-                      value={addAdminForm.name}
-                      onChange={e => setAddAdminForm({ ...addAdminForm, name: e.target.value })}
-                      className='w-full pl-4 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 placeholder-gray-400 transition-all duration-200'
-                      placeholder='أدخل الاسم الكامل'
-                    />
                   </div>
+                  <input
+                    type='text'
+                    value={addAdminForm.name}
+                    onChange={e => setAddAdminForm({ ...addAdminForm, name: e.target.value })}
+                    className='w-full pl-4 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 placeholder-gray-400 transition-all duration-200'
+                    placeholder='أدخل الاسم الكامل'
+                  />
                 </div>
-
-                
+              </div>
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                 <div>

@@ -57,7 +57,11 @@ export function logDatabaseQuery(query: string, duration?: number) {
   });
 }
 
-export function logJobExecution(jobName: string, status: 'started' | 'completed' | 'failed', error?: Error) {
+export function logJobExecution(
+  jobName: string,
+  status: 'started' | 'completed' | 'failed',
+  error?: Error
+) {
   if (status === 'failed' && error) {
     log.error(`Job ${jobName} failed`, error);
   } else {

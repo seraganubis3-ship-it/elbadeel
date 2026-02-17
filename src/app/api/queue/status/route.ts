@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     // Get all queue stats
     if (action === 'stats' && !queueName) {
       const allStats = await Promise.all(
-        Object.values(QUEUE_NAMES).map(async (name) => ({
+        Object.values(QUEUE_NAMES).map(async name => ({
           queue: name,
           stats: await getQueueStats(name),
         }))

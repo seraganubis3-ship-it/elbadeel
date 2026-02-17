@@ -48,7 +48,7 @@ export const imageUploadWorker = new Worker(
 // Helper function to determine file type
 function getFileType(fileName: string): string {
   const ext = fileName.split('.').pop()?.toLowerCase();
-  
+
   const typeMap: Record<string, string> = {
     jpg: 'image/jpeg',
     jpeg: 'image/jpeg',

@@ -15,10 +15,10 @@ export async function initializeInfrastructure() {
 
     // Redis is disabled - skip queue and cache features
     log.info('ℹ️ Redis is disabled - queue and cache features will not be available');
-    
+
     // Note: Workers and cron jobs require Redis, so they are disabled
     // If you need these features, enable Redis in .env
-    
+
     log.info('✅ Infrastructure initialized successfully (Redis-free mode)');
   } catch (error) {
     log.error('❌ Infrastructure initialization failed', error as Error);
@@ -35,7 +35,7 @@ export async function shutdownInfrastructure() {
   try {
     // Redis is disabled, no cleanup needed
     log.info('ℹ️ Redis-free mode - no queue/cache cleanup needed');
-    
+
     log.info('✅ Infrastructure shutdown complete');
   } catch (error) {
     log.error('❌ Infrastructure shutdown failed', error as Error);

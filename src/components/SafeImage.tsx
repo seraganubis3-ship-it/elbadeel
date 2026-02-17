@@ -54,17 +54,17 @@ const SafeImage: React.FC<SafeImageProps> = ({
   const isValidUrl = imageSrc && (imageSrc.startsWith('/') || imageSrc.startsWith('http'));
 
   if (!isValidUrl) {
-      return (
-          <div 
-             className={`flex items-center justify-center bg-gray-100 text-gray-400 select-none ${className}`}
-             style={{ width, height }}
-             {...props}
-          >
-              <span style={{ fontSize: width ? Math.min(width, height || width) * 0.5 : '2rem' }}>
-                  {imageSrc || alt || '🖼️'}
-              </span>
-          </div>
-      );
+    return (
+      <div
+        className={`flex items-center justify-center bg-gray-100 text-gray-400 select-none ${className}`}
+        style={{ width, height }}
+        {...props}
+      >
+        <span style={{ fontSize: width ? Math.min(width, height || width) * 0.5 : '2rem' }}>
+          {imageSrc || alt || '🖼️'}
+        </span>
+      </div>
+    );
   }
 
   return (

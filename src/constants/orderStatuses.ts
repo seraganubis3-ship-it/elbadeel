@@ -57,14 +57,14 @@ export const ORDER_STATUS_CONFIG: Record<
     bgColor: 'bg-orange-100',
     borderColor: 'border-orange-200',
   },
-  'PROCESSING': {
-      label: 'تحت التنفيذ',
-      labelEn: 'Processing',
-      description: 'جاري تنفيذ الطلب',
-      icon: '⚡',
-      color: 'text-blue-800',
-      bgColor: 'bg-blue-100',
-      borderColor: 'border-blue-200',
+  PROCESSING: {
+    label: 'تحت التنفيذ',
+    labelEn: 'Processing',
+    description: 'جاري تنفيذ الطلب',
+    icon: '⚡',
+    color: 'text-blue-800',
+    bgColor: 'bg-blue-100',
+    borderColor: 'border-blue-200',
   },
   [ORDER_STATUS.PAYMENT_REVIEW]: {
     label: 'جاري مراجعة الدفع',
@@ -102,15 +102,7 @@ export const ORDER_STATUS_CONFIG: Record<
     bgColor: 'bg-blue-100',
     borderColor: 'border-blue-200',
   },
-  [ORDER_STATUS.FULFILLMENT]: {
-    label: 'استيفاء',
-    labelEn: 'Fulfillment',
-    description: 'قيد الاستيفاء والتنفيذ',
-    icon: '⚡',
-    color: 'text-purple-800',
-    bgColor: 'bg-purple-100',
-    borderColor: 'border-purple-200',
-  },
+
   [ORDER_STATUS.SUPPLY]: {
     label: 'ورود',
     labelEn: 'Supply',
@@ -146,6 +138,15 @@ export const ORDER_STATUS_CONFIG: Record<
     color: 'text-gray-800',
     bgColor: 'bg-gray-100',
     borderColor: 'border-gray-200',
+  },
+  [ORDER_STATUS.FULFILLMENT]: {
+    label: 'استيفاء',
+    labelEn: 'Fulfillment',
+    description: 'قيد الاستيفاء والتنفيذ',
+    icon: '⚠️',
+    color: 'text-purple-800',
+    bgColor: 'bg-purple-100',
+    borderColor: 'border-purple-200',
   },
   [ORDER_STATUS.CANCELLED]: {
     label: 'ملغي',

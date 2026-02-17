@@ -13,14 +13,16 @@ export async function generatePresignedUrl(key: string, expiresIn = 3600): Promi
     // Sanitize Key: If it's a full URL, strip the domain
     let sanitizedKey = key;
     if (key.startsWith('http')) {
-       try {
-         const urlObj = new URL(key);
-         // Key is pathname without leading slash
-         sanitizedKey = urlObj.pathname.startsWith('/') ? urlObj.pathname.substring(1) : urlObj.pathname;
-       } catch (e) {
-         // Fallback if URL parsing fails, though unlikely for valid URLs
-         // Failed to parse URL key
-       }
+      try {
+        const urlObj = new URL(key);
+        // Key is pathname without leading slash
+        sanitizedKey = urlObj.pathname.startsWith('/')
+          ? urlObj.pathname.substring(1)
+          : urlObj.pathname;
+      } catch (e) {
+        // Fallback if URL parsing fails, though unlikely for valid URLs
+        // Failed to parse URL key
+      }
     }
 
     const command = new GetObjectCommand({

@@ -6,15 +6,15 @@ import type { NextRequest } from 'next/server';
 function getClientIP(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
   const realIP = request.headers.get('x-real-ip');
-  
+
   if (forwarded) {
     return forwarded.split(',')[0]?.trim() || 'unknown';
   }
-  
+
   if (realIP) {
     return realIP;
   }
-  
+
   return 'unknown';
 }
 

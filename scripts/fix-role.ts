@@ -1,11 +1,10 @@
-
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
   const phone = '01113902231';
-  
+
   const user = await prisma.user.findFirst({
     where: { phone: phone },
   });
@@ -26,7 +25,7 @@ async function main() {
 async function correctMain() {
   const phone = '01113902231';
   const user = await prisma.user.findFirst({ where: { phone } });
-  
+
   if (!user) {
     console.log('User not found');
     return;
@@ -41,7 +40,7 @@ async function correctMain() {
 }
 
 correctMain()
-  .catch((e) => {
+  .catch(e => {
     console.error(e);
     process.exit(1);
   })

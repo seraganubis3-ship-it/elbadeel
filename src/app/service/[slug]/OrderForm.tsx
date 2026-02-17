@@ -10,6 +10,7 @@ import DeliverySelection from '@/components/order/DeliverySelection';
 import OrderReview from '@/components/order/OrderReview';
 import DynamicFields from '@/components/order/DynamicFields';
 import { AnimatePresence, motion } from 'framer-motion';
+import { evaluateLogic } from '@/lib/logicEvaluator';
 
 interface DynamicField {
   id: string;
@@ -23,9 +24,7 @@ interface DynamicField {
 }
 
 const StepWrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-    {children}
-  </div>
+  <div className='space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500'>{children}</div>
 );
 
 export default function OrderForm({
@@ -53,7 +52,7 @@ export default function OrderForm({
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File | null }>({});
   const [dynamicValues, setDynamicValues] = useState<Record<string, string>>({});
-  
+
   const [formData, setFormData] = useState({
     customerName: user.name || '',
     customerPhone: user.phone || '',
@@ -71,6 +70,7 @@ export default function OrderForm({
     birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : '',
     nationality: user.nationality || 'مصري',
     idNumber: user.idNumber || '',
+    gender: user.gender || '',
   });
 
   const [appliedPromo, setAppliedPromo] = useState<{
@@ -83,7 +83,6 @@ export default function OrderForm({
 
   // Use defaultDeliveryFee from settings instead of hardcoded value
   const DELIVERY_FEE = defaultDeliveryFee;
-
 
   // --- Special Logic for Passport Service ---
   const isPassportService = serviceName.includes('جواز') || serviceSlug.includes('passport');
@@ -129,27 +128,26 @@ export default function OrderForm({
       ],
     });
   }
-  
+
   // Adjust total steps based on whether we have dynamic fields
   // Must be calculated after effectiveDynamicFields
   const isDeathService = serviceName.includes('وفاة') || serviceSlug.includes('death');
   const hasDynamicFields = isDeathService ? false : effectiveDynamicFields.length > 0;
   const totalSteps = hasDynamicFields ? 6 : 5;
 
-
   // Filter variants based on Passport logic
   const filteredVariants = variants.filter(variant => {
     if (!isPassportService) return true;
-    
+
     // Step 1 is now questions. So by step 2, we will have the answer.
     const selectedGov = dynamicValues['governorate'];
-    
+
     // If governorate is NOT Giza, strictly require 'فوري' (Immediate)
     // We only enforce this if they have answered (which they must have to pass step 1)
     if (selectedGov && selectedGov !== 'الجيزة') {
-       return variant.name.includes('فوري');
+      return variant.name.includes('فوري');
     }
-    
+
     return true;
   });
 
@@ -245,13 +243,7 @@ export default function OrderForm({
 
   // --- Check if field is visible based on conditions ---
   const isFieldVisible = (field: DynamicField): boolean => {
-    if (!field.showIf) return true;
-    try {
-      const condition = JSON.parse(field.showIf);
-      return dynamicValues[condition.field] === condition.value;
-    } catch {
-      return true;
-    }
+    return evaluateLogic(field.showIf, dynamicValues);
   };
 
   // --- Derived State: Triggered Documents from Dynamic Answers ---
@@ -264,9 +256,11 @@ export default function OrderForm({
         // Schema says ServiceFieldOption.requiredDocs is String? (JSON array)
         let docs: string[] = [];
         if (Array.isArray(selectedOption.requiredDocs)) {
-           docs = selectedOption.requiredDocs;
+          docs = selectedOption.requiredDocs;
         } else if (typeof selectedOption.requiredDocs === 'string') {
-           try { docs = JSON.parse(selectedOption.requiredDocs); } catch {}
+          try {
+            docs = JSON.parse(selectedOption.requiredDocs);
+          } catch {}
         }
         return [...acc, ...docs];
       }
@@ -281,30 +275,37 @@ export default function OrderForm({
 
     // 2. If it has a specific showIf condition, check it
     if (doc.showIf) {
-      try {
-        const condition = JSON.parse(doc.showIf);
-        return dynamicValues[condition.field] === condition.value;
-      } catch {
-        // Validation failed, fall through to default
-      }
+      // Create evaluation context with dynamic answers + system fields
+      const evalContext = {
+        ...dynamicValues,
+        gender: formData.gender,
+        nationality: formData.nationality,
+        birthDate: formData.birthDate,
+        // Add age if birthDate is valid
+        age: formData.birthDate
+          ? Math.floor(
+              (new Date().getTime() - new Date(formData.birthDate).getTime()) /
+                (1000 * 60 * 60 * 24 * 365.25)
+            )
+          : null,
+      };
+
+      return evaluateLogic(doc.showIf, evalContext);
     }
 
     // 3. If it's globally required, it must be visible
     if (doc.required) return true;
 
     // 4. Otherwise, HIDE IT (Optional documents are hidden unless triggered explicitly)
-    // This matches the user's request: "It shouldn't appear ... unless I need this paper"
     return false;
   };
 
   // Process documents to update their 'required' status dynamically
-  const processedDocuments = requiredDocuments
-    .filter(isDocumentVisible)
-    .map(doc => ({
-      ...doc,
-      // It is required if it's globally required OR triggered by an answer
-      required: doc.required || triggeredDocTitles.includes(doc.title),
-    }));
+  const processedDocuments = requiredDocuments.filter(isDocumentVisible).map(doc => ({
+    ...doc,
+    // It is required if it's globally required OR triggered by an answer
+    required: doc.required || triggeredDocTitles.includes(doc.title),
+  }));
 
   // --- Navigation Guards ---
   const canProceed = () => {
@@ -316,73 +317,97 @@ export default function OrderForm({
     switch (currentStep) {
       case 1:
         // Step 1 is now Questions (if hasDynamicFields) OR Variants (if not)
-         if (hasDynamicFields) {
-           const requiredFields = effectiveDynamicFields.filter(f => f.required && isFieldVisible(f));
-           return requiredFields.every(f => !!dynamicValues[f.name]);
-         } else {
-             return !!selectedVariant;
-         }
+        if (hasDynamicFields) {
+          const requiredFields = effectiveDynamicFields.filter(
+            f => f.required && isFieldVisible(f)
+          );
+          return requiredFields.every(f => !!dynamicValues[f.name]);
+        } else {
+          return !!selectedVariant;
+        }
       case 2:
-         // Step 2 is now Variants (if hasDynamicFields) OR Personal Data (if not)
-         if (hasDynamicFields) {
-             return !!selectedVariant;
-         } else {
-            // Personal Data Logic (No Dynamic Fields)
-            if (isMarriage) {
-                return !!(formData.customerName && formData.customerPhone && formData.husbandName && formData.wifeName && formData.marriageDate);
-            }
-            if (isDeath) {
-                return !!(formData.customerName && formData.customerPhone && formData.deceasedName);
-            }
-            if (isBirth) {
-                return !!(formData.customerName && formData.customerPhone && formData.motherName && formData.birthDate);
-            }
+        // Step 2 is now Variants (if hasDynamicFields) OR Personal Data (if not)
+        if (hasDynamicFields) {
+          return !!selectedVariant;
+        } else {
+          // Personal Data Logic (No Dynamic Fields)
+          if (isMarriage) {
+            return !!(
+              formData.customerName &&
+              formData.customerPhone &&
+              formData.husbandName &&
+              formData.wifeName &&
+              formData.marriageDate
+            );
+          }
+          if (isDeath) {
+            return !!(formData.customerName && formData.customerPhone && formData.deceasedName);
+          }
+          if (isBirth) {
+            return !!(
+              formData.customerName &&
+              formData.customerPhone &&
+              formData.motherName &&
+              formData.birthDate
+            );
+          }
 
-            // Default
-            return !!(formData.customerName && formData.customerPhone && formData.idNumber);
-         }
+          // Default
+          return !!(formData.customerName && formData.customerPhone && formData.idNumber);
+        }
       case 3:
         // Personal data (was step 2, now 3 if hasDynamicFields) OR Documents (if not)
         if (hasDynamicFields) {
-             if (isMarriage) {
-                return !!(formData.customerName && formData.customerPhone && formData.husbandName && formData.wifeName && formData.marriageDate);
-            }
-            if (isDeath) {
-                return !!(formData.customerName && formData.customerPhone && formData.deceasedName );
-            }
-            if (isBirth) {
-                return !!(formData.customerName && formData.customerPhone && formData.motherName && formData.birthDate);
-            }
-             
-             return !!(formData.customerName && formData.customerPhone && formData.idNumber);
+          if (isMarriage) {
+            return !!(
+              formData.customerName &&
+              formData.customerPhone &&
+              formData.husbandName &&
+              formData.wifeName &&
+              formData.marriageDate
+            );
+          }
+          if (isDeath) {
+            return !!(formData.customerName && formData.customerPhone && formData.deceasedName);
+          }
+          if (isBirth) {
+            return !!(
+              formData.customerName &&
+              formData.customerPhone &&
+              formData.motherName &&
+              formData.birthDate
+            );
+          }
+
+          return !!(formData.customerName && formData.customerPhone && formData.idNumber);
         } else {
-             return (
-               processedDocuments.length === 0 ||
-               processedDocuments.filter(d => d.required).every(d => !!selectedFiles[d.id])
-             );
+          return (
+            processedDocuments.length === 0 ||
+            processedDocuments.filter(d => d.required).every(d => !!selectedFiles[d.id])
+          );
         }
       case 4:
         // Documents (was 3, now 4 if hasDynamicFields) OR Delivery (if not)
-         if (hasDynamicFields) {
-            return (
-              processedDocuments.length === 0 ||
-              processedDocuments.filter(d => d.required).every(d => !!selectedFiles[d.id])
-            );
-         } else {
-            return (
-              formData.deliveryType === 'OFFICE' ||
-              (formData.deliveryType === 'ADDRESS' && formData.address.length > 5)
-            );
-         }
+        if (hasDynamicFields) {
+          return (
+            processedDocuments.length === 0 ||
+            processedDocuments.filter(d => d.required).every(d => !!selectedFiles[d.id])
+          );
+        } else {
+          return (
+            formData.deliveryType === 'OFFICE' ||
+            (formData.deliveryType === 'ADDRESS' && formData.address.length > 5)
+          );
+        }
       case 5:
         // Delivery OR Confirm
         if (hasDynamicFields) {
-             return (
-              formData.deliveryType === 'OFFICE' ||
-              (formData.deliveryType === 'ADDRESS' && formData.address.length > 5)
-            );
+          return (
+            formData.deliveryType === 'OFFICE' ||
+            (formData.deliveryType === 'ADDRESS' && formData.address.length > 5)
+          );
         } else {
-             return true;
+          return true;
         }
       default:
         return true;
@@ -404,12 +429,12 @@ export default function OrderForm({
     if (hasDynamicFields) {
       switch (currentStep) {
         case 1:
-            // SWAPPED: Questions First
+          // SWAPPED: Questions First
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">تفاصيل إضافية</h3>
-                <p className="text-slate-500">يرجى الإجابة على الأسئلة التالية لتخصيص الخدمة</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>تفاصيل إضافية</h3>
+                <p className='text-slate-500'>يرجى الإجابة على الأسئلة التالية لتخصيص الخدمة</p>
               </div>
               <DynamicFields
                 fields={effectiveDynamicFields}
@@ -419,24 +444,33 @@ export default function OrderForm({
             </StepWrapper>
           );
         case 2:
-            // SWAPPED: Variants Second
-            // Show alert if no variants available
-            if (filteredVariants.length === 0) {
-                 return (
-                    <StepWrapper>
-                        <div className="text-center p-10 bg-amber-50 rounded-2xl border border-amber-200">
-                             <h3 className="text-xl font-bold text-amber-800 mb-2">عفواً، لا توجد خيارات متاحة</h3>
-                             <p className="text-amber-700">بناءً على اختياراتك، لا تتوفر خيارات خدمة حالياً.</p>
-                             <button onClick={() => setCurrentStep(1)} className="mt-4 px-6 py-2 bg-amber-600 text-white rounded-lg">العودة للتعديل</button>
-                        </div>
-                    </StepWrapper>
-                 );
-            }
+          // SWAPPED: Variants Second
+          // Show alert if no variants available
+          if (filteredVariants.length === 0) {
+            return (
+              <StepWrapper>
+                <div className='text-center p-10 bg-amber-50 rounded-2xl border border-amber-200'>
+                  <h3 className='text-xl font-bold text-amber-800 mb-2'>
+                    عفواً، لا توجد خيارات متاحة
+                  </h3>
+                  <p className='text-amber-700'>
+                    بناءً على اختياراتك، لا تتوفر خيارات خدمة حالياً.
+                  </p>
+                  <button
+                    onClick={() => setCurrentStep(1)}
+                    className='mt-4 px-6 py-2 bg-amber-600 text-white rounded-lg'
+                  >
+                    العودة للتعديل
+                  </button>
+                </div>
+              </StepWrapper>
+            );
+          }
           return (
             <StepWrapper>
-              <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">اختر نوع الخدمة</h3>
-                <p className="text-slate-500">اختر الباقة المناسبة لاحتياجاتك</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>اختر نوع الخدمة</h3>
+                <p className='text-slate-500'>اختر الباقة المناسبة لاحتياجاتك</p>
               </div>
               <VariantSelection
                 variants={filteredVariants} // USE FILTERED VARIANTS
@@ -448,9 +482,9 @@ export default function OrderForm({
         case 3:
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">البيانات الشخصية</h3>
-                <p className="text-slate-500">أدخل بيانات صاحب الطلب بدقة</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>البيانات الشخصية</h3>
+                <p className='text-slate-500'>أدخل بيانات صاحب الطلب بدقة</p>
               </div>
               <PersonalDataForm
                 formData={formData}
@@ -463,9 +497,9 @@ export default function OrderForm({
         case 4:
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">المستندات المطلوبة</h3>
-                <p className="text-slate-500">ارفع صور واضحة للمستندات المطلوبة</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>المستندات المطلوبة</h3>
+                <p className='text-slate-500'>ارفع صور واضحة للمستندات المطلوبة</p>
               </div>
               <DocumentUploader
                 requiredDocuments={processedDocuments}
@@ -477,9 +511,9 @@ export default function OrderForm({
         case 5:
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">طريقة الاستلام</h3>
-                <p className="text-slate-500">كيف تفضل استلام مستنداتك؟</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>طريقة الاستلام</h3>
+                <p className='text-slate-500'>كيف تفضل استلام مستنداتك؟</p>
               </div>
               <DeliverySelection
                 formData={formData}
@@ -491,9 +525,9 @@ export default function OrderForm({
         case 6:
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">مراجعة الطلب</h3>
-                <p className="text-slate-500">راجع تفاصيل طلبك قبل التأكيد النهائي</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>مراجعة الطلب</h3>
+                <p className='text-slate-500'>راجع تفاصيل طلبك قبل التأكيد النهائي</p>
               </div>
               <OrderReview
                 selectedVariant={selectedVariant}
@@ -516,9 +550,9 @@ export default function OrderForm({
         case 1:
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">اختر نوع الخدمة</h3>
-                <p className="text-slate-500">حدد الخيار المناسب لك</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>اختر نوع الخدمة</h3>
+                <p className='text-slate-500'>حدد الخيار المناسب لك</p>
               </div>
               <VariantSelection
                 variants={variants}
@@ -530,9 +564,9 @@ export default function OrderForm({
         case 2:
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">البيانات الشخصية</h3>
-                <p className="text-slate-500">أدخل البيانات المطلوبة لإتمام الخدمة</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>البيانات الشخصية</h3>
+                <p className='text-slate-500'>أدخل البيانات المطلوبة لإتمام الخدمة</p>
               </div>
               <PersonalDataForm
                 formData={formData}
@@ -545,9 +579,9 @@ export default function OrderForm({
         case 3:
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">رفع المستندات</h3>
-                <p className="text-slate-500">تأكد من وضوح صور المستندات</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>رفع المستندات</h3>
+                <p className='text-slate-500'>تأكد من وضوح صور المستندات</p>
               </div>
               <DocumentUploader
                 requiredDocuments={processedDocuments}
@@ -559,9 +593,9 @@ export default function OrderForm({
         case 4:
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">توصيل الطلب</h3>
-                <p className="text-slate-500">اختر طريقة التوصيل المناسبة</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>توصيل الطلب</h3>
+                <p className='text-slate-500'>اختر طريقة التوصيل المناسبة</p>
               </div>
               <DeliverySelection
                 formData={formData}
@@ -573,9 +607,9 @@ export default function OrderForm({
         case 5:
           return (
             <StepWrapper>
-               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-slate-900">ملخص الطلب</h3>
-                <p className="text-slate-500">الخطوة الأخيرة قبل التنفيذ</p>
+              <div className='text-center mb-8'>
+                <h3 className='text-xl font-bold text-slate-900'>ملخص الطلب</h3>
+                <p className='text-slate-500'>الخطوة الأخيرة قبل التنفيذ</p>
               </div>
               <OrderReview
                 selectedVariant={selectedVariant}
@@ -615,24 +649,27 @@ export default function OrderForm({
       <div className='px-6 sm:px-10 pt-10 pb-8 border-b border-slate-100 bg-white/50 backdrop-blur-sm rounded-t-[2rem]'>
         <div className='flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8'>
           <div>
-            <h2 className='text-2xl sm:text-3xl font-black text-slate-900 tracking-tight'>إجراء طلب جديد</h2>
+            <h2 className='text-2xl sm:text-3xl font-black text-slate-900 tracking-tight'>
+              إجراء طلب جديد
+            </h2>
             <p className='text-slate-500 mt-2 font-medium'>خطوات بسيطة لإتمام خدمتك الحكومية</p>
           </div>
-          
+
           <div className='bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100 flex items-center gap-3 self-start md:self-auto'>
-            <div className="flex -space-x-2 space-x-reverse">
-               <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-               <div className="w-2 h-2 rounded-full bg-indigo-400" />
-               <div className="w-2 h-2 rounded-full bg-indigo-300" />
+            <div className='flex -space-x-2 space-x-reverse'>
+              <div className='w-2 h-2 rounded-full bg-indigo-500 animate-pulse' />
+              <div className='w-2 h-2 rounded-full bg-indigo-400' />
+              <div className='w-2 h-2 rounded-full bg-indigo-300' />
             </div>
             <span className='text-indigo-700 font-bold text-sm'>
-              الخطوة {currentStep} <span className="text-indigo-400 font-light mx-1">/</span> {totalSteps}
+              الخطوة {currentStep} <span className='text-indigo-400 font-light mx-1'>/</span>{' '}
+              {totalSteps}
             </span>
           </div>
         </div>
 
-        <div className="py-2">
-           <StepIndicator currentStep={currentStep} totalSteps={totalSteps} steps={stepsLabels} />
+        <div className='py-2'>
+          <StepIndicator currentStep={currentStep} totalSteps={totalSteps} steps={stepsLabels} />
         </div>
       </div>
 
@@ -645,7 +682,7 @@ export default function OrderForm({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="w-full max-w-3xl mx-auto"
+            className='w-full max-w-3xl mx-auto'
           >
             {renderStepContent()}
           </motion.div>
@@ -659,8 +696,19 @@ export default function OrderForm({
               onClick={() => setCurrentStep(c => c - 1)}
               className='w-full sm:w-auto px-6 py-4 rounded-xl font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 hover:text-slate-900 transition-all flex items-center justify-center gap-2 group'
             >
-              <svg className='w-5 h-5 group-hover:-translate-x-1 transition-transform' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M9 5l7 7-7 7' /> {/* LTR chevron adapted for RTL */}
+              <svg
+                className='w-5 h-5 group-hover:-translate-x-1 transition-transform'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2.5}
+                  d='M9 5l7 7-7 7'
+                />{' '}
+                {/* LTR chevron adapted for RTL */}
               </svg>
               خطوة للخلف
             </button>
@@ -685,14 +733,19 @@ export default function OrderForm({
           >
             {isSubmitting ? (
               <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin' />
                 جاري المعالجة...
               </>
             ) : currentStep === totalSteps ? (
               <>
                 تأكيد وانتظار المراجعة
                 <svg className='w-6 h-6' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M5 13l4 4L19 7'
+                  />
                 </svg>
               </>
             ) : (
@@ -704,7 +757,12 @@ export default function OrderForm({
                   viewBox='0 0 24 24'
                   stroke='currentColor'
                 >
-                   <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M15 19l-7-7 7-7'
+                  />
                 </svg>
               </>
             )}

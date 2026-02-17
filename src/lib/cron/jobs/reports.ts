@@ -9,73 +9,68 @@ export async function generateDailyReports() {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     // Get today's statistics
-    const [
-      totalOrders,
-      completedOrders,
-      pendingOrders,
-      totalRevenue,
-      newCustomers,
-    ] = await Promise.all([
-      // Total orders today
-      prisma.order.count({
-        where: {
-          createdAt: {
-            gte: today,
-            lt: tomorrow,
+    const [totalOrders, completedOrders, pendingOrders, totalRevenue, newCustomers] =
+      await Promise.all([
+        // Total orders today
+        prisma.order.count({
+          where: {
+            createdAt: {
+              gte: today,
+              lt: tomorrow,
+            },
           },
-        },
-      }),
+        }),
 
-      // Completed orders today
-      prisma.order.count({
-        where: {
-          createdAt: {
-            gte: today,
-            lt: tomorrow,
+        // Completed orders today
+        prisma.order.count({
+          where: {
+            createdAt: {
+              gte: today,
+              lt: tomorrow,
+            },
+            status: 'completed',
           },
-          status: 'completed',
-        },
-      }),
+        }),
 
-      // Pending orders
-      prisma.order.count({
-        where: {
-          status: {
-            in: ['pending', 'in_progress', 'supply'],
+        // Pending orders
+        prisma.order.count({
+          where: {
+            status: {
+              in: ['pending', 'in_progress', 'supply'],
+            },
           },
-        },
-      }),
+        }),
 
-      // Total revenue today
-      prisma.order.aggregate({
-        where: {
-          createdAt: {
-            gte: today,
-            lt: tomorrow,
+        // Total revenue today
+        prisma.order.aggregate({
+          where: {
+            createdAt: {
+              gte: today,
+              lt: tomorrow,
+            },
+            status: 'completed',
           },
-          status: 'completed',
-        },
-        _sum: {
-          totalPrice: true,
-        },
-      }),
+          _sum: {
+            totalPrice: true,
+          },
+        }),
 
-      // New customers today
-      prisma.user.count({
-        where: {
-          createdAt: {
-            gte: today,
-            lt: tomorrow,
+        // New customers today
+        prisma.user.count({
+          where: {
+            createdAt: {
+              gte: today,
+              lt: tomorrow,
+            },
+            role: 'customer',
           },
-          role: 'customer',
-        },
-      }),
-    ]);
+        }),
+      ]);
 
     // Get top services
     const topServices = await prisma.order.groupBy({
@@ -98,7 +93,7 @@ export async function generateDailyReports() {
     });
 
     // Get service names
-    const serviceIds = topServices.map((s) => s.serviceId).filter(Boolean) as string[];
+    const serviceIds = topServices.map(s => s.serviceId).filter(Boolean) as string[];
     const services = await prisma.service.findMany({
       where: {
         id: {
@@ -111,7 +106,7 @@ export async function generateDailyReports() {
       },
     });
 
-    const serviceMap = new Map(services.map((s) => [s.id, s.name]));
+    const serviceMap = new Map(services.map(s => [s.id, s.name]));
 
     // Generate HTML report
     const reportHtml = `
@@ -171,7 +166,7 @@ export async function generateDailyReports() {
           <tbody>
             ${topServices
               .map(
-                (s) => `
+                s => `
               <tr>
                 <td>${serviceMap.get(s.serviceId!) || 'غير محدد'}</td>
                 <td>${s._count.id}</td>

@@ -5,7 +5,7 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@prisma/client', 'ioredis', 'bullmq'],
     instrumentationHook: true,
   },
-  
+
   // Image optimization
   images: {
     formats: ['image/webp', 'image/avif'],
@@ -35,13 +35,13 @@ const nextConfig = {
       },
     ],
   },
-  
+
   // Compression
   compress: true,
-  
+
   // Performance optimizations
   swcMinify: true,
-  
+
   webpack: (config, { isServer }) => {
     // Ignore critical dependency warnings from instrumentation packages
     config.ignoreWarnings = [
@@ -61,17 +61,14 @@ const nextConfig = {
       ioredis: false,
       bullmq: false,
     };
-    
+
     return config;
   },
-  
+
   generateBuildId: async () => {
     // Return the git hash as the build ID
     try {
-      return require('child_process')
-        .execSync('git rev-parse HEAD')
-        .toString()
-        .trim();
+      return require('child_process').execSync('git rev-parse HEAD').toString().trim();
     } catch {
       // Fallback to default if no git
       return null;

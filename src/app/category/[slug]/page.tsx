@@ -32,7 +32,6 @@ interface Category {
 }
 
 export default async function CategoryPage({ params }: { params: { slug: string } }) {
-
   const category = await prisma.category.findUnique({
     where: { slug: params.slug },
     include: {
@@ -89,20 +88,21 @@ export default async function CategoryPage({ params }: { params: { slug: string 
                 key={service.id}
                 className='bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group'
               >
-
                 {/* Service Image */}
                 {(() => {
                   const imageUrl = getB2ImageUrl(service.icon);
-                  return imageUrl && (
-                    <div className='relative h-48 sm:h-56 overflow-hidden'>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={imageUrl}
-                        alt={service.name}
-                        className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
-                      />
-                      <div className='absolute inset-0 bg-gradient-to-t from-black/20 to-transparent'></div>
-                    </div>
+                  return (
+                    imageUrl && (
+                      <div className='relative h-48 sm:h-56 overflow-hidden'>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imageUrl}
+                          alt={service.name}
+                          className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
+                        />
+                        <div className='absolute inset-0 bg-gradient-to-t from-black/20 to-transparent'></div>
+                      </div>
+                    )
                   );
                 })()}
 

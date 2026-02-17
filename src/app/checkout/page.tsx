@@ -21,7 +21,7 @@ export default async function CheckoutPage() {
   });
 
   return (
-    <Suspense fallback={<div className="flex justify-center p-12">جار التحميل...</div>}>
+    <Suspense fallback={<div className='flex justify-center p-12'>جار التحميل...</div>}>
       <CheckoutClient services={services} />
     </Suspense>
   );

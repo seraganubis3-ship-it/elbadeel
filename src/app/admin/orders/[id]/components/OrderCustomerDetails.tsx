@@ -45,12 +45,7 @@ export default function OrderCustomerDetails({
       <div className='flex items-center justify-between mb-8 pb-4 border-b border-slate-50'>
         <div className='flex items-center gap-3'>
           <div className='w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center'>
-            <svg
-              className='w-5 h-5'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
+            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path
                 strokeLinecap='round'
                 strokeLinejoin='round'
@@ -68,7 +63,9 @@ export default function OrderCustomerDetails({
         <button
           onClick={onToggleEdit}
           className={`px-4 py-2 rounded-xl transition-all font-bold text-sm ${
-            isEditing ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+            isEditing
+              ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
           }`}
         >
           {isEditing ? 'إلغاء' : 'تعديل البيانات'}
@@ -79,19 +76,31 @@ export default function OrderCustomerDetails({
         {[
           { label: 'الاسم الكامل', value: order.customerName, key: 'customerName', type: 'text' },
           { label: 'الرقم القومي', value: order.idNumber, key: 'idNumber', type: 'text' },
-          { 
-            label: 'تاريخ الميلاد', 
-            value: order.birthDate ? new Date(order.birthDate).toLocaleDateString('ar-EG', { dateStyle: 'medium' }) : '----', 
-            key: 'birthDate', 
-            type: 'date' 
+          {
+            label: 'تاريخ الميلاد',
+            value: order.birthDate
+              ? new Date(order.birthDate).toLocaleDateString('ar-EG', { dateStyle: 'medium' })
+              : '----',
+            key: 'birthDate',
+            type: 'date',
           },
           { label: 'رقم الهاتف', value: order.customerPhone, key: 'customerPhone', type: 'tel' },
-          { label: 'رقم هاتف إضافي', value: order.additionalPhone, key: 'additionalPhone', type: 'tel' },
+          {
+            label: 'رقم هاتف إضافي',
+            value: order.additionalPhone,
+            key: 'additionalPhone',
+            type: 'tel',
+          },
           { label: 'المهنة', value: order.profession, key: 'profession', type: 'text' },
           { label: 'التابع', value: order.customerFollowUp, key: 'customerFollowUp', type: 'text' },
-        ].map((item) => (
-          <div key={item.key} className='group/field p-4 bg-slate-50/30 rounded-2xl border border-slate-100'>
-            <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>{item.label}</p>
+        ].map(item => (
+          <div
+            key={item.key}
+            className='group/field p-4 bg-slate-50/30 rounded-2xl border border-slate-100'
+          >
+            <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>
+              {item.label}
+            </p>
             {isEditing ? (
               <input
                 type={item.type}
@@ -121,7 +130,9 @@ export default function OrderCustomerDetails({
             disabled={updating}
             className='px-8 py-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-all font-bold text-base shadow-lg shadow-slate-200 flex items-center gap-2'
           >
-            {updating && <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>}
+            {updating && (
+              <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
+            )}
             حفظ البيانات
           </button>
         </div>

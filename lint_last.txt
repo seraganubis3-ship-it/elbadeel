@@ -1,0 +1,6 @@
+﻿
+C:\Users\serag\Downloads\Ofa\web\src\lib\ai-knowledge.ts
+  1:41  error  'settings' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 1 problem (1 error, 0 warnings)
+

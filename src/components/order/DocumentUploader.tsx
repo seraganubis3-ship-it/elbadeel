@@ -120,25 +120,29 @@ export default function DocumentUploader({
                 />
 
                 {!file ? (
-                   <div className="grid grid-cols-2 gap-3">
-                      {/* Camera Option */}
-                      <label
-                        htmlFor={`file-camera-${doc.id}`}
-                        className="flex flex-col items-center justify-center p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all h-36 group/camera"
-                      >
-                         <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-2 group-hover/camera:scale-110 transition-transform">📸</div>
-                         <span className="font-bold text-slate-700 text-sm">تصوير</span>
-                      </label>
+                  <div className='grid grid-cols-2 gap-3'>
+                    {/* Camera Option */}
+                    <label
+                      htmlFor={`file-camera-${doc.id}`}
+                      className='flex flex-col items-center justify-center p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all h-36 group/camera'
+                    >
+                      <div className='w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-2 group-hover/camera:scale-110 transition-transform'>
+                        📸
+                      </div>
+                      <span className='font-bold text-slate-700 text-sm'>تصوير</span>
+                    </label>
 
-                      {/* Gallery Option */}
-                      <label
-                        htmlFor={`file-gallery-${doc.id}`}
-                        className="flex flex-col items-center justify-center p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all h-36 group/gallery"
-                      >
-                         <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xl mb-2 group-hover/gallery:scale-110 transition-transform">🖼️</div>
-                         <span className="font-bold text-slate-700 text-sm">ملف</span>
-                      </label>
-                   </div>
+                    {/* Gallery Option */}
+                    <label
+                      htmlFor={`file-gallery-${doc.id}`}
+                      className='flex flex-col items-center justify-center p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all h-36 group/gallery'
+                    >
+                      <div className='w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xl mb-2 group-hover/gallery:scale-110 transition-transform'>
+                        🖼️
+                      </div>
+                      <span className='font-bold text-slate-700 text-sm'>ملف</span>
+                    </label>
+                  </div>
                 ) : (
                   <div
                     className={`
@@ -207,7 +211,12 @@ export default function DocumentUploader({
                       className='absolute top-2 left-2 p-2 bg-white rounded-xl text-rose-500 shadow-md hover:bg-rose-50 border border-slate-200 transition-all z-10 hover:scale-105'
                       title='حذف الملف'
                     >
-                      <svg className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                      <svg
+                        className='w-4 h-4'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                        stroke='currentColor'
+                      >
                         <path
                           strokeLinecap='round'
                           strokeLinejoin='round'

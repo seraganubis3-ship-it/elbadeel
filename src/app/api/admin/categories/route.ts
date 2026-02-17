@@ -31,13 +31,15 @@ export async function GET(_request: NextRequest) {
     });
 
     // Process categories to add signed URLs for icons
-    const categoriesWithSignedUrls = await Promise.all(categories.map(async (category) => {
+    const categoriesWithSignedUrls = await Promise.all(
+      categories.map(async category => {
         let iconUrl = category.icon;
         if (iconUrl && !iconUrl.startsWith('/uploads/') && !iconUrl.startsWith('http')) {
-            iconUrl = await generatePresignedUrl(iconUrl);
+          iconUrl = await generatePresignedUrl(iconUrl);
         }
         return { ...category, icon: iconUrl };
-    }));
+      })
+    );
 
     return NextResponse.json({ success: true, categories: categoriesWithSignedUrls });
   } catch (error) {
@@ -90,11 +92,11 @@ export async function POST(request: NextRequest) {
 
     // Handle image upload with B2
     if (image && image.size > 0) {
-        try {
-            imagePath = await uploadToBackblaze(image, 'categories');
-        } catch (e) {
-            // Upload failed
-        }
+      try {
+        imagePath = await uploadToBackblaze(image, 'categories');
+      } catch (e) {
+        // Upload failed
+      }
     }
 
     const category = await prisma.category.create({

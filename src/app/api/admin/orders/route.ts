@@ -44,6 +44,7 @@ interface OrderResponse {
   servicesDetails: string | null;
   serviceDetails: string | null;
   policeStation: string | null;
+  photographyDate: Date | null;
   pickupLocation: string | null;
   marriageDate: Date | null;
   divorceDate: Date | null;
@@ -63,6 +64,7 @@ export async function GET(request: NextRequest) {
     const createdByAdminId = searchParams.get('createdByAdminId') || undefined;
     const from = searchParams.get('from');
     const to = searchParams.get('to');
+    const photographyDate = searchParams.get('photographyDate'); // Add this
     const serviceIds = searchParams.getAll('serviceIds');
     const categoryId = searchParams.get('categoryId');
     const createdByAdmin = searchParams.get('createdByAdmin');
@@ -101,9 +103,19 @@ export async function GET(request: NextRequest) {
             },
           }
         : {}),
+      ...(photographyDate
+        ? {
+            photographyDate: {
+              gte: new Date(photographyDate.split('/').reverse().join('-')),
+              lte: new Date(photographyDate.split('/').reverse().join('-') + 'T23:59:59.999Z'),
+            },
+          }
+        : {}),
       ...(serviceIds.length > 0 ? { serviceId: { in: serviceIds } } : {}),
       ...(categoryId ? { service: { categoryId } } : {}),
-      ...(createdByAdmin === 'true' && !createdByAdminId ? { createdByAdminId: { not: null } } : {}),
+      ...(createdByAdmin === 'true' && !createdByAdminId
+        ? { createdByAdminId: { not: null } }
+        : {}),
       ...(createdByAdmin === 'false' ? { createdByAdminId: null } : {}),
       ...(search
         ? {
@@ -169,6 +181,7 @@ export async function GET(request: NextRequest) {
         servicesDetails: order.servicesDetails,
         serviceDetails: order.serviceDetails,
         policeStation: order.policeStation,
+        photographyDate: order.photographyDate,
         pickupLocation: order.pickupLocation,
         marriageDate: (order as any).marriageDate,
         divorceDate: (order as any).divorceDate,
@@ -406,7 +419,7 @@ export async function POST(request: NextRequest) {
     if (!existingUser && (normalizedPhone || customerPhone)) {
       const phoneToCheck = normalizedPhone || customerPhone;
       const userByPhone = await prisma.user.findFirst({
-        where: { phone: phoneToCheck }
+        where: { phone: phoneToCheck },
       });
       if (userByPhone) {
         existingUser = userByPhone;
@@ -468,7 +481,7 @@ export async function POST(request: NextRequest) {
       // Always update name and address info if provided in the order
       if (customerName) updates.name = customerName;
       if (!(u as any).email && customerEmail) updates.email = customerEmail;
-      
+
       assignIfMissing('phone', normalizedPhone || customerPhone);
       assignIfMissing('additionalPhone', additionalPhone);
 
@@ -486,7 +499,7 @@ export async function POST(request: NextRequest) {
         const parsed = safeParseDate(birthDate);
         if (parsed) updates.birthDate = parsed;
       }
-      
+
       assignIfMissing('fatherName', fatherName);
       assignIfMissing('idNumber', idNumber);
       assignIfMissing('motherName', motherName);
@@ -652,29 +665,39 @@ export async function POST(request: NextRequest) {
       });
       if (link) {
         await (prisma as any).formSerial.update({
-          where: { formTypeId_serialNumber: { formTypeId: link.formTypeId, serialNumber: formSerialNumber } },
-          data: { orderId: order.id, consumed: true, consumedAt: new Date(), consumedByAdminId: adminUserId },
+          where: {
+            formTypeId_serialNumber: {
+              formTypeId: link.formTypeId,
+              serialNumber: formSerialNumber,
+            },
+          },
+          data: {
+            orderId: order.id,
+            consumed: true,
+            consumedAt: new Date(),
+            consumedByAdminId: adminUserId,
+          },
         });
       }
     }
 
     if (attachedDocuments && Array.isArray(attachedDocuments)) {
-       // Old string based attachments - might be legacy or just names
-       // We keep them as is in the order.attachedDocuments field
+      // Old string based attachments - might be legacy or just names
+      // We keep them as is in the order.attachedDocuments field
     }
 
     // Save Uploaded Documents (The new B2 ones)
     const uploadedDocs = body.uploadedDocuments;
     if (uploadedDocs && Array.isArray(uploadedDocs) && uploadedDocs.length > 0) {
-       await prisma.document.createMany({
-          data: uploadedDocs.map((doc: any) => ({
-             orderId: order.id,
-             fileName: doc.originalName || doc.filename,
-             filePath: doc.filePath,
-             fileType: doc.fileType,
-             fileSize: doc.fileSize
-          }))
-       });
+      await prisma.document.createMany({
+        data: uploadedDocs.map((doc: any) => ({
+          orderId: order.id,
+          fileName: doc.originalName || doc.filename,
+          filePath: doc.filePath,
+          fileType: doc.fileType,
+          fileSize: doc.fileSize,
+        })),
+      });
     }
 
     if (paidAmount && paidAmount > 0) {
@@ -695,10 +718,12 @@ export async function POST(request: NextRequest) {
       try {
         const depName = customerFollowUp.trim();
         if (depName) {
-           const existing = await prisma.dependent.findFirst({ where: { name: { equals: depName, mode: 'insensitive' } } });
-           if (!existing) {
-             await prisma.dependent.create({ data: { name: depName } });
-           }
+          const existing = await prisma.dependent.findFirst({
+            where: { name: { equals: depName, mode: 'insensitive' } },
+          });
+          if (!existing) {
+            await prisma.dependent.create({ data: { name: depName } });
+          }
         }
       } catch (e) {
         // Ignore dependent save errors
@@ -714,7 +739,7 @@ export async function POST(request: NextRequest) {
         if (isNewUserCreated) {
           const service = await prisma.service.findUnique({
             where: { id: serviceId },
-            select: { name: true }
+            select: { name: true },
           });
 
           const welcomeMsg = NotificationTemplates.welcomeNewCustomer(
@@ -741,7 +766,6 @@ export async function POST(request: NextRequest) {
       // WhatsApp notification failed silently - don't block order creation
       logger.error('Failed to send welcome WhatsApp message', whatsappError);
     }
-
 
     return NextResponse.json({
       success: true,

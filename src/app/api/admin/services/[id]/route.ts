@@ -41,7 +41,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 
     // Sign icon URL if needed
     if (service.icon && !service.icon.startsWith('/uploads/') && !service.icon.startsWith('http')) {
-        service.icon = await generatePresignedUrl(service.icon);
+      service.icon = await generatePresignedUrl(service.icon);
     }
 
     return NextResponse.json({ success: true, service });
@@ -66,7 +66,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Parse FormData
     const formData = await request.formData();
-    
+
     // Extract basic fields
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
@@ -74,27 +74,24 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const active = formData.get('active') === 'true';
     const isHidden = formData.get('isHidden') === 'true';
     const image = formData.get('image') as File | null;
-    
+
     // Extract complex fields (JSON strings)
     let variants: any[] = [];
     let documents: any[] = [];
     let fields: any[] = [];
-    
+
     try {
       const variantsStr = formData.get('variants') as string;
       if (variantsStr) variants = JSON.parse(variantsStr);
-      
+
       const documentsStr = formData.get('documents') as string;
       if (documentsStr) documents = JSON.parse(documentsStr);
-      
+
       const fieldsStr = formData.get('fields') as string;
       if (fieldsStr) fields = JSON.parse(fieldsStr);
     } catch (e) {
       // console.error('JSON Parse Error:', e);
-      return NextResponse.json(
-        { success: false, error: 'بيانات غير صالحة' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'بيانات غير صالحة' }, { status: 400 });
     }
 
     if (!name || !categoryId) {
@@ -107,35 +104,35 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Handle Image Upload
     let imagePath: string | undefined = undefined;
     if (image && image.size > 0) {
-        try {
-            imagePath = await uploadToBackblaze(image, 'services');
-        } catch (e) {
-            // Upload failed
-        }
+      try {
+        imagePath = await uploadToBackblaze(image, 'services');
+      } catch (e) {
+        // Upload failed
+      }
     }
 
     // Prepare update data
     const updateData: any = {
-        name,
-        // slug, // Disable auto-slug update to keep links stable
-        description: description || '',
-        active,
-        isHidden,
-        categoryId,
+      name,
+      // slug, // Disable auto-slug update to keep links stable
+      description: description || '',
+      active,
+      isHidden,
+      categoryId,
     };
-    
+
     // Optional: Allow manual slug update if provided
     const manualSlug = formData.get('slug') as string;
     if (manualSlug) {
-        updateData.slug = manualSlug
-          .toLowerCase()
-          .replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .trim();
+      updateData.slug = manualSlug
+        .toLowerCase()
+        .replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .trim();
     }
-    
+
     if (imagePath) {
-        updateData.icon = imagePath;
+      updateData.icon = imagePath;
     }
 
     // Update service basic info
@@ -255,34 +252,34 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         const field = fields[i];
         let fieldId = field.id;
 
-          if (field.id.startsWith('temp-')) {
-            const newField = await prisma.serviceField.create({
-              data: {
-                serviceId: id,
-                name: field.name || `field_${i}`,
-                label: field.label,
-                type: field.type || 'select',
-                placeholder: field.placeholder || null,
-                required: field.required !== false,
-                orderIndex: i,
-                showIf: field.showIf || null,
-              },
-            });
-            fieldId = newField.id;
-          } else {
-            await prisma.serviceField.update({
-              where: { id: field.id },
-              data: {
-                name: field.name,
-                label: field.label,
-                type: field.type,
-                placeholder: field.placeholder || null,
-                required: field.required !== false,
-                orderIndex: i,
-                showIf: field.showIf || null,
-              },
-            });
-          }
+        if (field.id.startsWith('temp-')) {
+          const newField = await prisma.serviceField.create({
+            data: {
+              serviceId: id,
+              name: field.name || `field_${i}`,
+              label: field.label,
+              type: field.type || 'select',
+              placeholder: field.placeholder || null,
+              required: field.required !== false,
+              orderIndex: i,
+              showIf: field.showIf || null,
+            },
+          });
+          fieldId = newField.id;
+        } else {
+          await prisma.serviceField.update({
+            where: { id: field.id },
+            data: {
+              name: field.name,
+              label: field.label,
+              type: field.type,
+              placeholder: field.placeholder || null,
+              required: field.required !== false,
+              orderIndex: i,
+              showIf: field.showIf || null,
+            },
+          });
+        }
 
         // Handle Options
         if (field.options && Array.isArray(field.options)) {
@@ -383,10 +380,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     if (typeof isHidden === 'boolean') updateData.isHidden = isHidden;
 
     if (Object.keys(updateData).length === 0) {
-        return NextResponse.json(
-            { success: false, error: 'بيانات غير صالحة' },
-            { status: 400 }
-        );
+      return NextResponse.json({ success: false, error: 'بيانات غير صالحة' }, { status: 400 });
     }
 
     const service = await prisma.service.update({

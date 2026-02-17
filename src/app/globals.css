@@ -6,8 +6,6 @@ html {
   scroll-behavior: auto !important;
 }
 
-
-
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -38,7 +36,8 @@ html {
     display: block !important;
   }
 
-  body, .admin-panel {
+  body,
+  .admin-panel {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     background: white !important;
@@ -119,8 +118,15 @@ html {
 
 /* Animations moved from HomeClient.tsx */
 @keyframes float-slow {
-  0%, 100% { transform: translateY(0); opacity: 0.3; }
-  50% { transform: translateY(-20px); opacity: 0.6; }
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px);
+    opacity: 0.6;
+  }
 }
 .animate-float-slow {
   animation: float-slow 4s ease-in-out infinite;
@@ -142,9 +148,15 @@ html {
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-150%); }
-  50% { transform: translateX(150%); }
-  100% { transform: translateX(150%); }
+  0% {
+    transform: translateX(-150%);
+  }
+  50% {
+    transform: translateX(150%);
+  }
+  100% {
+    transform: translateX(150%);
+  }
 }
 .animate-shimmer {
   animation: shimmer 3s infinite;

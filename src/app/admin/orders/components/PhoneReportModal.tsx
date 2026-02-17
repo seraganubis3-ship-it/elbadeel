@@ -29,14 +29,14 @@ export function PhoneReportModal({
 
   if (!isOpen) return null;
 
-  const targetOrders = orders.filter((o) => selectedOrders.includes(o.id));
+  const targetOrders = orders.filter(o => selectedOrders.includes(o.id));
 
   const handleNoteChange = (orderId: string, value: string) => {
-    setNotes((prev) => ({ ...prev, [orderId]: value }));
+    setNotes(prev => ({ ...prev, [orderId]: value }));
   };
 
   const handlePrintParams = () => {
-    const reportData = targetOrders.map((order) => ({
+    const reportData = targetOrders.map(order => ({
       orderId: order.id,
       note: notes[order.id] || '',
     }));
@@ -48,12 +48,14 @@ export function PhoneReportModal({
       <div className='bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col'>
         <div className='p-6 border-b border-gray-100 flex justify-between items-center'>
           <h2 className='text-2xl font-bold text-gray-800'>كشف أرقام التليفونات</h2>
-          <button
-            onClick={onClose}
-            className='text-gray-400 hover:text-red-500 transition-colors'
-          >
+          <button onClick={onClose} className='text-gray-400 hover:text-red-500 transition-colors'>
             <svg className='w-6 h-6' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M6 18L18 6M6 6l12 12'
+              />
             </svg>
           </button>
         </div>
@@ -68,12 +70,10 @@ export function PhoneReportModal({
               </tr>
             </thead>
             <tbody>
-              {targetOrders.map((order) => (
+              {targetOrders.map(order => (
                 <tr key={order.id} className='bg-gray-50 rounded-xl'>
-                  <td className='p-4 font-bold text-gray-800 rounded-r-xl'>
-                    {order.customerName}
-                  </td>
-                  <td className='p-4 text-gray-600 font-mono text-left' dir="ltr">
+                  <td className='p-4 font-bold text-gray-800 rounded-r-xl'>{order.customerName}</td>
+                  <td className='p-4 text-gray-600 font-mono text-left' dir='ltr'>
                     {order.customerPhone}
                   </td>
                   <td className='p-4 rounded-l-xl'>
@@ -82,7 +82,7 @@ export function PhoneReportModal({
                       placeholder='اكتب ملاحظة...'
                       className='w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all'
                       value={notes[order.id] || ''}
-                      onChange={(e) => handleNoteChange(order.id, e.target.value)}
+                      onChange={e => handleNoteChange(order.id, e.target.value)}
                     />
                   </td>
                 </tr>
@@ -103,7 +103,12 @@ export function PhoneReportModal({
             className='px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-200 transition-all flex items-center gap-2'
           >
             <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z' />
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z'
+              />
             </svg>
             طباعة الكشف
           </button>

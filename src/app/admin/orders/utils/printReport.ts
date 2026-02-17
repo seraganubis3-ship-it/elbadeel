@@ -8,7 +8,13 @@ interface PrintReportOptions {
   reportDate?: string | undefined;
 }
 
-export function printOrdersReport({ orders, selectedOrders, filters, delegate, reportDate }: PrintReportOptions) {
+export function printOrdersReport({
+  orders,
+  selectedOrders,
+  filters,
+  delegate,
+  reportDate,
+}: PrintReportOptions) {
   // ... (lines 11-30 unchanged)
   const ordersToPrint =
     selectedOrders.length > 0 ? orders.filter(order => selectedOrders.includes(order.id)) : orders;
@@ -34,23 +40,28 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
   // Date Logic
   let dateText = '';
   if (reportDate) {
-      dateText = `بتاريخ: ${reportDate}`;
+    dateText = `بتاريخ: ${reportDate}`;
   } else if (filters.dateFrom && filters.dateTo) {
-      const d1 = new Date(filters.dateFrom).toLocaleDateString('ar-EG');
-      const d2 = new Date(filters.dateTo).toLocaleDateString('ar-EG');
-      dateText = d1 === d2 ? `بتاريخ: ${d1}` : `عن الفترة من ${d1} حتى تاريخ ${d2}`;
+    const d1 = new Date(filters.dateFrom).toLocaleDateString('ar-EG');
+    const d2 = new Date(filters.dateTo).toLocaleDateString('ar-EG');
+    dateText = d1 === d2 ? `بتاريخ: ${d1}` : `عن الفترة من ${d1} حتى تاريخ ${d2}`;
   } else {
-      let workDate = new Date();
-      const savedWorkDate = localStorage.getItem('adminWorkDate');
-      if (savedWorkDate) {
-        const [day, month, year] = savedWorkDate.split('/').map(Number);
-        if (day && month && year) {
-          workDate = new Date(year, month - 1, day);
-        }
+    let workDate = new Date();
+    const savedWorkDate = localStorage.getItem('adminWorkDate');
+    if (savedWorkDate) {
+      const [day, month, year] = savedWorkDate.split('/').map(Number);
+      if (day && month && year) {
+        workDate = new Date(year, month - 1, day);
       }
-      const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
-      const formatted = workDate.toLocaleDateString('ar-EG', options).replace(/،/g, ' -');
-      dateText = `بتاريخ: ${formatted}`;
+    }
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    };
+    const formatted = workDate.toLocaleDateString('ar-EG', options).replace(/،/g, ' -');
+    dateText = `بتاريخ: ${formatted}`;
   }
 
   const currentDate = new Date().toLocaleString('ar-EG', {
@@ -59,7 +70,7 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    hour12: true
+    hour12: true,
   });
   // Shared CSS Styles
   const reportStyles = `
@@ -165,6 +176,18 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
       
       .footer-contacts { position: absolute; bottom: 10px; left: 10px; right: auto; text-align: left; }
       .footer-img { height: 170px; width: auto; object-fit: contain; display: block; }
+      
+      .signature-section {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        text-align: center;
+      }
+      .signature-text {
+        font-size: 10px;
+        font-weight: 900;
+        color: #000;
+      }
 
       .delegate-section {
         position: absolute;
@@ -218,7 +241,8 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
     const name = order.service.name.toLowerCase();
     const slug = (order.service.slug || '').toLowerCase();
     // Check if it's a national ID (but not translated)
-    const isNationalId = (name.includes('بطاقة') || slug === 'national-id') && !name.includes('مترجم');
+    const isNationalId =
+      (name.includes('بطاقة') || slug === 'national-id') && !name.includes('مترجم');
     return isNationalId;
   });
 
@@ -240,14 +264,22 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
   // Classification logic (same as before)
   const classifyOrder = (
     o: Order
-  ): 'NATIONAL_ID' | 'TRANSLATED_ID' | 'BIRTH_CERT' | 'DEATH_CERT' | 'PASSPORT' | 'MARRIAGE_CERT' | 'GENERAL' => {
+  ):
+    | 'NATIONAL_ID'
+    | 'TRANSLATED_ID'
+    | 'BIRTH_CERT'
+    | 'DEATH_CERT'
+    | 'PASSPORT'
+    | 'MARRIAGE_CERT'
+    | 'GENERAL' => {
     if (!o.service) return 'GENERAL';
     const name = o.service.name.toLowerCase();
     const slug = (o.service.slug || '').toLowerCase();
-    
+
     // Check for translated national ID first
-    if (name.includes('مترجم') && (name.includes('بطاقة') || slug === 'national-id')) return 'TRANSLATED_ID';
-    
+    if (name.includes('مترجم') && (name.includes('بطاقة') || slug === 'national-id'))
+      return 'TRANSLATED_ID';
+
     if (name.includes('بطاقة') || slug === 'national-id') return 'NATIONAL_ID';
     if (name.includes('جواز') || slug === 'passports') return 'PASSPORT';
     if (name.includes('وفاة') || slug.includes('death')) return 'DEATH_CERT';
@@ -257,7 +289,13 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
   };
 
   const partitionedOrders: Record<
-    'NATIONAL_ID' | 'TRANSLATED_ID' | 'BIRTH_CERT' | 'DEATH_CERT' | 'PASSPORT' | 'MARRIAGE_CERT' | 'GENERAL',
+    | 'NATIONAL_ID'
+    | 'TRANSLATED_ID'
+    | 'BIRTH_CERT'
+    | 'DEATH_CERT'
+    | 'PASSPORT'
+    | 'MARRIAGE_CERT'
+    | 'GENERAL',
     Order[]
   > = {
     NATIONAL_ID: [],
@@ -292,21 +330,25 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
               (!f.name.toLowerCase().includes('محضر') && !f.name.toLowerCase().includes('فقد'))
           );
           // Use override if present, otherwise calculate
-          const totalFines = (order as any).overrideTotalFines !== undefined 
-            ? (order as any).overrideTotalFines * 100 // Convert back to cents if storing as pounds, or handle unit consistency. Let's assume input is pounds.
-            : otherFines.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
-            
+          const totalFines =
+            (order as any).overrideTotalFines !== undefined
+              ? (order as any).overrideTotalFines * 100 // Convert back to cents if storing as pounds, or handle unit consistency. Let's assume input is pounds.
+              : otherFines.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+
           globalTotalFines += totalFines / 100;
-          
+
           const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
           const cellStyle = isSettlement
             ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
             : 'style="text-align: center;"';
-            
+
           const fineNames = finesDetails.map((f: any) => f.name).join(' - ');
           const computedDetails = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
-          const details = (order as any).overrideDetails !== undefined ? (order as any).overrideDetails : computedDetails;
-          
+          const details =
+            (order as any).overrideDetails !== undefined
+              ? (order as any).overrideDetails
+              : computedDetails;
+
           const idStyle =
             'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px;';
           return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
@@ -328,23 +370,27 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
             !f.name ||
             (!f.name.toLowerCase().includes('محضر') && !f.name.toLowerCase().includes('فقد'))
         );
-        
+
         // Override logic
-        const totalFines = (order as any).overrideTotalFines !== undefined 
-            ? (order as any).overrideTotalFines * 100 
+        const totalFines =
+          (order as any).overrideTotalFines !== undefined
+            ? (order as any).overrideTotalFines * 100
             : otherFines.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
-            
+
         globalTotalFines += totalFines / 100;
-        
+
         const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
         const cellStyle = isSettlement
           ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
           : 'style="text-align: center;"';
-          
+
         const fineNames = finesDetails.map((f: any) => f.name).join(' - ');
         const computedDetails = [fineNames, order.serviceDetails].filter(Boolean).join(' / ');
-        const details = (order as any).overrideDetails !== undefined ? (order as any).overrideDetails : computedDetails;
-        
+        const details =
+          (order as any).overrideDetails !== undefined
+            ? (order as any).overrideDetails
+            : computedDetails;
+
         const idStyle =
           'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px; opacity: 1;';
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
@@ -361,7 +407,8 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
         globalTotalOrders++;
         const isSupply = order.status === 'supply';
         const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
-        const mono = 'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
+        const mono =
+          'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
 
         const formatDate = (date: any) => {
           if (!date) return '---';
@@ -418,7 +465,8 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
         const cellStyle = isSettlement
           ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
           : 'style="text-align: center;"';
-        const mono = 'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
+        const mono =
+          'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
         const station = stationMap[order.policeStation || ''] || order.policeStation || '---';
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${order.idNumber || '---'}</td><td style="text-align: center;">${station}</td><td style="text-align: right;">${order.pickupLocation || '---'}</td></tr>`;
       })
@@ -491,11 +539,12 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
     const rows = allOrders
       .map((order, idx) => {
         globalTotalOrders++;
-        
+
         // Fees Override
-        const fees = (order as any).overrideTotalFines !== undefined
+        const fees =
+          (order as any).overrideTotalFines !== undefined
             ? (order as any).overrideTotalFines
-            : (order.otherFees || 0);
+            : order.otherFees || 0;
 
         globalTotalFines += fees;
         const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
@@ -504,27 +553,34 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate, r
         if (isSettlement) color = 'background-color: #fca5a5';
         else if (isSupply) color = 'background-color: #bfdbfe';
         const cellStyle = `style="text-align: center; ${color ? color + ' !important; -webkit-print-color-adjust: exact;' : ''}"`;
-        
+
         // Show service name and variant in the service column
         const serviceName = order.service?.name || 'غير محدد';
         const variantName = order.variant?.name ? ` (${order.variant.name})` : '';
         const fullServiceName = serviceName + variantName;
-        
-        const details = (order as any).overrideDetails !== undefined ? (order as any).overrideDetails : (order.serviceDetails || '---');
-        
+
+        const details =
+          (order as any).overrideDetails !== undefined
+            ? (order as any).overrideDetails
+            : order.serviceDetails || '---';
+
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;">${order.idNumber || '---'}</td><td style="text-align: right; font-size: 11px;">${fullServiceName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
       })
       .join('');
     contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">خدمات أخرى</div></div><table class="data-table"><thead><tr><th width="5%">#</th><th width="25%">اسم العميل</th><th width="15%">رقم القومي</th><th width="20%">الخدمة</th><th width="10%">الغرامات</th><th width="25%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
   }
 
-  const delegateHtml = delegate && (delegate.unionCard || delegate.unionCardFront || delegate.idCardFront) 
-  ? `
+  const delegateHtml =
+    delegate && (delegate.unionCard || delegate.unionCardFront || delegate.idCardFront)
+      ? `
     <div class="delegate-section">
       <img src="${delegate.unionCard || delegate.unionCardFront || delegate.idCardFront}" class="delegate-img" alt="Delegate" />
     </div>
-  ` 
-  : '';
+    <div class="signature-section">
+      <div class="signature-text">يعتمد</div>
+    </div>
+  `
+      : '';
 
   const multiplier = hasNationalIds ? 20 : 10;
   const totalStepFees = globalTotalOrders * multiplier;

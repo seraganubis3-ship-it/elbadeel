@@ -5,12 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ServiceCard, Service, Category } from './ServiceCard';
 
-
 interface ServicesGridProps {
   categories: Category[];
 }
-
-
 
 export default function ServicesGrid({ categories }: ServicesGridProps) {
   const [activeTab, setActiveTab] = useState<string>('all');

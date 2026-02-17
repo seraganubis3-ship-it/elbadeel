@@ -15,7 +15,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const session = await requireAdminOrStaff();
     const { id } = params;
     const body = await request.json();
-    const { status, adminNotes, workDate: clientWorkDate, workOrderNumber } = statusUpdateSchema.parse(body);
+    const {
+      status,
+      adminNotes,
+      workDate: clientWorkDate,
+      workOrderNumber,
+    } = statusUpdateSchema.parse(body);
 
     let workDate = getWorkDate(session);
     if (clientWorkDate && (session.user.role === 'ADMIN' || session.user.role === 'STAFF')) {

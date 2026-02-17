@@ -284,8 +284,6 @@ function OrdersContent() {
               </div>
             </div>
 
-
-
             {/* Sort */}
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>ترتيب حسب</label>
@@ -335,7 +333,9 @@ function OrdersContent() {
                 <div className='flex flex-col sm:flex-row items-start justify-between gap-4'>
                   <div className='flex-1 w-full'>
                     <div className='flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 sm:space-x-reverse mb-4'>
-                      <div className='text-2xl sm:text-3xl'>{getCustomerStatus(order.status).icon}</div>
+                      <div className='text-2xl sm:text-3xl'>
+                        {getCustomerStatus(order.status).icon}
+                      </div>
                       <div className='flex-1 w-full'>
                         <h3 className='text-base sm:text-lg font-semibold text-gray-900 mb-1'>
                           {order.service.name}
@@ -442,12 +442,16 @@ function OrdersContent() {
                           عرض التفاصيل
                         </Link>
 
-                        {(order.status === 'waiting_confirmation' || order.status === 'PENDING' || order.status === 'pending') && (
+                        {(order.status === 'waiting_confirmation' ||
+                          order.status === 'PENDING' ||
+                          order.status === 'pending') && (
                           <button
                             onClick={async () => {
                               if (!confirm('هل أنت متأكد من الغاء هذا الطلب؟')) return;
                               try {
-                                const res = await fetch(`/api/orders/${order.id}`, { method: 'DELETE' });
+                                const res = await fetch(`/api/orders/${order.id}`, {
+                                  method: 'DELETE',
+                                });
                                 if (res.ok) {
                                   setOrders(prev => prev.filter(o => o.id !== order.id));
                                   setFilteredOrders(prev => prev.filter(o => o.id !== order.id));

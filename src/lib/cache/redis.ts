@@ -23,14 +23,14 @@ export async function getCache<T>(key: string, prefix = 'cache'): Promise<T | nu
     if (!cacheConnection) {
       return null; // Redis not configured
     }
-    
+
     const fullKey = `${prefix}:${key}`;
     const value = await cacheConnection.get(fullKey);
-    
+
     if (!value) {
       return null;
     }
-    
+
     return JSON.parse(value) as T;
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -51,11 +51,11 @@ export async function setCache<T>(
     if (!cacheConnection) {
       return; // Redis not configured, skip caching
     }
-    
+
     const { ttl = 3600, prefix = 'cache' } = options;
     const fullKey = `${prefix}:${key}`;
     const serialized = JSON.stringify(value);
-    
+
     await cacheConnection.setex(fullKey, ttl, serialized);
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -71,7 +71,7 @@ export async function deleteCache(key: string, prefix = 'cache'): Promise<void> 
     if (!cacheConnection) {
       return; // Redis not configured
     }
-    
+
     const fullKey = `${prefix}:${key}`;
     await cacheConnection.del(fullKey);
   } catch (error) {
@@ -88,14 +88,14 @@ export async function deleteCachePattern(pattern: string, prefix = 'cache'): Pro
     if (!cacheConnection) {
       return 0; // Redis not configured
     }
-    
+
     const fullPattern = `${prefix}:${pattern}`;
     const keys = await cacheConnection.keys(fullPattern);
-    
+
     if (keys.length === 0) {
       return 0;
     }
-    
+
     await cacheConnection.del(...keys);
     return keys.length;
   } catch (error) {
@@ -115,17 +115,17 @@ export async function cacheAside<T>(
 ): Promise<T> {
   // Try to get from cache
   const cached = await getCache<T>(key, options.prefix);
-  
+
   if (cached !== null) {
     return cached;
   }
-  
+
   // Fetch from source
   const value = await fetchFn();
-  
+
   // Store in cache
   await setCache(key, value, options);
-  
+
   return value;
 }
 
@@ -137,11 +137,11 @@ export async function getCacheStats() {
     if (!cacheConnection) {
       return null; // Redis not configured
     }
-    
+
     const info = await cacheConnection.info('stats');
     const dbSize = await cacheConnection.dbsize();
     const memory = await cacheConnection.info('memory');
-    
+
     return {
       dbSize,
       info,
@@ -162,7 +162,7 @@ export async function clearAllCache(): Promise<void> {
     if (!cacheConnection) {
       return; // Redis not configured
     }
-    
+
     await cacheConnection.flushdb();
   } catch (error) {
     // eslint-disable-next-line no-console

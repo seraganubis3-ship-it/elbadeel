@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -141,8 +142,8 @@ export default function ReceiptPage() {
 
   const isPassport =
     order.service?.slug === 'passports' || (order.service?.name || '').includes('جواز');
-  
-  const isNationalId = 
+
+  const isNationalId =
     order.service?.slug === 'national-id' || (order.service?.name || '').includes('بطاقة');
 
   const format = (cents?: number | null) => ((cents || 0) / 100).toFixed(2);
@@ -223,8 +224,9 @@ export default function ReceiptPage() {
                   className='mb-1 grayscale'
                 />
                 <div className='text-[9px] leading-3 text-center max-w-xs font-bold'>
-طبقا لقرار رئيس مجلس الوزاراء
-رقم ١٥٥١ لستة ٢٠٠٨ بتصريح و ترخيص من وزارة الاتصالات و تكنولوجيا المعلومات                 </div>
+                  طبقا لقرار رئيس مجلس الوزاراء رقم ١٥٥١ لستة ٢٠٠٨ بتصريح و ترخيص من وزارة الاتصالات
+                  و تكنولوجيا المعلومات{' '}
+                </div>
               </div>
             </div>
           </div>
@@ -386,9 +388,11 @@ export default function ReceiptPage() {
               <div className='font-black underline mb-1'>ملاحظات هامة:</div>
               <ol className='list-decimal pr-4 space-y-0.5 font-bold'>
                 {isNationalId && (
-                   <li className="font-black text-[10px]">
-                     تفاصيل التصوير: التصوير 9 صباحا فقط - سجل الهرم الدور الرابع (الدخول من اخر باب) في الشارع الجانبى للسجل - دفع ١٥ج عند التصوير. واوقت الانتظار (ساعه) لفحص ومراجعه الاستمارة من وقت وصولك للمندوب.
-                   </li>
+                  <li className='font-black text-[10px]'>
+                    تفاصيل التصوير: التصوير 9 صباحا فقط - سجل الهرم الدور الرابع (الدخول من اخر باب)
+                    في الشارع الجانبى للسجل - دفع ١٥ج عند التصوير. واوقت الانتظار (ساعه) لفحص
+                    ومراجعه الاستمارة من وقت وصولك للمندوب.
+                  </li>
                 )}
                 <li>التعامل في استلام الخدمة بهذا الإيصال الأصلي فقط.</li>
                 {!isNationalId && <li>المبلغ يشمل الرسوم الحكومية ومقابل أداء الخدمة.</li>}
@@ -404,9 +408,7 @@ export default function ReceiptPage() {
             </div>
             <div className='text-center flex flex-col justify-center gap-1 border-r border-black font-bold'>
               <div>١٥ شارع صالح قناوي - تقاطع وليم ناشد - مدكور - فيصل</div>
-              <div className='text-[10px] font-black mt-1'>
-                 ٠١٠٢٢٠١١٨٧٧ / ٠١١٤٩٩٩٢٨٣٠
-              </div>
+              <div className='text-[10px] font-black mt-1'>٠١٠٢٢٠١١٨٧٧ / ٠١١٤٩٩٩٢٨٣٠</div>
               <div className='mt-2 text-xs font-black pt-1'>
                 أمين الخزينة: {order.createdByAdmin?.name || '—'}
               </div>

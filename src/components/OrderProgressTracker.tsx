@@ -1,7 +1,11 @@
 'use client';
 
 import { ORDER_STATUS_CONFIG } from '@/constants/orderStatuses';
-import { CUSTOMER_PROGRESS_STEPS, getCurrentStepIndex, getCustomerStatus } from '@/app/orders/customerStatusMapping';
+import {
+  CUSTOMER_PROGRESS_STEPS,
+  getCurrentStepIndex,
+  getCustomerStatus,
+} from '@/app/orders/customerStatusMapping';
 
 interface OrderProgressTrackerProps {
   orderId: string;
@@ -14,7 +18,6 @@ export default function OrderProgressTracker({
   currentStatus,
   estimatedCompletion,
 }: OrderProgressTrackerProps) {
-  
   const currentStepIndex = getCurrentStepIndex(currentStatus);
   const isCancelled = currentStepIndex === -1; // Assuming -1 for cancelled/returned based on helper
   const customerStatus = getCustomerStatus(currentStatus);
@@ -51,10 +54,10 @@ export default function OrderProgressTracker({
       </div>
 
       {isCancelled ? (
-        <div className="text-center p-8 bg-red-50 rounded-xl border border-red-200">
-          <div className="text-4xl mb-4">❌</div>
-          <h4 className="text-xl font-bold text-red-800 mb-2">الطلب {customerStatus.label}</h4>
-          <p className="text-red-600">هذا الطلب تم إلغاؤه أو إرجاعه.</p>
+        <div className='text-center p-8 bg-red-50 rounded-xl border border-red-200'>
+          <div className='text-4xl mb-4'>❌</div>
+          <h4 className='text-xl font-bold text-red-800 mb-2'>الطلب {customerStatus.label}</h4>
+          <p className='text-red-600'>هذا الطلب تم إلغاؤه أو إرجاعه.</p>
         </div>
       ) : (
         /* Progress Steps */
@@ -116,9 +119,7 @@ export default function OrderProgressTracker({
         <div className='flex items-center justify-between'>
           <div>
             <h4 className='font-semibold text-blue-900'>الحالة الحالية</h4>
-            <p className='text-sm text-blue-700'>
-              {customerStatus.label}
-            </p>
+            <p className='text-sm text-blue-700'>{customerStatus.label}</p>
           </div>
           <div className='text-right'>
             <div className='text-2xl'>{customerStatus.icon}</div>

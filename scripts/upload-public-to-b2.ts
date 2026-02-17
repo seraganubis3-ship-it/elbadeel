@@ -19,7 +19,7 @@ const s3Client = new S3Client({
 async function uploadFileToB2(filePath: string, key: string): Promise<string> {
   const fileContent = fs.readFileSync(filePath);
   const ext = path.extname(filePath).toLowerCase();
-  
+
   const contentTypeMap: Record<string, string> = {
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
@@ -53,7 +53,7 @@ async function uploadPublicFiles() {
   function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
     const files = fs.readdirSync(dirPath);
 
-    files.forEach((file) => {
+    files.forEach(file => {
       const filePath = path.join(dirPath, file);
       if (fs.statSync(filePath).isDirectory()) {
         arrayOfFiles = getAllFiles(filePath, arrayOfFiles);
@@ -79,7 +79,7 @@ async function uploadPublicFiles() {
       try {
         const relativePath = path.relative(publicDir, filePath);
         const key = `public/${relativePath.replace(/\\/g, '/')}`;
-        
+
         console.log(`⬆️  Uploading: ${relativePath}`);
         const url = await uploadFileToB2(filePath, key);
         console.log(`   ✅ Success: ${url}\n`);
@@ -95,7 +95,6 @@ async function uploadPublicFiles() {
     console.log(`   - Total files: ${allImageFiles.length}`);
     console.log(`   - Successful: ${successCount}`);
     console.log(`   - Failed: ${errorCount}`);
-
   } catch (error) {
     console.error('❌ Error during upload:', error);
     throw error;
@@ -108,7 +107,7 @@ uploadPublicFiles()
     console.log('\n✅ All done!');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('\n❌ Upload failed:', error);
     process.exit(1);
   });

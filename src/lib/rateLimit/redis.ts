@@ -76,11 +76,7 @@ export async function checkRateLimit(
     if (requestCount >= config.maxRequests) {
       // Block if configured
       if (config.blockDurationMs) {
-        await rateLimitConnection.setex(
-          blockKey,
-          Math.floor(config.blockDurationMs / 1000),
-          '1'
-        );
+        await rateLimitConnection.setex(blockKey, Math.floor(config.blockDurationMs / 1000), '1');
       }
 
       return {

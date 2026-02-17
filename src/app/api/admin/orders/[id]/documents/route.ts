@@ -56,14 +56,14 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       });
     } catch (e: any) {
       if (e.code !== 'P2025') {
-          // If not Document, try OrderDocument
-          try {
-              await prisma.orderDocument.delete({
-                  where: { id: docId },
-              });
-          } catch (e2: any) {
-              if (e2.code !== 'P2025') throw e2;
-          }
+        // If not Document, try OrderDocument
+        try {
+          await prisma.orderDocument.delete({
+            where: { id: docId },
+          });
+        } catch (e2: any) {
+          if (e2.code !== 'P2025') throw e2;
+        }
       }
     }
 

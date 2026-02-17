@@ -313,7 +313,7 @@ export async function POST(request: NextRequest) {
           const timestamp = Date.now();
           const fileExtension = value.name.split('.').pop();
           const fileName = `${key}_${timestamp}.${fileExtension}`;
-          
+
           // Upload to B2
           const buffer = Buffer.from(await value.arrayBuffer());
           const upload = new Upload({

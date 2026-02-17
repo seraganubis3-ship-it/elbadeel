@@ -115,13 +115,13 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                         {session.user.name?.split(' ')[0] || 'حسابي'}
                       </p>
                       <p className='text-xs text-white/60'>
-                        {session.user.role === 'ADMIN' 
-                          ? 'مدير' 
+                        {session.user.role === 'ADMIN'
+                          ? 'مدير'
                           : session.user.role === 'STAFF'
-                          ? 'موظف'
-                          : session.user.role === 'VIEWER'
-                          ? 'مشاهد'
-                          : 'مستخدم'}
+                            ? 'موظف'
+                            : session.user.role === 'VIEWER'
+                              ? 'مشاهد'
+                              : 'مستخدم'}
                       </p>
                     </div>
                   </Link>
