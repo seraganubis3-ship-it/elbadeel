@@ -50,6 +50,7 @@ export const authConfig = {
             name: user.name,
             email: user.email,
             role: user.role,
+            phone: user.phone,
             workDate: workDate || undefined, // تمرير تاريخ العمل إن وُجد
           };
         } catch (error) {
@@ -63,6 +64,7 @@ export const authConfig = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.phone = user.phone;
         // حفظ تاريخ العمل للأدمن فقط
         if (user.role === 'ADMIN' && user.workDate) {
           token.workDate = user.workDate;
@@ -74,6 +76,7 @@ export const authConfig = {
       if (session.user && token) {
         session.user.id = token.id || token.sub!;
         session.user.role = token.role as string;
+        (session.user as any).phone = token.phone;
         // تمرير تاريخ العمل للأدمن فقط
         if (token.role === 'ADMIN' && token.workDate) {
           session.user.workDate = token.workDate;
