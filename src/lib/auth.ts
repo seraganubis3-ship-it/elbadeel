@@ -21,14 +21,14 @@ export async function requireAuth() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true }
+    select: { id: true, role: true, name: true, email: true, phone: true }
   });
 
   if (!user) {
     throw new Error('Unauthorized');
   }
 
-  return { ...session, user: { ...session.user, role: user.role } };
+  return { ...session, user: { ...session.user, role: user.role, name: user.name, email: user.email, phone: user.phone } };
 }
 
 export async function requireAdmin() {
@@ -39,7 +39,7 @@ export async function requireAdmin() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true }
+    select: { id: true, role: true, name: true, email: true, phone: true }
   });
 
   if (!user) {
@@ -50,7 +50,7 @@ export async function requireAdmin() {
     throw new Error('Forbidden');
   }
 
-  return { ...session, user: { ...session.user, role: user.role } };
+  return { ...session, user: { ...session.user, role: user.role, name: user.name, email: user.email, phone: user.phone } };
 }
 
 export async function requireAdminOrStaff() {
@@ -61,7 +61,7 @@ export async function requireAdminOrStaff() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true }
+    select: { id: true, role: true, name: true, email: true, phone: true }
   });
 
   if (!user) {
@@ -72,7 +72,7 @@ export async function requireAdminOrStaff() {
     throw new Error('Forbidden');
   }
 
-  return { ...session, user: { ...session.user, role: user.role } };
+  return { ...session, user: { ...session.user, role: user.role, name: user.name, email: user.email, phone: user.phone } };
 }
 
 /**

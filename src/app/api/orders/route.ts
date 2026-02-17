@@ -230,7 +230,7 @@ export async function POST(request: NextRequest) {
       totalPrice: totalCents, // Legacy field support if needed
       totalCents: totalCents,
       customerName: session.user.name || 'Unknown',
-      customerPhone: (session.user as any).phone || 'Unknown',
+      customerPhone: session.user.phone || 'Unknown',
       customerEmail: session.user.email || 'Unknown',
       userId: session.user.id,
       deliveryType,
