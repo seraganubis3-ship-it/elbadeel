@@ -82,7 +82,7 @@ export default function HomeClient({
               className='object-cover object-center'
               priority
               sizes='(max-width: 768px) 100vw, 100vw'
-              quality={60}
+              quality={40} // Aggressive Optimization: Reduced quality
             />
           </div>
           <div className='absolute inset-0 bg-gradient-to-br from-emerald-950/80 via-teal-900/70 to-emerald-950/80'></div>
@@ -90,9 +90,8 @@ export default function HomeClient({
 
         {/* ... (rest of hero content) ... */}
 
-        {/* Floating particles */}
-        {/* Floating particles - CSS Optimized */}
-        <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+        {/* Floating particles - CSS Optimized - HIDDEN ON MOBILE */}
+        <div className='absolute inset-0 overflow-hidden pointer-events-none hidden sm:block'>
           {[...Array(6)].map((_, i) => (
             <div
               key={i}
@@ -113,9 +112,10 @@ export default function HomeClient({
             {/* Badge */}
             <motion.div
               variants={staggerItem}
-              className='hero-badge inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full mb-8 backdrop-blur-md'
+              className='hero-badge inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full mb-8 sm:backdrop-blur-md'
             >
-              <span className='w-2 h-2 bg-emerald-400 rounded-full animate-pulse'></span>
+              {/* Pulse only on desktop */}
+              <span className='w-2 h-2 bg-emerald-400 rounded-full sm:animate-pulse'></span>
               <span className='text-white text-xs font-black uppercase tracking-widest'>
                 منصة موثوقة وآمنة
               </span>
@@ -152,13 +152,13 @@ export default function HomeClient({
             >
               <Link
                 href='/services'
-                className='group relative px-8 py-4 sm:px-10 sm:py-5 w-full sm:w-auto text-center bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-black rounded-[2rem] transition-all duration-300 hover:scale-110 border border-emerald-400/50 overflow-hidden animate-glow-pulse'
+                className='group relative px-8 py-4 sm:px-10 sm:py-5 w-full sm:w-auto text-center bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-black rounded-[2rem] transition-all duration-300 border border-emerald-400/50 overflow-hidden sm:hover:scale-110 sm:animate-glow-pulse'
               >
-                {/* Sheen Effect - Continuous */}
-                <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full animate-shimmer' />
+                {/* Sheen Effect - Continuous - Desktop Only */}
+                <div className='hidden sm:block absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full animate-shimmer' />
 
                 <span className='flex items-center justify-center gap-3 relative z-10'>
-                  <span className='animate-pulse inline-block text-yellow-300'>💡</span>
+                  <span className='hidden sm:inline-block animate-pulse text-yellow-300'>💡</span>
                   استعرض الخدمات
                   <svg
                     className='w-5 h-5 group-hover:-translate-x-1 transition-transform'
@@ -179,7 +179,7 @@ export default function HomeClient({
               {!session?.user && (
                 <Link
                   href='/register'
-                  className='px-8 py-4 sm:px-10 sm:py-5 w-full sm:w-auto text-center bg-white/10 hover:bg-white/20 text-white text-lg font-bold rounded-[2rem] border border-white/30 hover:border-white/50 transition-all backdrop-blur-md'
+                  className='px-8 py-4 sm:px-10 sm:py-5 w-full sm:w-auto text-center bg-white/10 hover:bg-white/20 text-white text-lg font-bold rounded-[2rem] border border-white/30 hover:border-white/50 transition-all sm:backdrop-blur-md'
                 >
                   إنشاء حساب مجاني
                 </Link>
@@ -223,7 +223,7 @@ export default function HomeClient({
                 <motion.div
                   variants={staggerItem}
                   key={i}
-                  className='stat-card group bg-white/5 backdrop-blur-xl border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 text-center hover:bg-white/10 transition-all duration-500 cursor-default shadow-lg'
+                  className='stat-card group bg-white/5 border border-white/10 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 text-center hover:bg-white/10 transition-all duration-500 cursor-default shadow-lg sm:backdrop-blur-xl'
                 >
                   <div
                     className={`w-10 h-10 sm:w-12 sm:h-12 ${style.bg} rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4`}
@@ -265,7 +265,7 @@ export default function HomeClient({
         <div className='absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent z-0'></div>
       </section>
 
-      {/* ================= SERVICES SECTION (MARQUEE) ================= */}
+      {/* ================= SERVICES SECTION ================= */}
       <section className='services-section pt-10 sm:pt-20 pb-20 sm:pb-32 bg-slate-50 relative z-10 overflow-hidden'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <FadeIn>
@@ -281,31 +281,33 @@ export default function HomeClient({
           </FadeIn>
         </div>
 
-        {/* INFINITE MARQUEE */}
-        {/* Using LTR explicitly for the marquee container allows x: -50% logic to work consistently regardless of page direction */}
-        <div className='relative w-full overflow-hidden py-5 sm:py-10' dir='ltr'>
+        {/* 
+            MOBILE OPTIMIZATION:
+            - Mobile (< sm): Use native CSS scroll snap (zero JS overhead, smooth native feel).
+            - Desktop (>= sm): Use the fancy infinite marquee.
+        */}
+
+        {/* MOBILE VIEW: Native Scroll Carousel */}
+        <div className='block sm:hidden w-full overflow-x-auto pb-8 -mb-8 px-4 snap-x snap-mandatory scroll-smooth hide-scrollbar'>
+          <div className='flex gap-4 w-max px-4'>
+            {marqueeServices.slice(0, 15).map((service, i) => (
+              <div key={`${service.id}-mobile-${i}`} className='w-[280px] snap-center'>
+                <ServiceCard
+                  service={service}
+                  animateInView={false} // Disable intersection observer for mobile
+                  className='h-[380px]'
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* DESKTOP VIEW: Infinite Marquee */}
+        <div className='relative w-full overflow-hidden py-10 hidden sm:block' dir='ltr'>
           {/* Gradients to mask edges */}
-          <div className='absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none'></div>
-          <div className='absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none'></div>
-          {/* 
-                SEAMLESS MARQUEE FIX:
-                To avoid the "half-gap glitch" where x: -50% doesn't align perfectly with flex gaps,
-                we remove the parent `gap-8` and instead apply `pr-8` (padding) to each child.
-            */}
-          {/* 
-                PARALLAX SLIDER (Drag & Snap)
-                A horizontal scroll container that allows dragging.
-                Items snap to center or strict positioning.
-            */}
-          {/* 
-                SEAMLESS INFINITE SLIDER
-                To ensure a perfect loop without gaps:
-                1. We use a container wide enough to hold two full sets of items (w-max).
-                2. We duplicate the list (A + A).
-                3. We animate from x: 0% to x: -50%.
-                4. Since A is identical to A, when the first A finishes (-50%), we instantly reset to 0%, creating an illusion of infinite flow.
-                5. We avoid 'gap' on the flex container and instead use 'padding-right' on items to handle spacing reliably.
-            */}
+          <div className='absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none'></div>
+          <div className='absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none'></div>
+
           <motion.div
             className='flex w-max'
             initial={{ x: '0%' }}
@@ -313,25 +315,18 @@ export default function HomeClient({
             transition={{
               repeat: Infinity,
               ease: 'linear',
-              duration: Math.max(40, marqueeServices.length * 2), // Dynamic duration based on count (2s per item) for consistent speed
+              duration: Math.max(40, marqueeServices.length * 2),
               repeatType: 'loop',
             }}
             style={{ willChange: 'transform' }}
             whileHover={{ animationPlayState: 'paused' }}
           >
-            {/* 
-                 Safety: Double repetition is standard. 
-                 Using padding-right (pr-8) prevents flex-gap sub-pixel issues.
-               */}
             {[...marqueeServices, ...marqueeServices].map((service, i) => (
-              <div
-                key={`${service.id}-${i}`}
-                className='flex-shrink-0 w-[280px] sm:w-[350px] pr-4 sm:pr-8'
-              >
+              <div key={`${service.id}-${i}`} className='flex-shrink-0 w-[350px] pr-8'>
                 <ServiceCard
                   service={service}
                   animateInView={false}
-                  className='h-[380px] sm:h-[420px] transform-gpu' // GPU acceleration hint
+                  className='h-[420px] transform-gpu'
                 />
               </div>
             ))}

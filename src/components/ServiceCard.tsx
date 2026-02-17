@@ -29,11 +29,16 @@ export interface Category {
 }
 
 // Scroll Animation Hook
-function useScrollAnimation() {
+function useScrollAnimation(enabled: boolean = true) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    if (!enabled) {
+      setIsVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       entries => {
         const entry = entries[0];
@@ -46,7 +51,7 @@ function useScrollAnimation() {
 
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
-  }, []);
+  }, [enabled]);
 
   return { ref, isVisible };
 }
@@ -55,7 +60,7 @@ interface ServiceCardProps {
   service: Service;
   index?: number;
   animateInView?: boolean;
-  className?: string;
+  className?: string; // Optional custom class
 }
 
 export function ServiceCard({
@@ -64,7 +69,7 @@ export function ServiceCard({
   animateInView = true,
   className = '',
 }: ServiceCardProps) {
-  const { ref, isVisible } = useScrollAnimation();
+  const { ref, isVisible } = useScrollAnimation(animateInView);
 
   const minPrice =
     service.variants && service.variants.length > 0
