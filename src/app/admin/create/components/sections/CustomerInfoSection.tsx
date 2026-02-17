@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Customer, FormData, Service, ServiceVariant } from '../../types';
+import { LastOrderAlert } from '../../../orders/components/LastOrderAlert';
 
 interface CustomerInfoSectionProps {
   formData: FormData;
@@ -519,6 +520,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
            </div>
         </div>
       </div>
+      <LastOrderAlert searchTerm={formData.customerPhone || formData.customerName} />
     </div>
   );
 };

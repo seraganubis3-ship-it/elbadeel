@@ -15,6 +15,7 @@ import {
   WorkOrderModal,
   SelectDelegateModal,
   EditReportDataModal,
+  LastOrderAlert, // Add this
 } from './components';
 import { printOrdersReport } from './utils/printReport';
 
@@ -60,6 +61,11 @@ export default function AdminOrdersPage() {
     deleteOrder,
     hasFilter,
   } = useOrders(showSuccess, showError);
+
+  // Last Order Alert Logic
+  const LastOrderAlertComponent = (
+    <LastOrderAlert searchTerm={filters.searchTerm} />
+  );
 
   // WhatsApp Modal State
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
@@ -139,7 +145,7 @@ export default function AdminOrdersPage() {
   };
 
   // 2. Delegate Selected -> Open Edit Modal
-  const handleDelegateForGeneralReport = (delegate?: any) => {
+   const handleDelegateForGeneralReport = (delegate: any, reportDate?: string) => {
      setShowDelegateModal(false);
 
      // Prepare data for editing
@@ -348,6 +354,7 @@ export default function AdminOrdersPage() {
         type: 'GENERAL',
         sections: sections, // USE SECTIONS
         delegate: delegate || null, // Store selected delegate (or null)
+        reportDate: reportDate || new Date().toLocaleDateString('ar-EG'),
         title: 'مراجعة بيانات الطباعة (شامل)',
      });
      setShowEditReportModal(true);
@@ -414,77 +421,83 @@ export default function AdminOrdersPage() {
     sections?: any[]; // New
     delegate: any;
     title: string;
+    reportDate?: string | undefined;
   } | null>(null);
 
-  const handleConfirmEditReport = (finalData: any[]) => {
+  const handleConfirmEditReport = (data: any[], reportDate?: string) => {
       if (!reportEditingState) return;
       
       const { type, delegate } = reportEditingState;
       
-      if (type === 'TRANSLATION') {
-           localStorage.setItem('temp_translation_report_data', JSON.stringify({
-              orders: finalData,
-              delegate: {
-                  name: delegate.name,
-                  idNumber: delegate.idNumber,
-                  unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
-              }
-           }));
-           window.open('/admin/orders/print-translation-report', '_blank');
-           setShowEditReportModal(false); // Close Modal
+       if (type === 'TRANSLATION') {
+            localStorage.setItem('temp_translation_report_data', JSON.stringify({
+               orders: data,
+               reportDate: reportDate || reportEditingState.reportDate,
+               delegate: {
+                   name: delegate.name,
+                   idNumber: delegate.idNumber,
+                   unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
+               }
+            }));
+            window.open('/admin/orders/print-translation-report', '_blank');
+            setShowEditReportModal(false); // Close Modal
 
-      } else if (type === 'FAMILY') {
-           localStorage.setItem('temp_family_report_data', JSON.stringify({
-              orders: finalData,
-              delegate: {
-                  name: delegate.name,
-                  idNumber: delegate.idNumber,
-                  unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
-              }
-           }));
-           window.open('/admin/orders/print-family-report', '_blank');
-           setShowEditReportModal(false); // Close Modal
-      } else if (type === 'ID_CARD_SIGNATURES') {
-           localStorage.setItem('temp_id_card_signatures_report_data', JSON.stringify({
-              orders: finalData,
-              delegate: {
-                  name: delegate.name,
-                  idNumber: delegate.idNumber,
-                  unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
-              }
-           }));
-           window.open('/admin/orders/print-id-card-signatures-report', '_blank');
-           setShowEditReportModal(false); // Close Modal
-      } else if (type === 'OFFICIAL_DOCUMENTS_SIGNATURES') {
-           localStorage.setItem('temp_official_docs_signature_report_data', JSON.stringify({
-              orders: finalData,
-              delegate: {
-                  name: delegate.name,
-                  idNumber: delegate.idNumber,
-                  unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
-              }
-           }));
-           window.open('/admin/orders/print-official-documents-signature-report', '_blank');
-           setShowEditReportModal(false); // Close Modal
+       } else if (type === 'FAMILY') {
+            localStorage.setItem('temp_family_report_data', JSON.stringify({
+               orders: data,
+               reportDate: reportDate || reportEditingState.reportDate,
+               delegate: {
+                   name: delegate.name,
+                   idNumber: delegate.idNumber,
+                   unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
+               }
+            }));
+            window.open('/admin/orders/print-family-report', '_blank');
+            setShowEditReportModal(false); // Close Modal
+       } else if (type === 'ID_CARD_SIGNATURES') {
+            localStorage.setItem('temp_id_card_signatures_report_data', JSON.stringify({
+               orders: data,
+               reportDate: reportDate || reportEditingState.reportDate,
+               delegate: {
+                   name: delegate.name,
+                   idNumber: delegate.idNumber,
+                   unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
+               }
+            }));
+            window.open('/admin/orders/print-id-card-signatures-report', '_blank');
+            setShowEditReportModal(false); // Close Modal
+       } else if (type === 'OFFICIAL_DOCUMENTS_SIGNATURES') {
+            localStorage.setItem('temp_official_docs_signature_report_data', JSON.stringify({
+               orders: data,
+               reportDate: reportDate || reportEditingState.reportDate,
+               delegate: {
+                   name: delegate.name,
+                   idNumber: delegate.idNumber,
+                   unionCard: delegate.unionCardFront || delegate.idCardFront || '' 
+               }
+            }));
+            window.open('/admin/orders/print-official-documents-signature-report', '_blank');
+            setShowEditReportModal(false); // Close Modal
       } else if (type === 'PHONE') {
-          localStorage.setItem('temp_phone_report_data', JSON.stringify(finalData));
+          localStorage.setItem('temp_phone_report_data', JSON.stringify(data));
            window.open('/admin/orders/print-phone-report', '_blank');
            setShowEditReportModal(false); // Close Modal
       } else if (type === 'GENERAL') {
           // Reconstruct orders with overrides
           
           printOrdersReport({
-            orders: finalData, // These are the edited objects but keeping order structure
+            orders: data, // Use the data from arguments
             selectedOrders: [], // All passed in 'orders' are to be printed
             filters: filters,
-            delegate: delegate // Pass delegate info
+            delegate: delegate, // Pass delegate info
+            reportDate: reportDate // Pass manual date from modal
           });
           setShowEditReportModal(false); // Close Modal
       }
 
       setReportEditingState(null);
   };
-  const executePrintTranslationReport = (delegate: any) => {
+  const executePrintTranslationReport = (delegate: any, reportDate?: string) => {
     const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => {
@@ -543,6 +556,7 @@ export default function AdminOrdersPage() {
         type: 'TRANSLATION',
         data: reportData,
         delegate,
+        reportDate,
         title: 'مراجعة بيانات كشف الترجمة',
         columns: [
             { key: 'name', label: 'الاسم' },
@@ -566,7 +580,7 @@ export default function AdminOrdersPage() {
     setShowDelegateModal(true);
   };
 
-  const executePrintFamilyReport = (delegate: any) => {
+  const executePrintFamilyReport = (delegate: any, reportDate?: string) => {
     const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => {
@@ -598,6 +612,7 @@ export default function AdminOrdersPage() {
         type: 'FAMILY',
         data: reportData,
         delegate,
+        reportDate,
         title: 'مراجعة بيانات كشف القيد العائلي',
         columns: [
             { key: 'name', label: 'الاسم' },
@@ -622,7 +637,7 @@ export default function AdminOrdersPage() {
     setShowDelegateModal(true);
   };
 
-  const executePrintIdCardSignaturesReport = (delegate: any) => {
+  const executePrintIdCardSignaturesReport = (delegate: any, reportDate?: string) => {
     const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => {
@@ -656,7 +671,8 @@ export default function AdminOrdersPage() {
         type: 'ID_CARD_SIGNATURES',
         data: reportData,
         delegate,
-        title: 'مراجعة بيانات كشف توقيعات البطاقة',
+        reportDate,
+        title: 'مراجعة كشف توقيعات البطاقة',
         columns: [
             { key: 'name', label: 'الاسم' },
             { key: 'idNumber', label: 'الرقم القومي' },
@@ -677,7 +693,7 @@ export default function AdminOrdersPage() {
     setShowDelegateModal(true);
   };
 
-  const executePrintOfficialDocumentsSignatureReport = (delegate: any) => {
+  const executePrintOfficialDocumentsSignatureReport = (delegate: any, reportDate?: string) => {
     const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => {
@@ -716,7 +732,8 @@ export default function AdminOrdersPage() {
         type: 'OFFICIAL_DOCUMENTS_SIGNATURES',
         data: reportData,
         delegate,
-        title: 'مراجعة بيانات كشف توقيعات المستخرجات',
+        reportDate,
+        title: 'مراجعة كشف توقيعات المستخرجات',
         columns: [
             { key: 'name', label: 'الاسم' },
             { key: 'idNumber', label: 'الرقم القومي' },
@@ -930,7 +947,11 @@ export default function AdminOrdersPage() {
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={paginate}
+                totalItems={filteredOrders.length}
               />
+      
+              {/* Search Alert */}
+              {LastOrderAlertComponent}
             </>
           )}
         </div>
@@ -972,20 +993,21 @@ export default function AdminOrdersPage() {
       <SelectDelegateModal
         isOpen={showDelegateModal}
         onClose={() => setShowDelegateModal(false)}
-        onConfirm={(delegate, authType) => {
+        onConfirm={(delegate, authType, reportDate) => {
            if (targetReport === 'TRANSLATION') {
-              executePrintTranslationReport(delegate!);
+              executePrintTranslationReport(delegate!, reportDate);
            } else if (targetReport === 'FAMILY') {
-              executePrintFamilyReport(delegate!);
+              executePrintFamilyReport(delegate!, reportDate);
            } else if (targetReport === 'ID_CARD_SIGNATURES') {
-              executePrintIdCardSignaturesReport(delegate!);
+              executePrintIdCardSignaturesReport(delegate!, reportDate);
            } else if (targetReport === 'OFFICIAL_DOCUMENTS_SIGNATURES') {
-              executePrintOfficialDocumentsSignatureReport(delegate!);
+              executePrintOfficialDocumentsSignatureReport(delegate!, reportDate);
            } else if (targetReport === 'GENERAL') {
-              handleDelegateForGeneralReport(delegate);
+              handleDelegateForGeneralReport(delegate, reportDate);
            } else if (targetReport === 'AUTHORIZATION' && authType) {
                  executePrintAuthorization(delegate, authType);
              }
+           setShowDelegateModal(false);
         }}
         isOptional={targetReport === 'GENERAL'}
         mode={targetReport === 'AUTHORIZATION' ? 'authorization' : 'default'}
@@ -994,14 +1016,15 @@ export default function AdminOrdersPage() {
       {/* Edit Report Data Modal */}
       {reportEditingState && (
         <EditReportDataModal
-            isOpen={showEditReportModal}
-            onClose={() => setShowEditReportModal(false)}
-            onConfirm={handleConfirmEditReport}
-            initialData={reportEditingState.data || []}
-            columns={reportEditingState.columns || []}
-            sections={reportEditingState.sections || []} // Pass sections
-            title={reportEditingState.title}
-        />
+        isOpen={showEditReportModal}
+        onClose={() => setShowEditReportModal(false)}
+        onConfirm={(data, rDate) => handleConfirmEditReport(data, rDate)}
+        sections={reportEditingState?.sections}
+        initialData={reportEditingState?.data}
+        columns={reportEditingState?.columns}
+        title={reportEditingState?.title || ''}
+        initialReportDate={reportEditingState?.reportDate}
+      />
       )}
 
       {/* Payment Alert Modal */}

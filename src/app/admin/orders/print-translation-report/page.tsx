@@ -27,10 +27,13 @@ export default function PrintTranslationReport() {
   useEffect(() => {
     // Load data from localStorage
     const storedData = localStorage.getItem('temp_translation_report_data');
+    let customDate = '';
+    
     if (storedData) {
       const parsed = JSON.parse(storedData);
       setData(parsed.orders || []);
       setDelegate(parsed.delegate || null);
+      customDate = parsed.reportDate;
       
       // Auto print after a short delay
       setTimeout(() => {
@@ -39,20 +42,21 @@ export default function PrintTranslationReport() {
     }
 
     // Date Logic
-    const workDate = localStorage.getItem('adminWorkDate');
-    let dateObj = new Date();
-    let dateStr = dateObj.toLocaleDateString('en-GB');
-
-    if (workDate) {
-       const parts = workDate.split('/');
-       if (parts.length === 3) {
-          dateObj = new Date(parseInt(parts[2] || '0'), parseInt(parts[1] || '0') - 1, parseInt(parts[0] || '0'));
-          dateStr = workDate;
-       }
+    if (customDate) {
+       setReportDate(customDate);
+    } else {
+      const workDate = localStorage.getItem('adminWorkDate');
+      let dateObj = new Date();
+      if (workDate) {
+         const parts = workDate.split('/');
+         if (parts.length === 3) {
+            dateObj = new Date(parseInt(parts[2] || '0'), parseInt(parts[1] || '0') - 1, parseInt(parts[0] || '0'));
+         }
+      }
+      const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
+      const formatted = dateObj.toLocaleDateString('ar-EG', options).replace(/،/g, ' -');
+      setReportDate(formatted);
     }
-    
-    const dayName = dateObj.toLocaleDateString('ar-EG', { weekday: 'long' });
-    setReportDate(`${dayName} - ${dateStr}`);
   }, []);
 
   return (

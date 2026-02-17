@@ -18,11 +18,12 @@ interface Section {
 interface EditReportDataModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: any[] | any) => void;
-  initialData?: any[]; // Legacy
-  columns?: Column[]; // Legacy
-  sections?: Section[]; // New multi-section support
+  onConfirm: (data: any[] | any, reportDate?: string) => void;
+  initialData?: any[] | undefined; // Legacy
+  columns?: Column[] | undefined; // Legacy
+  sections?: Section[] | undefined; // New multi-section support
   title: string;
+  initialReportDate?: string | undefined;
 }
 
 export default function EditReportDataModal({
@@ -33,12 +34,15 @@ export default function EditReportDataModal({
   columns,
   sections,
   title,
+  initialReportDate,
 }: EditReportDataModalProps) {
   // We store data as a flat array of sections, or a single section if legacy
   const [reportSections, setReportSections] = useState<Section[]>([]);
+  const [reportDate, setReportDate] = useState(initialReportDate || '');
 
   useEffect(() => {
     if (isOpen) {
+      setReportDate(initialReportDate || '');
       if (sections && sections.length > 0) {
         setReportSections(sections);
       } else if (initialData && columns) {
@@ -46,7 +50,7 @@ export default function EditReportDataModal({
         setReportSections([{ title: '', columns, data: initialData }]);
       }
     }
-  }, [isOpen, initialData, columns, sections]);
+  }, [isOpen, initialData, columns, sections, initialReportDate]);
 
   const handleChange = (sectionIndex: number, rowIndex: number, key: string, value: any) => {
     const newSections = [...reportSections];
@@ -93,17 +97,50 @@ export default function EditReportDataModal({
     setReportSections(newSections);
   };
 
+  const formatDateInput = (value: string) => {
+    // Remove non-numeric characters
+    const digits = value.replace(/\D/g, '');
+    let formatted = digits;
+    
+    if (digits.length > 2) {
+      formatted = digits.slice(0, 2) + '/' + digits.slice(2);
+    }
+    if (digits.length > 4) {
+      formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
+    }
+    
+    return formatted.slice(0, 10);
+  };
+
   const handleConfirm = () => {
+     // Prepend day name automatically if it's just a date
+     let finalReportDate = reportDate;
+     if (reportDate && reportDate.includes('/') && !reportDate.includes('-')) {
+        try {
+          const [day, month, year] = reportDate.split('/').map(Number);
+          if (day && month && year && year > 1000) {
+            const dateObj = new Date(year, month - 1, day);
+            if (!isNaN(dateObj.getTime())) {
+              const options: Intl.DateTimeFormatOptions = { weekday: 'long' };
+              const dayName = dateObj.toLocaleDateString('ar-EG', options);
+              finalReportDate = `${dayName} - ${reportDate}`;
+            }
+          }
+        } catch (e) {
+          // Fallback
+        }
+     }
+
      if (sections && sections.length > 0) {
          // Return grouped data structure if input was sections
          // Or flatten it? The parent expects flat data usually, BUT
          // printReport expects a list of orders.
          // Let's return the FLATTENED list of all rows from all sections.
          const allRows = reportSections.flatMap(s => s.data);
-         onConfirm(allRows);
+         onConfirm(allRows, finalReportDate);
      } else {
          // Legacy behavior
-         onConfirm(reportSections[0]?.data || []);
+         onConfirm(reportSections[0]?.data || [], finalReportDate);
      }
   };
 
@@ -114,9 +151,21 @@ export default function EditReportDataModal({
       <div className='bg-white rounded-2xl shadow-xl w-full max-w-6xl flex flex-col max-h-[95vh] animate-in fade-in zoom-in duration-200'>
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b bg-gray-50 rounded-t-2xl">
-           <h3 className='text-xl font-bold text-gray-900'>
-             {title}
-           </h3>
+           <div className="flex flex-col gap-1">
+             <h3 className='text-xl font-bold text-gray-900'>
+               {title}
+             </h3>
+             <div className="flex items-center gap-2 mt-1">
+               <span className="text-sm font-bold text-gray-500">تاريخ الكشف:</span>
+               <input 
+                 type="text" 
+                 value={reportDate} 
+                 onChange={(e) => setReportDate(formatDateInput(e.target.value))}
+                 placeholder="17/02/2026"
+                 className="text-sm font-black text-blue-600 border-none bg-blue-50/50 rounded-md px-2 py-0.5 focus:ring-1 focus:ring-blue-300 outline-none w-32"
+               />
+             </div>
+           </div>
            <button
              onClick={onClose}
              className='text-gray-400 hover:text-gray-500 transition-colors'

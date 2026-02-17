@@ -96,12 +96,28 @@ export default function ServiceFieldsManager({
     const option = field.options[optionIndex];
     if (!option) return;
 
-    const currentDocs = option.requiredDocs || [];
+    // Handle parsing from JSON string if it's stored that way, or use as array if local state allows
+    let currentDocs: string[] = [];
+    try {
+        if (Array.isArray(option.requiredDocs)) {
+            currentDocs = option.requiredDocs;
+        } else if (typeof option.requiredDocs === 'string') {
+            currentDocs = JSON.parse(option.requiredDocs || '[]');
+        }
+    } catch {
+        currentDocs = [];
+    }
+
     const newDocs = currentDocs.includes(docTitle)
       ? currentDocs.filter(d => d !== docTitle)
       : [...currentDocs, docTitle];
 
-    updateOption(fieldIndex, optionIndex, 'requiredDocs', newDocs);
+    // We store it as a JSON string to match the type definition if needed, 
+    // OR if the component state allows arrays, we keep it as array. 
+    // Given types.ts says string, we should probably stick to string to be safe for backend.
+    // BUT, for local editing convenience, keeping it as string is annoying.
+    // Let's coerce to string for the update.
+    updateOption(fieldIndex, optionIndex, 'requiredDocs', JSON.stringify(newDocs));
   };
 
   return (
@@ -272,7 +288,18 @@ export default function ServiceFieldsManager({
                                 type='button'
                                 onClick={() => toggleDocForOption(fIdx, oIdx, doc.title)}
                                 className={`px-4 py-2 rounded-full text-xs font-bold transition-all border ${
-                                  (opt.requiredDocs || []).includes(doc.title)
+                                  (() => {
+                                      let docs: string[] = [];
+                                      try {
+                                          if (Array.isArray(opt.requiredDocs)) docs = opt.requiredDocs;
+                                          else if (typeof opt.requiredDocs === 'string') docs = JSON.parse(opt.requiredDocs || '[]');
+                                      } catch (e) {
+                                          if (typeof opt.requiredDocs === 'string' && opt.requiredDocs) {
+                                              docs = [opt.requiredDocs]; // Fallback for plain string non-json
+                                          }
+                                      }
+                                      return docs.includes(doc.title);
+                                  })()
                                     ? 'bg-purple-600 text-white border-purple-600 shadow-md'
                                     : 'bg-white text-slate-600 border-slate-200 hover:border-purple-300'
                                 }`}

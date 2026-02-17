@@ -332,7 +332,7 @@ export default function OrderForm({
                 return !!(formData.customerName && formData.customerPhone && formData.husbandName && formData.wifeName && formData.marriageDate);
             }
             if (isDeath) {
-                return !!(formData.customerName && formData.customerPhone && formData.deceasedName && formData.birthDate);
+                return !!(formData.customerName && formData.customerPhone && formData.deceasedName);
             }
             if (isBirth) {
                 return !!(formData.customerName && formData.customerPhone && formData.motherName && formData.birthDate);
@@ -348,7 +348,7 @@ export default function OrderForm({
                 return !!(formData.customerName && formData.customerPhone && formData.husbandName && formData.wifeName && formData.marriageDate);
             }
             if (isDeath) {
-                return !!(formData.customerName && formData.customerPhone && formData.deceasedName && formData.birthDate);
+                return !!(formData.customerName && formData.customerPhone && formData.deceasedName );
             }
             if (isBirth) {
                 return !!(formData.customerName && formData.customerPhone && formData.motherName && formData.birthDate);

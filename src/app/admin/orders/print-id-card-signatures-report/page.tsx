@@ -23,212 +23,282 @@
   
     useEffect(() => {
       // Load data from localStorage
-      const storedData = localStorage.getItem('temp_id_card_signatures_report_data');
-      if (storedData) {
-        const parsed = JSON.parse(storedData);
-        setData(parsed.orders || []);
-        setDelegate(parsed.delegate || null);
-        
-        // Auto print after a short delay
-        setTimeout(() => {
-        // window.print(); // Auto-print disabled
-      }, 500);
-      }
-  
-      // Date Logic
+    const storedData = localStorage.getItem('temp_id_card_signatures_report_data');
+    let customDate = '';
+    
+    if (storedData) {
+      const parsed = JSON.parse(storedData);
+      setData(parsed.orders || []);
+      setDelegate(parsed.delegate || null);
+      customDate = parsed.reportDate;
+    }
+
+    // Date Logic
+    if (customDate) {
+       setReportDate(customDate);
+    } else {
       const workDate = localStorage.getItem('adminWorkDate');
       let dateObj = new Date();
-      let dateStr = dateObj.toLocaleDateString('en-GB');
-  
       if (workDate) {
          const parts = workDate.split('/');
          if (parts.length === 3) {
             dateObj = new Date(parseInt(parts[2] || '0'), parseInt(parts[1] || '0') - 1, parseInt(parts[0] || '0'));
-            dateStr = workDate;
          }
       }
-      
-      const dayName = dateObj.toLocaleDateString('ar-EG', { weekday: 'long' });
-      setReportDate(`${dayName} - ${dateStr}`);
+      const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
+      const formatted = dateObj.toLocaleDateString('ar-EG', options).replace(/،/g, ' -');
+      setReportDate(formatted);
+    }
+  }, []);
   
-    }, []);
-  
-    return (
-    <div className="bg-white" dir="rtl">
+  return (
+    <div className="bg-white min-h-screen p-0 w-full" dir="rtl">
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
         
         @media print {
           @page {
             size: A4;
-            margin: 0;
+            margin: 10mm !important;
           }
           body {
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
             font-family: 'Tajawal', sans-serif !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
           }
           .no-print {
             display: none !important;
-          }
-          ::-webkit-scrollbar {
-            display: none;
           }
         }
 
         body {
           font-family: 'Tajawal', sans-serif;
+          margin: 0;
+          padding: 0;
+          background: white;
+          color: #000;
         }
 
-        /* Premium Ornate Frame */
-        .premium-frame {
-          position: fixed;
-          top: 3mm;
-          bottom: 3mm;
-          left: 3mm;
-          right: 3mm;
-          border: 2px solid #000;
-          pointer-events: none;
-          z-index: 9999;
-        }
-        
-        .premium-frame::after {
-          content: '';
-          position: absolute;
-          top: 1.2mm;
-          bottom: 1.2mm;
-          left: 1.2mm;
-          right: 1.2mm;
-          border: 1px dashed #000;
-          opacity: 0.5;
-        }
-
-        .corner {
-          position: absolute;
-          width: 60px;
-          height: 60px;
-          z-index: 10000;
-        }
-
-        .corner-tl { top: -2px; left: -2px; }
-        .corner-tr { top: -2px; right: -2px; transform: scaleX(-1); }
-        .corner-bl { bottom: -2px; left: -2px; transform: scaleY(-1); }
-        .corner-br { bottom: -2px; right: -2px; transform: scale(-1); }
-
-        .ornate-svg {
-          width: 100%;
-          height: 100%;
-          fill: #000;
-        }
-
-        .report-content {
-          padding: 10mm 15mm;
+        .report-wrapper {
           position: relative;
-          z-index: 10;
+          width: 100%;
+          padding: 0;
+          margin: 0;
+          box-sizing: border-box;
+        }
+
+        .report-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          width: 100%;
+          margin-bottom: 2mm;
+        }
+
+        .logo-container {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 320px;
+          z-index: 100;
         }
 
         .logo-img {
-          height: 250px;
+          width: 100%;
+          height: auto;
           object-fit: contain;
         }
 
+        .header-titles {
+          width: 100%;
+          text-align: center;
+          padding-top: 15mm;
+          margin-bottom: 8mm;
+        }
+
+        .report-title {
+          font-size: 32px;
+          font-weight: 900;
+          margin-bottom: 3mm;
+          color: #000;
+        }
+
+        .date-badge {
+          display: inline-block;
+          border: 3px solid #000;
+          padding: 6px 25px;
+          font-size: 19px;
+          font-weight: 900;
+          background: #fff;
+        }
+
+        .recipient-section {
+          margin-bottom: 5mm;
+          padding-right: 2mm;
+        }
+
+        .recipient-title {
+          font-size: 20px;
+          font-weight: 900;
+          text-decoration: underline;
+          text-underline-offset: 5px;
+          margin-bottom: 3mm;
+        }
+
+        .greeting {
+          font-size: 26px;
+          font-weight: 900;
+          text-align: center;
+          font-style: italic;
+          margin-bottom: 4mm;
+        }
+
+        .declaration-box {
+          border: 4px solid #000;
+          padding: 12px 15px;
+          background-color: #f9fafb;
+          margin-bottom: 6mm;
+          border-radius: 4px;
+        }
+
+        .declaration-text {
+          font-size: 19px;
+          line-height: 1.5;
+          text-align: justify;
+          font-weight: 800;
+          color: #000;
+        }
+
+        .delegate-highlight {
+          color: #1e3a8a;
+          border-bottom: 2px solid #000;
+          padding: 0 5px;
+        }
+
+        .data-table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: fixed;
+          border: 3px solid #000;
+        }
+
+        .data-table thead {
+          display: table-header-group;
+        }
+
         .data-table th {
-          background-color: #d1d5db !important;
-          color: #000 !important;
-          font-weight: 900 !important;
-          font-size: 13px;
-          padding: 3px !important;
+          background-color: #f3f4f6 !important;
+          border: 2px solid #000;
+          padding: 8px 1px;
+          font-weight: 900;
+          font-size: 14px;
+          text-align: center;
         }
         
         .data-table td {
-          font-weight: 900;
-          font-size: 12px;
-          padding: 3px !important;
+          border: 2px solid #000;
+          padding: 6px 4px;
+          font-weight: 800;
+          font-size: 15px;
+          word-wrap: break-word;
+          overflow: hidden;
+          vertical-align: middle;
         }
 
+        .col-index { width: 30px; }
+        .col-name { width: auto; }
+        .col-id { width: 160px; }
+        .col-type { width: 85px; }
+        .col-signature { width: 130px; }
+
         .signature-cell {
-           min-width: 150px;
+           height: 60px;
+        }
+
+        .nowrap {
+          white-space: nowrap;
+        }
+
+        .delegate-card-container {
+          margin-top: 15mm;
+          display: flex;
+          justify-content: center;
+          page-break-inside: avoid;
+        }
+
+        .delegate-card-frame {
+          border: 5px solid #000;
+          padding: 8px;
+          background: #fff;
+          width: 450px;
+          height: 280px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .delegate-card-img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
         }
       `}</style>
 
-      <div className="premium-frame">
-        {[ 'tl', 'tr', 'bl', 'br' ].map(pos => (
-          <div key={pos} className={`corner corner-${pos}`}>
-            <svg className="ornate-svg" viewBox="0 0 100 100">
-              <path d="M0,0 L100,0 L100,5 L20,5 Q10,5 10,15 L10,100 L5,100 L5,20 Q5,10 0,10 Z" fill="black"/>
-              <path d="M15,15 L50,15 L50,18 L20,18 Q18,18 18,20 L18,50 L15,50 Z" fill="black"/>
-            </svg>
-          </div>
-        ))}
-      </div>
+      <div className="report-wrapper">
+        <div className="logo-container">
+          <img src="/images/report-header.png" alt="Header" className="logo-img" />
+        </div>
 
-      <div className="report-content">
-        {/* Header Section */}
-        <div className="relative h-40 mb-6 flex justify-between items-start border-b-2 border-gray-200">
-          <div className="flex flex-col items-center flex-1 pt-12">
-            <h2 className="text-2xl font-black bg-white text-black px-6 py-2 border-2 border-black rounded-xl shadow-sm">
-              كشف توقيعات البطاقة
-            </h2>
-            <div className="mt-2 bg-gray-100 rounded-lg px-6 py-1 border border-gray-300 font-extrabold text-lg">
-              {reportDate}
-            </div>
-          </div>
-          
-          <div className="absolute -right-12 -top-16">
-            <img src="/images/report-header.png" alt="Header" className="logo-img" />
+        <div className="header-titles">
+          <h1 className="report-title">كشف توقيعات البطاقة</h1>
+          <div className="date-badge">
+            {reportDate}
           </div>
         </div>
 
-        {/* Info Section */}
-        <div className="mb-4 space-y-2">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-black underline decoration-2 underline-offset-4">السيد العميد / مدير مصلحة الأحوال المدنية بالجيزة</h3>
-          </div>
-          <p className="text-center text-xl font-bold">تحية طيبة وبعد</p>
-          <p className="text-justify text-sm leading-relaxed font-bold bg-gray-50 p-3 rounded-xl border border-gray-200">
-            أقر أنا / <span className="text-blue-900 mx-1">{delegate?.name || '................................'}</span> مندوب البديل للخدمات الحكومية بأنه تم تفويضي من قبل أصحاب الشأن المدون اسمائهم في الكشف لاستخراج واستلام بطاقات الرقم القومي واذ ظهر عكس ذلك أكون مسئول مسئولية كاملة وهذا اقرار مني بذلك / <span className="text-blue-900 mx-1">{delegate?.name || '................................'}</span>
+        <section className="recipient-section">
+          <h2 className="recipient-title">السيد العميد / مدير مصلحة الأحوال المدنية بالجيزة</h2>
+          <p className="greeting">تحية طيبة وبعد ،،،</p>
+        </section>
+
+        <section className="declaration-box">
+          <p className="declaration-text">
+            أقر أنا / <span className="delegate-highlight">{delegate?.name || '................................'}</span> مندوب البديل للخدمات الحكومية بأنه تم تفويضي من قبل أصحاب الشأن المدون اسمائهم في الكشف لاستخراج واستلام بطاقات الرقم القومي واذ ظهر عكس ذلك أكون مسئول مسئولية كاملة وهذا اقرار مني بذلك / <span className="delegate-highlight">{delegate?.name || '................................'}</span>
           </p>
-        </div>
+        </section>
 
-        {/* Table Section */}
-        <div className="mb-6">
-          <table className="w-full border-collapse border-2 border-black data-table">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border-2 border-black p-2 w-10 text-center font-black">م</th>
-                <th className="border-2 border-black p-2 text-right font-black">الاسم</th>
-                <th className="border-2 border-black p-2 w-44 text-center font-black">الرقم القومي</th>
-                <th className="border-2 border-black p-2 w-28 text-center font-black">نوع البطاقة</th>
-                <th className="border-2 border-black p-2 text-center font-black">توقيع صاحب الشأن</th>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th className="col-index">م</th>
+              <th className="col-name text-right px-4">الاسم</th>
+              <th className="col-id">الرقم القومي</th>
+              <th className="col-type">نوع البطاقة</th>
+              <th className="col-signature">توقيع صاحب الشأن</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((item, index) => (
+              <tr key={index}>
+                <td className="text-center font-black">{index + 1}</td>
+                <td className="text-right font-black px-4 nowrap">{item.name}</td>
+                <td className="text-center font-mono tracking-tighter font-black nowrap">{item.idNumber}</td>
+                <td className="text-center">{item.cardType}</td>
+                <td className="signature-cell"></td>
               </tr>
-            </thead>
-            <tbody>
-              {data.map((item, index) => (
-                <tr key={index} className={`h-10 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                  <td className="border border-black p-2 text-center font-black">{index + 1}</td>
-                  <td className="border border-black p-2 text-right font-black">{item.name}</td>
-                  <td className="border border-black p-2 text-center font-black font-mono tracking-tighter">{item.idNumber}</td>
-                  <td className="border border-black p-2 text-center font-black">{item.cardType}</td>
-                  <td className="border border-black p-2 text-center font-black signature-cell"></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
 
-        {/* Footer Section Section */}
-        <div className="flex flex-col items-center">
-          <div className="h-40 w-full flex justify-center">
+        <div className="delegate-card-container">
+          <div className="delegate-card-frame">
             {delegate?.unionCard ? (
-              <img 
-                src={delegate.unionCard} 
-                alt="Delegate ID" 
-                className="max-h-full max-w-sm object-contain border-2 border-black rounded-xl shadow-lg p-1 bg-white"
-              />
+              <img src={delegate.unionCard} alt="Delegate ID" className="delegate-card-img" />
             ) : (
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 text-center text-gray-400 w-72 flex items-center justify-center font-black">
-                لا توجد صورة مسجلة للمندوب
-              </div>
+              <div className="text-xl font-black text-gray-400">لا يوجد كارت مسجل</div>
             )}
           </div>
         </div>

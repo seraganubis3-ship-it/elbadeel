@@ -38,7 +38,24 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
       </div>
 
       <div className='p-5 space-y-4'>
-        {/* Original Documents */}
+        {/* Required Documents List */}
+        {requiredDocuments.length > 0 && (
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
+             <div className="flex items-center gap-2 mb-2">
+                <span className="text-amber-500 text-lg">⚠️</span>
+                <h3 className="text-xs font-black text-amber-700 uppercase tracking-widest">
+                   المستندات المطلوبة لهذه الخدمة
+                </h3>
+             </div>
+             <ul className="space-y-1 pr-5 list-disc marker:text-amber-400">
+                {requiredDocuments.map((doc, i) => (
+                   <li key={i} className="text-[11px] font-bold text-slate-600">
+                      {doc}
+                   </li>
+                ))}
+             </ul>
+          </div>
+        )}
         <div className='space-y-1.5'>
           <textarea
             value={formData.originalDocuments}

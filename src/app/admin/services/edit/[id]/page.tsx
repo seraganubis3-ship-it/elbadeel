@@ -410,7 +410,11 @@ export default function EditServicePage() {
                     حدد المستندات التي يحتاجها العميل لإتمام الخدمة
                   </p>
                 </div>
-                <ServiceDocumentsManager documents={documents} setDocuments={setDocuments} />
+                <ServiceDocumentsManager 
+                    documents={documents} 
+                    setDocuments={setDocuments} 
+                    fields={fields} 
+                />
               </div>
             )}
 

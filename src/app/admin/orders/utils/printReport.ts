@@ -5,10 +5,11 @@ interface PrintReportOptions {
   selectedOrders: string[];
   filters: OrderFilters;
   delegate?: any;
+  reportDate?: string | undefined;
 }
 
-export function printOrdersReport({ orders, selectedOrders, filters, delegate }: PrintReportOptions) {
-  // Determine which orders to print
+export function printOrdersReport({ orders, selectedOrders, filters, delegate, reportDate }: PrintReportOptions) {
+  // ... (lines 11-30 unchanged)
   const ordersToPrint =
     selectedOrders.length > 0 ? orders.filter(order => selectedOrders.includes(order.id)) : orders;
 
@@ -32,14 +33,13 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
 
   // Date Logic
   let dateText = '';
-  // 1. Try Filters (From - To)
-  if (filters.dateFrom && filters.dateTo) {
+  if (reportDate) {
+      dateText = `بتاريخ: ${reportDate}`;
+  } else if (filters.dateFrom && filters.dateTo) {
       const d1 = new Date(filters.dateFrom).toLocaleDateString('ar-EG');
       const d2 = new Date(filters.dateTo).toLocaleDateString('ar-EG');
-      dateText = `عن الفترة من ${d1} حتى تاريخ ${d2}`;
-  } 
-  // 2. Try Work Date
-  else {
+      dateText = d1 === d2 ? `بتاريخ: ${d1}` : `عن الفترة من ${d1} حتى تاريخ ${d2}`;
+  } else {
       let workDate = new Date();
       const savedWorkDate = localStorage.getItem('adminWorkDate');
       if (savedWorkDate) {
@@ -48,12 +48,19 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
           workDate = new Date(year, month - 1, day);
         }
       }
-      const d = workDate.toLocaleDateString('ar-EG');
-      dateText = `عن الفترة من ${d} حتى تاريخ ${d}`;
+      const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
+      const formatted = workDate.toLocaleDateString('ar-EG', options).replace(/،/g, ' -');
+      dateText = `بتاريخ: ${formatted}`;
   }
 
-  const currentDate = new Date().toLocaleDateString('ar-EG'); // For footer/meta if needed
-
+  const currentDate = new Date().toLocaleString('ar-EG', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
   // Shared CSS Styles
   const reportStyles = `
     <style>
@@ -519,11 +526,14 @@ export function printOrdersReport({ orders, selectedOrders, filters, delegate }:
   ` 
   : '';
 
+  const multiplier = hasNationalIds ? 20 : 10;
+  const totalStepFees = globalTotalOrders * multiplier;
+
   const summaryHtml = `
     <div class="summary-section">
       <table class="footer-table">
-         <tr><td>اجمالي العدد المطلوب</td><td>اجمالي قيمة الغرامات</td></tr>
-         <tr><td class="val">${globalTotalOrders}</td><td class="val">${globalTotalFines.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td></tr>
+         <tr><td>اجمالي العدد المطلوب</td><td>اجمالي رسوم التحصيل</td></tr>
+         <tr><td class="val">${globalTotalOrders}</td><td class="val">${totalStepFees.toLocaleString('en-US')}</td></tr>
       </table>
     </div>
   `;

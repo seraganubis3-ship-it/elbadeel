@@ -4,9 +4,10 @@ interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  totalItems?: number;
 }
 
-export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+export function Pagination({ currentPage, totalPages, onPageChange, totalItems }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const getPageNumbers = () => {

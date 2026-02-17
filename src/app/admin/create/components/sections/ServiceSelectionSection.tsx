@@ -416,6 +416,63 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
 
 
 
+             {/* Dynamic Service Fields (Questions) */}
+             {selectedService?.fields && selectedService.fields.length > 0 && (
+                <div className="space-y-3 pt-4 border-t border-slate-200/50 animate-in slide-in-from-top-2">
+                    <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2'>
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                        بيانات إضافية مطلوبة
+                    </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {selectedService.fields
+                          .slice() // Create a copy to sort
+                          .sort((a, b) => a.orderIndex - b.orderIndex)
+                          .map(field => (
+                            <div key={field.id} className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
+                                    {field.label} {field.required && <span className="text-red-500">*</span>}
+                                </label>
+                                {field.type === 'select' || (field.options && field.options.length > 0) ? (
+                                    <div className="relative">
+                                        <select
+                                            value={formData.dynamicAnswers?.[field.name] || ''}
+                                            onChange={e => setFormData(prev => ({
+                                                ...prev,
+                                                dynamicAnswers: {
+                                                    ...prev.dynamicAnswers,
+                                                    [field.name]: e.target.value
+                                                }
+                                            }))}
+                                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-sm appearance-none"
+                                        >
+                                            <option value="">اختر...</option>
+                                            {field.options.map(opt => (
+                                                <option key={opt.id} value={opt.value}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-sm">▼</div>
+                                    </div>
+                                ) : (
+                                     <input
+                                        type={field.type === 'number' ? 'number' : 'text'}
+                                        value={formData.dynamicAnswers?.[field.name] || ''}
+                                        onChange={e => setFormData(prev => ({
+                                            ...prev,
+                                            dynamicAnswers: {
+                                                ...prev.dynamicAnswers,
+                                                [field.name]: e.target.value
+                                            }
+                                        }))}
+                                        placeholder={field.placeholder || ''}
+                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-sm"
+                                     />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+             )}
+
              {/* Service Details Textarea */}
              {selectedService && (
                 <div className="space-y-1 pt-2 animate-in slide-in-from-top-2">

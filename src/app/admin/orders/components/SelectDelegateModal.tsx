@@ -13,7 +13,7 @@ interface Delegate {
 interface SelectDelegateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (delegate?: Delegate, authType?: 'passport' | 'work-permit') => void;
+  onConfirm: (delegate?: Delegate, authType?: 'passport' | 'work-permit', reportDate?: string) => void;
   mode?: 'default' | 'authorization';
   isOptional?: boolean;
 }
@@ -24,17 +24,37 @@ export function SelectDelegateModal({
   onConfirm,
   mode = 'default',
   isOptional = false,
-}: SelectDelegateModalProps) {
+}: SelectDelegateModalProps): JSX.Element | null {
   const [delegates, setDelegates] = useState<Delegate[]>([]);
   const [selectedDelegateId, setSelectedDelegateId] = useState<string>('');
   const [authType, setAuthType] = useState<'passport' | 'work-permit'>('passport');
+  const [reportDate, setReportDate] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       fetchDelegates();
+      // Set to current date on open (DD/MM/YYYY only)
+      const now = new Date();
+      const formatted = now.toLocaleDateString('en-GB'); // DD/MM/YYYY
+      setReportDate(formatted);
     }
   }, [isOpen]);
+
+  const formatDateInput = (value: string) => {
+    // Remove non-numeric characters
+    const digits = value.replace(/\D/g, '');
+    let formatted = digits;
+    
+    if (digits.length > 2) {
+      formatted = digits.slice(0, 2) + '/' + digits.slice(2);
+    }
+    if (digits.length > 4) {
+      formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
+    }
+    
+    return formatted.slice(0, 10);
+  };
 
   const fetchDelegates = async () => {
     setLoading(true);
@@ -54,17 +74,33 @@ export function SelectDelegateModal({
   const handleConfirm = () => {
     const delegate = delegates.find(d => d.id === selectedDelegateId);
     
+    // Prepend day name automatically
+    let finalReportDate = reportDate;
+    try {
+      const [day, month, year] = reportDate.split('/').map(Number);
+      if (day && month && year && year > 1000) {
+        const dateObj = new Date(year, month - 1, day);
+        if (!isNaN(dateObj.getTime())) {
+          const options: Intl.DateTimeFormatOptions = { weekday: 'long' };
+          const dayName = dateObj.toLocaleDateString('ar-EG', options);
+          finalReportDate = `${dayName} - ${reportDate}`;
+        }
+      }
+    } catch (e) {
+      // Fallback to whatever was typed
+    }
+
     // If optional and no delegate, confirm with undefined
     if (isOptional && !delegate) {
-        onConfirm(undefined);
+        onConfirm(undefined, undefined, finalReportDate);
         return;
     }
 
     if (delegate) {
       if (mode === 'authorization') {
-        onConfirm(delegate, authType);
+        onConfirm(delegate, authType, finalReportDate);
       } else {
-        onConfirm(delegate);
+        onConfirm(delegate, undefined, finalReportDate);
       }
     }
   };
@@ -85,6 +121,20 @@ export function SelectDelegateModal({
              </div>
           ) : (
             <div className='space-y-4'>
+              {/* Date Selection */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  تاريخ الكشف
+                </label>
+                <input
+                  type='text'
+                  value={reportDate}
+                  onChange={(e) => setReportDate(formatDateInput(e.target.value))}
+                  className='w-full px-4 py-2 bg-blue-50/50 border border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-blue-700'
+                  placeholder='14/10/2008'
+                />
+              </div>
+
               {mode === 'authorization' && (
                 <div>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>

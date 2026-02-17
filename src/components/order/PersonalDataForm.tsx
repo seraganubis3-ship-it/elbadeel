@@ -51,23 +51,44 @@ export default function PersonalDataForm({
   const isDeath = slug.includes('death') || name.includes('وفاة');
   const isMarriage = slug.includes('marriage') || name.includes('زواج');
 
+  const handleIdChange = (val: string) => {
+    // Only numbers
+    const numericVal = val.replace(/\D/g, '');
+    if (numericVal.length > 14) return;
+    
+    onChange('idNumber', numericVal);
+
+    // Auto-calculate birth date if 14 digits
+    if (numericVal.length === 14) {
+      const century = numericVal[0]; // 2 = 1900-1999, 3 = 2000-2099
+      const year = numericVal.substring(1, 3);
+      const month = numericVal.substring(3, 5);
+      const day = numericVal.substring(5, 7);
+
+      let fullYear = '';
+      if (century === '2') fullYear = '19' + year;
+      else if (century === '3') fullYear = '20' + year;
+
+      if (fullYear) {
+        // Format YYYY-MM-DD for date input
+        const birthDate = `${fullYear}-${month}-${day}`;
+        onChange('birthDate', birthDate);
+      }
+    }
+  };
+
   return (
     <div className='space-y-8'>
       {/* Basic Contact Info */}
       <section>
-        <h3 className='text-lg font-black text-slate-900 mb-4 flex items-center gap-2'>
-          <span className='w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600'>
+        <div className='flex items-center gap-2 mb-4'>
+           <div className='w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600'>
             <svg className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-              />
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
             </svg>
-          </span>
-          بيانات التواصل
-        </h3>
+          </div>
+          <h3 className='text-lg font-black text-slate-900'>بيانات التواصل</h3>
+        </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
           <InputGroup
             label='اسم مقدم الطلب'
@@ -94,30 +115,45 @@ export default function PersonalDataForm({
 
       {/* Official Documents Info */}
       <section>
-        <h3 className='text-lg font-black text-slate-900 mb-4 flex items-center gap-2'>
-          <span className='w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600'>
+        <div className='flex items-center gap-2 mb-4'>
+          <div className='w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600'>
             <svg className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-              />
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' />
             </svg>
-          </span>
-          بيانات الوثيقة المطلوب استخراجها
-        </h3>
+          </div>
+          <h3 className='text-lg font-black text-slate-900'>بيانات الوثيقة المطلوب استخراجها</h3>
+        </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
           {/* Universal Field: ID Number */}
           {!isMarriage && !isDeath && (
-            <InputGroup
-              label='رقم الهوية / الرقم القومي'
-              id='idNumber'
-              value={formData.idNumber}
-              onChange={onChange}
-              placeholder='14 رقم'
-            />
+            <div className='relative'>
+                 <label htmlFor="idNumber" className='block text-sm font-bold text-slate-700 mb-2'>
+                    رقم الهوية / الرقم القومي <span className='text-red-500'>*</span>
+                 </label>
+                 <div className="relative">
+                    <input
+                      type="text"
+                      id="idNumber"
+                      value={formData.idNumber}
+                      onChange={(e) => handleIdChange(e.target.value)}
+                      placeholder='14 رقم'
+                      dir="ltr"
+                      maxLength={14}
+                      className={`
+                        w-full px-4 py-3 bg-slate-50 border rounded-xl
+                        text-slate-900 font-bold transition-all duration-200 tracking-widest text-center
+                        focus:bg-white focus:ring-4 focus:ring-emerald-500/10 placeholder:text-slate-400
+                        ${formData.idNumber && formData.idNumber.length === 14 
+                            ? 'border-emerald-500 bg-emerald-50/20' 
+                            : 'border-slate-200 focus:border-emerald-500'}
+                      `}
+                    />
+                    <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold transition-colors ${formData.idNumber?.length === 14 ? 'text-emerald-500' : 'text-slate-400'}`}>
+                       {formData.idNumber?.length || 0}/14
+                    </div>
+                </div>
+            </div>
           )}
 
           {/* Conditional Fields: Birth Certificate */}
