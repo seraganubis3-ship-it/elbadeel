@@ -62,6 +62,8 @@ export default function OrderForm({
     notes: '',
     deliveryType: 'OFFICE',
     wifeName: '',
+    husbandName: '', // Added separate field
+    deceasedName: '', // Added separate field
     wifeMotherName: '',
     marriageDate: '',
     fatherName: '',
@@ -130,7 +132,8 @@ export default function OrderForm({
   
   // Adjust total steps based on whether we have dynamic fields
   // Must be calculated after effectiveDynamicFields
-  const hasDynamicFields = effectiveDynamicFields.length > 0;
+  const isDeathService = serviceName.includes('وفاة') || serviceSlug.includes('death');
+  const hasDynamicFields = isDeathService ? false : effectiveDynamicFields.length > 0;
   const totalSteps = hasDynamicFields ? 6 : 5;
 
 
@@ -205,7 +208,10 @@ export default function OrderForm({
     });
 
     // Append dynamic field values
-    formDataToSubmit.append('serviceDetails', JSON.stringify(dynamicValues));
+    const payloadDetails = { ...dynamicValues };
+    if (formData.husbandName) payloadDetails['اسم الزوج'] = formData.husbandName;
+    if (formData.deceasedName) payloadDetails['اسم المتوفى'] = formData.deceasedName;
+    formDataToSubmit.append('serviceDetails', JSON.stringify(payloadDetails));
 
     // Address check
     formDataToSubmit.append(
@@ -302,6 +308,11 @@ export default function OrderForm({
 
   // --- Navigation Guards ---
   const canProceed = () => {
+    const slug = (serviceSlug || '').toLowerCase();
+    const isMarriage = slug.includes('marriage') || serviceName.includes('زواج');
+    const isDeath = slug.includes('death') || serviceName.includes('وفاة');
+    const isBirth = slug.includes('birth') || serviceName.includes('ميلاد');
+
     switch (currentStep) {
       case 1:
         // Step 1 is now Questions (if hasDynamicFields) OR Variants (if not)
@@ -316,11 +327,33 @@ export default function OrderForm({
          if (hasDynamicFields) {
              return !!selectedVariant;
          } else {
+            // Personal Data Logic (No Dynamic Fields)
+            if (isMarriage) {
+                return !!(formData.customerName && formData.customerPhone && formData.husbandName && formData.wifeName && formData.marriageDate);
+            }
+            if (isDeath) {
+                return !!(formData.customerName && formData.customerPhone && formData.deceasedName && formData.birthDate);
+            }
+            if (isBirth) {
+                return !!(formData.customerName && formData.customerPhone && formData.motherName && formData.birthDate);
+            }
+
+            // Default
             return !!(formData.customerName && formData.customerPhone && formData.idNumber);
          }
       case 3:
         // Personal data (was step 2, now 3 if hasDynamicFields) OR Documents (if not)
         if (hasDynamicFields) {
+             if (isMarriage) {
+                return !!(formData.customerName && formData.customerPhone && formData.husbandName && formData.wifeName && formData.marriageDate);
+            }
+            if (isDeath) {
+                return !!(formData.customerName && formData.customerPhone && formData.deceasedName && formData.birthDate);
+            }
+            if (isBirth) {
+                return !!(formData.customerName && formData.customerPhone && formData.motherName && formData.birthDate);
+            }
+             
              return !!(formData.customerName && formData.customerPhone && formData.idNumber);
         } else {
              return (

@@ -147,20 +147,13 @@ export default function PersonalDataForm({
             <>
               <InputGroup
                 label='اسم المتوفى'
-                id='customerName'
-                value={formData.customerName}
+                id='deceasedName'
+                value={formData.deceasedName}
                 onChange={onChange}
-                placeholder='الاسم كما في شهادة الوفاة'
+                placeholder='اسم المتوفى'
                 required
               />
-              <InputGroup
-                label='اسم الأم'
-                id='motherName'
-                value={formData.motherName}
-                onChange={onChange}
-                placeholder='اسم والدة المتوفى'
-                required
-              />
+
               <InputGroup
                 label='تاريخ الوفاة'
                 id='birthDate'
@@ -177,8 +170,8 @@ export default function PersonalDataForm({
             <>
               <InputGroup
                 label='اسم الزوج'
-                id='customerName'
-                value={formData.customerName}
+                id='husbandName'
+                value={formData.husbandName}
                 onChange={onChange}
                 placeholder='الاسم بالكامل'
                 required
