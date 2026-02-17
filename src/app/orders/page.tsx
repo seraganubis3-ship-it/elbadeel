@@ -284,22 +284,7 @@ function OrdersContent() {
               </div>
             </div>
 
-            {/* Status Filter */}
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>الحالة</label>
-              <select
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white text-sm sm:text-base'
-              >
-                <option value='all'>جميع الحالات</option>
-                {ORDER_STATUS_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+
 
             {/* Sort */}
             <div>
@@ -456,6 +441,28 @@ function OrdersContent() {
                         >
                           عرض التفاصيل
                         </Link>
+
+                        {(order.status === 'waiting_confirmation' || order.status === 'PENDING' || order.status === 'pending') && (
+                          <button
+                            onClick={async () => {
+                              if (!confirm('هل أنت متأكد من الغاء هذا الطلب؟')) return;
+                              try {
+                                const res = await fetch(`/api/orders/${order.id}`, { method: 'DELETE' });
+                                if (res.ok) {
+                                  setOrders(prev => prev.filter(o => o.id !== order.id));
+                                  setFilteredOrders(prev => prev.filter(o => o.id !== order.id));
+                                } else {
+                                  alert('حدث خطأ أثناء حذف الطلب');
+                                }
+                              } catch (e) {
+                                alert('حدث خطأ أثناء حذف الطلب');
+                              }
+                            }}
+                            className='px-3 sm:px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors duration-200 text-xs sm:text-sm font-medium text-center'
+                          >
+                            الغاء الطلب
+                          </button>
+                        )}
 
                         {order.status === 'waiting_payment' && (
                           <Link

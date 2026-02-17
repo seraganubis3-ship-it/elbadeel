@@ -175,25 +175,25 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 });
     }
 
-    // Only allow cancellation of pending orders
-    if (order.status !== 'pending') {
+    // Only allow cancellation of pending/waiting_confirmation orders
+    const allowedStatuses = ['waiting_confirmation', 'PENDING', 'pending'];
+    if (!allowedStatuses.includes(order.status)) {
       return NextResponse.json(
         {
-          error: 'لا يمكن إلغاء الطلب في هذه الحالة',
+          error: 'لا يمكن حذف الطلب في هذه الحالة',
         },
         { status: 400 }
       );
     }
 
-    // Update order status to cancelled
-    const cancelledOrder = await prisma.order.update({
+    // Delete the order
+    await prisma.order.delete({
       where: { id: orderId },
-      data: { status: 'cancelled' },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'تم إلغاء الطلب بنجاح',
+      message: 'تم حذف الطلب بنجاح',
     });
   } catch (error) {
     //

@@ -270,7 +270,15 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
           </div>
 
           <div className='md:col-span-4 space-y-1'>
-            <MandatoryLabel label="الأم" />
+            <label className='text-sm font-black text-black block mr-1 flex items-center gap-2'>
+              الأم
+              {!selectedService?.name?.includes('ميلاد') && (
+                <span className="text-[10px] text-slate-400 font-normal">(اختياري)</span>
+              )}
+              {selectedService?.name?.includes('ميلاد') && (
+                 <span className="text-[9px] text-rose-500 font-black">إلزامي</span>
+              )}
+            </label>
             <input
               type='text'
               value={formData.motherName}
@@ -430,6 +438,19 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
               </div>
 
 
+
+              <div className='md:col-span-2 space-y-1'>
+                 <label className='text-sm font-black text-black block mr-1'>العنوان</label>
+                 <div
+                   onClick={() => setShowAddressModal(true)}
+                   className='w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-100 hover:border-emerald-200 transition-all font-bold text-slate-700 lg:text-base flex items-center justify-between group'
+                 >
+                   <span className={formData.address ? 'text-slate-700' : 'text-slate-400'}>
+                     {formData.address || 'اضغط لإضافة العنوان...'}
+                   </span>
+                   <span className='text-xl group-hover:scale-110 transition-transform'>📍</span>
+                 </div>
+              </div>
 
               {/* Restored Fields */}
               <div className='space-y-1'>

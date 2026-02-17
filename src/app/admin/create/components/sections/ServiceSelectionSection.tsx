@@ -26,6 +26,29 @@ interface ServiceSelectionSectionProps {
 
 }
 
+import { LANGUAGES } from '@/constants/languages';
+
+interface ServiceSelectionSectionProps {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  
+  // Service Selection Props
+  serviceSearchTerm: string;
+  setServiceSearchTerm: (term: string) => void;
+  showServiceDropdown: boolean;
+  setShowServiceDropdown: (show: boolean) => void;
+  filteredServices: Service[];
+  selectedService: Service | null;
+  selectedVariant: ServiceVariant | null;
+  handleVariantChange: (variantId: string) => void;
+  selectService: (service: Service) => void;
+  
+  // Serial & Dates
+  formSerialNumber: string;
+  serialValid: { ok: boolean; msg: string; } | null;
+  validateSerialLive: (serial: string) => void;
+}
+
 export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = ({
   formData,
   setFormData,
@@ -41,9 +64,11 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
   formSerialNumber,
   serialValid,
   validateSerialLive,
-
 }) => {
   const serviceDropdownRef = useRef<HTMLDivElement>(null);
+  const [languageSearch, setLanguageSearch] = React.useState('');
+  const [showLanguageDropdown, setShowLanguageDropdown] = React.useState(false);
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
 
   const isNationalId = selectedService?.name?.includes('قومي') || selectedService?.name?.includes('بطاقة');
 
@@ -53,10 +78,40 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
       if (serviceDropdownRef.current && !serviceDropdownRef.current.contains(event.target as Node)) {
         setShowServiceDropdown(false);
       }
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
+        setShowLanguageDropdown(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [setShowServiceDropdown]);
+
+  // Language helpers
+  const currentLanguages = React.useMemo(() => {
+     if (!formData.translationLanguage) return [];
+     // Support both comma types just in case
+     return formData.translationLanguage.split(/,|،/).map(s => s.trim()).filter(Boolean);
+  }, [formData.translationLanguage]);
+
+  const addLanguage = (lang: string) => {
+    if (!lang.trim()) return;
+    const cleanLang = lang.trim();
+    if (!currentLanguages.includes(cleanLang)) {
+        const newLangs = [...currentLanguages, cleanLang];
+        setFormData(prev => ({ ...prev, translationLanguage: newLangs.join('، ') }));
+    }
+    setLanguageSearch('');
+    setShowLanguageDropdown(false);
+  };
+
+  const removeLanguage = (lang: string) => {
+    const newLangs = currentLanguages.filter(l => l !== lang);
+    setFormData(prev => ({ ...prev, translationLanguage: newLangs.join('، ') }));
+  };
+
+  const filteredLanguages = React.useMemo(() => {
+     return LANGUAGES.filter(l => l.toLowerCase().includes(languageSearch.toLowerCase()) && !currentLanguages.includes(l));
+  }, [languageSearch, currentLanguages]);
 
   // Calculate delivery date based on work days (Fri/Sat off)
   const calculateWorkDays = (days: number) => {
@@ -273,19 +328,88 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                  selectedService?.name?.toLowerCase().includes('translat') || 
                  selectedService?.name?.includes('ترجم') ||
                  selectedService?.name?.includes('مترجم')) && (
-                <div className="pt-2 animate-in slide-in-from-top-2">
+                <div className="pt-2 animate-in slide-in-from-top-2 z-20 relative" ref={languageDropdownRef}>
                    <div className='space-y-1'>
-                     <label htmlFor="translationLanguage" className='text-[10px] font-black text-black uppercase tracking-widest mr-1'>لغة الترجمة</label>
-                     <div className="relative">
-                       <input
-                         id="translationLanguage"
-                         type="text"
-                         value={formData.translationLanguage || ''}
-                         onChange={e => setFormData(p => ({ ...p, translationLanguage: e.target.value }))}
-                         className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-xs'
-                         placeholder="اكتب اللغة المطلوبة (مثال: إنجليزي، فرنسي)..."
-                       />
+                     <label className='text-[10px] font-black text-black uppercase tracking-widest mr-1'>لغة الترجمة</label>
+                     
+                     <div 
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 flex flex-wrap gap-2 focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all min-h-[42px]"
+                        onClick={() => {
+                           setShowLanguageDropdown(true);
+                        }}
+                     >
+                        {/* Selected Tags */}
+                        {currentLanguages.map(lang => (
+                           <span key={lang} className="bg-cyan-50 text-cyan-700 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 border border-cyan-100">
+                              {lang}
+                              <button 
+                                 type="button"
+                                 onClick={(e) => { e.stopPropagation(); removeLanguage(lang); }}
+                                 className="hover:text-red-500 w-4 h-4 flex items-center justify-center rounded-full hover:bg-cyan-100 transition-colors"
+                              >
+                                 ×
+                              </button>
+                           </span>
+                        ))}
+                        
+                        {/* Input */}
+                        <input
+                           type="text"
+                           value={languageSearch}
+                           onChange={e => {
+                              setLanguageSearch(e.target.value);
+                              setShowLanguageDropdown(true);
+                           }}
+                           onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                 e.preventDefault();
+                                 if (languageSearch.trim()) {
+                                    addLanguage(languageSearch);
+                                 }
+                              } else if (e.key === 'Backspace' && !languageSearch && currentLanguages.length > 0) {
+                                 const lastLang = currentLanguages[currentLanguages.length - 1];
+                                 if (lastLang) removeLanguage(lastLang);
+                              }
+                           }}
+                           onFocus={() => setShowLanguageDropdown(true)}
+                           className="flex-1 bg-transparent border-none outline-none text-right text-xs h-6 min-w-[80px]"
+                           placeholder={currentLanguages.length === 0 ? "اختر اللغة أو اكتب لغة جديدة..." : "أضف لغة أخرى..."}
+                        />
                      </div>
+
+                     {/* Dropdown */}
+                     {showLanguageDropdown && (
+                        <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto z-[100] custom-scrollbar'>
+                            {filteredLanguages.map(lang => (
+                                <div
+                                    key={lang}
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        addLanguage(lang);
+                                    }}
+                                    className='px-3 py-2 hover:bg-cyan-50 cursor-pointer text-xs font-bold text-slate-700 flex justify-between'
+                                >
+                                    {lang}
+                                </div>
+                            ))}
+                            
+                            {languageSearch && !filteredLanguages.some(l => l === languageSearch) && (
+                                <div
+                                    onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        addLanguage(languageSearch);
+                                    }}
+                                    className='px-3 py-2 hover:bg-cyan-50 cursor-pointer text-xs font-bold text-cyan-600 border-t border-slate-50'
+                                >
+                                    إضافة "{languageSearch}"
+                                </div>
+                            )}
+
+                             {filteredLanguages.length === 0 && !languageSearch && (
+                                <div className='p-2 text-center text-slate-400 text-[10px]'>لا توجد خيارات أخرى</div>
+                             )}
+                        </div>
+                     )}
                    </div>
                 </div>
              )}

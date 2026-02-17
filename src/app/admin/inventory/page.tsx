@@ -45,7 +45,7 @@ export default function InventoryPage() {
   // Filter ONLY National ID / Card related services
   const displayedServices = useMemo(() => {
     return services
-      .filter(s => s.name.includes('قومي') || s.name.includes('بطاقة'))
+      .filter(s => (s.name.includes('قومي') || s.name.includes('بطاقة')) && !s.name.includes('مترجم') && !s.name.includes('تصحيح'))
       .sort((a, b) => a.name.localeCompare(b.name, 'ar'))
       .map(svc => ({
         ...svc,

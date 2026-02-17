@@ -42,6 +42,7 @@ interface UseOrdersReturn {
 
   // Selection
   selectedOrders: string[];
+  selectedOrdersData: Order[];
   toggleOrderSelection: (orderId: string) => void;
   selectAllOrders: () => void;
 
@@ -102,6 +103,7 @@ export function useOrders(
 
   // Selection
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [selectedOrdersData, setSelectedOrdersData] = useState<Order[]>([]); // New state for persistence
   const [bulkStatus, setBulkStatus] = useState('');
 
   // Compute hasFilter
@@ -341,19 +343,39 @@ export function useOrders(
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
   const toggleOrderSelection = (orderId: string) => {
-    const order = orders.find(o => o.id === orderId);
+    // Check main orders list first, then fallback to selectedOrdersData to avoiding losing data
+    const order = orders.find(o => o.id === orderId) || selectedOrdersData.find(o => o.id === orderId);
     if (order?.status === 'cancelled') return;
 
-    setSelectedOrders(prev =>
-      prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId]
-    );
+    if (selectedOrders.includes(orderId)) {
+        // Remove
+        setSelectedOrders(prev => prev.filter(id => id !== orderId));
+        setSelectedOrdersData(prev => prev.filter(o => o.id !== orderId));
+    } else {
+        // Add
+        if (order) {
+            setSelectedOrders(prev => [...prev, orderId]);
+            setSelectedOrdersData(prev => [...prev, order]);
+        }
+    }
   };
 
   const selectAllOrders = () => {
-    if (selectedOrders.length === currentOrders.filter(o => o.status !== 'cancelled').length && selectedOrders.length > 0) {
-      setSelectedOrders([]);
+    const validOrders = currentOrders.filter(o => o.status !== 'cancelled');
+    const allSelected = validOrders.every(o => selectedOrders.includes(o.id));
+
+    if (allSelected) {
+       // Deselect current visible orders
+       const idsToRemove = validOrders.map(o => o.id);
+       setSelectedOrders(prev => prev.filter(id => !idsToRemove.includes(id)));
+       setSelectedOrdersData(prev => prev.filter(o => !idsToRemove.includes(o.id)));
     } else {
-      setSelectedOrders(currentOrders.filter(o => o.status !== 'cancelled').map(order => order.id));
+       // Select all visible orders
+       const newOrders = validOrders.filter(o => !selectedOrders.includes(o.id));
+       const newIds = newOrders.map(o => o.id);
+       
+       setSelectedOrders(prev => [...prev, ...newIds]);
+       setSelectedOrdersData(prev => [...prev, ...newOrders]);
     }
   };
 
@@ -372,6 +394,10 @@ export function useOrders(
       if (response.ok) {
         setOrders(prevOrders =>
           prevOrders.map(order => (order.id === orderId ? { ...order, status: newStatus } : order))
+        );
+        // Also update selectedOrdersData
+        setSelectedOrdersData(prev => 
+            prev.map(order => (order.id === orderId ? { ...order, status: newStatus } : order))
         );
         const statusText = getStatusText(newStatus);
         showSuccess('تم تحديث حالة الطلب بنجاح! 🎉', `تم تغيير حالة الطلب إلى "${statusText}"`);
@@ -398,6 +424,8 @@ export function useOrders(
 
       if (response.ok) {
         setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
+        setSelectedOrdersData(prev => prev.filter(o => o.id !== orderId));
+        setSelectedOrders(prev => prev.filter(id => id !== orderId));
         showSuccess('تم حذف الطلب بنجاح! 🗑️', 'تم إزالة الطلب من النظام نهائياً');
       } else {
         const errorData = await response.json();
@@ -428,12 +456,17 @@ export function useOrders(
             selectedOrders.includes(order.id) ? { ...order, status: bulkStatus } : order
           )
         );
+        // Also update selectedOrdersData if we were keeping them, but here we clear selection usually?
+        // Code clears selection below: setSelectedOrders([]);
+        // So we should also clear selectedOrdersData
+        
         const statusText = getStatusText(bulkStatus);
         showSuccess(
           'تم تحديث الطلبات بنجاح! 🚀',
           `تم تحديث ${selectedOrders.length} طلب إلى حالة "${statusText}"`
         );
         setSelectedOrders([]);
+        setSelectedOrdersData([]); // Clear persistent data too
         setBulkStatus('');
       } else {
         const errorData = await response.json();
@@ -497,6 +530,7 @@ export function useOrders(
 
     // Selection
     selectedOrders,
+    selectedOrdersData, // EXPORT THIS
     toggleOrderSelection,
     selectAllOrders,
 

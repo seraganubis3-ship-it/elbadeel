@@ -50,6 +50,7 @@ export default function AdminOrdersPage() {
     totalPages,
     paginate,
     selectedOrders,
+    selectedOrdersData,
     toggleOrderSelection,
     selectAllOrders,
     bulkStatus,
@@ -142,8 +143,8 @@ export default function AdminOrdersPage() {
      setShowDelegateModal(false);
 
      // Prepare data for editing
-     const ordersToPrint = selectedOrders.length > 0 
-        ? currentOrders.filter(order => selectedOrders.includes(order.id)) 
+     const ordersToPrint = selectedOrders.length > 0
+        ? selectedOrdersData
         : filteredOrders;
 
      if (ordersToPrint.length === 0) {
@@ -213,16 +214,31 @@ export default function AdminOrdersPage() {
      const sections: any[] = [];
 
      // 1. National ID
+     // 1. National ID - Grouped by Variant
      if (groupedOrders.NATIONAL_ID && groupedOrders.NATIONAL_ID.length > 0) {
-        sections.push({
-            title: 'بطاقات الرقم القومي',
-            data: groupedOrders.NATIONAL_ID,
-            columns: [
-                { key: 'customerName', label: 'الاسم' },
-                { key: 'idNumber', label: 'الرقم القومي' },
-                { key: 'overrideTotalFines', label: 'الغرامات', type: 'number' },
-                { key: 'overrideDetails', label: 'التفاصيل' },
-            ]
+        const variants: Record<string, any[]> = {};
+        
+        groupedOrders.NATIONAL_ID.forEach(order => {
+            const vName = order.variant?.name || 'عادية';
+            if (!variants[vName]) variants[vName] = [];
+            variants[vName].push(order);
+        });
+
+        Object.entries(variants).forEach(([variantName, variantOrders]) => {
+            sections.push({
+                title: `بطاقات الرقم القومي - ${variantName}`,
+                data: variantOrders,
+                columns: [
+                    { key: 'customerName', label: 'الاسم' },
+                    { key: 'idNumber', label: 'الرقم القومي' },
+                    { key: 'overrideTotalFines', label: 'الغرامات', type: 'number' },
+                    { key: 'overrideDetails', label: 'التفاصيل' },
+                ],
+                defaultRowData: {
+                    service: { name: 'بطاقة رقم قومي', slug: 'national-id' },
+                    variant: { name: variantName }
+                }
+            });
         });
      }
 
@@ -236,7 +252,10 @@ export default function AdminOrdersPage() {
                 { key: 'idNumber', label: 'الرقم القومي' },
                 { key: 'overrideTotalFines', label: 'الغرامات', type: 'number' },
                 { key: 'overrideDetails', label: 'التفاصيل' },
-            ]
+            ],
+            defaultRowData: {
+                service: { name: 'بطاقة رقم قومي مترجم', slug: 'national-id' }
+            }
         });
      }
 
@@ -251,7 +270,10 @@ export default function AdminOrdersPage() {
                 { key: 'motherName', label: 'اسم الأم' },
                 { key: 'quantity', label: 'العدد', type: 'number' },
                 { key: 'idNumber', label: 'الرقم القومي' },
-            ]
+            ],
+            defaultRowData: {
+                service: { name: 'شهادة ميلاد', slug: 'birth-certificate' }
+            }
         });
      }
 
@@ -265,7 +287,10 @@ export default function AdminOrdersPage() {
                 { key: 'birthDate', label: 'تاريخ الوفاة' },
                 { key: 'motherName', label: 'اسم الأم' },
                 { key: 'quantity', label: 'العدد', type: 'number' },
-            ]
+            ],
+            defaultRowData: {
+                service: { name: 'شهادة وفاة', slug: 'death-certificate' }
+            }
         });
      }
 
@@ -279,7 +304,10 @@ export default function AdminOrdersPage() {
                 { key: 'idNumber', label: 'الرقم القومي' },
                 { key: 'policeStation', label: 'القسم' },
                 { key: 'pickupLocation', label: 'مكان الاستلام' },
-            ]
+            ],
+            defaultRowData: {
+                service: { name: 'جواز سفر', slug: 'passports' }
+            }
         });
      }
 
@@ -295,7 +323,10 @@ export default function AdminOrdersPage() {
                 { key: 'wifeMotherName', label: 'أم الطرف الآخر' },
                 { key: 'marriageDate', label: 'تاريخ الزواج' },
                 { key: 'quantity', label: 'العدد', type: 'number' },
-            ]
+            ],
+            defaultRowData: {
+                service: { name: 'وثيقة زواج', slug: 'marriage-certificate' }
+            }
         });
      }
 
@@ -338,8 +369,7 @@ export default function AdminOrdersPage() {
       return;
     }
 
-    const reportData = selectedOrders
-      .map(id => currentOrders.find(o => o.id === id))
+    const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => ({
         name: order?.customerName || '',
@@ -455,8 +485,7 @@ export default function AdminOrdersPage() {
       setReportEditingState(null);
   };
   const executePrintTranslationReport = (delegate: any) => {
-    const reportData = selectedOrders
-      .map(id => currentOrders.find(o => o.id === id))
+    const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => {
         // Source Logic
@@ -538,8 +567,7 @@ export default function AdminOrdersPage() {
   };
 
   const executePrintFamilyReport = (delegate: any) => {
-    const reportData = selectedOrders
-      .map(id => currentOrders.find(o => o.id === id))
+    const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => {
         // ID logic
@@ -595,8 +623,7 @@ export default function AdminOrdersPage() {
   };
 
   const executePrintIdCardSignaturesReport = (delegate: any) => {
-    const reportData = selectedOrders
-      .map(id => currentOrders.find(o => o.id === id))
+    const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => {
         // ID logic
@@ -651,8 +678,7 @@ export default function AdminOrdersPage() {
   };
 
   const executePrintOfficialDocumentsSignatureReport = (delegate: any) => {
-    const reportData = selectedOrders
-      .map(id => currentOrders.find(o => o.id === id))
+    const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => {
         // ID logic

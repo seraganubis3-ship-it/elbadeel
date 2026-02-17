@@ -298,7 +298,10 @@ export const printReceipt = (order: Order) => {
                 <div class='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>
                   الخدمة
                 </div>
-                <div class='col-span-4 p-1.5 font-bold'>${order.service?.name}</div>
+                <div class='col-span-4 p-1.5 font-bold'>
+                  ${order.service?.name}
+                  ${order.variant?.name ? `<span class='mr-1 font-normal'>(${order.variant.name})</span>` : ''}
+                </div>
               </div>
               <div class='grid grid-cols-12 text-xs border-t border-black'>
                 <div class='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>

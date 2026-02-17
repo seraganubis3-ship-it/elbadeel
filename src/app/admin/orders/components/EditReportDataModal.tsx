@@ -12,6 +12,7 @@ interface Section {
   title: string;
   columns: Column[];
   data: any[];
+  defaultRowData?: any;
 }
 
 interface EditReportDataModalProps {
@@ -71,13 +72,24 @@ export default function EditReportDataModal({
 
   const handleAddRow = (sectionIndex: number) => {
     const newSections = [...reportSections];
-    const section = newSections[sectionIndex];
-    if (!section) return;
-    const newRow: any = {};
+    const originalSection = newSections[sectionIndex];
+    if (!originalSection) return;
+    
+    const section = { ...originalSection }; // Shallow copy section
+    const newData = [...section.data]; // Shallow copy data array
+    const newRow: any = { ...(section.defaultRowData || {}) };
+    
+    // Initialize other columns
     section.columns.forEach(col => {
-      newRow[col.key] = col.type === 'number' ? 1 : '';
+      // Only set if not already present in defaultRowData to avoid overwriting
+      if (newRow[col.key] === undefined) {
+         newRow[col.key] = col.type === 'number' ? 1 : '';
+      }
     });
-    section.data.push(newRow);
+
+    newData.push(newRow);
+    section.data = newData;
+    newSections[sectionIndex] = section;
     setReportSections(newSections);
   };
 
