@@ -22,6 +22,9 @@ interface OrderReviewProps {
   appliedPromo: { code: string; discountAmount: number } | null;
   dynamicFields?: DynamicField[];
   dynamicValues?: Record<string, string>;
+  isGuest?: boolean;
+  password?: string;
+  onPasswordChange?: (value: string) => void;
 }
 
 export default function OrderReview({
@@ -33,6 +36,9 @@ export default function OrderReview({
   appliedPromo,
   dynamicFields = [],
   dynamicValues = {},
+  isGuest = false,
+  password = '',
+  onPasswordChange,
 }: OrderReviewProps) {
   const [promoCode, setPromoCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -229,6 +235,38 @@ export default function OrderReview({
               </div>
             )}
           </div>
+
+          {/* Guest Account Registration */}
+          {isGuest && (
+            <div className='mt-8 p-6 bg-emerald-50 rounded-2xl border-2 border-emerald-100'>
+              <div className='flex items-center gap-3 mb-4'>
+                <div className='w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm'>
+                  🔐
+                </div>
+                <div>
+                  <h4 className='text-emerald-900 font-black text-sm'>إنشاء حساب تلقائي</h4>
+                  <p className='text-emerald-700 text-xs'>سجل كلمة مرور لمتابعة طلبك لاحقاً</p>
+                </div>
+              </div>
+
+              <div className='space-y-3'>
+                <label className='block text-xs font-bold text-emerald-800 pr-1'>
+                  كلمة المرور (6 أحرف على الأقل)
+                </label>
+                <input
+                  type='password'
+                  value={password}
+                  onChange={e => onPasswordChange?.(e.target.value)}
+                  placeholder='أدخل كلمة المرور هنا'
+                  className='w-full bg-white border border-emerald-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all font-sans'
+                  dir='ltr'
+                />
+                <p className='text-[10px] text-emerald-600 font-medium leading-relaxed pr-1'>
+                  * سيتم استخدام رقم هاتفك واسمك المسجلين في الخطوة السابقة لإنشاء الحساب.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Total Section */}
           <div className='mt-8 pt-6 border-t-2 border-slate-100'>

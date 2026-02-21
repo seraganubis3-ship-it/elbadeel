@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { getSession, requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateOrderNumber } from '@/lib/orderNumbering';
 import { sendWhatsAppMessage, NotificationTemplates, checkWhatsAppStatus } from '@/lib/whatsapp';
 import { logger } from '@/lib/logger';
+import { hash } from 'bcryptjs';
 
 import { s3Client } from '@/lib/s3';
 import { Upload } from '@aws-sdk/lib-storage';
@@ -62,8 +63,53 @@ export async function GET() {
 // ================== POST ==================
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireAuth();
+    const session = await getSession();
     const formData = await request.formData();
+
+    const customerPhone = formData.get('customerPhone')?.toString() || '';
+    const customerName = formData.get('customerName')?.toString() || '';
+    const customerEmail = formData.get('customerEmail')?.toString() || '';
+    const password = formData.get('password')?.toString() || '';
+
+    let userId = session?.user?.id;
+
+    // Guest checkout logic: Auto-register if not logged in
+    if (!userId) {
+      if (!customerPhone || customerPhone === 'Unknown') {
+        return NextResponse.json({ success: false, error: 'رقم الهاتف مطلوب' }, { status: 400 });
+      }
+
+      // Check if user already exists
+      let user = await prisma.user.findFirst({
+        where: { phone: customerPhone },
+      });
+
+      if (!user) {
+        // Create new user if password provided
+        if (password && password.length >= 6) {
+          const hashedPassword = await hash(password, 12);
+          user = await prisma.user.create({
+            data: {
+              name: customerName,
+              phone: customerPhone,
+              email: customerEmail || null,
+              passwordHash: hashedPassword,
+              role: 'USER',
+              emailVerified: new Date(), // Auto-verify for simplicity
+            },
+          });
+          userId = user.id;
+        } else {
+          return NextResponse.json(
+            { success: false, error: 'يجب تسجيل الدخول أو إدخال كلمة مرور لإنشاء حساب' },
+            { status: 401 }
+          );
+        }
+      } else {
+        // User exists, link to it
+        userId = user.id;
+      }
+    }
 
     const serviceId = formData.get('serviceId')?.toString() || '';
     const variantId = formData.get('variantId')?.toString() || '';
@@ -222,6 +268,8 @@ export async function POST(request: NextRequest) {
     // Apply Discount
     totalCents = totalCents - discountAmount;
 
+    const finalUserId = userId as string; // Guaranteed to be string by logic above
+
     const orderData = {
       status: 'waiting_confirmation',
       serviceId,
@@ -229,10 +277,10 @@ export async function POST(request: NextRequest) {
       notes,
       totalPrice: totalCents, // Legacy field support if needed
       totalCents: totalCents,
-      customerName: session.user.name || 'Unknown',
-      customerPhone: session.user.phone || 'Unknown',
-      customerEmail: session.user.email || 'Unknown',
-      userId: session.user.id,
+      customerName: customerName || session?.user?.name || 'Unknown',
+      customerPhone: customerPhone || session?.user?.phone || 'Unknown',
+      customerEmail: customerEmail || session?.user?.email || 'Unknown',
+      userId: finalUserId,
       deliveryType,
       deliveryFee,
       discount: 0, // Manual discount field
@@ -283,8 +331,8 @@ export async function POST(request: NextRequest) {
 
     if (!order) throw new Error('Failed to create order after multiple attempts');
 
-    // تحديث بيانات المستخدم لو فيه حاجة ناقصة
-    if (wifeName || fatherName || motherName || birthDate || nationality || idNumber) {
+    // تحديث بيانات المستخدم لو فيه حاجة ناقصة (في حالة الـ Session فقط لضمان الملكية)
+    if (session?.user?.id && (wifeName || fatherName || motherName || birthDate || nationality || idNumber)) {
       const userUpdateData: Record<string, any> = {};
       if (wifeName) userUpdateData.wifeName = wifeName;
       if (fatherName) userUpdateData.fatherName = fatherName;

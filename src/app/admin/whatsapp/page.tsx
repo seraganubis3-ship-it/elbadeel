@@ -102,7 +102,10 @@ export default function WhatsAppPage() {
       const res = await fetch('/api/admin/whatsapp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: status.user.id.split(':')[0], message: '✅ اختبار اتصال منصة البديل ناجح!' }),
+        body: JSON.stringify({
+          phone: status.user.id.split(':')[0],
+          message: '✅ اختبار اتصال منصة البديل ناجح!',
+        }),
       });
       const data = await res.json();
       if (data.success) toast.success('تم إرسال رسالة اختبار بنجاح');
@@ -125,7 +128,9 @@ export default function WhatsAppPage() {
     }
   }, []);
 
-  useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
 
   const handleAdd = async () => {
     if (!newTitle.trim() || !newBody.trim()) {
@@ -182,7 +187,9 @@ export default function WhatsAppPage() {
     });
     const data = await res.json();
     if (data.success) {
-      setTemplates(prev => prev.map(t => t.id === id ? { ...t, title: editTitle, body: editBody } : t));
+      setTemplates(prev =>
+        prev.map(t => (t.id === id ? { ...t, title: editTitle, body: editBody } : t))
+      );
       setEditingId(null);
       toast.success('تم التحديث');
     } else toast.error('فشل التحديث');
@@ -191,7 +198,6 @@ export default function WhatsAppPage() {
   /* ─── Render ─── */
   return (
     <div className='p-6 max-w-5xl mx-auto space-y-8'>
-
       {/* Header */}
       <div className='flex justify-between items-center'>
         <div>
@@ -202,11 +208,17 @@ export default function WhatsAppPage() {
           <p className='text-gray-500 mt-1 text-sm'>ربط WhatsApp وإدارة الرسائل الجاهزة</p>
         </div>
         <button
-          onClick={() => { setLoading(true); checkStatus(); }}
+          onClick={() => {
+            setLoading(true);
+            checkStatus();
+          }}
           className='p-2 hover:bg-gray-100 rounded-full transition-colors'
           title='تحديث'
         >
-          <RefreshCcw size={20} className={loading ? 'animate-spin text-gray-400' : 'text-gray-600'} />
+          <RefreshCcw
+            size={20}
+            className={loading ? 'animate-spin text-gray-400' : 'text-gray-600'}
+          />
         </button>
       </div>
 
@@ -226,7 +238,9 @@ export default function WhatsAppPage() {
                 <CheckCircle size={32} className='text-green-600' />
               </div>
               <h3 className='text-xl font-bold text-green-700 mb-1'>متصل بنجاح</h3>
-              <p className='text-gray-500 text-sm mb-5' dir='ltr'>{status.user?.id?.split(':')[0]}</p>
+              <p className='text-gray-500 text-sm mb-5' dir='ltr'>
+                {status.user?.id?.split(':')[0]}
+              </p>
               <div className='flex flex-col gap-2'>
                 <button
                   onClick={testConnection}
@@ -270,7 +284,13 @@ export default function WhatsAppPage() {
           ) : status?.qrImage ? (
             <div className='flex flex-col items-center'>
               <div className='bg-white p-3 rounded-xl shadow border mb-4'>
-                <Image src={status.qrImage} width={220} height={220} alt='QR Code' className='rounded-lg' />
+                <Image
+                  src={status.qrImage}
+                  width={220}
+                  height={220}
+                  alt='QR Code'
+                  className='rounded-lg'
+                />
               </div>
               <ol className='list-decimal list-inside space-y-1 text-gray-500 text-xs text-right w-full'>
                 <li>افتح WhatsApp → القائمة → الأجهزة المرتبطة</li>
@@ -280,9 +300,24 @@ export default function WhatsAppPage() {
           ) : (
             <div className='flex flex-col items-center justify-center h-48 text-center'>
               {loading ? (
-                <><div className='animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mb-3'/><p className='text-gray-400 text-sm'>جارٍ تجهيز QR Code...</p></>
+                <>
+                  <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mb-3' />
+                  <p className='text-gray-400 text-sm'>جارٍ تجهيز QR Code...</p>
+                </>
               ) : (
-                <><AlertCircle size={36} className='text-red-300 mb-3'/><p className='text-gray-500 text-sm'>تأكد أن البوت يعمل</p><code className='mt-2 bg-gray-100 px-2 py-1 rounded text-xs'>npm run whatsapp</code><button onClick={checkStatus} className='mt-3 text-blue-500 hover:underline text-xs'>إعادة المحاولة</button></>
+                <>
+                  <AlertCircle size={36} className='text-red-300 mb-3' />
+                  <p className='text-gray-500 text-sm'>تأكد أن البوت يعمل</p>
+                  <code className='mt-2 bg-gray-100 px-2 py-1 rounded text-xs'>
+                    npm run whatsapp
+                  </code>
+                  <button
+                    onClick={checkStatus}
+                    className='mt-3 text-blue-500 hover:underline text-xs'
+                  >
+                    إعادة المحاولة
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -303,7 +338,11 @@ export default function WhatsAppPage() {
             </div>
           </div>
           <button
-            onClick={() => { setShowAddForm(v => !v); setNewTitle(''); setNewBody(''); }}
+            onClick={() => {
+              setShowAddForm(v => !v);
+              setNewTitle('');
+              setNewBody('');
+            }}
             className='flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors'
           >
             <Plus size={16} />
@@ -386,8 +425,18 @@ export default function WhatsAppPage() {
                       className='w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none'
                     />
                     <div className='flex gap-2 justify-end'>
-                      <button onClick={() => setEditingId(null)} className='p-2 text-gray-400 hover:bg-gray-100 rounded-lg'><X size={16}/></button>
-                      <button onClick={() => saveEdit(t.id)} className='p-2 text-green-600 hover:bg-green-50 rounded-lg'><Check size={16}/></button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className='p-2 text-gray-400 hover:bg-gray-100 rounded-lg'
+                      >
+                        <X size={16} />
+                      </button>
+                      <button
+                        onClick={() => saveEdit(t.id)}
+                        className='p-2 text-green-600 hover:bg-green-50 rounded-lg'
+                      >
+                        <Check size={16} />
+                      </button>
                     </div>
                   </div>
                 ) : (
@@ -399,31 +448,46 @@ export default function WhatsAppPage() {
                         className='flex items-center gap-2 text-right flex-1 min-w-0'
                       >
                         <span className='font-bold text-gray-800 text-sm truncate'>{t.title}</span>
-                        {expandedId === t.id
-                          ? <ChevronUp size={14} className='text-gray-400 flex-shrink-0'/>
-                          : <ChevronDown size={14} className='text-gray-400 flex-shrink-0'/>
-                        }
+                        {expandedId === t.id ? (
+                          <ChevronUp size={14} className='text-gray-400 flex-shrink-0' />
+                        ) : (
+                          <ChevronDown size={14} className='text-gray-400 flex-shrink-0' />
+                        )}
                       </button>
                       <div className='flex items-center gap-1 mr-3'>
-                        <button onClick={() => handleCopy(t.body)} title='نسخ' className='p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors'>
-                          <Copy size={14}/>
+                        <button
+                          onClick={() => handleCopy(t.body)}
+                          title='نسخ'
+                          className='p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors'
+                        >
+                          <Copy size={14} />
                         </button>
-                        <button onClick={() => startEdit(t)} title='تعديل' className='p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors'>
-                          <Pencil size={14}/>
+                        <button
+                          onClick={() => startEdit(t)}
+                          title='تعديل'
+                          className='p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors'
+                        >
+                          <Pencil size={14} />
                         </button>
-                        <button onClick={() => handleDelete(t.id)} title='حذف' className='p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors'>
-                          <Trash2 size={14}/>
+                        <button
+                          onClick={() => handleDelete(t.id)}
+                          title='حذف'
+                          className='p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors'
+                        >
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
                     {expandedId === t.id && (
                       <div className='mt-3 bg-gray-50 rounded-xl px-4 py-3'>
-                        <pre className='text-xs text-gray-600 whitespace-pre-wrap font-sans leading-relaxed'>{t.body}</pre>
+                        <pre className='text-xs text-gray-600 whitespace-pre-wrap font-sans leading-relaxed'>
+                          {t.body}
+                        </pre>
                         <button
                           onClick={() => handleCopy(t.body)}
                           className='mt-2 flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-semibold'
                         >
-                          <Copy size={12}/> نسخ النص
+                          <Copy size={12} /> نسخ النص
                         </button>
                       </div>
                     )}

@@ -100,7 +100,7 @@ export async function checkRateLimit(
       blocked: false,
     };
   } catch (error) {
-        console.error('Rate limit check failed:', error);
+    console.error('Rate limit check failed:', error);
     // Fail open - allow request if Redis is down
     return {
       allowed: true,

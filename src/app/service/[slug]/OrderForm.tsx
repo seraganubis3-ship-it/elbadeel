@@ -54,9 +54,9 @@ export default function OrderForm({
   const [dynamicValues, setDynamicValues] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
-    customerName: user.name || '',
-    customerPhone: user.phone || '',
-    customerEmail: user.email || '',
+    customerName: user?.name || '',
+    customerPhone: user?.phone || '',
+    customerEmail: user?.email || '',
     address: '',
     notes: '',
     deliveryType: 'OFFICE',
@@ -66,11 +66,12 @@ export default function OrderForm({
     wifeMotherName: '',
     marriageDate: '',
     fatherName: '',
-    motherName: user.motherName || '',
-    birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : '',
-    nationality: user.nationality || 'مصري',
-    idNumber: user.idNumber || '',
-    gender: user.gender || '',
+    motherName: user?.motherName || '',
+    birthDate: user?.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : '',
+    nationality: user?.nationality || 'مصري',
+    idNumber: user?.idNumber || '',
+    gender: user?.gender || '',
+    password: '', // For guest auto-registration
   });
 
   const [appliedPromo, setAppliedPromo] = useState<{
@@ -237,6 +238,11 @@ export default function OrderForm({
 
     // Promo
     if (appliedPromo) formDataToSubmit.append('promoCode', appliedPromo.code);
+
+    // Password for guest registration
+    if (!user && formData.password) {
+      formDataToSubmit.append('password', formData.password);
+    }
 
     try {
       const response = await fetch('/api/orders', { method: 'POST', body: formDataToSubmit });
@@ -413,15 +419,19 @@ export default function OrderForm({
           );
         }
       case 5:
-        // Delivery OR Confirm
+        // Delivery (if hasDynamicFields) OR Confirm (if not)
         if (hasDynamicFields) {
           return (
             formData.deliveryType === 'OFFICE' ||
             (formData.deliveryType === 'ADDRESS' && formData.address.length > 5)
           );
         } else {
-          return true;
+          // Confirm step
+          return !!(user || (formData.password && formData.password.length >= 6));
         }
+      case 6:
+        // Confirm step (only if hasDynamicFields)
+        return !!(user || (formData.password && formData.password.length >= 6));
       default:
         return true;
     }
@@ -551,6 +561,9 @@ export default function OrderForm({
                 appliedPromo={appliedPromo}
                 dynamicFields={effectiveDynamicFields}
                 dynamicValues={dynamicValues}
+                isGuest={!user}
+                password={formData.password}
+                onPasswordChange={(val) => handleInputChange('password', val)}
               />
             </StepWrapper>
           );
@@ -631,6 +644,9 @@ export default function OrderForm({
                 onApplyPromo={handlePromoApply}
                 onRemovePromo={handlePromoRemove}
                 appliedPromo={appliedPromo}
+                isGuest={!user}
+                password={formData.password}
+                onPasswordChange={(val) => handleInputChange('password', val)}
               />
             </StepWrapper>
           );

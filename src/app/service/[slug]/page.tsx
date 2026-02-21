@@ -29,24 +29,36 @@ export async function generateMetadata(
   const title = `${service.name} | البديل للخدمات الحكومية`;
   const description = service.description || `استخراج ${service.name} بسرعة وسهولة من منصة البديل.`;
 
+  const keywords = [
+    service.name,
+    `سعر ${service.name}`,
+    `تكلفة ${service.name}`,
+    `اجراءات ${service.name}`,
+    `استخراج ${service.name}`,
+    `اوراق ${service.name}`,
+    `استخراج ${service.name}`,
+    service.category?.name || 'خدمات حكومية',
+    'البديل',
+    'مكتب البديل',
+  ];
+
   return {
     title,
     description,
-    keywords: [
-      service.name,
-      `سعر ${service.name}`,
-      `تكلفة ${service.name}`,
-      `اجراءات ${service.name}`,
-      `استخراج ${service.name}`,
-      `اوراق ${service.name}`,
-      'خدمات حكومية',
-      'البديل',
-    ],
+    keywords,
     openGraph: {
       title,
       description,
-      type: 'website',
+      type: 'article',
       siteName: 'البديل للخدمات الحكومية',
+      images: [
+        {
+          url: '/og-image.jpg', // Use default if no specific image
+          width: 1200,
+          height: 630,
+          alt: service.name,
+        },
+      ],
     },
     alternates: {
       canonical: `/service/${service.slug}`,
@@ -55,11 +67,8 @@ export async function generateMetadata(
 }
 
 export default async function ServiceDetail({ params }: { params: Promise<{ slug: string }> }) {
-  // Check if user is authenticated
+  // Get session for user data if logged in
   const session = await getSession();
-  if (!session?.user) {
-    redirect('/register');
-  }
 
   const resolvedParams = await params;
   const slug = decodeURIComponent(resolvedParams.slug);
@@ -228,7 +237,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
               serviceSlug={service.slug}
               serviceName={service.name}
               variants={(service as any).variants}
-              user={session.user}
+              user={session?.user || null}
               requiredDocuments={(service as any).documents || []}
               dynamicFields={(fields as any) || []}
               defaultDeliveryFee={defaultDeliveryFee}
