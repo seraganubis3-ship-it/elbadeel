@@ -253,10 +253,11 @@ export default function OrderForm({
         // Auto-login for guests
         if (!user && formData.password) {
           await signIn('credentials', {
-            redirect: false,
+            callbackUrl: `/order/${result.orderId}/payment`,
             phone: formData.customerPhone,
             password: formData.password,
           });
+          return; // NextAuth handles redirection
         }
         window.location.href = `/order/${result.orderId}/payment`;
       } else {
