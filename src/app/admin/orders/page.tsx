@@ -837,8 +837,8 @@ export default function AdminOrdersPage() {
       return;
     }
 
-    // Ask for reason FIRST for all settlement/returned (before national ID check)
-    if (newStatus === 'settlement' || newStatus === 'returned') {
+    // Ask for reason FIRST for all fulfillment/returned
+    if (newStatus === 'fulfillment' || newStatus === 'returned') {
       setPendingStatusReason({ orderId, newStatus });
       setStatusReasonText('');
       setShowStatusReasonModal(true);
@@ -1240,7 +1240,7 @@ export default function AdminOrdersPage() {
         <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
           <div className='bg-white rounded-2xl shadow-2xl w-full max-w-md p-6'>
             <h3 className='text-xl font-black text-slate-900 mb-2'>
-              {pendingStatusReason.newStatus === 'settlement' ? '⚠️ سبب الاستيفاء' : '↩️ سبب المرتجع'}
+              {pendingStatusReason.newStatus === 'fulfillment' ? '⚠️ سبب الاستيفاء' : '↩️ سبب المرتجع'}
             </h3>
             <p className='text-slate-500 text-sm mb-4'>اكتب السبب ليظهر في تفاصيل الطلب</p>
             <textarea
