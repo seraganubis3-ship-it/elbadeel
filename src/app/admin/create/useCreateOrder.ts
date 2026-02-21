@@ -830,6 +830,18 @@ export function useCreateOrder() {
       // 2. SERVICE-SPECIFIC VALIDATION
       const serviceName = selectedService.name;
 
+      // Mandatory Form Serial for ID Cards (بطاقة)
+      if (serviceName.includes('بطاقة')) {
+        if (!formSerialNumber.trim()) {
+          showWarning('رقم الاستمارة مطلوب', 'يرجى إدخال رقم الاستمارة لطلبات البطاقة');
+          return;
+        }
+        if (serialValid && !serialValid.ok) {
+          showWarning('رقم الاستمارة غير صحيح', serialValid.msg || 'يرجى التأكد من صحة رقم الاستمارة وملاءمته لهذا النوع');
+          return;
+        }
+      }
+
       if (serviceName.includes('ميلاد')) {
         // اسم الأم مطلوب فقط إذا لم يكن هناك رقم قومي
         const hasNationalId = formData.idNumber && formData.idNumber.length === 14;

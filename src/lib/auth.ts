@@ -95,10 +95,27 @@ export async function requireAdmin() {
   };
 }
 
-export async function requireAdminOrStaff() {
+export async function requireAdminOrStaff(options: { skipDB?: boolean } = {}) {
   const session = await getSession();
   if (!session?.user?.id) {
     throw new Error('Unauthorized');
+  }
+
+  // Fast path: Use session data if skipDB is true
+  if (options.skipDB) {
+    const userRole = session.user.role;
+    const permissions = (session.user as any).permissions || [];
+    
+    if (
+      userRole !== 'ADMIN' &&
+      userRole !== 'STAFF' &&
+      !permissions.includes('CREATE_ORDER') &&
+      !permissions.includes('MANAGE_ORDERS')
+    ) {
+      throw new Error('Forbidden');
+    }
+
+    return session;
   }
 
   const user = await prisma.user.findUnique({

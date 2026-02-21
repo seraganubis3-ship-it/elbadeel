@@ -4,6 +4,7 @@ import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { generateUniqueOrderNumber } from '@/lib/orderNumbering';
 import { logger } from '@/lib/logger';
+import { ORDER_STATUS } from '@/constants/orderStatuses';
 import { checkWhatsAppStatus, sendWhatsAppMessage, NotificationTemplates } from '@/lib/whatsapp';
 import bcrypt from 'bcryptjs';
 
@@ -99,16 +100,16 @@ export async function GET(request: NextRequest) {
       ...(from && to
         ? {
             createdAt: {
-              gte: new Date(from.split('/').reverse().join('-')),
-              lte: new Date(to.split('/').reverse().join('-') + 'T23:59:59.999Z'),
+              gte: new Date(from.split('/').reverse().join('-') + 'T00:00:00.000+02:00'),
+              lte: new Date(to.split('/').reverse().join('-') + 'T23:59:59.999+02:00'),
             },
           }
         : {}),
       ...(photographyDate
         ? {
             photographyDate: {
-              gte: new Date(photographyDate.split('/').reverse().join('-')),
-              lte: new Date(photographyDate.split('/').reverse().join('-') + 'T23:59:59.999Z'),
+              gte: new Date(photographyDate.split('/').reverse().join('-') + 'T00:00:00.000+02:00'),
+              lte: new Date(photographyDate.split('/').reverse().join('-') + 'T23:59:59.999+02:00'),
             },
           }
         : {}),
@@ -344,6 +345,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId },
+      include: { variants: true },
+    });
+
+    if (!service) {
+      return NextResponse.json({ success: false, error: 'الخدمة غير موجودة' }, { status: 400 });
+    }
+
+    const variant = service.variants.find((v: any) => v.id === variantId);
+    if (!variant) {
+      return NextResponse.json({ success: false, error: 'نوع الخدمة غير موجود' }, { status: 400 });
+    }
+
+    // Mandatory Form Serial for ID Cards (بطاقة)
+    if (service.name.includes('بطاقة') && !formSerialNumber) {
+      return NextResponse.json(
+        { success: false, error: 'رقم الاستمارة مطلوب لهذه الخدمة' },
+        { status: 400 }
+      );
+    }
+
     // Validate Phone Number (Must be 11 digits)
     const phoneRegex = /^01[0125][0-9]{8}$/;
     if (!phoneRegex.test(customerPhone)) {
@@ -377,41 +400,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId },
-      include: { variants: true },
-    });
-
-    if (!service) {
-      return NextResponse.json({ success: false, error: 'الخدمة غير موجودة' }, { status: 400 });
-    }
-
-    const variant = service.variants.find((v: any) => v.id === variantId);
-    if (!variant) {
-      return NextResponse.json({ success: false, error: 'نوع الخدمة غير موجود' }, { status: 400 });
-    }
-
     const normalizePhone = (p?: string) => (p ? p.replace(/\D/g, '') : undefined);
     const normalizedPhone = normalizePhone(customerPhone);
 
     let userId: string | null = null;
     let existingUser = null;
 
+    const orConditions = [];
     if (customerEmail && customerEmail.trim() !== '') {
-      existingUser = await prisma.user.findFirst({
-        where: { email: { equals: customerEmail, mode: 'insensitive' } },
-      });
+      orConditions.push({ email: { equals: customerEmail, mode: 'insensitive' as const } });
+    }
+    if (normalizedPhone) {
+      orConditions.push({ phone: normalizedPhone });
+    }
+    if (idNumber) {
+      orConditions.push({ idNumber: { equals: idNumber, mode: 'insensitive' as const } });
     }
 
-    if (!existingUser && normalizedPhone) {
+    if (orConditions.length > 0) {
       existingUser = await prisma.user.findFirst({
-        where: { phone: { equals: normalizedPhone } },
-      });
-    }
-
-    if (!existingUser && idNumber) {
-      existingUser = await prisma.user.findFirst({
-        where: { idNumber: { equals: idNumber, mode: 'insensitive' } },
+        where: { OR: orConditions },
       });
     }
 
@@ -516,7 +524,7 @@ export async function POST(request: NextRequest) {
       userId = u.id;
     }
 
-    let orderStatus = 'processing';
+    let orderStatus: string = ORDER_STATUS.PROCESSING;
     const promoCode = body.promoCode as string | undefined;
     let discountAmountCents = 0;
     let promoCodeId: string | undefined = undefined;
@@ -577,15 +585,18 @@ export async function POST(request: NextRequest) {
     }
 
     const orderId = await generateUniqueOrderNumber();
+    const now = new Date();
     let workDate: Date;
+    
     if (clientWorkDate && hasPermission(session.user, 'CREATE_ORDER')) {
       try {
         if (clientWorkDate.includes('/')) {
           const [day, month, year] = clientWorkDate.split('/');
-          workDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          workDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), now.getHours(), now.getMinutes(), now.getSeconds());
           if (isNaN(workDate.getTime())) workDate = getWorkDate(session);
         } else {
           workDate = new Date(clientWorkDate);
+          workDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
           if (isNaN(workDate.getTime())) workDate = getWorkDate(session);
         }
       } catch {
@@ -594,6 +605,9 @@ export async function POST(request: NextRequest) {
     } else {
       workDate = getWorkDate(session);
     }
+    
+    // Ensure exact time is saved for accurate reporting later
+    workDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
 
     const order = await prisma.order.create({
       data: {

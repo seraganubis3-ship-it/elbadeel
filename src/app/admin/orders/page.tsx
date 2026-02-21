@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { useToast, ToastContainer } from '@/components/Toast';
 import { useOrders } from './useOrders';
 import { Order } from './types';
@@ -18,8 +19,12 @@ import {
   LastOrderAlert, // Add this
 } from './components';
 import { printOrdersReport } from './utils/printReport';
+import { printCollectionReport } from './utils/printCollectionReport';
 
 export default function AdminOrdersPage() {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'ADMIN';
+
   // Toast notifications
   const { toasts, removeToast, showSuccess, showError } = useToast();
 
@@ -82,7 +87,19 @@ export default function AdminOrdersPage() {
   // Status Reason Modal State
   const [showStatusReasonModal, setShowStatusReasonModal] = useState(false);
   const [statusReasonText, setStatusReasonText] = useState('');
-  const [pendingStatusReason, setPendingStatusReason] = useState<{orderId: string; newStatus: string} | null>(null);
+  const [pendingStatusReason, setPendingStatusReason] = useState<{
+    orderId: string;
+    newStatus: string;
+  } | null>(null);
+
+  // Work Order Modal State
+  const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
+  const [pendingWorkOrder, setPendingWorkOrder] = useState<{
+    type: 'single' | 'bulk';
+    orderId?: string;
+    newStatus?: string;
+  } | null>(null);
+  const [isSubmittingWorkOrder, setIsSubmittingWorkOrder] = useState(false);
   // WhatsApp handlers
   const handleWhatsAppClick = (order: Order) => {
     setWhatsappOrder(order);
@@ -427,6 +444,18 @@ export default function AdminOrdersPage() {
     setShowDelegateModal(true);
   };
 
+  const handlePrintCollectionReport = () => {
+    if (selectedOrders.length === 0 && filteredOrders.length === 0) {
+      showError('تنبيه', 'لا توجد طلبات للطباعة');
+      return;
+    }
+    
+    // Find selected employee name based on filter, or default to current user
+    const selectedEmployee = admins.find(a => a.id === filters.employeeId);
+    
+    executePrintCollectionReport(selectedEmployee?.name || 'الكل');
+  };
+
   // Editable Report Modal State
   const [showEditReportModal, setShowEditReportModal] = useState(false);
   const [reportEditingState, setReportEditingState] = useState<{
@@ -529,6 +558,17 @@ export default function AdminOrdersPage() {
 
     setReportEditingState(null);
   };
+
+  const executePrintCollectionReport = (collectorName: string) => {
+    printCollectionReport({
+      orders: currentOrders,
+      selectedOrders,
+      filters,
+      collectorName, 
+      branchName: 'البديل 1',
+    });
+  };
+
   const executePrintTranslationReport = (delegate: any, reportDate?: string) => {
     const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
@@ -801,13 +841,6 @@ export default function AdminOrdersPage() {
   };
 
   // Work Order Logic
-  const [showWorkOrderModal, setShowWorkOrderModal] = useState(false);
-  const [pendingWorkOrder, setPendingWorkOrder] = useState<{
-    type: 'single' | 'bulk';
-    orderId?: string;
-    newStatus?: string;
-  } | null>(null);
-
   const isNationalIdOrder = (order: Order) => {
     const serviceName = order.service?.name || '';
     const serviceSlug = order.service?.slug || '';
@@ -845,6 +878,13 @@ export default function AdminOrdersPage() {
       return;
     }
 
+    // Require Work Order number for National ID orders when settling
+    if (newStatus === 'settlement' && order && isNationalIdOrder(order)) {
+      setPendingWorkOrder({ type: 'single', orderId, newStatus });
+      setShowWorkOrderModal(true);
+      return;
+    }
+
     await updateOrderStatus(orderId, newStatus);
   };
 
@@ -865,25 +905,30 @@ export default function AdminOrdersPage() {
 
   const handleWorkOrderSubmit = async (workOrderNumber: string) => {
     if (!pendingWorkOrder) return;
+    setIsSubmittingWorkOrder(true);
 
-    if (
-      pendingWorkOrder.type === 'single' &&
-      pendingWorkOrder.orderId &&
-      pendingWorkOrder.newStatus
-    ) {
-      await updateOrderStatus(
-        pendingWorkOrder.orderId,
-        pendingWorkOrder.newStatus,
-        workOrderNumber,
-        statusReasonText || undefined
-      );
-    } else if (pendingWorkOrder.type === 'bulk') {
-      await updateBulkStatus(workOrderNumber);
+    try {
+      if (
+        pendingWorkOrder.type === 'single' &&
+        pendingWorkOrder.orderId &&
+        pendingWorkOrder.newStatus
+      ) {
+        await updateOrderStatus(
+          pendingWorkOrder.orderId,
+          pendingWorkOrder.newStatus,
+          workOrderNumber,
+          statusReasonText || undefined
+        );
+      } else if (pendingWorkOrder.type === 'bulk') {
+        await updateBulkStatus(workOrderNumber);
+      }
+
+      setShowWorkOrderModal(false);
+      setPendingWorkOrder(null);
+      setStatusReasonText('');
+    } finally {
+      setIsSubmittingWorkOrder(false);
     }
-
-    setShowWorkOrderModal(false);
-    setPendingWorkOrder(null);
-    setStatusReasonText('');
   };
 
   // Calculate stats
@@ -1015,7 +1060,9 @@ export default function AdminOrdersPage() {
               onPrintFamilyReport={handlePrintFamilyReport}
               onOpenPhoneReport={handleOpenPhoneReport}
               onPrintCollectiveReceipt={handlePrintCollectiveReceipt}
+              onPrintCollectionReport={handlePrintCollectionReport}
               hasOrders={filteredOrders.length > 0}
+              isAdmin={isAdmin}
             />
           )}
 
@@ -1104,6 +1151,7 @@ export default function AdminOrdersPage() {
         }}
         onSubmit={handleWorkOrderSubmit}
         count={pendingWorkOrder?.type === 'single' ? 1 : selectedOrders.length}
+        isSubmitting={isSubmittingWorkOrder}
       />
 
       <SelectDelegateModal

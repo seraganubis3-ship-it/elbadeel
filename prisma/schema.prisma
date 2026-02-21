@@ -94,6 +94,7 @@ model User {
 
   @@index([email])
   @@index([role])
+  @@index([phone])
   @@index([createdAt])
   @@index([resetToken])
   @@index([verificationToken])
@@ -265,7 +266,7 @@ model Order {
   pickupLocation          String?
   originalDocuments       String?
   attachedDocuments       String?
-  workOrderNumber         Int?
+  workOrderNumber         String?
   hasAttachments          Boolean         @default(false)
   selectedFines           String?
   finesDetails            String?
@@ -293,7 +294,9 @@ model Order {
   @@index([deliveryType])
   @@index([idNumber])
   @@index([createdByAdminId])
+  @@index([customerName])
   @@index([customerPhone])
+  @@index([workOrderNumber])
   @@index([promoCodeId])
 }
 

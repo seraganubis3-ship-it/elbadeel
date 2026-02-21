@@ -1,13 +1,25 @@
 'use client';
 
+import { useState } from 'react';
 import { Order, getStatusBadge } from '../types';
 
 interface OrderStatusMetricsProps {
   order: Order;
+  onUpdateReason?: (reason: string) => void;
+  updating?: boolean;
 }
 
-export default function OrderStatusMetrics({ order }: OrderStatusMetricsProps) {
+export default function OrderStatusMetrics({ order, onUpdateReason, updating }: OrderStatusMetricsProps) {
   const status = getStatusBadge(order.status);
+  const [isEditingReason, setIsEditingReason] = useState(false);
+  const [editedReason, setEditedReason] = useState(order.statusReason || '');
+
+  const handleSaveReason = () => {
+    if (onUpdateReason) {
+      onUpdateReason(editedReason);
+      setIsEditingReason(false);
+    }
+  };
 
   return (
     <div className='bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8'>
@@ -99,15 +111,27 @@ export default function OrderStatusMetrics({ order }: OrderStatusMetricsProps) {
         </div>
       )}
       
-      {order.statusReason && (
-        <div className='mb-6 p-5 bg-amber-50 rounded-2xl border border-amber-200 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300'>
+      {order.statusReason && !isEditingReason && (
+        <div className='mb-6 p-5 bg-amber-50 rounded-2xl border border-amber-200 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300 group relative'>
+          <button 
+            onClick={() => {
+              setEditedReason(order.statusReason || '');
+              setIsEditingReason(true);
+            }}
+            className='absolute top-4 left-4 p-2 bg-amber-100 text-amber-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-amber-200'
+            title="تعديل السبب"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
           <div className='flex items-start gap-4'>
             <div className='w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0 border border-amber-200'>
               <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <div className='flex-1'>
+            <div className='flex-1 text-right'>
               <h4 className='text-amber-900 font-black text-sm mb-1'>
                 {order.status === 'fulfillment' ? 'سبب الاستيفاء:' : order.status === 'returned' ? 'سبب المرتجع:' : 'سبب تحديث الحالة:'}
               </h4>
@@ -115,6 +139,34 @@ export default function OrderStatusMetrics({ order }: OrderStatusMetricsProps) {
                 {order.statusReason}
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isEditingReason && (
+        <div className='mb-6 p-6 bg-white rounded-2xl border-2 border-blue-500 shadow-xl animate-in zoom-in duration-200'>
+          <h4 className='text-blue-900 font-black text-sm mb-3'>تعديل السبب:</h4>
+          <textarea
+            value={editedReason}
+            onChange={(e) => setEditedReason(e.target.value)}
+            className='w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none min-h-[100px] mb-4 font-medium'
+            placeholder='اكتب السبب الجديد هنا...'
+            autoFocus
+          />
+          <div className='flex gap-3'>
+            <button
+              onClick={handleSaveReason}
+              disabled={updating}
+              className='flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors'
+            >
+              {updating ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+            </button>
+            <button
+              onClick={() => setIsEditingReason(false)}
+              className='flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-colors'
+            >
+              إلغاء
+            </button>
           </div>
         </div>
       )}

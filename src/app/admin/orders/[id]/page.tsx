@@ -128,7 +128,11 @@ export default function OrderDetailsPage() {
           {/* Main Content Area (8 Cols) */}
           <div className='xl:col-span-8 space-y-8'>
             {/* Quick Metrics Row - Always Visible */}
-            <OrderStatusMetrics order={order} />
+            <OrderStatusMetrics 
+              order={order} 
+              onUpdateReason={(reason) => updateOrderField({ statusReason: reason })}
+              updating={updating}
+            />
 
             {/* Service Details Section */}
             <div className='bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden'>

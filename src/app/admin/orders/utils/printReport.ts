@@ -312,7 +312,7 @@ export function printOrdersReport({
   });
 
   let contentHtml = '';
-  let globalTotalOrders = 0;
+  let globalTotalQuantity = 0;
   let globalTotalFines = 0;
 
   // Render sections (logic same as before, but wrapped for the new layout)
@@ -320,9 +320,10 @@ export function printOrdersReport({
   if (partitionedOrders.NATIONAL_ID.length > 0) {
     const grouped = groupByVariant(partitionedOrders.NATIONAL_ID);
     Object.entries(grouped).forEach(([variantName, groupOrders]) => {
+      const groupTotalQuantity = groupOrders.reduce((sum: number, o: any) => sum + (o.quantity || 1), 0);
       const rows = groupOrders
         .map((order, idx) => {
-          globalTotalOrders++;
+          globalTotalQuantity += order.quantity || 1;
           const finesDetails = order.finesDetails ? JSON.parse(order.finesDetails) : [];
           const otherFines = finesDetails.filter(
             (f: any) =>
@@ -354,16 +355,17 @@ export function printOrdersReport({
           return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
         })
         .join('');
-      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">بطاقات الرقم القومي - ${variantName}</div><div class="header-order-num-container"><span class="order-label">رقم امر شغل :</span><span class="order-line"></span></div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="32%">اسم العميل</th><th width="18%">رقم البطاقة القومي</th><th width="15%">غرامات</th><th width="30%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupOrders.length}</td></tr></tbody></table></div>`;
+      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">بطاقات الرقم القومي - ${variantName}</div><div class="header-order-num-container"><span class="order-label">رقم امر شغل :</span><span class="order-line"></span></div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="32%">اسم العميل</th><th width="18%">رقم البطاقة القومي</th><th width="15%">غرامات</th><th width="30%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
     });
   }
 
   // 1.5. Translated National ID - ALL VARIANTS IN ONE TABLE
   if (partitionedOrders.TRANSLATED_ID.length > 0) {
     const allOrders = partitionedOrders.TRANSLATED_ID;
+    const groupTotalQuantity = allOrders.reduce((sum, o) => sum + (o.quantity || 1), 0);
     const rows = allOrders
       .map((order, idx) => {
-        globalTotalOrders++;
+        globalTotalQuantity += order.quantity || 1;
         const finesDetails = order.finesDetails ? JSON.parse(order.finesDetails) : [];
         const otherFines = finesDetails.filter(
           (f: any) =>
@@ -396,15 +398,16 @@ export function printOrdersReport({
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
       })
       .join('');
-    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">بطاقات الرقم القومي المترجمة</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="32%">اسم العميل</th><th width="18%">رقم البطاقة القومي</th><th width="15%">غرامات</th><th width="30%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
+    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">بطاقات الرقم القومي المترجمة</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="32%">اسم العميل</th><th width="18%">رقم البطاقة القومي</th><th width="15%">غرامات</th><th width="30%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
   }
 
   // 2. Birth Cert - ALL VARIANTS IN ONE TABLE
   if (partitionedOrders.BIRTH_CERT.length > 0) {
     const allOrders = partitionedOrders.BIRTH_CERT;
+    const groupTotalQuantity = allOrders.reduce((sum, o) => sum + (o.quantity || 1), 0);
     const rows = allOrders
       .map((order, idx) => {
-        globalTotalOrders++;
+        globalTotalQuantity += order.quantity || 1;
         const isSupply = order.status === 'supply';
         const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
         const mono =
@@ -422,15 +425,16 @@ export function printOrdersReport({
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${order.idNumber || '---'}</td></tr>`;
       })
       .join('');
-    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">شهادات الميلاد</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="20%">اسم العميل</th><th width="15%">تاريخ الميلاد</th><th width="25%">اسم الوالدة</th><th width="10%">العدد</th><th width="20%">الرقم القومي</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
+    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">شهادات الميلاد</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="20%">اسم العميل</th><th width="15%">تاريخ الميلاد</th><th width="25%">اسم الوالدة</th><th width="10%">العدد</th><th width="20%">الرقم القومي</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
   }
 
   // 3. Death Cert - ALL VARIANTS IN ONE TABLE
   if (partitionedOrders.DEATH_CERT.length > 0) {
     const allOrders = partitionedOrders.DEATH_CERT;
+    const groupTotalQuantity = allOrders.reduce((sum, o) => sum + (o.quantity || 1), 0);
     const rows = allOrders
       .map((order, idx) => {
-        globalTotalOrders++;
+        globalTotalQuantity += order.quantity || 1;
         const isSupply = order.status === 'supply';
         const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
         const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
@@ -447,12 +451,13 @@ export function printOrdersReport({
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${dDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td></tr>`;
       })
       .join('');
-    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">شهادات الوفاة</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="35%">اسم العميل</th><th width="20%">تاريخ الوفاة</th><th width="30%">اسم الوالدة</th><th width="10%">العدد</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
+    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">شهادات الوفاة</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="35%">اسم العميل</th><th width="20%">تاريخ الوفاة</th><th width="30%">اسم الوالدة</th><th width="10%">العدد</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
   }
 
   // 4. Passport - ALL VARIANTS IN ONE TABLE
   if (partitionedOrders.PASSPORT.length > 0) {
     const allOrders = partitionedOrders.PASSPORT;
+    const groupTotalQuantity = allOrders.reduce((sum, o) => sum + (o.quantity || 1), 0);
     const stationMap: Record<string, string> = {
       FIRST_POLICE_STATION: 'قسم أول',
       SECOND_POLICE_STATION: 'قسم ثاني',
@@ -460,7 +465,7 @@ export function printOrdersReport({
     };
     const rows = allOrders
       .map((order, idx) => {
-        globalTotalOrders++;
+        globalTotalQuantity += order.quantity || 1;
         const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
         const cellStyle = isSettlement
           ? 'style="text-align: center; background-color: #fca5a5 !important; -webkit-print-color-adjust: exact;"'
@@ -471,15 +476,16 @@ export function printOrdersReport({
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${order.idNumber || '---'}</td><td style="text-align: center;">${station}</td><td style="text-align: right;">${order.pickupLocation || '---'}</td></tr>`;
       })
       .join('');
-    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">جوازات سفر</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="30%">اسم العميل</th><th width="20%">الرقم القومي</th><th width="20%">قسم الشرطة</th><th width="25%">جوازات</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td></tr></tbody></table></div>`;
+    contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">جوازات سفر</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="30%">اسم العميل</th><th width="20%">الرقم القومي</th><th width="20%">قسم الشرطة</th><th width="25%">جوازات</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
   }
 
   // 5. Marriage Cert - ALL VARIANTS IN ONE TABLE
   if (partitionedOrders.MARRIAGE_CERT.length > 0) {
     const allOrders = partitionedOrders.MARRIAGE_CERT;
+    const groupTotalQuantity = allOrders.reduce((sum, o) => sum + (o.quantity || 1), 0);
     const rows = allOrders
       .map((order, idx) => {
-        globalTotalOrders++;
+        globalTotalQuantity += order.quantity || 1;
         const isSupply = order.status === 'supply';
         const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important;' : ''}"`;
         const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
@@ -526,7 +532,7 @@ export function printOrdersReport({
             ${rows}
             <tr class="count-row">
               <td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td>
-              <td colspan="5" style="text-align: right; padding-right: 20px; font-weight: bold;">${allOrders.length}</td>
+              <td colspan="5" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td>
             </tr>
           </tbody>
         </table>
@@ -550,6 +556,7 @@ export function printOrdersReport({
     };
 
     Object.entries(byService).forEach(([serviceName, groupOrders]) => {
+      const groupTotalQuantity = groupOrders.reduce((sum, o) => sum + (o.quantity || 1), 0);
       const sLow = serviceName.toLowerCase();
       const isMariage = sLow.includes('زواج') || sLow.includes('طلاق');
       const isDeath   = sLow.includes('وفاة');
@@ -561,7 +568,7 @@ export function printOrdersReport({
       if (isMariage) {
         thead = `<tr><th width="5%">م</th><th width="20%">اسم الزوج / الزوجة</th><th width="14%">الوالدة</th><th width="20%">اسم الزوجة / الزوج</th><th width="14%">الوالدة</th><th width="14%">تاريخ الزواج</th><th width="8%">العدد</th><th width="5%">النوع</th></tr>`;
         rows = groupOrders.map((order, idx) => {
-          globalTotalOrders++;
+          globalTotalQuantity += order.quantity || 1;
           const isSupply = order.status === 'supply';
           const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
           const vName = order.variant?.name || '';
@@ -571,7 +578,7 @@ export function printOrdersReport({
       } else if (isDeath) {
         thead = `<tr><th width="5%">م</th><th width="30%">اسم العميل</th><th width="18%">تاريخ الوفاة</th><th width="28%">اسم الوالدة</th><th width="10%">العدد</th><th width="9%">النوع</th></tr>`;
         rows = groupOrders.map((order, idx) => {
-          globalTotalOrders++;
+          globalTotalQuantity += order.quantity || 1;
           const isSupply = order.status === 'supply';
           const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
           const dDate = formatDate(order.deathDate || order.birthDate);
@@ -581,7 +588,7 @@ export function printOrdersReport({
       } else if (isBirth) {
         thead = `<tr><th width="5%">م</th><th width="22%">اسم العميل</th><th width="14%">تاريخ الميلاد</th><th width="22%">اسم الوالدة</th><th width="8%">العدد</th><th width="18%">الرقم القومي</th><th width="11%">النوع</th></tr>`;
         rows = groupOrders.map((order, idx) => {
-          globalTotalOrders++;
+          globalTotalQuantity += order.quantity || 1;
           const isSupply = order.status === 'supply';
           const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
           const mono = 'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
@@ -593,7 +600,7 @@ export function printOrdersReport({
         // Generic fallback
         thead = `<tr><th width="5%">م</th><th width="28%">اسم العميل</th><th width="16%">الرقم القومي</th><th width="12%">العدد</th><th width="12%">النوع</th><th width="10%">رسوم</th><th width="17%">تفاصيل</th></tr>`;
         rows = groupOrders.map((order, idx) => {
-          globalTotalOrders++;
+          globalTotalQuantity += order.quantity || 1;
           const fees = (order as any).overrideTotalFines !== undefined ? (order as any).overrideTotalFines : order.otherFees || 0;
           globalTotalFines += fees;
           const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
@@ -608,7 +615,7 @@ export function printOrdersReport({
         }).join('');
       }
 
-      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">${serviceName}</div><div class="header-order-num-container"><span class="order-label">رقم امر شغل :</span><span class="order-line"></span></div></div><table class="data-table"><thead>${thead}</thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="6" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupOrders.length}</td></tr></tbody></table></div>`;
+      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">${serviceName}</div><div class="header-order-num-container"><span class="order-label">رقم امر شغل :</span><span class="order-line"></span></div></div><table class="data-table"><thead>${thead}</thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="6" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
     });
   }
 
@@ -625,13 +632,13 @@ export function printOrdersReport({
       : '';
 
   const multiplier = hasNationalIds ? 20 : 10;
-  const totalStepFees = globalTotalOrders * multiplier;
+  const totalStepFees = globalTotalQuantity * multiplier;
 
   const summaryHtml = `
     <div class="summary-section">
       <table class="footer-table">
          <tr><td>اجمالي العدد المطلوب</td><td>اجمالي رسوم التحصيل</td></tr>
-         <tr><td class="val">${globalTotalOrders}</td><td class="val">${totalStepFees.toLocaleString('en-US')}</td></tr>
+         <tr><td class="val">${globalTotalQuantity}</td><td class="val">${totalStepFees.toLocaleString('en-US')}</td></tr>
       </table>
     </div>
   `;

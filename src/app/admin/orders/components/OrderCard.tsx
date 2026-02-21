@@ -61,9 +61,21 @@ export function OrderCard({
                 #{order.id.slice(-6)}
               </span>
               {order.createdByAdmin ? (
-                <span className='px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-bold'>
-                  🏢 مكتب
-                </span>
+                <div className='flex items-center gap-2'>
+                  <span className='px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-bold flex-shrink-0'>
+                    🏢 مكتب
+                  </span>
+                  <div 
+                    className='flex items-center gap-1.5 px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-800 rounded-xl text-xs sm:text-sm font-bold shadow-sm' 
+                    title={order.createdByAdmin.name}
+                  >
+                    <svg className='w-4 h-4 text-indigo-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
+                    </svg>
+                    <span className='opacity-80 font-medium'>أنشأه المشرف:</span>
+                    <span className='truncate max-w-[150px]'>{order.createdByAdmin.name}</span>
+                  </div>
+                </div>
               ) : (
                 <span className='px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-bold'>
                   🌐 أونلاين

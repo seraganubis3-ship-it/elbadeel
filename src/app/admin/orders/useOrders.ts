@@ -397,21 +397,21 @@ export function useOrders(
   };
 
   const selectAllOrders = () => {
-    const validOrders = currentOrders.filter(o => o.status !== 'cancelled' && o.status !== 'returned');
-    const allSelected = validOrders.every(o => selectedOrders.includes(o.id));
+    const validOrdersOnPage = currentOrders.filter(
+      o => o.status !== 'cancelled' && o.status !== 'returned'
+    );
+    const allSelectedOnPage = validOrdersOnPage.every(o => selectedOrders.includes(o.id));
 
-    if (allSelected) {
-      // Deselect current visible orders
-      const idsToRemove = validOrders.map(o => o.id);
-      setSelectedOrders(prev => prev.filter(id => !idsToRemove.includes(id)));
-      setSelectedOrdersData(prev => prev.filter(o => !idsToRemove.includes(o.id)));
+    if (allSelectedOnPage) {
+      // If all on current page are selected, clear EVERYTHING for a fresh start as requested
+      setSelectedOrders([]);
+      setSelectedOrdersData([]);
     } else {
-      // Select all visible orders
-      const newOrders = validOrders.filter(o => !selectedOrders.includes(o.id));
-      const newIds = newOrders.map(o => o.id);
-
-      setSelectedOrders(prev => [...prev, ...newIds]);
-      setSelectedOrdersData(prev => [...prev, ...newOrders]);
+      // Replace entire selection with just the valid orders from the current page
+      // This "forgets" any previous selections from other pages/searches as requested
+      const ids = validOrdersOnPage.map(o => o.id);
+      setSelectedOrders(ids);
+      setSelectedOrdersData(validOrdersOnPage);
     }
   };
 
@@ -422,7 +422,7 @@ export function useOrders(
     workOrderNumber?: string,
     statusReason?: string
   ) => {
-    if (!newStatus) return;
+    if (!newStatus || updatingStatus === orderId) return;
     setUpdatingStatus(orderId);
 
     try {

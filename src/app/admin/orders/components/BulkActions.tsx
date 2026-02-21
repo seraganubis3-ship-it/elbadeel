@@ -17,7 +17,9 @@ interface BulkActionsProps {
   onPrintFamilyReport: () => void;
   onOpenPhoneReport: () => void;
   onPrintCollectiveReceipt: () => void;
+  onPrintCollectionReport: () => void;
   hasOrders: boolean;
+  isAdmin?: boolean;
 }
 
 export function BulkActions({
@@ -35,7 +37,9 @@ export function BulkActions({
   onPrintFamilyReport,
   onOpenPhoneReport,
   onPrintCollectiveReceipt,
+  onPrintCollectionReport,
   hasOrders,
+  isAdmin = false,
 }: BulkActionsProps) {
   return (
     <div className='bg-white/95 rounded-2xl shadow-xl border border-gray-100/50 p-4 mb-6'>
@@ -81,6 +85,24 @@ export function BulkActions({
                 />
               </svg>
               طباعة كشف
+            </button>
+          )}
+
+          {/* Collection Report Button - Admin Only */}
+          {hasOrders && isAdmin && (
+            <button
+              onClick={onPrintCollectionReport}
+              className='flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-xl transition-colors text-sm font-medium whitespace-nowrap'
+            >
+              <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z'
+                />
+              </svg>
+              كشف تحصيل
             </button>
           )}
 

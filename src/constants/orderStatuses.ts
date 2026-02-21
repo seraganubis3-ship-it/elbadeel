@@ -57,7 +57,7 @@ export const ORDER_STATUS_CONFIG: Record<
     bgColor: 'bg-orange-100',
     borderColor: 'border-orange-200',
   },
-  PROCESSING: {
+  [ORDER_STATUS.PROCESSING]: {
     label: 'تحت التنفيذ',
     labelEn: 'Processing',
     description: 'جاري تنفيذ الطلب',
