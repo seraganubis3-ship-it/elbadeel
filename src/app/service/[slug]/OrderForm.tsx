@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { signIn } from 'next-auth/react';
 import { useToast, ToastContainer } from '@/components/Toast';
 import StepIndicator from '@/components/order/StepIndicator';
 import VariantSelection from '@/components/order/VariantSelection';
@@ -249,6 +250,14 @@ export default function OrderForm({
       const result = await response.json();
 
       if (response.ok && result.success) {
+        // Auto-login for guests
+        if (!user && formData.password) {
+          await signIn('credentials', {
+            redirect: false,
+            phone: formData.customerPhone,
+            password: formData.password,
+          });
+        }
         window.location.href = `/order/${result.orderId}/payment`;
       } else {
         showError('فشل الطلب', result.error || 'حدث خطأ ما');
