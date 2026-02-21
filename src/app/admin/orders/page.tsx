@@ -825,9 +825,9 @@ export default function AdminOrdersPage() {
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
 
-    // Check for outstanding balance when delivering or settling
+    // Check for outstanding balance ONLY when delivering
     if (
-      (newStatus === 'settlement' || newStatus === 'delivered') &&
+      newStatus === 'delivered' &&
       order &&
       (order.remainingAmount || 0) > 0
     ) {
