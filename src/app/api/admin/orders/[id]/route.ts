@@ -94,6 +94,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
         landmark: order.landmark,
         notes: order.notes,
         adminNotes: order.adminNotes,
+        statusReason: order.statusReason,
         birthDate: order.birthDate,
         fatherName: order.fatherName,
         idNumber: order.idNumber,

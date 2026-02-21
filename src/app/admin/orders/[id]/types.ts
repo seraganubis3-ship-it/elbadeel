@@ -8,6 +8,7 @@ export interface Order {
   createdAt: string | Date;
   updatedAt: string | Date;
   estimatedCompletionDate?: string | Date;
+  statusReason?: string;
 
   // Service
   service: {

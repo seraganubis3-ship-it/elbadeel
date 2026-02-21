@@ -98,6 +98,26 @@ export default function OrderStatusMetrics({ order }: OrderStatusMetricsProps) {
           </div>
         </div>
       )}
+      
+      {order.statusReason && (
+        <div className='mb-6 p-5 bg-amber-50 rounded-2xl border border-amber-200 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300'>
+          <div className='flex items-start gap-4'>
+            <div className='w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0 border border-amber-200'>
+              <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className='flex-1'>
+              <h4 className='text-amber-900 font-black text-sm mb-1'>
+                {order.status === 'fulfillment' ? 'سبب الاستيفاء:' : order.status === 'returned' ? 'سبب المرتجع:' : 'سبب تحديث الحالة:'}
+              </h4>
+              <p className='text-amber-800 leading-relaxed font-medium'>
+                {order.statusReason}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className='grid grid-cols-2 lg:grid-cols-4 gap-6'>
         <div className='group p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200/50 hover:shadow-lg transition-all duration-300'>
