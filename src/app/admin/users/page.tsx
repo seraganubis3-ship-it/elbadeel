@@ -209,7 +209,7 @@ export default function AdminUsersPage() {
   const changeRole = async (id: string, newRoleValue: string) => {
     let roleToSave = 'USER';
     let adminRoleIdToSave = '';
-    
+
     if (['ADMIN', 'STAFF', 'VIEWER', 'USER'].includes(newRoleValue)) {
       roleToSave = newRoleValue;
     } else {
@@ -921,7 +921,9 @@ export default function AdminUsersPage() {
                               <div className='text-xs text-gray-500 mt-1'>📞 {u.phone}</div>
                             )}
                             {u.adminRole && (
-                              <div className='text-xs font-bold text-indigo-600 mt-1'>⭐ رتبة الإدارة: {u.adminRole.name}</div>
+                              <div className='text-xs font-bold text-indigo-600 mt-1'>
+                                ⭐ رتبة الإدارة: {u.adminRole.name}
+                              </div>
                             )}
                             {u.createdByAdmin && (
                               <div className='text-xs text-gray-600 mt-2 bg-gray-50 px-2 py-1 rounded-lg'>
@@ -947,7 +949,9 @@ export default function AdminUsersPage() {
                           {adminRoles.length > 0 && (
                             <optgroup label='رتب مخصصة'>
                               {adminRoles.map(r => (
-                                <option key={r.id} value={r.id}>⭐ {r.name}</option>
+                                <option key={r.id} value={r.id}>
+                                  ⭐ {r.name}
+                                </option>
                               ))}
                             </optgroup>
                           )}
@@ -1202,7 +1206,9 @@ export default function AdminUsersPage() {
 
                 <div className='grid grid-cols-2 gap-4'>
                   <div className='col-span-2 md:col-span-1'>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>الدور / الرتبة</label>
+                    <label className='block text-sm font-medium text-gray-700 mb-1'>
+                      الدور / الرتبة
+                    </label>
                     {isEditing ? (
                       <select
                         value={editForm.adminRoleId || editForm.role}
@@ -1223,7 +1229,9 @@ export default function AdminUsersPage() {
                         {adminRoles.length > 0 && (
                           <optgroup label='رتب مخصصة'>
                             {adminRoles.map(r => (
-                              <option key={r.id} value={r.id}>{r.name}</option>
+                              <option key={r.id} value={r.id}>
+                                {r.name}
+                              </option>
                             ))}
                           </optgroup>
                         )}

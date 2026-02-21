@@ -22,7 +22,14 @@ export async function requireAuth() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, name: true, email: true, phone: true, adminRole: { select: { permissions: true } } },
+    select: {
+      id: true,
+      role: true,
+      name: true,
+      email: true,
+      phone: true,
+      adminRole: { select: { permissions: true } },
+    },
   });
 
   if (!user) {
@@ -50,7 +57,14 @@ export async function requireAdmin() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, name: true, email: true, phone: true, adminRole: { select: { permissions: true } } },
+    select: {
+      id: true,
+      role: true,
+      name: true,
+      email: true,
+      phone: true,
+      adminRole: { select: { permissions: true } },
+    },
   });
 
   if (!user) {
@@ -89,7 +103,14 @@ export async function requireAdminOrStaff() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, name: true, email: true, phone: true, adminRole: { select: { permissions: true } } },
+    select: {
+      id: true,
+      role: true,
+      name: true,
+      email: true,
+      phone: true,
+      adminRole: { select: { permissions: true } },
+    },
   });
 
   if (!user) {
@@ -100,7 +121,7 @@ export async function requireAdminOrStaff() {
   const userWithPerms = { ...user, permissions };
 
   if (
-    user.role !== 'ADMIN' && 
+    user.role !== 'ADMIN' &&
     user.role !== 'STAFF' &&
     !hasPermission(userWithPerms as any, 'CREATE_ORDER') &&
     !hasPermission(userWithPerms as any, 'MANAGE_ORDERS')
@@ -124,7 +145,7 @@ export async function requireAdminOrStaff() {
 export async function requirePermission(permission: string) {
   const session = await requireAdminOrStaff();
   const user = session.user;
-  
+
   if (!hasPermission(user, permission)) {
     throw new Error('Forbidden: Missing required permission - ' + permission);
   }
@@ -141,7 +162,8 @@ export function getWorkDate(session: Session | null): Date {
   // 1. محاولة قراءة التاريخ من الجلسة (للأدمن والموظفين فقط)
   if (
     session?.user &&
-    (hasPermission(session.user as any, 'CREATE_ORDER') || hasPermission(session.user as any, 'MANAGE_ORDERS')) &&
+    (hasPermission(session.user as any, 'CREATE_ORDER') ||
+      hasPermission(session.user as any, 'MANAGE_ORDERS')) &&
     (session.user as any).workDate
   ) {
     const sessionDate = parseDate((session.user as any).workDate);

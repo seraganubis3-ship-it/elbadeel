@@ -11,7 +11,10 @@ export async function POST(req: Request, ctx: { params: { id: string } }) {
     const session = await getServerSession(authConfig);
     const userRole = session?.user?.role;
     // Fallback: Check if user is an ADMIN or has permission
-    if (!session?.user || (userRole !== 'ADMIN' && !hasPermission(session.user as any, 'MANAGE_USERS'))) {
+    if (
+      !session?.user ||
+      (userRole !== 'ADMIN' && !hasPermission(session.user as any, 'MANAGE_USERS'))
+    ) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     }
 
@@ -23,12 +26,12 @@ export async function POST(req: Request, ctx: { params: { id: string } }) {
       return NextResponse.json({ error: 'invalid role' }, { status: 400 });
     }
 
-    await prisma.user.update({ 
-      where: { id }, 
-      data: { 
+    await prisma.user.update({
+      where: { id },
+      data: {
         role: role as any,
-        adminRoleId: adminRoleId || null
-      } 
+        adminRoleId: adminRoleId || null,
+      },
     });
 
     return NextResponse.json({ success: true });

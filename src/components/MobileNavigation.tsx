@@ -250,7 +250,6 @@ export default function MobileNavigation() {
                       <span className='mr-auto w-2 h-2 bg-purple-400 rounded-full animate-pulse'></span>
                     )}
                   </Link>
-
                 </>
               )}
             </div>
