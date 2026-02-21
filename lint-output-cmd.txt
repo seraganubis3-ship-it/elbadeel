@@ -1,0 +1,91 @@
+
+> elbadeel-platform@2.0.0 lint
+> next lint
+
+
+./src/app/admin/collective-receipt/page.tsx
+278:13  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+306:13  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/admin/delegates/page.tsx
+227:21  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+236:21  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+245:21  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+254:21  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/admin/orders/print-family-report/page.tsx
+210:13  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+281:15  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+287:15  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/admin/orders/print-translation-report/page.tsx
+216:13  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+282:15  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/admin/orders/[id]/receipt/page.tsx
+203:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+218:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/admin/print/passport-authorization/page.tsx
+190:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+202:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+217:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+229:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/admin/print/work-permit-authorization/page.tsx
+189:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+201:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+216:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+228:17  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/lib/cron/jobs/backup.ts
+39:9  Warning: Unexpected console statement.  no-console
+44:9  Warning: Unexpected console statement.  no-console
+49:9  Warning: Unexpected console statement.  no-console
+56:9  Warning: Unexpected console statement.  no-console
+91:17  Warning: Unexpected console statement.  no-console
+
+./src/lib/cron/jobs/cleanup.ts
+36:13  Warning: Unexpected console statement.  no-console
+39:9  Warning: Unexpected console statement.  no-console
+58:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/cron/jobs/reports.ts
+208:9  Warning: Unexpected console statement.  no-console
+
+./src/lib/cron/scheduler.ts
+12:5  Warning: Unexpected console statement.  no-console
+18:13  Warning: Unexpected console statement.  no-console
+21:17  Warning: Unexpected console statement.  no-console
+94:5  Warning: Unexpected console statement.  no-console
+101:5  Warning: Unexpected console statement.  no-console
+104:9  Warning: Unexpected console statement.  no-console
+
+./src/lib/logger.ts
+29:5  Warning: Unexpected console statement.  no-console
+42:7  Warning: Unexpected console statement.  no-console
+
+./src/lib/monitoring/sentry.ts
+35:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/queue/config.ts
+77:9  Warning: Unexpected console statement.  no-console
+
+./src/lib/queue/jobs/imageUpload.ts
+65:5  Warning: Unexpected console statement.  no-console
+74:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/queue/jobs/notifications.ts
+63:13  Warning: Unexpected console statement.  no-console
+85:5  Warning: Unexpected console statement.  no-console
+94:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/queue/workers.ts
+7:5  Warning: Unexpected console statement.  no-console
+10:5  Warning: Unexpected console statement.  no-console
+11:5  Warning: Unexpected console statement.  no-console
+12:5  Warning: Unexpected console statement.  no-console
+17:5  Warning: Unexpected console statement.  no-console
+21:5  Warning: Unexpected console statement.  no-console
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules

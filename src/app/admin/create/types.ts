@@ -98,6 +98,7 @@ export interface FormData {
   marriageDate: string;
   divorceDate: string;
   deathDate: string;
+  deceasedName: string;
   // Customer Type & Follow-up
   customerFollowUp: string;
   profession: string;
@@ -177,6 +178,7 @@ export const initialFormData: FormData = {
   marriageDate: '',
   divorceDate: '',
   deathDate: '',
+  deceasedName: '',
   // Customer Type & Follow-up
   customerFollowUp: '',
   profession: '',

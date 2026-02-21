@@ -432,8 +432,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(analytics);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Analytics API error:', error);
+        console.error('Analytics API error:', error);
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
   }
 }

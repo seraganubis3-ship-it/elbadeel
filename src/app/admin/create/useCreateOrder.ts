@@ -16,7 +16,6 @@ import {
   ServiceVariant,
   Category,
   Customer,
-  FormData as OrderFormData,
   initialFormData,
 } from './types';
 
@@ -84,6 +83,10 @@ export function useCreateOrder() {
   const [formSerialNumber, setFormSerialNumber] = useState('');
   const [serialValid, setSerialValid] = useState<null | { ok: boolean; msg: string }>(null);
   const serialValidateTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Phone duplicate detection
+  const [phoneConflict, setPhoneConflict] = useState<{ id: string; name: string; phone: string } | null>(null);
+  const phoneCheckTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Fines
   const [selectedFines, setSelectedFines] = useState<string[]>([]);
@@ -260,6 +263,50 @@ export function useCreateOrder() {
     },
     [abortController]
   );
+
+  // Check if phone already exists for a different customer
+  const checkPhoneExists = useCallback(
+    async (phone: string) => {
+      if (phone.length !== 11) {
+        setPhoneConflict(null);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/admin/users/search?name=${encodeURIComponent(phone)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.users) && data.users.length > 0) {
+            const match = data.users.find((u: any) => u.phone?.replace(/\D/g, '') === phone);
+            if (match && match.id !== customer?.id) {
+              setPhoneConflict({ id: match.id, name: match.name, phone: match.phone });
+              return;
+            }
+          }
+        }
+      } catch {}
+      setPhoneConflict(null);
+    },
+    [customer]
+  );
+
+  // Trigger phone check whenever phone changes
+  useEffect(() => {
+    if (phoneCheckTimeout.current) clearTimeout(phoneCheckTimeout.current);
+    if (formData.customerPhone.length === 11) {
+      // Don't flag if we already selected this customer
+      if (customer && customer.phone?.replace(/\D/g, '') === formData.customerPhone) {
+        setPhoneConflict(null);
+        return;
+      }
+      phoneCheckTimeout.current = setTimeout(() => checkPhoneExists(formData.customerPhone), 400);
+    } else {
+      setPhoneConflict(null);
+    }
+    return () => {
+      if (phoneCheckTimeout.current) clearTimeout(phoneCheckTimeout.current);
+    };
+  }, [formData.customerPhone, customer, checkPhoneExists]);
+
 
   // Select customer
   const selectCustomer = useCallback((cust: Customer) => {
@@ -457,8 +504,7 @@ export function useCreateOrder() {
 
   useEffect(() => {
     fetchCategories();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchCategories]);
 
   // Handle variant change
   const handleVariantChange = useCallback(
@@ -725,7 +771,6 @@ export function useCreateOrder() {
     setSelectedFines([]);
     setManualServices({});
     setUploadedFiles([]);
-    setFormData(prev => ({ ...initialFormData })); // Simplest reset to initial
     // But since we are setting individual fields below, let's keep it consistent
     // Actually, setFormData(initialFormData) is called at the top of handleReset
     // setFormData(initialFormData); // Line 700 already does this.
@@ -764,6 +809,15 @@ export function useCreateOrder() {
         return;
       }
 
+      // ⚠️ Block if phone belongs to a different existing customer
+      if (phoneConflict && phoneConflict.id !== customer?.id) {
+        showWarning(
+          '⚠️ رقم الهاتف مسجل مسبقاً',
+          `هذا الرقم مسجل باسم "${phoneConflict.name}" — اختر العميل من نتائج البحث أو استخدم رقماً مختلفاً`
+        );
+        return;
+      }
+
       const hasIdNumber = formData.idNumber && formData.idNumber.length === 14;
       const hasBirthDate = formData.birthDate && formData.birthDate.trim().length > 0;
 
@@ -776,8 +830,10 @@ export function useCreateOrder() {
       const serviceName = selectedService.name;
 
       if (serviceName.includes('ميلاد')) {
-        if (!formData.motherName?.trim()) {
-          showWarning('نقص في البيانات', 'اسم الأم مطلوب لاستخراج شهادة الميلاد');
+        // اسم الأم مطلوب فقط إذا لم يكن هناك رقم قومي
+        const hasNationalId = formData.idNumber && formData.idNumber.length === 14;
+        if (!hasNationalId && !formData.motherName?.trim()) {
+          showWarning('نقص في البيانات', 'اسم الأم مطلوب لاستخراج شهادة الميلاد (أو أدخل الرقم القومي)');
           return;
         }
         if (!formData.birthDate?.trim()) {
@@ -789,6 +845,10 @@ export function useCreateOrder() {
       if (serviceName.includes('وفاة')) {
         if (!formData.deathDate?.trim()) {
           showWarning('نقص في البيانات', 'تاريخ الوفاة مطلوب لاستخراج شهادة الوفاة');
+          return;
+        }
+        if (!formData.deceasedName?.trim()) {
+          showWarning('نقص في البيانات', 'اسم المتوفي مطلوب لاستخراج شهادة الوفاة');
           return;
         }
       }
@@ -849,10 +909,12 @@ export function useCreateOrder() {
           remainingAmount: formData.remainingAmount * 100,
           photographyLocation: formData.photographyLocation,
           photographyDate: formData.photographyDate,
+          title: formData.title,
           quantity: formData.quantity,
           marriageDate: formData.marriageDate,
           divorceDate: formData.divorceDate,
           deathDate: formData.deathDate,
+          deceasedName: formData.deceasedName,
           customerFollowUp: formData.customerFollowUp,
           wifeMotherName: formData.wifeMotherName,
           serviceDetails: formData.translationLanguage
@@ -928,11 +990,11 @@ export function useCreateOrder() {
       selectedFines,
       manualServices,
       formSerialNumber,
+      phoneConflict,
       calculateTotal,
       getCurrentWorkDate,
       showWarning,
       showError,
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     ]
   );
 
@@ -1032,6 +1094,7 @@ export function useCreateOrder() {
     requiredDocuments,
     calculateTotal,
     dependentSuggestion, // Exported for UI
+    phoneConflict,
     handleSubmit,
     handleReset,
     showSuccessModal,

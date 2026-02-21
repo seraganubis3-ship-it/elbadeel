@@ -26,6 +26,7 @@ export default function OrderCustomerDetails({
     additionalPhone: string;
     profession: string;
     customerFollowUp: string;
+    title: string;
   }>({
     customerName: order.customerName || '',
     idNumber: order.idNumber || '',
@@ -34,6 +35,7 @@ export default function OrderCustomerDetails({
     additionalPhone: order.additionalPhone || '',
     profession: order.profession || '',
     customerFollowUp: order.customerFollowUp || '',
+    title: order.title || '',
   });
 
   const handleSave = () => {
@@ -75,6 +77,7 @@ export default function OrderCustomerDetails({
       <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
         {[
           { label: 'الاسم الكامل', value: order.customerName, key: 'customerName', type: 'text' },
+          { label: 'الصفة', value: order.title, key: 'title', type: 'text' },
           { label: 'الرقم القومي', value: order.idNumber, key: 'idNumber', type: 'text' },
           {
             label: 'تاريخ الميلاد',

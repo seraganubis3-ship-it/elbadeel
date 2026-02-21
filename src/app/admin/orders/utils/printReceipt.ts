@@ -389,6 +389,14 @@ export const printReceipt = (order: Order) => {
                   ${format((order.otherFees || 0) + lostReportAmount)} ج.م
                 </div>
               </div>
+              ${
+                (order.discount || 0) > 0
+                  ? `<div class='grid grid-cols-12 text-xs border-t border-black' style='background:#f9f9f9'>
+                    <div class='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>خصم</div>
+                    <div class='col-span-4 border-l border-black p-1.5 font-black'>- ${format(order.discount)} ج.م</div>
+                  </div>`
+                  : ''
+              }
               <div class='grid grid-cols-12 text-xs border-t border-black'>
                 <div class='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>
                   مدفوع
@@ -487,6 +495,10 @@ export const printReceipt = (order: Order) => {
               <div>١٥ شارع صالح قناوي - تقاطع وليم ناشد - مدكور - فيصل</div>
               <div class='text-[10px] font-black mt-1'>
                  ٠١٠٢٢٠١١٨٧٧ / ٠١١٤٩٩٩٢٨٣٠
+              </div>
+              <div style='margin-top:6px; border-top: 1px dashed #999; padding-top:4px;'>
+                <div style='font-size:9px; color:#555; font-weight:700;'>زوروا موقعنا الإلكتروني</div>
+                <div style='font-size:10px; font-weight:900; letter-spacing:-0.02em;'>&#127760; albadel.com.eg</div>
               </div>
               <div class='mt-2 text-xs font-black pt-1'>
                 أمين الخزينة: ${order.createdByAdmin?.name || '—'}

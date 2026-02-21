@@ -255,25 +255,25 @@ export default function OrderServiceDetails({
           </div>
 
           {/* Photography Date */}
-          {!isEditing && order.photographyDate && (
+          {!isEditing && (
             <div className='p-6 bg-slate-50/50 rounded-2xl border border-slate-100'>
               <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>
-                ميعاد التصوير
+                تاريخ التصوير
               </p>
               <p className='text-xl font-black text-slate-800 tracking-tight'>
-                {new Date(order.photographyDate).toLocaleDateString('ar-EG', {
+                {order.photographyDate ? new Date(order.photographyDate).toLocaleDateString('ar-EG', {
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
-                })}
+                }) : '----'}
               </p>
             </div>
           )}
 
           {isEditing && (
             <div className='space-y-2'>
-              <label className='text-sm font-bold text-slate-400'>ميعاد التصوير</label>
+              <label className='text-sm font-bold text-slate-400'>تاريخ التصوير</label>
               <input
                 type='date'
                 value={formData.photographyDate}

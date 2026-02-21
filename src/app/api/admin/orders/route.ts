@@ -287,6 +287,7 @@ export async function POST(request: NextRequest) {
       destination,
       title,
       deathDate,
+      deceasedName,
     } = body;
 
     let finalServiceDetails = body.serviceDetails || '';
@@ -646,6 +647,7 @@ export async function POST(request: NextRequest) {
         marriageDate: safeParseDate(marriageDate),
         divorceDate: safeParseDate(divorceDate),
         deathDate: safeParseDate(deathDate),
+        deceasedName: deceasedName || '',
         wifeMotherName: wifeMotherName || '',
         destination: destination || '',
         title: title || '',

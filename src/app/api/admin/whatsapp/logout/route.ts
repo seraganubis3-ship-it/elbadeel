@@ -20,8 +20,7 @@ export async function POST() {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('WhatsApp Bot Logout Error:', error);
+        console.error('WhatsApp Bot Logout Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to connect to bot' },
       { status: 503 }

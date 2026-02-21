@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { Order } from '../../orders/types';
+import Image from 'next/image';
 
 interface Delegate {
   id: string;
@@ -117,6 +117,8 @@ export default function PassportAuthorizationPrintPage() {
             margin: 0;
             padding: 0;
             -webkit-print-color-adjust: exact;
+            background: white;
+            color: #000;
           }
           .no-print {
             display: none;
@@ -125,37 +127,131 @@ export default function PassportAuthorizationPrintPage() {
             display: none;
           }
         }
+
+        /* Premium Ornate Frame */
+        .premium-frame {
+          position: fixed;
+          top: 0mm;
+          bottom: 0mm;
+          left: 0mm;
+          right: 0mm;
+          border: 2px solid #000;
+          pointer-events: none;
+          z-index: 9999;
+        }
+
+        .premium-frame::after {
+          content: '';
+          position: absolute;
+          top: 0mm;
+          bottom: 0mm;
+          left: 0mm;
+          right: 0mm;
+          border: 1px dashed #000;
+          opacity: 0.5;
+        }
+
+        .corner {
+          position: absolute;
+          width: 50px;
+          height: 50px;
+          z-index: 10000;
+        }
+
+        .corner-tl {
+          top: -1px;
+          left: -1px;
+        }
+        .corner-tr {
+          top: -1px;
+          right: -1px;
+          transform: scaleX(-1);
+        }
+        .corner-bl {
+          bottom: -1px;
+          left: -1px;
+          transform: scaleY(-1);
+        }
+        .corner-br {
+          bottom: -1px;
+          right: -1px;
+          transform: scale(-1);
+        }
+
+        .ornate-svg {
+          width: 100%;
+          height: 100%;
+          fill: #000;
+        }
       `}</style>
 
+      {/* Premium Ornate Frame Overlay */}
+      <div className='premium-frame'>
+        {/* Top Left Corner */}
+        <div className='corner corner-tl'>
+          <svg className='ornate-svg' viewBox='0 0 100 100'>
+            <path d='M0,0 L100,0 C100,55 55,100 0,100 Z' />
+            <path d='M10,10 L80,10 C80,45 45,80 10,80 Z' fill='none' stroke='#000' strokeWidth='2' />
+            <circle cx='30' cy='30' r='5' fill='#fff' stroke='#000' strokeWidth='2' />
+          </svg>
+        </div>
+        {/* Top Right Corner */}
+        <div className='corner corner-tr'>
+          <svg className='ornate-svg' viewBox='0 0 100 100'>
+            <path d='M0,0 L100,0 C100,55 55,100 0,100 Z' />
+            <path d='M10,10 L80,10 C80,45 45,80 10,80 Z' fill='none' stroke='#000' strokeWidth='2' />
+            <circle cx='30' cy='30' r='5' fill='#fff' stroke='#000' strokeWidth='2' />
+          </svg>
+        </div>
+        {/* Bottom Left Corner */}
+        <div className='corner corner-bl'>
+          <svg className='ornate-svg' viewBox='0 0 100 100'>
+            <path d='M0,0 L100,0 C100,55 55,100 0,100 Z' />
+            <path d='M10,10 L80,10 C80,45 45,80 10,80 Z' fill='none' stroke='#000' strokeWidth='2' />
+            <circle cx='30' cy='30' r='5' fill='#fff' stroke='#000' strokeWidth='2' />
+          </svg>
+        </div>
+        {/* Bottom Right Corner */}
+        <div className='corner corner-br'>
+          <svg className='ornate-svg' viewBox='0 0 100 100'>
+            <path d='M0,0 L100,0 C100,55 55,100 0,100 Z' />
+            <path d='M10,10 L80,10 C80,45 45,80 10,80 Z' fill='none' stroke='#000' strokeWidth='2' />
+            <circle cx='30' cy='30' r='5' fill='#fff' stroke='#000' strokeWidth='2' />
+          </svg>
+        </div>
+      </div>
+
       <div className='w-[210mm] mx-auto p-[10mm]'>
-        {/* Header - Logo Only (Top Right) */}
-        <div className='flex justify-start mb-6'>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+        <div className='flex justify-start relative -mt-32 -mb-8 h-[180px]'>
+          <Image
             src='/images/report-header.png'
             alt='Header Logo'
-            className='h-44 object-contain'
+            width={400}
+            height={400}
+            className='w-[400px] h-auto object-cover object-left-top'
             onLoad={handleImageLoad}
             onError={handleImageLoad} // Count as loaded even if error to avoid hanging
           />
         </div>
 
         {/* Content */}
-        <div>
-          <h3 className='text-xl font-bold text-center mb-6'>
+        <div className='mt-8'>
+          <h3 className='text-xl flex font-bold text-center mb-6 justify-center'>
             السادة / الإدارة العامة للجوازات والهجرة
           </h3>
 
           <p className='text-center font-bold mb-6'>تحية طيبة وبعد ،،،</p>
 
-          <div className='leading-loose text-justify font-medium text-lg mb-6'>
-            فوضنا نحن <span className='font-bold'>البديل للخدمات الحكومية</span> /
-            <span className='font-bold mx-2 border-b border-black'>{delegate.name}</span>
-            مندوب البديل للخدمات الحكومية ويحمل رقم قومي
-            <span className='font-bold mx-2 ltr inline-block'>({delegate.idNumber})</span>
-            وكارنيه وزارة الاتصالات وتكنولوجيا المعلومات لـ{' '}
-            <span className='font-bold'>استخراج جواز سفر</span> بالنيابة عن المواطنين طالبي الخدمة
-            المذكورين أدناه:
+          <div className='leading-loose text-justify text-xl font-bold bg-gray-50 p-6 rounded-xl border border-gray-200 mb-6'>
+            أقر أنا /{' '}
+            <span className='text-blue-900 mx-1 font-black text-2xl border-b-2 border-dashed border-gray-400 px-2'>
+              {delegate.name}
+            </span>{' '}
+            مفوض البديل للخدمات الحكومية (رقم قومي:{' '}
+            <span className='font-black ltr inline-block text-blue-900'>{delegate.idNumber}</span>
+            ) وكارنيه وزارة الاتصالات وتكنولوجيا المعلومات، بأنه تم تفويضي من قبل أصحاب الشأن لاستخراج{' '}
+            <span className='text-blue-900 font-black text-2xl'>جواز سفر</span> بالنيابة عن المواطنين طالبي الخدمة
+            المذكورين أدناه، وهذا إقرار مني بذلك.
           </div>
 
           {/* Customer Table */}
@@ -186,11 +282,14 @@ export default function PassportAuthorizationPrintPage() {
         <div className='grid grid-cols-2 gap-6 mt-6'>
           <div className='space-y-3'>
             <div className='h-40 flex items-center justify-center'>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+             
               {delegate.idCardFront ? (
-                <img
+                <Image
                   src={delegate.idCardFront}
                   alt='ID Card Front'
+                  width={400}
+                  height={160}
+                  unoptimized
                   className='max-h-full max-w-full object-contain'
                   onLoad={handleImageLoad}
                   onError={handleImageLoad}
@@ -198,11 +297,14 @@ export default function PassportAuthorizationPrintPage() {
               ) : null}
             </div>
             <div className='h-40 flex items-center justify-center'>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+             
               {delegate.idCardBack ? (
-                <img
+                <Image
                   src={delegate.idCardBack}
                   alt='ID Card Back'
+                  width={400}
+                  height={160}
+                  unoptimized
                   className='max-h-full max-w-full object-contain'
                   onLoad={handleImageLoad}
                   onError={handleImageLoad}
@@ -213,11 +315,14 @@ export default function PassportAuthorizationPrintPage() {
 
           <div className='space-y-3'>
             <div className='h-40 flex items-center justify-center'>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+             
               {delegate.unionCardFront ? (
-                <img
+                <Image
                   src={delegate.unionCardFront}
                   alt='Union Card Front'
+                  width={400}
+                  height={160}
+                  unoptimized
                   className='max-h-full max-w-full object-contain'
                   onLoad={handleImageLoad}
                   onError={handleImageLoad}
@@ -225,11 +330,14 @@ export default function PassportAuthorizationPrintPage() {
               ) : null}
             </div>
             <div className='h-40 flex items-center justify-center'>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+             
               {delegate.unionCardBack ? (
-                <img
+                <Image
                   src={delegate.unionCardBack}
                   alt='Union Card Back'
+                  width={400}
+                  height={160}
+                  unoptimized
                   className='max-h-full max-w-full object-contain'
                   onLoad={handleImageLoad}
                   onError={handleImageLoad}

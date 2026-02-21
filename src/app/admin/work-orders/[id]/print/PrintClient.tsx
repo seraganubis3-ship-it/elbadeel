@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { getStatusText } from '@/app/admin/orders/types';
 import { useEffect } from 'react';
 import { Order, Service, ServiceVariant } from '@prisma/client';
+import Image from 'next/image';
 
 // Define a minimal type for the order data we're passing
 // We can use the Prisma types or simpler ones
@@ -27,10 +27,11 @@ export function PrintClient({ workOrderNumber, orders }: Props) {
       <div className='flex items-center justify-between border-b-2 border-black pb-4 mb-2'>
         <div className='flex items-center gap-4'>
           <div className='relative w-64 h-32'>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src='/images/report-header.png'
               alt='Logo'
+              width={256}
+              height={128}
               className='object-contain w-full h-full object-right'
             />
           </div>

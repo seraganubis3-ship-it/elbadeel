@@ -56,7 +56,8 @@ interface UseOrdersReturn {
   updateOrderStatus: (
     orderId: string,
     newStatus: string,
-    workOrderNumber?: string
+    workOrderNumber?: string,
+    statusReason?: string
   ) => Promise<void>;
   deleteOrder: (orderId: string) => Promise<void>;
 
@@ -380,7 +381,7 @@ export function useOrders(
     // Check main orders list first, then fallback to selectedOrdersData to avoiding losing data
     const order =
       orders.find(o => o.id === orderId) || selectedOrdersData.find(o => o.id === orderId);
-    if (order?.status === 'cancelled') return;
+    if (order?.status === 'cancelled' || order?.status === 'returned') return;
 
     if (selectedOrders.includes(orderId)) {
       // Remove
@@ -396,7 +397,7 @@ export function useOrders(
   };
 
   const selectAllOrders = () => {
-    const validOrders = currentOrders.filter(o => o.status !== 'cancelled');
+    const validOrders = currentOrders.filter(o => o.status !== 'cancelled' && o.status !== 'returned');
     const allSelected = validOrders.every(o => selectedOrders.includes(o.id));
 
     if (allSelected) {
@@ -418,16 +419,20 @@ export function useOrders(
   const updateOrderStatus = async (
     orderId: string,
     newStatus: string,
-    workOrderNumber?: string
+    workOrderNumber?: string,
+    statusReason?: string
   ) => {
     if (!newStatus) return;
     setUpdatingStatus(orderId);
 
     try {
+      const body: any = { status: newStatus, workOrderNumber };
+      if (statusReason !== undefined) body.statusReason = statusReason;
+
       const response = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, workOrderNumber }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {

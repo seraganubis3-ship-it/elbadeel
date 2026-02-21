@@ -1,6 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
-/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -209,7 +207,13 @@ export default function PrintFamilyRecordReport() {
           </div>
 
           <div className='absolute -right-5 -top-24'>
-            <img src='/images/report-header.png' alt='Header' className='logo-img' />
+            <Image
+              src='/images/report-header.png'
+              alt='Header'
+              width={200}
+              height={100}
+              className='logo-img h-auto w-auto object-contain'
+            />
           </div>
         </div>
 
@@ -280,16 +284,21 @@ export default function PrintFamilyRecordReport() {
         <div className='flex flex-col items-center pt-4'>
           <div className='h-44 w-full flex justify-center'>
             {delegate?.unionCard ? (
-              <img
+              <Image
                 src={delegate.unionCard}
                 alt='Delegate ID'
+                width={300}
+                height={176}
+                unoptimized
                 className='max-h-full max-w-sm object-contain border-2 border-black rounded-xl shadow-lg p-1 bg-white'
               />
             ) : (
-              <img
+              <Image
                 src='/images/report-footer.png'
-                className='h-32 object-contain grayscale opacity-50'
                 alt='Footer'
+                width={200}
+                height={128}
+                className='h-32 w-auto object-contain grayscale opacity-50'
               />
             )}
           </div>

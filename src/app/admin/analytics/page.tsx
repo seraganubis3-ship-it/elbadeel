@@ -137,8 +137,7 @@ export default function AnalyticsPage() {
           setLastUpdate(new Date());
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to fetch analytics:', error);
+                console.error('Failed to fetch analytics:', error);
       } finally {
         setLoading(false);
       }

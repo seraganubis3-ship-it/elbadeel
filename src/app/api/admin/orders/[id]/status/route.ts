@@ -8,6 +8,7 @@ const statusUpdateSchema = z.object({
   adminNotes: z.string().optional(),
   workDate: z.string().optional(),
   workOrderNumber: z.string().optional(),
+  statusReason: z.string().optional(),
 });
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
@@ -20,6 +21,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       adminNotes,
       workDate: clientWorkDate,
       workOrderNumber,
+      statusReason,
     } = statusUpdateSchema.parse(body);
 
     let workDate = getWorkDate(session);
@@ -53,6 +55,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         status,
         adminNotes: adminNotes || order.adminNotes,
         ...(workOrderNumber && { workOrderNumber: parseInt(workOrderNumber) }),
+        ...((status === 'settlement' || status === 'returned') && statusReason !== undefined
+          ? { statusReason }
+          : {}),
       },
       include: {
         service: {

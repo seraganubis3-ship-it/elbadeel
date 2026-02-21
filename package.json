@@ -1,5 +1,5 @@
 {
-  "name": "haiba-platform",
+  "name": "elbadeel-platform",
   "version": "2.0.0",
   "description": "منصة البديل لاستخراج الأوراق الرسمية - نظام متكامل مع قاعدة بيانات PostgreSQL",
   "private": true,
@@ -136,7 +136,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/haiba-platform"
+    "url": "https://github.com/your-username/elbadeel-platform"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -101,6 +101,7 @@ export default function CreateOrderPage() {
     suggestion,
     dependentSuggestion,
     handleKeyDown,
+    phoneConflict,
     handleSubmit,
     handleReset,
     showSuccessModal,
@@ -210,6 +211,7 @@ export default function CreateOrderPage() {
                   suggestion={suggestion}
                   handleKeyDown={handleKeyDown}
                   selectedService={selectedService}
+                  phoneConflict={phoneConflict}
                 />
 
                 <div className='flex justify-end pt-4 gap-3'>

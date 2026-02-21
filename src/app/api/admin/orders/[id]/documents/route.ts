@@ -29,8 +29,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     return NextResponse.json({ success: true, document });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Document Upload Error:', error);
+        console.error('Document Upload Error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء حفظ المستند' }, { status: 500 });
   }
 }
@@ -69,8 +68,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Document Delete Error:', error);
+        console.error('Document Delete Error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء حذف المستند' }, { status: 500 });
   }
 }

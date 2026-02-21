@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import OrderProgressTracker from '@/components/OrderProgressTracker';
 import { PREDEFINED_FINES } from '@/constants/fines';
 import { useToast, ToastContainer } from '@/components/Toast';
@@ -324,10 +325,12 @@ export default function OrderDetailPage() {
                       >
                         {isImage && (
                           <div className='h-48 w-full bg-slate-100 relative'>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
+                            <Image
                               src={doc.filePath}
                               alt={doc.fileName}
+                              width={400}
+                              height={192}
+                              unoptimized
                               className='w-full h-full object-cover'
                             />
                           </div>

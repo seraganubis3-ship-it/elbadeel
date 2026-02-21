@@ -135,17 +135,30 @@ export default function OrderForm({
   const hasDynamicFields = isDeathService ? false : effectiveDynamicFields.length > 0;
   const totalSteps = hasDynamicFields ? 6 : 5;
 
-  // Filter variants based on Passport logic
+  // Filter variants based on service-specific logic
+  const isBirthCertService = serviceName.includes('ميلاد') || serviceSlug.includes('birth');
+
   const filteredVariants = variants.filter(variant => {
-    if (!isPassportService) return true;
+    const requestType = dynamicValues['request_type'];
 
-    // Step 1 is now questions. So by step 2, we will have the answer.
-    const selectedGov = dynamicValues['governorate'];
+    // --- Passport-specific filtering ---
+    if (isPassportService) {
+      if (requestType) {
+        if (requestType === 'بدل تالف') return variant.name.includes('تالف');
+        if (requestType === 'بدل فاقد') return variant.name.includes('فاقد') || variant.name.includes('فقد');
+      }
+      const selectedGov = dynamicValues['governorate'];
+      if (selectedGov && selectedGov !== 'الجيزة') {
+        return variant.name.includes('فوري');
+      }
+      return true;
+    }
 
-    // If governorate is NOT Giza, strictly require 'فوري' (Immediate)
-    // We only enforce this if they have answered (which they must have to pass step 1)
-    if (selectedGov && selectedGov !== 'الجيزة') {
-      return variant.name.includes('فوري');
+    // --- Birth Certificate filtering ---
+    if (isBirthCertService) {
+      const requestType = dynamicValues['request_type'];
+      if (requestType === 'first_time') return variant.name.includes('اول');
+      if (requestType && requestType !== 'first_time') return !variant.name.includes('اول');
     }
 
     return true;

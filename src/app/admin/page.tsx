@@ -36,31 +36,24 @@ export default async function AdminPage() {
     },
   });
 
-  // Fetch orders due for delivery today
-  const deliveryDueToday = await prisma.order
-    .findMany({
-      where: {
-        status: {
-          not: 'completed',
-        },
-        createdAt: {
-          lte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Orders older than 1 day
-        },
-      },
-      include: {
-        service: true,
-        variant: true,
-        user: true,
-      },
-    })
-    .then(orders =>
-      orders.filter(order => {
-        if (!order.variant?.etaDays) return false;
-        const expectedDelivery = new Date(order.createdAt);
-        expectedDelivery.setDate(expectedDelivery.getDate() + order.variant.etaDays);
-        return expectedDelivery.toDateString() === today.toDateString();
-      })
-    );
+  // Native Postgres query to find orders due today safely without memory leaks
+  const dueTodayRows = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT o.id 
+    FROM "Order" o
+    JOIN "ServiceVariant" sv ON o."variantId" = sv.id
+    WHERE o.status != 'completed'
+      AND o."createdAt" < NOW() - INTERVAL '1 day'
+      AND DATE(o."createdAt" + (sv."etaDays" || ' days')::INTERVAL) = CURRENT_DATE
+  `;
+
+  const deliveryDueToday = dueTodayRows.length > 0 ? await prisma.order.findMany({
+    where: { id: { in: dueTodayRows.map(r => r.id) } },
+    include: {
+      service: true,
+      variant: true,
+      user: true,
+    },
+  }) : [];
 
   // Get pending orders count
   const pendingOrdersCount = await prisma.order.count({

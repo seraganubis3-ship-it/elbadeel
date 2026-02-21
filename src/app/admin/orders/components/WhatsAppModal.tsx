@@ -1,6 +1,6 @@
 'use client';
 
-import { Order, getWhatsappTemplates } from '../types';
+import { Order, WhatsAppTemplate, getWhatsappTemplates } from '../types';
 
 interface WhatsAppModalProps {
   isOpen: boolean;
@@ -35,7 +35,7 @@ export function WhatsAppModal({
 
   const handleTemplateChange = (templateId: string) => {
     onTemplateSelect(templateId);
-    const template = templates.find(t => t.id === templateId);
+    const template = templates.find((t: WhatsAppTemplate) => t.id === templateId);
     if (template) {
       onMessageChange(template.message);
     }
@@ -108,7 +108,7 @@ export function WhatsAppModal({
                 className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-sm'
               >
                 <option value=''>-- اختر قالب --</option>
-                {templates.map(template => (
+                {templates.map((template: WhatsAppTemplate) => (
                   <option key={template.id} value={template.id}>
                     {template.name}
                   </option>

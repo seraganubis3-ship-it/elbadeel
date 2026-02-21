@@ -43,6 +43,7 @@ interface CustomerInfoSectionProps {
   dependentSuggestion?: string;
 
   handleKeyDown?: (e: React.KeyboardEvent) => void;
+  phoneConflict?: { id: string; name: string; phone: string } | null;
 }
 
 export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
@@ -76,10 +77,14 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
 
   handleKeyDown,
   selectedService,
+  phoneConflict,
 }) => {
   const isDeathCert = selectedService?.name?.includes('وفاة');
+  const isBirthCert = selectedService?.name?.includes('ميلاد');
   const isMarriageDivorce =
     selectedService?.name?.includes('زواج') || selectedService?.name?.includes('طلاق');
+  // اسم الأم إلزامي في شهادة الميلاد فقط إذا لم يوجد رقم قومي
+  const isMotherNameRequired = isBirthCert && formData.idNumber.length < 14;
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -269,6 +274,19 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
             </div>
           </div>
 
+          {/* تحذير التكرار - يمتد على كل العرض */}
+          {phoneConflict && (
+            <div className='md:col-span-12 flex items-center gap-3 bg-red-50 border-2 border-red-400 rounded-2xl px-4 py-2.5'>
+              <span className='text-xl flex-shrink-0'>⚠️</span>
+              <div className='flex-1 min-w-0'>
+                <div className='text-red-700 font-black text-sm'>رقم الهاتف مسجَّل مسبقاً!</div>
+                <div className='text-red-600 font-bold text-xs mt-0.5'>
+                  هذا الرقم باسم <span className='font-black'>&quot;{phoneConflict.name}&quot;</span> — اختره من نتائج البحث أو استخدم رقماً مختلفاً
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className='md:col-span-3 space-y-1 group/input'>
             <label className='text-sm font-black text-black block mr-1 flex items-center justify-between'>
               <span>رقم هاتف إضافي</span>
@@ -291,11 +309,11 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
           <div className='md:col-span-4 space-y-1'>
             <label className='text-sm font-black text-black block mr-1 flex items-center gap-2'>
               الأم
-              {!selectedService?.name?.includes('ميلاد') && (
+              {!isMotherNameRequired && (
                 <span className='text-[10px] text-slate-400 font-normal'>(اختياري)</span>
               )}
-              {selectedService?.name?.includes('ميلاد') && (
-                <span className='text-[9px] text-rose-500 font-black'>إلزامي</span>
+              {isMotherNameRequired && (
+                <span className='text-[9px] text-rose-500 font-black'>إلزامي (بدون رقم قومي)</span>
               )}
             </label>
             <input
@@ -510,6 +528,20 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                 placeholder='DD / MM / YYYY'
               />
             </div>
+
+            {/* اسم المتوفي - يظهر فقط لشهادة الوفاة */}
+            {isDeathCert && (
+              <div className='space-y-1'>
+                <MandatoryLabel label='اسم المتوفي' show={isDeathCert} />
+                <input
+                  type='text'
+                  value={formData.deceasedName}
+                  onChange={e => setFormData(prev => ({ ...prev, deceasedName: e.target.value }))}
+                  className='w-full px-5 py-4 bg-rose-50/50 border-2 border-rose-200/60 rounded-2xl focus:border-rose-400 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+                  placeholder='الاسم الرباعي للمتوفي'
+                />
+              </div>
+            )}
 
             <div className='space-y-1'>
               <label className='text-sm font-black text-black block mr-1'>تاريخ الزواج</label>

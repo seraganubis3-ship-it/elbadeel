@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Order } from '../types';
 
 interface WhatsAppModalProps {
@@ -14,6 +15,12 @@ interface WhatsAppModalProps {
   setSelectedTemplate: (val: string) => void;
 }
 
+interface SavedTemplate {
+  id: string;
+  title: string;
+  body: string;
+}
+
 export default function WhatsAppModal({
   order,
   isOpen,
@@ -25,45 +32,32 @@ export default function WhatsAppModal({
   selectedTemplate,
   setSelectedTemplate,
 }: WhatsAppModalProps) {
-  if (!isOpen) return null;
+  const [savedTemplates, setSavedTemplates] = useState<SavedTemplate[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
 
-  const whatsappTemplates = [
-    {
-      id: 'new_order',
-      name: '🆕 طلب جديد',
-      message: `🏢 *منصة البديل*\n\nمرحباً *${order?.customerName}* 👋\n\n✅ تم استلام طلبك بنجاح!\n\n📋 *تفاصيل الطلب:*\n• رقم الطلب: #${order?.id}\n• الخدمة: ${order?.service?.name}\n• المبلغ: ${order ? (order.totalCents / 100).toFixed(2) : 0} جنيه\n\nسنقوم بالتواصل معك قريباً.\n\n🌐 منصة البديل`,
-    },
-    {
-      id: 'order_ready',
-      name: '✅ جاهز للاستلام',
-      message: `🏢 *منصة البديل*\n\nمرحباً *${order?.customerName}* 👋\n\n🎉 *طلبك جاهز للاستلام!*\n\n📋 رقم الطلب: #${order?.id}\n📌 الخدمة: ${order?.service?.name}\n\n📍 يمكنك استلام طلبك من مكتبنا.\n\n🌐 منصة البديل`,
-    },
-    {
-      id: 'payment_reminder',
-      name: '💰 تذكير بالدفع',
-      message: `🏢 *منصة البديل*\n\nمرحباً *${order?.customerName}* 👋\n\n💰 *تذكير بالدفع*\n\n📋 رقم الطلب: #${order?.id}\n💵 المبلغ: ${order ? (order.totalCents / 100).toFixed(2) : 0} جنيه\n\nيرجى سداد المبلغ لاستكمال الطلب.\n\n🌐 منصة البديل`,
-    },
-    {
-      id: 'order_delivered',
-      name: '🚚 تم التسليم',
-      message: `🏢 *منصة البديل*\n\nمرحباً *${order?.customerName}* 👋\n\n✅ *تم تسليم طلبك بنجاح!*\n\n📋 رقم الطلب: #${order?.id}\n📌 الخدمة: ${order?.service?.name}\n\nشكراً لثقتك في منصة البديل 🙏\n\n🌐 منصة البديل`,
-    },
-  ];
+  useEffect(() => {
+    if (!isOpen) return;
+    setLoadingTemplates(true);
+    fetch('/api/admin/whatsapp/templates')
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) setSavedTemplates(data.templates);
+      })
+      .finally(() => setLoadingTemplates(false));
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   return (
     <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4'>
       <div className='bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto text-right'>
+
         {/* Header */}
         <div className='bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-t-2xl'>
           <div className='flex items-center justify-between'>
             <button onClick={onClose} className='text-white/80 hover:text-white transition-colors'>
               <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M6 18L18 6M6 6l12 12'
-                />
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
               </svg>
             </button>
             <div className='flex items-center gap-3'>
@@ -82,27 +76,52 @@ export default function WhatsAppModal({
 
         {/* Content */}
         <div className='p-6 space-y-6'>
-          {/* Templates */}
+
+          {/* Saved Templates */}
           <div>
             <label className='block text-gray-700 font-semibold mb-3'>رسائل جاهزة:</label>
-            <div className='grid grid-cols-2 gap-2'>
-              {whatsappTemplates.map(template => (
-                <button
-                  key={template.id}
-                  onClick={() => {
-                    setSelectedTemplate(template.id);
-                    setMessage(template.message);
-                  }}
-                  className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
-                    selectedTemplate === template.id
-                      ? 'border-green-500 bg-green-50 text-green-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                  }`}
+            {loadingTemplates ? (
+              <div className='flex items-center justify-center py-6 text-gray-400 text-sm gap-2'>
+                <svg className='animate-spin w-4 h-4' fill='none' viewBox='0 0 24 24'>
+                  <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'/>
+                  <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z'/>
+                </svg>
+                جاري التحميل...
+              </div>
+            ) : savedTemplates.length === 0 ? (
+              <div className='text-center py-5 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl'>
+                <p>لا توجد رسائل جاهزة</p>
+                <a
+                  href='/admin/whatsapp'
+                  target='_blank'
+                  className='text-green-600 font-bold text-xs hover:underline mt-1 inline-block'
                 >
-                  {template.name}
-                </button>
-              ))}
-            </div>
+                  أضف رسائل من إعدادات الواتساب ←
+                </a>
+              </div>
+            ) : (
+              <div className='flex flex-col gap-2 max-h-48 overflow-y-auto pl-1'>
+                {savedTemplates.map(template => (
+                  <button
+                    key={template.id}
+                    onClick={() => {
+                      setSelectedTemplate(template.id);
+                      setMessage(template.body);
+                    }}
+                    className={`text-right w-full p-3 rounded-xl border-2 text-sm transition-all ${
+                      selectedTemplate === template.id
+                        ? 'border-green-500 bg-green-50 text-green-800'
+                        : 'border-gray-200 hover:border-green-300 hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    <div className='font-bold text-sm'>{template.title}</div>
+                    <div className='text-xs text-gray-400 truncate mt-0.5'>
+                      {template.body.slice(0, 70)}{template.body.length > 70 ? '...' : ''}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Custom Message */}
@@ -114,7 +133,7 @@ export default function WhatsAppModal({
                 setMessage(e.target.value);
                 setSelectedTemplate('');
               }}
-              placeholder='اكتب رسالتك هنا أو اختر قالب جاهز...'
+              placeholder='اكتب رسالتك هنا أو اختر قالباً جاهزاً...'
               rows={6}
               className='w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none text-gray-900 font-medium'
               dir='rtl'
@@ -129,14 +148,9 @@ export default function WhatsAppModal({
                   ? order.customerPhone
                   : order.user?.phone || 'غير محدد'}
               </span>
-              <span> :سيتم الإرسال إلى </span>
+              <span>:سيتم الإرسال إلى </span>
               <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z'
-                />
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z' />
               </svg>
             </div>
           </div>
@@ -158,19 +172,8 @@ export default function WhatsAppModal({
             {sending ? (
               <>
                 <svg className='animate-spin w-5 h-5' fill='none' viewBox='0 0 24 24'>
-                  <circle
-                    className='opacity-25'
-                    cx='12'
-                    cy='12'
-                    r='10'
-                    stroke='currentColor'
-                    strokeWidth='4'
-                  ></circle>
-                  <path
-                    className='opacity-75'
-                    fill='currentColor'
-                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
-                  ></path>
+                  <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'/>
+                  <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'/>
                 </svg>
                 جاري الإرسال...
               </>

@@ -78,6 +78,11 @@ export default function AdminOrdersPage() {
   const [paymentAlertOrder, setPaymentAlertOrder] = useState<Order | null>(null);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [quickPayMethod, setQuickPayMethod] = useState('CASH');
+
+  // Status Reason Modal State
+  const [showStatusReasonModal, setShowStatusReasonModal] = useState(false);
+  const [statusReasonText, setStatusReasonText] = useState('');
+  const [pendingStatusReason, setPendingStatusReason] = useState<{orderId: string; newStatus: string} | null>(null);
   // WhatsApp handlers
   const handleWhatsAppClick = (order: Order) => {
     setWhatsappOrder(order);
@@ -678,10 +683,14 @@ export default function AdminOrdersPage() {
         idNumber = idNumber || '';
 
         // Card Type Logic (from variant name or defaulting to 'عادية')
-        const variantName = order?.variant?.name || '';
-        let cardType = 'عادية';
-        if (variantName.includes('مستعجل')) cardType = 'مستعجلة';
-        if (variantName.includes('VIP') || variantName.includes('vip')) cardType = 'VIP';
+        // Card Type Logic
+        const variantName = (order.variant?.name || '').toLowerCase();
+        let cardType = 'عادي';
+        if (variantName.includes('سريع') || variantName.includes('urgent')) cardType = 'سريع';
+        if (variantName.includes('فوري') || variantName.includes('immediate')) cardType = 'فوري';
+        if (variantName.includes('سوبر فوري') || variantName.includes('immediate')) cardType = 'فوري';
+        if (variantName.includes('عاجل') || variantName.includes('immediate')) cardType = 'عاجل';
+        if (variantName.includes('عادي') || variantName.includes('immediate')) cardType = 'عادي';
 
         return {
           name: order?.customerName || '',
@@ -828,11 +837,14 @@ export default function AdminOrdersPage() {
       return;
     }
 
-    if (newStatus === 'settlement' && order && isNationalIdOrder(order)) {
-      setPendingWorkOrder({ type: 'single', orderId, newStatus });
-      setShowWorkOrderModal(true);
+    // Ask for reason FIRST for all settlement/returned (before national ID check)
+    if (newStatus === 'settlement' || newStatus === 'returned') {
+      setPendingStatusReason({ orderId, newStatus });
+      setStatusReasonText('');
+      setShowStatusReasonModal(true);
       return;
     }
+
     await updateOrderStatus(orderId, newStatus);
   };
 
@@ -862,7 +874,8 @@ export default function AdminOrdersPage() {
       await updateOrderStatus(
         pendingWorkOrder.orderId,
         pendingWorkOrder.newStatus,
-        workOrderNumber
+        workOrderNumber,
+        statusReasonText || undefined
       );
     } else if (pendingWorkOrder.type === 'bulk') {
       await updateBulkStatus(workOrderNumber);
@@ -870,6 +883,7 @@ export default function AdminOrdersPage() {
 
     setShowWorkOrderModal(false);
     setPendingWorkOrder(null);
+    setStatusReasonText('');
   };
 
   // Calculate stats
@@ -1215,6 +1229,48 @@ export default function AdminOrdersPage() {
                 className='w-full justify-center rounded-2xl bg-white px-6 py-4 text-lg font-black text-red-600 shadow-sm ring-1 ring-inset ring-red-100 hover:bg-red-50 transition-all flex items-center gap-2'
               >
                 ✖️ إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Reason Modal */}
+      {showStatusReasonModal && pendingStatusReason && (
+        <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
+          <div className='bg-white rounded-2xl shadow-2xl w-full max-w-md p-6'>
+            <h3 className='text-xl font-black text-slate-900 mb-2'>
+              {pendingStatusReason.newStatus === 'settlement' ? '⚠️ سبب الاستيفاء' : '↩️ سبب المرتجع'}
+            </h3>
+            <p className='text-slate-500 text-sm mb-4'>اكتب السبب ليظهر في تفاصيل الطلب</p>
+            <textarea
+              value={statusReasonText}
+              onChange={e => setStatusReasonText(e.target.value)}
+              placeholder='اكتب السبب هنا...'
+              rows={3}
+              className='w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-0 resize-none transition-colors'
+              autoFocus
+            />
+            <div className='flex gap-3 mt-4'>
+              <button
+                onClick={() => { setShowStatusReasonModal(false); setPendingStatusReason(null); }}
+                className='flex-1 py-3 border-2 border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50'
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={async () => {
+                  if (!pendingStatusReason) return;
+                  await updateOrderStatus(pendingStatusReason.orderId, pendingStatusReason.newStatus, undefined, statusReasonText);
+                  setShowStatusReasonModal(false);
+                  setPendingStatusReason(null);
+                  setStatusReasonText('');
+                }}
+                className={`flex-1 py-3 rounded-xl font-bold text-white ${
+                  pendingStatusReason.newStatus === 'settlement' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-rose-500 hover:bg-rose-600'
+                }`}
+              >
+                تأكيد التغيير
               </button>
             </div>
           </div>

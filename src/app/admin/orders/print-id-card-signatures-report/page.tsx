@@ -1,8 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
-/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 // Report Data Interface
 interface IdCardSignatureReportData {
@@ -15,6 +14,7 @@ interface DelegateData {
   name: string;
   idNumber: string;
   unionCard: string;
+  idCardImage?: string; // Added for the new Image component src
 }
 
 export default function PrintIdCardSignaturesReport() {
@@ -202,9 +202,9 @@ export default function PrintIdCardSignaturesReport() {
 
         .logo-container {
           position: absolute;
-          top: -100px;
+          top: -80px;
           right: -20px;
-          width: 450px;
+          width: 380px;
           z-index: 100;
         }
 
@@ -283,22 +283,37 @@ export default function PrintIdCardSignaturesReport() {
           font-size: 13px;
           margin-bottom: 10px;
           page-break-inside: auto;
+          border-top: none; /* Ensure no top table border */
         }
         .data-table th {
-          background-color: #d1d5db;
-          border: 1px solid #000;
-          padding: 3px;
+          background-color: #f3f4f6;
+          border-bottom: 2px solid #000; /* Strong line below header */
+          border-left: 1px solid #1f2937; /* Vertical separator */
+          padding: 4px;
           text-align: center;
           font-weight: 900;
           font-size: 14px;
         }
+        .data-table th:last-child {
+          border-left: none; /* No separator after last column */
+        }
         .data-table td {
-          border: 1px solid #000;
-          padding: 0px 4px !important;
+          border-left: 1px solid #1f2937; /* Vertical separator */
+          padding: 4px 4px !important;
           vertical-align: middle;
-          line-height: 1;
+          line-height: 1.2;
           font-weight: 900;
           font-size: 16px !important;
+        }
+        .data-table td:last-child {
+          border-left: none; /* No separator after last column */
+        }
+        .data-table tr {
+          border-bottom: 1px solid #ddd; /* Faint line between rows for readability */
+        }
+        .data-table tfoot td {
+          border: none !important;
+          border-top: none !important;
         }
         .data-table tr {
           page-break-inside: avoid;
@@ -312,31 +327,38 @@ export default function PrintIdCardSignaturesReport() {
         .col-index {
           width: 25px;
           min-width: 25px;
-          text-align: center;
+          text-align: center; /* Center to avoid touching any borders */
+          padding: 0 5px !important; /* Safe padding on both sides */
+          font-size: 8px !important;
+          font-weight: normal; 
+          color: #4b5563; 
         }
         .col-name {
-          width: 35%;
-          min-width: 200px;
+          width: 45%;
+          min-width: 230px;
           text-align: right;
           font-weight: bold;
+          font-size: 11px !important; /* Smaller font for long names */
+          white-space: normal; /* Allow wrapping if absolutely needed */
         }
         .col-id {
           width: 25%;
-          min-width: 140px;
+          min-width: 120px;
           text-align: center;
           font-family: monospace;
-          font-size: 16px;
+          font-size: 11px !important; /* Smaller font for IDs */
           font-weight: 900;
-          letter-spacing: 1px;
+          letter-spacing: 0px;
         }
         .col-type {
-          width: 15%;
-          min-width: 80px;
+          width: 12%;
+          min-width: 50px;
           text-align: center;
+          font-size: 11px !important;
         }
         .col-signature {
-          width: 25%;
-          min-width: 120px;
+          width: 18%;
+          min-width: 80px;
           text-align: center;
         }
 
@@ -414,12 +436,26 @@ export default function PrintIdCardSignaturesReport() {
         </div>
 
         <table className='data-table'>
+          <colgroup>
+            <col style={{ width: '4%' }} />
+            <col style={{ width: '44%' }} />
+            <col style={{ width: '25%' }} />
+            <col style={{ width: '9%' }} />
+            <col style={{ width: '18%' }} />
+          </colgroup>
           <thead>
             {/* Full Header Row - Repeats on every page */}
             <tr>
               <td colSpan={5} className='border-0 p-0 text-right'>
                 <div className='logo-container'>
-                  <img src='/images/report-header.png' alt='Header' className='logo-img' />
+                  <Image 
+                    src='/images/report-header.png' 
+                    alt='Header' 
+                    width={800} 
+                    height={150} 
+                    priority 
+                    className='logo-img' 
+                  />
                 </div>
 
                 <div className='header-titles'>
@@ -455,7 +491,7 @@ export default function PrintIdCardSignaturesReport() {
               <th className='col-index'>م</th>
               <th className='col-name'>الاسم</th>
               <th className='col-id'>الرقم القومي</th>
-              <th className='col-type'>نوع البطاقة</th>
+              <th className='col-type'>نوع</th>
               <th className='col-signature'>توقيع صاحب الشأن</th>
             </tr>
           </thead>
@@ -472,24 +508,26 @@ export default function PrintIdCardSignaturesReport() {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={5} className='p-0 border-t-2 border-black'>
+              <td colSpan={5} className='p-0'>
                 <div className='flex justify-between items-center px-8 py-2 bg-white'>
                   {/* Delegate Card */}
-                  <div className='delegate-card-frame'>
-                    {delegate?.unionCard ? (
-                      <img
-                        src={delegate.unionCard}
-                        alt='Delegate ID'
-                        className='delegate-card-img'
-                      />
-                    ) : (
-                      <div className='text-sm font-black text-gray-400'>لا يوجد كارت مسجل</div>
+                  <div className='flex items-center justify-center p-2'>
+                    {delegate?.unionCard && (
+                      <Image
+                      src={delegate.idCardImage || delegate.unionCard} // Use idCardImage if available, fallback to unionCard
+                      alt='ID Card'
+                      width={300}
+                      height={180}
+                      className='delegate-card-img'
+                      unoptimized // External image or unknown source size, bypass optimization for print fidelity
+                    />
                     )}
                   </div>
 
                   {/* Signature */}
-                  <div className='text-center ml-10'>
-                    <div className='text-2xl font-black mb-1'>يعتمد</div>
+                  <div className='text-center ml-10 p-2'>
+                    <div className='text-xl font-black mb-1'>يعتمد</div>
+                    <div className='h-16'></div>
                   </div>
                 </div>
               </td>

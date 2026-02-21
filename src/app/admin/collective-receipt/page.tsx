@@ -1,9 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 
 // Print styles for A5 landscape orientation
 const printStyles = `
@@ -277,11 +276,12 @@ export default function CollectiveReceiptPage() {
           className={`border-b border-black ${spacing.headerPad} flex items-center justify-between`}
         >
           <div className='flex items-center space-x-2 space-x-reverse'>
-            <img
+            <Image
               src='/logo.jpg'
               alt='البديل'
-              style={{ height: 'auto' }}
-              className={`grayscale ${isCompact ? 'w-10' : 'w-14'}`}
+              width={60}
+              height={60}
+              className={`grayscale ${isCompact ? 'w-10' : 'w-14'} h-auto`}
             />
             <div className='leading-tight'>
               <div className={`font-black text-black ${isCompact ? 'text-xs' : 'text-sm'}`}>
@@ -305,11 +305,12 @@ export default function CollectiveReceiptPage() {
           </div>
 
           <div className='flex flex-col items-center'>
-            <img
+            <Image
               src='/images/egyptnisr.png'
               alt='شعار'
-              style={{ height: 'auto' }}
-              className={`mb-0.5 grayscale ${isCompact ? 'w-6' : 'w-8'}`}
+              width={40}
+              height={40}
+              className={`mb-0.5 grayscale ${isCompact ? 'w-6' : 'w-8'} h-auto`}
             />
             <div
               className={`leading-3 text-center max-w-[120px] font-bold ${isCompact ? 'text-[7px]' : 'text-[9px]'}`}

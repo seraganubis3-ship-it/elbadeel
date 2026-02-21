@@ -514,9 +514,9 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                         }}
                         className='px-3 py-2 hover:bg-cyan-50 cursor-pointer text-xs font-bold text-cyan-600 border-t border-slate-50'
                       >
-                        إضافة {`"`}
+                        إضافة &quot;
                         {languageSearch}
-                        {`"`}
+                        &quot;
                       </div>
                     )}
 

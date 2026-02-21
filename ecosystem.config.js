@@ -12,7 +12,7 @@ module.exports = {
       },
     },
     {
-      name: 'haiba-web',
+      name: 'elbadeel-web',
       script: 'npm',
       args: 'start',
       instances: 1,

@@ -1,0 +1,8 @@
+﻿
+> haiba-platform@2.0.0 type-check
+> tsc --noEmit
+
+.next/types/app/admin/performance/page.ts(2,24): error TS2307: Cannot find module '../../../../../src/app/admin/performance/page.js' or its corresponding type declarations.
+.next/types/app/admin/performance/page.ts(5,29): error TS2307: Cannot find module '../../../../../src/app/admin/performance/page.js' or its corresponding type declarations.
+.next/types/app/api/admin/performance/route.ts(2,24): error TS2307: Cannot find module '../../../../../../src/app/api/admin/performance/route.js' or its corresponding type declarations.
+.next/types/app/api/admin/performance/route.ts(5,29): error TS2307: Cannot find module '../../../../../../src/app/api/admin/performance/route.js' or its corresponding type declarations.

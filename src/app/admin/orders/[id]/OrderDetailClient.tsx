@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
@@ -16,6 +16,17 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Status reason modal
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState('');
+  const [statusReasonInput, setStatusReasonInput] = useState('');
+
+  // WhatsApp modal state
+  const [showWaModal, setShowWaModal] = useState(false);
+  const [waTemplates, setWaTemplates] = useState<{ id: string; title: string; body: string }[]>([]);
+  const [waMessage, setWaMessage] = useState('');
+  const [templatesLoading, setTemplatesLoading] = useState(false);
 
   // Independent State for inline editing
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -51,34 +62,41 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
     }
   };
 
-  // Function to send WhatsApp message
-  const sendWhatsAppMessage = () => {
+  // Load WhatsApp templates
+  const loadTemplates = useCallback(async () => {
+    if (waTemplates.length > 0) return;
+    setTemplatesLoading(true);
+    try {
+      const res = await fetch('/api/admin/whatsapp/templates');
+      const data = await res.json();
+      if (data.success) setWaTemplates(data.templates);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }, [waTemplates.length]);
+
+  // Open WhatsApp modal
+  const openWaModal = () => {
     const phone = currentOrder.customerPhone;
     if (!phone || phone.trim() === '' || phone === 'غير محدد') {
-      alert('رقم الهاتف غير متوفر لهذا العميل');
+      alert('رقم الهاتف غير متوفر');
       return;
     }
-
-    const message = `مرحباً ${currentOrder.customerName || 'عزيزي العميل'}،
-    
-طلبك رقم: ${currentOrder.id.slice(0, 8)}
-الخدمة: ${currentOrder.service.name}
-النوع: ${currentOrder.variant.name}
- الحالة: ${getStatusText(currentOrder.status)}
-السعر: ${(currentOrder.totalCents / 100).toFixed(2)} جنيه
-
-هل لديك أي استفسارات؟`;
-
-    let formattedPhone = phone.replace(/[\s\+]/g, '');
-    if (formattedPhone.startsWith('0')) {
-      formattedPhone = '20' + formattedPhone.substring(1);
-    } else if (!formattedPhone.startsWith('20')) {
-      formattedPhone = '20' + formattedPhone;
-    }
-
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    setWaMessage('');
+    setShowWaModal(true);
+    loadTemplates();
   };
+
+  // Send to wa.me
+  const sendWhatsAppMessage = () => {
+    if (!waMessage.trim()) return;
+    let phone = currentOrder.customerPhone.replace(/[\s\+]/g, '');
+    if (phone.startsWith('0')) phone = '20' + phone.substring(1);
+    else if (!phone.startsWith('20')) phone = '20' + phone;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(waMessage)}`, '_blank');
+    setShowWaModal(false);
+  };
+
 
   // Function to export order as text file
   const exportOrder = () => {
@@ -134,13 +152,14 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
     return null;
   };
 
-  const updateOrderStatus = async (newStatus: string) => {
+  const updateOrderStatus = async (newStatus: string, reason?: string) => {
     setIsUpdating(true);
     try {
-      const requestData = {
+      const requestData: any = {
         status: newStatus,
         workDate: getCurrentWorkDate(),
       };
+      if (reason !== undefined) requestData.statusReason = reason;
 
       const response = await fetch(`/api/admin/orders/${currentOrder.id}/status`, {
         method: 'PUT',
@@ -151,7 +170,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          setCurrentOrder((prev: any) => ({ ...prev, status: newStatus }));
+          setCurrentOrder((prev: any) => ({ ...prev, status: newStatus, statusReason: reason ?? prev.statusReason }));
           setSuccessMessage(result.message);
           setShowSuccessMessage(true);
           setTimeout(() => setShowSuccessMessage(false), 3000);
@@ -164,6 +183,24 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  // Intercept status change - show reason modal for settlement/returned
+  const handleStatusChange = (newStatus: string) => {
+    if (newStatus === 'settlement' || newStatus === 'returned') {
+      setPendingStatus(newStatus);
+      setStatusReasonInput('');
+      setShowReasonModal(true);
+    } else {
+      updateOrderStatus(newStatus);
+    }
+  };
+
+  const confirmStatusWithReason = () => {
+    updateOrderStatus(pendingStatus, statusReasonInput);
+    setShowReasonModal(false);
+    setStatusReasonInput('');
+    setPendingStatus('');
   };
 
   // Inline Editing Handlers
@@ -201,6 +238,82 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
 
   return (
     <div className='min-h-screen bg-slate-50 text-slate-900 font-sans pb-20'>
+
+      {/* WhatsApp Message Modal */}
+      {showWaModal && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4' onClick={() => setShowWaModal(false)}>
+          <div className='bg-white rounded-2xl shadow-2xl w-full max-w-lg' onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className='flex items-center justify-between px-6 py-4 border-b'>
+              <div className='flex items-center gap-2'>
+                <div className='w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center'>
+                  <svg className='w-4 h-4 text-green-600' fill='currentColor' viewBox='0 0 24 24'><path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z'/></svg>
+                </div>
+                <div>
+                  <div className='font-bold text-gray-900 text-sm'>مراسلة العميل</div>
+                  <div className='text-xs text-gray-400'>{currentOrder.customerName} — {currentOrder.customerPhone}</div>
+                </div>
+              </div>
+              <button onClick={() => setShowWaModal(false)} className='text-gray-400 hover:text-gray-600 text-xl leading-none'>✕</button>
+            </div>
+
+            {/* Templates */}
+            {templatesLoading ? (
+              <div className='px-6 py-4 text-center text-gray-400 text-sm'>جاري تحميل الرسائل...</div>
+            ) : waTemplates.length > 0 ? (
+              <div className='px-6 pt-4'>
+                <p className='text-xs font-bold text-gray-400 mb-2'>رسائل جاهزة</p>
+                <div className='flex flex-col gap-2 max-h-40 overflow-y-auto'>
+                  {waTemplates.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setWaMessage(t.body)}
+                      className={`text-right px-3 py-2 rounded-xl border text-sm transition-colors ${
+                        waMessage === t.body
+                          ? 'border-green-400 bg-green-50 text-green-800 font-bold'
+                          : 'border-gray-100 bg-gray-50 hover:border-green-300 hover:bg-green-50 text-gray-700'
+                      }`}
+                    >
+                      <div className='font-bold text-xs'>{t.title}</div>
+                      <div className='text-[11px] text-gray-400 truncate mt-0.5'>{t.body.slice(0, 60)}...</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className='px-6 pt-4 text-xs text-gray-400 text-center'>لا توجد رسائل جاهزة — أضفها من صفحة إعدادات الواتساب</div>
+            )}
+
+            {/* Text area */}
+            <div className='px-6 py-4'>
+              <p className='text-xs font-bold text-gray-400 mb-2'>نص الرسالة</p>
+              <textarea
+                value={waMessage}
+                onChange={e => setWaMessage(e.target.value)}
+                rows={5}
+                placeholder='اكتب رسالتك هنا أو اختر من الرسائل الجاهزة...'
+                className='w-full border rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-green-400'
+              />
+            </div>
+
+            {/* Footer */}
+            <div className='flex gap-2 px-6 pb-5'>
+              <button onClick={() => setShowWaModal(false)} className='flex-1 py-2.5 border rounded-xl text-sm text-gray-500 hover:bg-gray-50'>
+                إلغاء
+              </button>
+              <button
+                onClick={sendWhatsAppMessage}
+                disabled={!waMessage.trim()}
+                className='flex-1 py-2.5 bg-green-500 hover:bg-green-600 disabled:opacity-40 text-white rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2'
+              >
+                <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 24 24'><path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z'/></svg>
+                إرسال على واتساب
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className='max-w-7xl mx-auto p-6 md:p-8 space-y-8'>
         {/* Success Toast */}
         {showSuccessMessage && (
@@ -247,6 +360,64 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
           </Link>
         </div>
 
+        {/* Status Reason Banner */}
+        {currentOrder.statusReason && (currentOrder.status === 'settlement' || currentOrder.status === 'returned') && (
+          <div className={`rounded-2xl border-2 p-5 flex items-start gap-4 ${
+            currentOrder.status === 'settlement'
+              ? 'bg-amber-50 border-amber-200'
+              : 'bg-rose-50 border-rose-200'
+          }`}>
+            <span className='text-2xl mt-0.5'>{currentOrder.status === 'settlement' ? '⚠️' : '↩️'}</span>
+            <div>
+              <p className={`font-black text-lg ${
+                currentOrder.status === 'settlement' ? 'text-amber-800' : 'text-rose-800'
+              }`}>
+                {currentOrder.status === 'settlement' ? 'سبب الاستيفاء' : 'سبب المرتجع'}
+              </p>
+              <p className={`mt-1 text-base font-medium ${
+                currentOrder.status === 'settlement' ? 'text-amber-700' : 'text-rose-700'
+              }`}>{currentOrder.statusReason}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Reason Modal */}
+        {showReasonModal && (
+          <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
+            <div className='bg-white rounded-2xl shadow-2xl w-full max-w-md p-6'>
+              <h3 className='text-xl font-black text-slate-900 mb-2'>
+                {pendingStatus === 'settlement' ? '⚠️ سبب الاستيفاء' : '↩️ سبب المرتجع'}
+              </h3>
+              <p className='text-slate-500 text-sm mb-4'>اكتب السبب ليظهر في تفاصيل الطلب</p>
+              <textarea
+                value={statusReasonInput}
+                onChange={e => setStatusReasonInput(e.target.value)}
+                placeholder='اكتب السبب هنا...'
+                rows={3}
+                className='w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-0 resize-none transition-colors'
+                autoFocus
+              />
+              <div className='flex gap-3 mt-4'>
+                <button
+                  onClick={() => { setShowReasonModal(false); setPendingStatus(''); }}
+                  className='flex-1 py-3 border-2 border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50'
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={confirmStatusWithReason}
+                  disabled={isUpdating}
+                  className={`flex-1 py-3 rounded-xl font-bold text-white disabled:opacity-50 ${
+                    pendingStatus === 'settlement' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-rose-500 hover:bg-rose-600'
+                  }`}
+                >
+                  تأكيد التغيير
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
           {/* Main Column */}
           <div className='lg:col-span-2 space-y-8'>
@@ -265,7 +436,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   <div className='relative'>
                     <select
                       value={currentOrder.status}
-                      onChange={e => updateOrderStatus(e.target.value)}
+                      onChange={e => handleStatusChange(e.target.value)}
                       disabled={isUpdating}
                       className='w-full appearance-none bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-bold focus:border-blue-500 focus:ring-0 transition-colors cursor-pointer disabled:opacity-50'
                     >
@@ -437,6 +608,119 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                     )}
                   </div>
                 )}
+
+                {/* Editable Fields - Capacity (الصفة) */}
+                <div className='md:col-span-2 bg-purple-50/50 rounded-2xl p-4 border border-purple-100 hover:border-purple-300 transition-colors group relative'>
+                  <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
+                      الصفة
+                    </p>
+                    {!editingField && (
+                      <button
+                        onClick={() =>
+                          handleStartEdit('title', currentOrder.title || '')
+                        }
+                        className='text-purple-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 hover:bg-purple-100 rounded-lg'
+                      >
+                        تعديل ✎
+                      </button>
+                    )}
+                  </div>
+                  {editingField === 'title' ? (
+                    <div className='flex gap-2'>
+                      <input
+                        type='text'
+                        autoFocus
+                        value={tempValue}
+                        onChange={e => setTempValue(e.target.value)}
+                        placeholder='اكتب الصفة...'
+                        className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-1 text-sm font-bold focus:ring-0 focus:border-purple-500'
+                      />
+                      <button
+                        onClick={handleSaveField}
+                        className='bg-green-500 text-white p-2 rounded-lg hover:bg-green-600'
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setEditingField(null)}
+                        className='bg-slate-200 text-slate-600 p-2 rounded-lg hover:bg-slate-300'
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <p className='text-lg font-bold text-slate-900'>
+                      {currentOrder.title || (
+                        <span className='text-slate-400 italic font-normal'>غير محدد</span>
+                      )}
+                    </p>
+                  )}
+                </div>
+
+                {/* Editable Fields - Capture Date (تاريخ التصوير) */}
+                <div className='md:col-span-2 bg-teal-50/50 rounded-2xl p-4 border border-teal-100 hover:border-teal-300 transition-colors group relative'>
+                  <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
+                      تاريخ التصوير
+                    </p>
+                    {!editingField && (
+                      <button
+                        onClick={() => {
+                          const val = currentOrder.photographyDate ? (new Date(currentOrder.photographyDate).toISOString().split('T')[0] || '') : '';
+                          handleStartEdit('photographyDate', val);
+                        }}
+                        className='text-teal-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 hover:bg-teal-100 rounded-lg'
+                      >
+                        تعديل ✎
+                      </button>
+                    )}
+                  </div>
+                  {editingField === 'photographyDate' ? (
+                    <div className='flex gap-2'>
+                      <input
+                        type='date'
+                        autoFocus
+                        value={tempValue}
+                        onChange={e => setTempValue(e.target.value)}
+                        className='flex-1 bg-white border-2 border-teal-200 rounded-lg px-3 py-1 text-sm font-bold focus:ring-0 focus:border-teal-500'
+                      />
+                      <button
+                        onClick={() => {
+                          // The API likely expects a proper Date format, let's pass an ISO string
+                          const finalValue = tempValue ? new Date(tempValue).toISOString() : null;
+                          handleSaveField(); // Wait, the default handleSaveField just passes `tempValue`. I can pass the correctly formatted value there or handle it inside the edit loop.
+                          // Actually, handleSaveField uses tempValue state directly. Let's make sure tempValue is updated before saving or override it.
+                          // It's cleaner to let `handleSaveField` handle it. But `handleSaveField` just sends `tempValue`.
+                          // So if user selects '2023-10-05', tempValue is '2023-10-05', Prisma can parse it as ISO Date if we append T00:00:00Z.
+                          setTempValue(prev => prev ? new Date(prev).toISOString() : '');
+                          setTimeout(handleSaveField, 10);
+                        }}
+                        className='bg-green-500 text-white p-2 rounded-lg hover:bg-green-600'
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setEditingField(null)}
+                        className='bg-slate-200 text-slate-600 p-2 rounded-lg hover:bg-slate-300'
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <p className='text-lg font-bold text-slate-900'>
+                      {currentOrder.photographyDate ? (
+                        new Date(currentOrder.photographyDate).toLocaleDateString('ar-EG', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
+                      ) : (
+                        <span className='text-slate-400 italic font-normal'>غير محدد</span>
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -555,7 +839,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
               <h3 className='text-lg font-bold text-slate-900 mb-4'>إجراءات سريعة</h3>
               <div className='space-y-3'>
                 <button
-                  onClick={sendWhatsAppMessage}
+                  onClick={openWaModal}
                   className='w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2'
                 >
                   <svg className='w-5 h-5' fill='currentColor' viewBox='0 0 24 24'>

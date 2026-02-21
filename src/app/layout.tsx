@@ -108,13 +108,22 @@ export const metadata: Metadata = {
 };
 
 import { prisma } from '@/lib/prisma';
+import { unstable_cache } from 'next/cache';
+
+const getCachedSettings = unstable_cache(
+  async () => {
+    return await prisma.systemSettings.findFirst();
+  },
+  ['system-settings'],
+  { revalidate: 3600, tags: ['settings'] } // Cache for 1 hour, tag for on-demand revalidation if needed
+);
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await prisma.systemSettings.findFirst();
+  const settings = await getCachedSettings();
 
   return (
     <html lang='ar' dir='rtl' suppressHydrationWarning>

@@ -82,12 +82,10 @@ export function initializeCronJobs() {
         const { checkDatabaseHealth } = await import('@/lib/databaseMonitor');
         const health = await checkDatabaseHealth();
         if (!health.healthy) {
-          // eslint-disable-next-line no-console
-          console.warn('⚠️ Database health issues detected:', health.issues);
+                    console.warn('⚠️ Database health issues detected:', health.issues);
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('❌ Health check failed:', error);
+                console.error('❌ Health check failed:', error);
       }
     },
     {

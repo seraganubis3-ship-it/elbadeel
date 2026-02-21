@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 
 export default function PrintPhoneReportPage() {
   const [data, setData] = useState<any[]>([]);
@@ -192,8 +192,13 @@ export default function PrintPhoneReportPage() {
           </div>
 
           <div className='absolute -right-12 -top-16'>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src='/images/report-header.png' alt='Header' className='logo-img' />
+            <Image
+              src='/images/report-header.png'
+              alt='Header'
+              width={200}
+              height={100}
+              className='logo-img h-auto w-auto object-contain'
+            />
           </div>
         </div>
 

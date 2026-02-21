@@ -206,10 +206,10 @@ export function useOrderDetail(orderId: string) {
   const updateOrder = async (force = false) => {
     if (!order) return;
 
-    // Check for outstanding balance when delivering or settling
+    // Check for outstanding balance when delivering
     if (
       !force &&
-      (newStatus === 'settlement' || newStatus === 'delivered') &&
+      newStatus === 'delivered' &&
       (order.remainingAmount || 0) > 0
     ) {
       setShowPaymentAlert(true);

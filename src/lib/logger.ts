@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 export type LogLevel = 'info' | 'error' | 'warn' | 'debug';
 
 interface LogEntry {
@@ -27,19 +26,23 @@ class Logger {
   }
 
   info(message: string, context?: Record<string, unknown>) {
+    // eslint-disable-next-line no-console
     console.log(this.format('info', message, context));
   }
 
   error(message: string, error?: unknown, context?: Record<string, unknown>) {
+    // eslint-disable-next-line no-console
     console.error(this.format('error', message, context, error));
   }
 
   warn(message: string, context?: Record<string, unknown>) {
+    // eslint-disable-next-line no-console
     console.warn(this.format('warn', message, context));
   }
 
   debug(message: string, context?: Record<string, unknown>) {
     if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
       console.debug(this.format('debug', message, context));
     }
   }

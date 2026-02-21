@@ -1,4 +1,10 @@
 // Types for Admin Orders
+export interface WhatsAppTemplate {
+  id: string;
+  name: string;
+  message: string;
+}
+
 export interface Order {
   id: string;
   service: {
@@ -159,26 +165,29 @@ export const getDeliveryInfo = (order: Order) => {
   }
 };
 
-// WhatsApp message templates
-export const getWhatsappTemplates = (order: Order | null) => [
-  {
-    id: 'new_order',
-    name: '🆕 طلب جديد',
-    message: `🏢 *منصة البديل*\n\nمرحباً *${order?.customerName}* 👋\n\n✅ تم استلام طلبك بنجاح!\n\n📋 *تفاصيل الطلب:*\n• رقم الطلب: #${order?.id}\n• الخدمة: ${order?.service?.name}\n• المبلغ: ${order ? (order.totalCents / 100).toFixed(2) : 0} جنيه\n\nسنقوم بالتواصل معك قريباً.\n\n🌐 منصة البديل`,
-  },
-  {
-    id: 'order_ready',
-    name: '✅ جاهز للاستلام',
-    message: `🏢 *منصة البديل*\n\nمرحباً *${order?.customerName}* 👋\n\n🎉 *طلبك جاهز للاستلام!*\n\n📋 رقم الطلب: #${order?.id}\n📌 الخدمة: ${order?.service?.name}\n\n📍 يمكنك استلام طلبك من مكتبنا.\n\n🌐 منصة البديل`,
-  },
-  {
-    id: 'payment_reminder',
-    name: '💰 تذكير بالدفع',
-    message: `🏢 *منصة البديل*\n\nمرحباً *${order?.customerName}* 👋\n\n💰 *تذكير بالدفع*\n\n📋 رقم الطلب: #${order?.id}\n💵 المبلغ: ${order ? (order.totalCents / 100).toFixed(2) : 0} جنيه\n\nيرجى سداد المبلغ لاستكمال الطلب.\n\n🌐 منصة البديل`,
-  },
-  {
-    id: 'order_delivered',
-    name: '🚚 تم التسليم',
-    message: `🏢 *منصة البديل*\n\nمرحباً *${order?.customerName}* 👋\n\n✅ *تم تسليم طلبك بنجاح!*\n\n📋 رقم الطلب: #${order?.id}\n📌 الخدمة: ${order?.service?.name}\n\nشكراً لثقتك في منصة البديل 🙏\n\n🌐 منصة البديل`,
-  },
-];
+export const getWhatsappTemplates = (order: Order): WhatsAppTemplate[] => {
+  const templates: WhatsAppTemplate[] = [
+    {
+      id: 'welcome',
+      name: 'ترحيب واستلام الطلب',
+      message: `أهلاً بك أستاذ ${order.customerName}، تم استلام طلبك الخاص بخدمة ${order.service.name} بنجاح وجاري العمل عليه.`,
+    },
+    {
+      id: 'in-progress',
+      name: 'تحديث: قيد التنفيذ',
+      message: `أهلاً بك أستاذ ${order.customerName}، بخصوص طلبك (${order.service.name})، تم البدء في التنفيذ وسنقوم بإبلاغك بمجرد الانتهاء.`,
+    },
+    {
+      id: 'missing-docs',
+      name: 'نقص في المستندات',
+      message: `أهلاً بك أستاذ ${order.customerName}، بخصوص طلبك (${order.service.name})، يوجد نقص في بعض المستندات المطلوبة. يرجى مراجعة الموقع أو التواصل معنا لاستكمالها.`,
+    },
+    {
+      id: 'completed',
+      name: 'اكتمال الطلب',
+      message: `أهلاً بك أستاذ ${order.customerName}، يسعدنا إبلاغك بأن طلبك الخاص بخدمة ${order.service.name} قد اكتمل وهو جاهز الآن.`,
+    },
+  ];
+
+  return templates;
+};

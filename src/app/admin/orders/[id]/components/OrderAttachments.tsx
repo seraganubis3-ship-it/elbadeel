@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Order } from '../types';
 import { AttachmentModal } from '@/app/admin/create/components/modals/AttachmentModal';
@@ -190,10 +191,12 @@ export default function OrderAttachments({
 
                     {isImage ? (
                       <div className='mb-4 overflow-hidden rounded-2xl border border-slate-100'>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={doc.filePath}
                           alt={doc.fileName}
+                          width={400}
+                          height={224}
+                          unoptimized
                           className='w-full h-56 object-cover group-hover/doc:scale-105 transition-transform duration-700'
                         />
                       </div>

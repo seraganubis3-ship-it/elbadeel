@@ -1,11 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useState } from 'react';
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // Print styles for landscape orientation
 const printStyles = `
@@ -202,11 +201,12 @@ export default function ReceiptPage() {
           <div className='border-b border-black p-2 print:border-b-2'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center space-x-2 space-x-reverse'>
-                <img
+                <Image
                   src='/logo.jpg'
                   alt='البديل'
-                  style={{ height: '40px', width: 'auto' }}
-                  className='max-h-10 w-auto grayscale'
+                  width={60}
+                  height={40}
+                  className='max-h-10 h-10 w-auto grayscale'
                 />
                 <div className='text-xs leading-4'>
                   <div className='font-black text-sm text-black'>البديل للخدمات الحكومية</div>
@@ -217,11 +217,12 @@ export default function ReceiptPage() {
               </div>
 
               <div className='flex flex-col items-center'>
-                <img
+                <Image
                   src='/images/egyptnisr.png'
                   alt='شعار'
-                  style={{ height: '32px', width: 'auto' }}
-                  className='mb-1 grayscale'
+                  width={40}
+                  height={32}
+                  className='mb-1 h-8 w-auto grayscale'
                 />
                 <div className='text-[9px] leading-3 text-center max-w-xs font-bold'>
                   طبقا لقرار رئيس مجلس الوزاراء رقم ١٥٥١ لستة ٢٠٠٨ بتصريح و ترخيص من وزارة الاتصالات
@@ -318,6 +319,20 @@ export default function ReceiptPage() {
                   {format((order.otherFees || 0) + lostReportAmount)} ج.م
                 </div>
               </div>
+              {/* خانة الخصم - تظهر فقط لو كان هناك خصم */}
+              {(order.discount || 0) > 0 && (
+                <div className='grid grid-cols-12 text-xs border-t border-black bg-gray-50'>
+                  <div className='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>
+                    خصم
+                  </div>
+                  <div className='col-span-4 border-l border-black p-1.5 font-black'>
+                    - {format(order.discount)} ج.م
+                  </div>
+                  <div className='col-span-6 p-1.5 font-bold text-[9px] text-gray-600'>
+                    تم تطبيق خصم على هذا الطلب
+                  </div>
+                </div>
+              )}
               <div className='grid grid-cols-12 text-xs border-t border-black'>
                 <div className='col-span-2 bg-gray-100 border-l border-black p-1.5 font-black'>
                   مدفوع
@@ -409,6 +424,10 @@ export default function ReceiptPage() {
             <div className='text-center flex flex-col justify-center gap-1 border-r border-black font-bold'>
               <div>١٥ شارع صالح قناوي - تقاطع وليم ناشد - مدكور - فيصل</div>
               <div className='text-[10px] font-black mt-1'>٠١٠٢٢٠١١٨٧٧ / ٠١١٤٩٩٩٢٨٣٠</div>
+              <div className='mt-1.5 border-t border-dashed border-gray-400 pt-1'>
+                <div className='text-[9px] text-gray-600 font-bold'>زوروا موقعنا الإلكتروني</div>
+                <div className='text-[10px] font-black tracking-tight'>🌐 albadel.com.eg</div>
+              </div>
               <div className='mt-2 text-xs font-black pt-1'>
                 أمين الخزينة: {order.createdByAdmin?.name || '—'}
               </div>

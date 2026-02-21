@@ -92,8 +92,7 @@ export function LastOrderAlert({ searchTerm, customerId }: LastOrderAlertProps) 
         setLastCheckTerm(searchTerm);
         if (customerId) setLastCheckId(customerId);
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error checking last order:', error);
+                console.error('Error checking last order:', error);
       }
     };
 

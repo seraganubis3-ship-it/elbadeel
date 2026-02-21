@@ -1,0 +1,74 @@
+
+> elbadeel-platform@2.0.0 lint
+> next lint
+
+
+./src/app/admin/create/useCreateOrder.ts
+460:6  Warning: React Hook useEffect has a missing dependency: 'fetchCategories'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/admin/orders/print-phone-report/page.tsx
+195:13  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/admin/orders/[id]/components/OrderAttachments.tsx
+194:25  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/admin/work-orders/[id]/print/PrintClient.tsx
+30:13  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/category/[slug]/page.tsx
+98:25  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/orders/[id]/page.tsx
+328:29  Error: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/lib/cron/jobs/backup.ts
+39:9  Warning: Unexpected console statement.  no-console
+44:9  Warning: Unexpected console statement.  no-console
+49:9  Warning: Unexpected console statement.  no-console
+56:9  Warning: Unexpected console statement.  no-console
+91:17  Warning: Unexpected console statement.  no-console
+
+./src/lib/cron/jobs/cleanup.ts
+36:13  Warning: Unexpected console statement.  no-console
+39:9  Warning: Unexpected console statement.  no-console
+58:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/cron/jobs/reports.ts
+208:9  Warning: Unexpected console statement.  no-console
+
+./src/lib/cron/scheduler.ts
+12:5  Warning: Unexpected console statement.  no-console
+18:13  Warning: Unexpected console statement.  no-console
+21:17  Warning: Unexpected console statement.  no-console
+94:5  Warning: Unexpected console statement.  no-console
+101:5  Warning: Unexpected console statement.  no-console
+104:9  Warning: Unexpected console statement.  no-console
+
+./src/lib/logger.ts
+29:5  Warning: Unexpected console statement.  no-console
+42:7  Warning: Unexpected console statement.  no-console
+
+./src/lib/monitoring/sentry.ts
+35:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/queue/config.ts
+77:9  Warning: Unexpected console statement.  no-console
+
+./src/lib/queue/jobs/imageUpload.ts
+65:5  Warning: Unexpected console statement.  no-console
+74:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/queue/jobs/notifications.ts
+63:13  Warning: Unexpected console statement.  no-console
+85:5  Warning: Unexpected console statement.  no-console
+94:5  Warning: Unexpected console statement.  no-console
+
+./src/lib/queue/workers.ts
+7:5  Warning: Unexpected console statement.  no-console
+10:5  Warning: Unexpected console statement.  no-console
+11:5  Warning: Unexpected console statement.  no-console
+12:5  Warning: Unexpected console statement.  no-console
+17:5  Warning: Unexpected console statement.  no-console
+21:5  Warning: Unexpected console statement.  no-console
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules

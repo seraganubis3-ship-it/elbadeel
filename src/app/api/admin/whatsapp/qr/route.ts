@@ -25,8 +25,7 @@ export async function GET() {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('WhatsApp Bot QR Error:', error);
+        console.error('WhatsApp Bot QR Error:', error);
     return NextResponse.json(
       { status: 'disconnected', error: 'Failed to connect to bot' },
       { status: 503 }

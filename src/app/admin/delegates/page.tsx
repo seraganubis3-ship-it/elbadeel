@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/Toast';
+import Image from 'next/image';
 
 interface Delegate {
   id: string;
@@ -223,40 +223,52 @@ export default function DelegatesPage() {
                 </div>
 
                 <div className='grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-100'>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                 
                   {delegate.idCardFront && (
-                    <img
+                    <Image
                       src={delegate.idCardFront}
                       alt='ID Card Front'
-                      className='w-full h-12 object-cover rounded-lg border'
+                      width={100}
+                      height={48}
+                      className='w-full object-cover rounded-lg border h-auto'
                       title='بطاقة أمامي'
+                      unoptimized
                     />
                   )}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                 
                   {delegate.idCardBack && (
-                    <img
+                    <Image
                       src={delegate.idCardBack}
                       alt='ID Card Back'
-                      className='w-full h-12 object-cover rounded-lg border'
+                      width={100}
+                      height={48}
+                      className='w-full object-cover rounded-lg border h-auto'
                       title='بطاقة خلفي'
+                      unoptimized
                     />
                   )}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                 
                   {delegate.unionCardFront && (
-                    <img
+                    <Image
                       src={delegate.unionCardFront}
                       alt='Union Card Front'
-                      className='w-full h-12 object-cover rounded-lg border'
+                      width={100}
+                      height={48}
+                      className='w-full object-cover rounded-lg border h-auto'
                       title='كارنيه أمامي'
+                      unoptimized
                     />
                   )}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                 
                   {delegate.unionCardBack && (
-                    <img
+                    <Image
                       src={delegate.unionCardBack}
                       alt='Union Card Back'
-                      className='w-full h-12 object-cover rounded-lg border'
+                      width={100}
+                      height={48}
+                      className='w-full object-cover rounded-lg border h-auto'
                       title='كارنيه خلفي'
+                      unoptimized
                     />
                   )}
                 </div>

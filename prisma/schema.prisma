@@ -221,6 +221,7 @@ model Order {
   landmark                String?
   notes                   String?
   adminNotes              String?
+  statusReason            String?
   createdAt               DateTime        @default(now())
   updatedAt               DateTime        @updatedAt
   completedAt             DateTime?
@@ -240,6 +241,7 @@ model Order {
   marriageDate            DateTime?
   divorceDate             DateTime?
   deathDate               DateTime?
+  deceasedName            String?
   wifeMotherName          String?
   quantity                Int             @default(1)
   serviceDetails          String?
@@ -507,4 +509,17 @@ model Delegate {
   updatedAt      DateTime @updatedAt
 
   @@index([active])
+}
+
+model WhatsAppTemplate {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   @db.Text
+  orderIndex Int     @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+  @@index([orderIndex])
 }

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getB2ImageUrl } from '@/lib/imageUrl';
+import Image from 'next/image';
 
 interface ServiceVariant {
   id: string;
@@ -94,10 +95,11 @@ export default async function CategoryPage({ params }: { params: { slug: string 
                   return (
                     imageUrl && (
                       <div className='relative h-48 sm:h-56 overflow-hidden'>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={imageUrl}
                           alt={service.name}
+                          width={400}
+                          height={224}
                           className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
                         />
                         <div className='absolute inset-0 bg-gradient-to-t from-black/20 to-transparent'></div>
