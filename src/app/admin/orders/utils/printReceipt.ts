@@ -79,6 +79,18 @@ export const printReceipt = (order: Order) => {
     return total + (fine.amount || 0);
   }, 0);
 
+  // Parse services details (خدمات إضافية)
+  const servicesDetails = order.servicesDetails
+    ? typeof order.servicesDetails === 'string'
+      ? JSON.parse(order.servicesDetails)
+      : order.servicesDetails
+    : [];
+
+  // Sum amounts of additional services
+  const totalServicesAmount = Array.isArray(servicesDetails)
+    ? servicesDetails.reduce((sum: number, svc: any) => sum + (svc.amount || 0), 0)
+    : 0;
+
   // Calculate lost report amount
   const lostReportAmount = lostReport ? lostReport.amount || 0 : 0;
 
@@ -386,7 +398,7 @@ export const printReceipt = (order: Order) => {
                   مصاريف أخرى
                 </div>
                 <div class='col-span-4 p-1.5 font-black'>
-                  ${format((order.otherFees || 0) + lostReportAmount)} ج.م
+                  ${format((order.otherFees || 0) + lostReportAmount + totalServicesAmount)} ج.م
                 </div>
               </div>
               ${
