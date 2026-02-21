@@ -2,6 +2,7 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import WorkDateModal from './WorkDateModal';
+import { hasPermission } from '@/lib/permissions';
 
 interface AdminWorkDateWrapperProps {
   children: React.ReactNode;
@@ -16,8 +17,8 @@ export default function AdminWorkDateWrapper({ children }: AdminWorkDateWrapperP
     if (status === 'authenticated' && session?.user) {
       const user = session.user as any;
 
-      // إذا كان المستخدم أدمن أو موظف ولا يوجد تاريخ عمل
-      if ((user.role === 'ADMIN' || user.role === 'STAFF') && !user.workDate) {
+      // إذا كان المستخدم لديه صلاحية وإنشاء طلبات أو إدارة ومفيش تاريخ عمل
+      if ((hasPermission(user, 'CREATE_ORDER') || hasPermission(user, 'MANAGE_ORDERS')) && !user.workDate) {
         // التحقق من localStorage كبديل مؤقت
         const savedWorkDate = localStorage.getItem('adminWorkDate');
         if (!savedWorkDate) {
@@ -41,7 +42,7 @@ export default function AdminWorkDateWrapper({ children }: AdminWorkDateWrapperP
   }
 
   const user = session.user as any;
-  if (user.role !== 'ADMIN' && user.role !== 'STAFF') {
+  if (!hasPermission(user, 'CREATE_ORDER') && !hasPermission(user, 'MANAGE_ORDERS')) {
     return <>{children}</>;
   }
 

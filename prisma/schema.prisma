@@ -54,6 +54,8 @@ model User {
   phone                   String?
   additionalPhone         String?
   role                    String       @default("USER")
+  adminRoleId             String?
+  adminRole               AdminRole?   @relation(fields: [adminRoleId], references: [id])
   createdByAdminId        String?
   createdByAdmin          User?        @relation("UserCreatedByAdmin", fields: [createdByAdminId], references: [id])
   createdUsers            User[]       @relation("UserCreatedByAdmin")
@@ -99,7 +101,18 @@ model User {
   @@index([idNumber])
   @@index([name])
   @@index([createdByAdminId])
+  @@index([adminRoleId])
 }
+
+model AdminRole {
+  id          String   @id @default(cuid())
+  name        String
+  permissions String[]
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 
 model Category {
   id         String    @id @default(cuid())

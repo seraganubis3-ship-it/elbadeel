@@ -291,6 +291,9 @@ export async function GET(request: NextRequest) {
               select: {
                 name: true,
                 role: true,
+                adminRole: {
+                  select: { name: true }
+                }
               },
             },
           },
@@ -313,7 +316,7 @@ export async function GET(request: NextRequest) {
               const existing = staffMap.get(order.createdByAdminId) || {
                 staffId: order.createdByAdminId,
                 name: order.createdByAdmin.name || 'غير معروف',
-                role: order.createdByAdmin.role,
+                role: (order.createdByAdmin as any).adminRole?.name || order.createdByAdmin.role,
                 ordersProcessed: 0,
                 revenueGenerated: 0,
                 lastActivity: order.createdAt,

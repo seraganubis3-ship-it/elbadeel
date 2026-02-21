@@ -114,15 +114,16 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                       <p className='text-sm font-medium text-white'>
                         {session.user.name?.split(' ')[0] || 'حسابي'}
                       </p>
-                      <p className='text-xs text-white/60'>
-                        {session.user.role === 'ADMIN'
-                          ? 'مدير'
-                          : session.user.role === 'STAFF'
-                            ? 'موظف'
-                            : session.user.role === 'VIEWER'
-                              ? 'مشاهد'
-                              : 'مستخدم'}
-                      </p>
+                      <div className='flex items-center gap-1'>
+                        <Link href='/settings' className='text-xs text-white/60 hover:text-white transition-colors'>
+                          الإعدادات
+                        </Link>
+                        {(session.user as any).adminRole?.name || session.user.role === 'ADMIN' ? (
+                          <span className='inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'>
+                            {(session.user as any).adminRole?.name || 'مدير'}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </Link>
 

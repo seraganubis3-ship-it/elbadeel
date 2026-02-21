@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import SimpleScrollParallax from '@/components/3D/SimpleScrollParallax';
 import AnimatedCard from '@/components/3D/AnimatedCard';
+import { hasPermission } from '@/lib/permissions';
 
 function AdminLoginInner() {
   const router = useRouter();
@@ -51,11 +52,7 @@ function AdminLoginInner() {
         const response = await fetch('/api/auth/session');
         const session = await response.json();
 
-        if (
-          session?.user?.role === 'ADMIN' ||
-          session?.user?.role === 'STAFF' ||
-          session?.user?.role === 'VIEWER'
-        ) {
+        if (session?.user && hasPermission(session.user as any, 'VIEW_DASHBOARD')) {
           // Navigate to admin dashboard
           router.push('/admin');
           router.refresh();

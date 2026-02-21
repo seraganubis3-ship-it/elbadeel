@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireAdminOrStaff, getWorkDate } from '@/lib/auth';
+import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { generateUniqueOrderNumber } from '@/lib/orderNumbering';
 import { logger } from '@/lib/logger';
@@ -577,7 +578,7 @@ export async function POST(request: NextRequest) {
 
     const orderId = await generateUniqueOrderNumber();
     let workDate: Date;
-    if (clientWorkDate && session.user.role === 'ADMIN') {
+    if (clientWorkDate && hasPermission(session.user, 'CREATE_ORDER')) {
       try {
         if (clientWorkDate.includes('/')) {
           const [day, month, year] = clientWorkDate.split('/');

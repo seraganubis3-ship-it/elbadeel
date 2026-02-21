@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { hasPermission } from '@/lib/permissions';
 import { useSession } from 'next-auth/react';
 import { parseNationalId } from '@/lib/nationalIdParser';
 import {
@@ -748,7 +749,7 @@ export function useCreateOrder() {
   const getCurrentWorkDate = useCallback(() => {
     if (session?.user) {
       const user = session.user as any;
-      if (user.role === 'ADMIN') {
+      if (hasPermission(user, 'CREATE_ORDER')) {
         const sessionWorkDate = user.workDate;
         const localWorkDate =
           typeof window !== 'undefined' ? localStorage.getItem('adminWorkDate') : null;

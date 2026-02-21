@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authConfig } from '@/auth.config';
 import type { Session } from 'next-auth';
 import { cookies } from 'next/headers';
+import { hasPermission } from './permissions';
 import { prisma } from '@/lib/prisma';
 
 export async function getSession(): Promise<Session | null> {
@@ -21,7 +22,7 @@ export async function requireAuth() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, name: true, email: true, phone: true },
+    select: { id: true, role: true, name: true, email: true, phone: true, adminRole: { select: { permissions: true } } },
   });
 
   if (!user) {
@@ -36,6 +37,7 @@ export async function requireAuth() {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      permissions: user.adminRole?.permissions || [],
     },
   };
 }
@@ -48,14 +50,21 @@ export async function requireAdmin() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, name: true, email: true, phone: true },
+    select: { id: true, role: true, name: true, email: true, phone: true, adminRole: { select: { permissions: true } } },
   });
 
   if (!user) {
     throw new Error('Unauthorized');
   }
 
-  if (user.role !== 'ADMIN') {
+  const permissions = user.adminRole?.permissions || [];
+  const userWithPerms = { ...user, permissions };
+
+  if (
+    user.role !== 'ADMIN' &&
+    !hasPermission(userWithPerms as any, 'CREATE_ORDER') &&
+    !hasPermission(userWithPerms as any, 'MANAGE_ORDERS')
+  ) {
     throw new Error('Forbidden');
   }
 
@@ -67,6 +76,7 @@ export async function requireAdmin() {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      permissions: user.adminRole?.permissions || [],
     },
   };
 }
@@ -79,14 +89,22 @@ export async function requireAdminOrStaff() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, name: true, email: true, phone: true },
+    select: { id: true, role: true, name: true, email: true, phone: true, adminRole: { select: { permissions: true } } },
   });
 
   if (!user) {
     throw new Error('Unauthorized');
   }
 
-  if (user.role !== 'ADMIN' && user.role !== 'STAFF') {
+  const permissions = user.adminRole?.permissions || [];
+  const userWithPerms = { ...user, permissions };
+
+  if (
+    user.role !== 'ADMIN' && 
+    user.role !== 'STAFF' &&
+    !hasPermission(userWithPerms as any, 'CREATE_ORDER') &&
+    !hasPermission(userWithPerms as any, 'MANAGE_ORDERS')
+  ) {
     throw new Error('Forbidden');
   }
 
@@ -98,8 +116,20 @@ export async function requireAdminOrStaff() {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      permissions: user.adminRole?.permissions || [],
     },
   };
+}
+
+export async function requirePermission(permission: string) {
+  const session = await requireAdminOrStaff();
+  const user = session.user;
+  
+  if (!hasPermission(user, permission)) {
+    throw new Error('Forbidden: Missing required permission - ' + permission);
+  }
+
+  return session;
 }
 
 /**
@@ -111,7 +141,7 @@ export function getWorkDate(session: Session | null): Date {
   // 1. محاولة قراءة التاريخ من الجلسة (للأدمن والموظفين فقط)
   if (
     session?.user &&
-    (session.user.role === 'ADMIN' || session.user.role === 'STAFF') &&
+    (hasPermission(session.user as any, 'CREATE_ORDER') || hasPermission(session.user as any, 'MANAGE_ORDERS')) &&
     (session.user as any).workDate
   ) {
     const sessionDate = parseDate((session.user as any).workDate);

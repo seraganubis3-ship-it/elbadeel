@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/Toast';
 import { Order, getStatusBadge } from '../types';
+import { hasPermission } from '@/lib/permissions';
 
 export function useOrderDetail(orderId: string) {
   const { data: session } = useSession();
@@ -123,7 +124,7 @@ export function useOrderDetail(orderId: string) {
   const getCurrentWorkDate = useCallback(() => {
     if (session?.user) {
       const user = session.user as any;
-      if (user.role === 'ADMIN') {
+      if (hasPermission(user, 'MANAGE_ORDERS')) {
         const sessionWorkDate = user.workDate;
         const localWorkDate =
           typeof window !== 'undefined' ? localStorage.getItem('adminWorkDate') : null;

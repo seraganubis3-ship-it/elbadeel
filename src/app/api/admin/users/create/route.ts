@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-import { can } from '@/lib/permissions';
+import { hasPermission } from '@/lib/permissions';
 import { hash } from 'bcryptjs';
 import { z } from 'zod';
 
@@ -14,16 +14,16 @@ const createUserSchema = z.object({
   // email: z.string().email('بريد إلكتروني غير صحيح'),
   phone: z.string().min(10, 'رقم الهاتف يجب أن يكون 10 أرقام على الأقل'),
   password: z.string().min(4, 'كلمة المرور يجب أن تكون 4 أحرف على الأقل'),
-  role: z.enum(['ADMIN', 'STAFF', 'VIEWER'], 'دور غير صحيح'),
+  role: z.string().min(1, 'دور غير صحيح'),
+  adminRoleId: z.string().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authConfig);
-    const userRole = session?.user?.role as any;
 
     // التحقق من صلاحيات المدير
-    if (!session?.user || !can(userRole, 'users:write')) {
+    if (!session?.user || !hasPermission(session.user, 'MANAGE_USERS')) {
       return NextResponse.json({ error: 'غير مصرح لك بإنشاء مستخدمين' }, { status: 401 });
     }
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, phone, password, role } = validation.data;
+    const { name, phone, password, role, adminRoleId } = validation.data;
 
     // التحقق من عدم وجود مستخدم بنفس رقم الهاتف
     // استخدام findFirst بدلاً من findUnique لأننا قمنا بإزالة constraint من الداتابيس مؤقتاً
@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
         phone,
         passwordHash: hashedPassword,
         role: role as any,
+        adminRoleId: adminRoleId || null,
         emailVerified: new Date(), // تفعيل الحساب مباشرة
         createdByAdminId: session.user.id, // تسجيل من أنشأ هذا المستخدم
       },

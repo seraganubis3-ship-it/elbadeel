@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrStaff, getWorkDate } from '@/lib/auth';
+import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -25,7 +26,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     } = statusUpdateSchema.parse(body);
 
     let workDate = getWorkDate(session);
-    if (clientWorkDate && (session.user.role === 'ADMIN' || session.user.role === 'STAFF')) {
+    if (clientWorkDate && hasPermission(session.user, 'MANAGE_ORDERS')) {
       try {
         if (clientWorkDate.includes('/')) {
           const dateParts = clientWorkDate.split('/');

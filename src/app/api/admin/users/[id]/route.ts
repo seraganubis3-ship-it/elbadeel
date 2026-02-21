@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
+import { hasPermission } from '@/lib/permissions';
 
 // DELETE /api/admin/users/[id]
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireAuth();
-    if (session.user.role !== 'ADMIN') {
+    if (session.user.role !== 'ADMIN' && !hasPermission(session.user as any, 'MANAGE_USERS')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

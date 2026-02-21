@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { hasPermission } from '@/lib/permissions';
 
 interface OrderDetailClientProps {
   order: any;
@@ -142,7 +143,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
   const getCurrentWorkDate = () => {
     if (session?.user) {
       const user = session.user as any;
-      if (user.role === 'ADMIN' || user.role === 'STAFF') {
+      if (hasPermission(user, 'MANAGE_ORDERS')) {
         const sessionWorkDate = user.workDate;
         const localWorkDate =
           typeof window !== 'undefined' ? localStorage.getItem('adminWorkDate') : null;

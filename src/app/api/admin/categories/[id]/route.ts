@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { uploadToBackblaze } from '@/lib/s3';
+import { hasPermission } from '@/lib/permissions';
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireAuth();
 
-    if (session.user.role !== 'ADMIN') {
+    if (session.user.role !== 'ADMIN' && !hasPermission(session.user as any, 'MANAGE_SERVICES')) {
       return NextResponse.json(
         { success: false, error: 'غير مصرح لك بالوصول لهذه الصفحة' },
         { status: 403 }
@@ -93,7 +94,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
   try {
     const session = await requireAuth();
 
-    if (session.user.role !== 'ADMIN') {
+    if (session.user.role !== 'ADMIN' && !hasPermission(session.user as any, 'MANAGE_SERVICES')) {
       return NextResponse.json(
         { success: false, error: 'غير مصرح لك بالوصول لهذه الصفحة' },
         { status: 403 }

@@ -15,6 +15,8 @@ interface UserRow {
   ordersCount?: number;
   createdByAdminId?: string | null;
   createdByAdmin?: { id: string; name: string; email: string } | null;
+  adminRoleId?: string | null;
+  adminRole?: { id: string; name: string } | null;
 }
 
 interface UserStats {
@@ -28,6 +30,7 @@ interface UserStats {
 
 export default function AdminUsersPage() {
   const [rows, setRows] = useState<UserRow[]>([]);
+  const [adminRoles, setAdminRoles] = useState<any[]>([]);
   const [stats, setStats] = useState<UserStats>({
     total: 0,
     active: 0,
@@ -51,6 +54,7 @@ export default function AdminUsersPage() {
     email: '',
     phone: '',
     role: '',
+    adminRoleId: '',
     isActive: true,
     newPassword: '',
   });
@@ -112,7 +116,7 @@ export default function AdminUsersPage() {
         const calculatedStats = {
           total: rows.length,
           active: rows.filter(u => u.isActive !== false).length,
-          admins: rows.filter(u => u.role === 'ADMIN').length,
+          admins: rows.filter(u => u.role === 'ADMIN' || u.adminRole !== null).length,
           staff: rows.filter(u => u.role === 'STAFF').length,
           users: rows.filter(u => u.role === 'USER').length,
           viewers: rows.filter(u => u.role === 'VIEWER').length,
@@ -125,7 +129,7 @@ export default function AdminUsersPage() {
       // const calculatedStats = {
       // total: rows.length,
       // active: rows.filter(u => u.isActive !== false).length,
-      // admins: rows.filter(u => u.role === 'ADMIN').length,
+      // admins: rows.filter(u => u.role === 'ADMIN' || u.adminRole !== null).length,
       // staff: rows.filter(u => u.role === 'STAFF').length,
       // users: rows.filter(u => u.role === 'USER').length,
       // viewers: rows.filter(u => u.role === 'VIEWER').length
@@ -134,13 +138,26 @@ export default function AdminUsersPage() {
     }
   }, [rows]);
 
+  const fetchAdminRoles = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/roles');
+      if (res.ok) {
+        const data = await res.json();
+        setAdminRoles(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin roles', error);
+    }
+  }, []);
+
   useEffect(() => {
     if (!didInit.current) {
       didInit.current = true;
       fetchUsers(true);
       fetchStats();
+      fetchAdminRoles();
     }
-  }, [fetchUsers, fetchStats]);
+  }, [fetchUsers, fetchStats, fetchAdminRoles]);
 
   // تحميل البيانات عند تغيير الصفحة أو حجم الصفحة
   useEffect(() => {
@@ -155,7 +172,7 @@ export default function AdminUsersPage() {
       const calculatedStats = {
         total: rows.length,
         active: rows.filter(u => u.isActive !== false).length,
-        admins: rows.filter(u => u.role === 'ADMIN').length,
+        admins: rows.filter(u => u.role === 'ADMIN' || u.adminRole !== null).length,
         staff: rows.filter(u => u.role === 'STAFF').length,
         users: rows.filter(u => u.role === 'USER').length,
         viewers: rows.filter(u => u.role === 'VIEWER').length,
@@ -189,9 +206,22 @@ export default function AdminUsersPage() {
     fetchUsers(true, undefined, undefined, val);
   };
 
-  const changeRole = async (id: string, newRole: string) => {
+  const changeRole = async (id: string, newRoleValue: string) => {
+    let roleToSave = 'USER';
+    let adminRoleIdToSave = '';
+    
+    if (['ADMIN', 'STAFF', 'VIEWER', 'USER'].includes(newRoleValue)) {
+      roleToSave = newRoleValue;
+    } else {
+      roleToSave = 'STAFF'; // Default base role for custom roles
+      adminRoleIdToSave = newRoleValue;
+    }
+
     const form = new FormData();
-    form.append('role', newRole);
+    form.append('role', roleToSave);
+    if (adminRoleIdToSave) {
+      form.append('adminRoleId', adminRoleIdToSave);
+    }
     const res = await fetch(`/api/admin/users/${id}/role`, { method: 'POST', body: form });
     if (res.ok) {
       fetchUsers(false);
@@ -252,7 +282,7 @@ export default function AdminUsersPage() {
       email: user.email || '',
       phone: user.phone || '',
       role: user.role || '',
-
+      adminRoleId: user.adminRoleId || '',
       isActive: user.isActive !== false,
       newPassword: '', // إعادة تعيين كلمة المرور عند فتح المودال
     });
@@ -269,6 +299,7 @@ export default function AdminUsersPage() {
       form.append('email', editForm.email);
       form.append('phone', editForm.phone);
       form.append('role', editForm.role);
+      form.append('adminRoleId', editForm.adminRoleId);
 
       // إضافة كلمة المرور الجديدة إذا تم إدخالها
       if (editForm.newPassword) {
@@ -889,6 +920,9 @@ export default function AdminUsersPage() {
                             {u.phone && (
                               <div className='text-xs text-gray-500 mt-1'>📞 {u.phone}</div>
                             )}
+                            {u.adminRole && (
+                              <div className='text-xs font-bold text-indigo-600 mt-1'>⭐ رتبة الإدارة: {u.adminRole.name}</div>
+                            )}
                             {u.createdByAdmin && (
                               <div className='text-xs text-gray-600 mt-2 bg-gray-50 px-2 py-1 rounded-lg'>
                                 أضيف بواسطة:{' '}
@@ -902,14 +936,21 @@ export default function AdminUsersPage() {
                       </td>
                       <td className='px-6 py-6 whitespace-nowrap'>
                         <select
-                          defaultValue={u.role}
+                          defaultValue={u.adminRoleId || u.role}
                           onChange={e => changeRole(u.id, e.target.value)}
                           className='border border-gray-300 rounded-xl px-4 py-2 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm hover:shadow-md transition-all duration-200'
                         >
-                          <option value='USER'>👤 مستخدم</option>
-                          <option value='VIEWER'>👁️ مشاهد</option>
-                          <option value='STAFF'>👔 موظف</option>
-                          <option value='ADMIN'>👑 مدير</option>
+                          <optgroup label='أدوار النظام الأساسية'>
+                            <option value='USER'>👤 مستخدم</option>
+                            <option value='ADMIN'>👑 مدير نظام</option>
+                          </optgroup>
+                          {adminRoles.length > 0 && (
+                            <optgroup label='رتب مخصصة'>
+                              {adminRoles.map(r => (
+                                <option key={r.id} value={r.id}>⭐ {r.name}</option>
+                              ))}
+                            </optgroup>
+                          )}
                         </select>
                       </td>
                       <td className='px-6 py-6 whitespace-nowrap'>
@@ -1160,22 +1201,36 @@ export default function AdminUsersPage() {
                 </div>
 
                 <div className='grid grid-cols-2 gap-4'>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>الدور</label>
+                  <div className='col-span-2 md:col-span-1'>
+                    <label className='block text-sm font-medium text-gray-700 mb-1'>الدور / الرتبة</label>
                     {isEditing ? (
                       <select
-                        value={editForm.role}
-                        onChange={e => setEditForm({ ...editForm, role: e.target.value })}
+                        value={editForm.adminRoleId || editForm.role}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (['ADMIN', 'STAFF', 'VIEWER', 'USER'].includes(val)) {
+                            setEditForm({ ...editForm, role: val, adminRoleId: '' });
+                          } else {
+                            setEditForm({ ...editForm, role: 'STAFF', adminRoleId: val });
+                          }
+                        }}
                         className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black'
                       >
-                        <option value='USER'>مستخدم</option>
-                        <option value='VIEWER'>مشاهد</option>
-                        <option value='STAFF'>موظف</option>
-                        <option value='ADMIN'>مدير</option>
+                        <optgroup label='أدوار النظام الأساسية'>
+                          <option value='USER'>مستخدم</option>
+                          <option value='ADMIN'>مدير نظام</option>
+                        </optgroup>
+                        {adminRoles.length > 0 && (
+                          <optgroup label='رتب مخصصة'>
+                            {adminRoles.map(r => (
+                              <option key={r.id} value={r.id}>{r.name}</option>
+                            ))}
+                          </optgroup>
+                        )}
                       </select>
                     ) : (
                       <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800'>
-                        {selectedUser.role}
+                        {selectedUser.adminRole?.name || selectedUser.role}
                       </span>
                     )}
                   </div>
@@ -1308,6 +1363,7 @@ export default function AdminUsersPage() {
                           email: selectedUser.email || '',
                           phone: selectedUser.phone || '',
                           role: selectedUser.role || '',
+                          adminRoleId: selectedUser.adminRoleId || '',
                           isActive: selectedUser.isActive !== false,
                           newPassword: '',
                         });

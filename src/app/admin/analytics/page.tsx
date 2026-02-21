@@ -681,8 +681,8 @@ export default function AnalyticsPage() {
                           </td>
                           <td className='p-4 font-medium text-gray-900'>{staff.name}</td>
                           <td className='p-4 text-center'>
-                            <Badge variant={staff.role === 'ADMIN' ? 'danger' : 'info'}>
-                              {staff.role === 'ADMIN' ? 'مدير' : 'موظف'}
+                            <Badge variant={staff.role === 'مدير' || staff.role === 'ADMIN' ? 'danger' : 'info'}>
+                              {staff.role === 'ADMIN' ? 'مدير' : staff.role === 'STAFF' ? 'موظف' : staff.role}
                             </Badge>
                           </td>
                           <td className='p-4 text-center'>

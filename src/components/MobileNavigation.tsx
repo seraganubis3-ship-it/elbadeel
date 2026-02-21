@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import { hasPermission } from '@/lib/permissions';
 
 export default function MobileNavigation() {
   const { data: session } = useSession();
@@ -153,20 +154,24 @@ export default function MobileNavigation() {
                   <div className='flex items-center gap-2 mt-1'>
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        session.user.role === 'ADMIN'
+                        (session.user as any).adminRole
                           ? 'bg-purple-500/20 text-purple-400'
-                          : session.user.role === 'STAFF'
-                            ? 'bg-blue-500/20 text-blue-400'
-                            : 'bg-emerald-500/20 text-emerald-400'
+                          : session.user.role === 'ADMIN'
+                            ? 'bg-purple-500/20 text-purple-400'
+                            : session.user.role === 'STAFF'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : 'bg-emerald-500/20 text-emerald-400'
                       }`}
                     >
-                      {session.user.role === 'ADMIN'
-                        ? '👑 مدير'
-                        : session.user.role === 'STAFF'
-                          ? '👔 موظف'
-                          : session.user.role === 'VIEWER'
-                            ? '👀 مشاهد'
-                            : '✓ عميل'}
+                      {(session.user as any).adminRole?.name
+                        ? `👑 ${(session.user as any).adminRole.name}`
+                        : session.user.role === 'ADMIN'
+                          ? '👑 مدير'
+                          : session.user.role === 'STAFF'
+                            ? '👔 موظف'
+                            : session.user.role === 'VIEWER'
+                              ? '👀 مشاهد'
+                              : '✓ عميل'}
                     </span>
                   </div>
                 </div>
@@ -227,7 +232,7 @@ export default function MobileNavigation() {
               })}
 
               {/* Admin Link */}
-              {['ADMIN', 'STAFF', 'VIEWER'].includes(session?.user?.role || '') && (
+              {hasPermission(session?.user as any, 'VIEW_DASHBOARD') && (
                 <>
                   <div className='h-px bg-white/10 my-3'></div>
                   <Link
@@ -245,6 +250,7 @@ export default function MobileNavigation() {
                       <span className='mr-auto w-2 h-2 bg-purple-400 rounded-full animate-pulse'></span>
                     )}
                   </Link>
+
                 </>
               )}
             </div>

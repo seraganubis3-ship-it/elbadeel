@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useToast, ToastContainer } from '@/components/Toast';
@@ -12,13 +12,31 @@ export default function CreateAdminPage() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'STAFF',
+    role: 'USER',
+    adminRoleId: '',
   });
+  const [adminRoles, setAdminRoles] = useState<any[]>([]);
   const [addingAdmin, setAddingAdmin] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   // Toast notifications
   const { toasts, removeToast, showSuccess, showError, showWarning } = useToast();
+
+  useEffect(() => {
+    fetchAdminRoles();
+  }, []);
+
+  const fetchAdminRoles = async () => {
+    try {
+      const res = await fetch('/api/admin/roles');
+      if (res.ok) {
+        const data = await res.json();
+        setAdminRoles(data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch admin roles', err);
+    }
+  };
 
   const addNewAdmin = async () => {
     // التحقق من صحة البيانات
@@ -49,6 +67,7 @@ export default function CreateAdminPage() {
           phone: addAdminForm.phone,
           password: addAdminForm.password,
           role: addAdminForm.role,
+          adminRoleId: addAdminForm.adminRoleId || null,
         }),
       });
 
@@ -62,7 +81,8 @@ export default function CreateAdminPage() {
             phone: '',
             password: '',
             confirmPassword: '',
-            role: 'STAFF',
+            role: 'USER',
+            adminRoleId: '',
           });
 
           showSuccess('تم إنشاء المشرف بنجاح! 👤', `تم إنشاء المشرف "${addAdminForm.name}" بنجاح`);
@@ -300,13 +320,28 @@ export default function CreateAdminPage() {
                       </svg>
                     </div>
                     <select
-                      value={addAdminForm.role}
-                      onChange={e => setAddAdminForm({ ...addAdminForm, role: e.target.value })}
+                      value={addAdminForm.adminRoleId || addAdminForm.role}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (['ADMIN', 'STAFF', 'VIEWER', 'USER'].includes(val)) {
+                          setAddAdminForm({ ...addAdminForm, role: val, adminRoleId: '' });
+                        } else {
+                          setAddAdminForm({ ...addAdminForm, role: 'STAFF', adminRoleId: val });
+                        }
+                      }}
                       className='w-full pl-4 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 transition-all duration-200 appearance-none bg-white'
                     >
-                      <option value='STAFF'>موظف</option>
-                      <option value='ADMIN'>مدير</option>
-                      <option value='VIEWER'>مشاهد</option>
+                      <optgroup label='أدوار النظام الأساسية'>
+                        <option value='USER'>مستخدم</option>
+                        <option value='ADMIN'>مدير نظام</option>
+                      </optgroup>
+                      {adminRoles.length > 0 && (
+                        <optgroup label='رتب مخصصة'>
+                          {adminRoles.map(r => (
+                            <option key={r.id} value={r.id}>{r.name}</option>
+                          ))}
+                        </optgroup>
+                      )}
                     </select>
                   </div>
                 </div>

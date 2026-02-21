@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { uploadToBackblaze } from '@/lib/s3';
 import { generatePresignedUrl } from '@/lib/presignedUrl';
+import { hasPermission } from '@/lib/permissions';
 
 export async function GET(_request: NextRequest) {
   try {
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await requireAuth();
 
-    if (session.user.role !== 'ADMIN') {
+    if (session.user.role !== 'ADMIN' && !hasPermission(session.user as any, 'MANAGE_SERVICES')) {
       return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذه الصفحة' }, { status: 403 });
     }
 

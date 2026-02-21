@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authConfig } from '@/auth.config';
 import { prisma } from '@/lib/prisma';
-import { can } from '@/lib/permissions';
+import { hasPermission } from '@/lib/permissions';
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authConfig);
-    const role = session?.user?.role as any;
-    if (!session?.user || !can(role, 'users:read')) {
+    if (!session?.user || !hasPermission(session.user, 'MANAGE_USERS')) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     }
 
@@ -79,6 +78,8 @@ export async function GET(req: NextRequest) {
           phone: true,
           createdByAdminId: true,
           createdByAdmin: { select: { id: true, name: true, email: true } },
+          adminRoleId: true,
+          adminRole: { select: { id: true, name: true } },
         },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -100,8 +101,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession(authConfig);
-    const userRole = session?.user?.role as any;
-    if (!session?.user || !can(userRole, 'users:write')) {
+    if (!session?.user || !hasPermission(session.user, 'MANAGE_USERS')) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     }
 
@@ -121,6 +121,7 @@ export async function PUT(req: NextRequest) {
         : null;
     const phone = formData.get('phone') as string;
     const newRole = formData.get('role') as string;
+    const newAdminRoleId = formData.get('adminRoleId') as string;
     const password = formData.get('password') as string;
     const isActive = formData.get('isActive') === 'true';
 
@@ -149,6 +150,7 @@ export async function PUT(req: NextRequest) {
       email,
       phone: phone || null,
       role: newRole as any,
+      adminRoleId: newAdminRoleId || null,
     };
 
     // تحديث كلمة المرور إذا تم توفيرها
@@ -167,6 +169,7 @@ export async function PUT(req: NextRequest) {
         email: true,
         phone: true,
         role: true,
+        adminRoleId: true,
       },
     });
 

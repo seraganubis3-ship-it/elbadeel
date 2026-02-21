@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, getWorkDate } from '@/lib/auth';
+import { requireAuth, requireAdminOrStaff, getWorkDate } from '@/lib/auth';
+import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -30,9 +31,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       workDate: clientWorkDate,
     } = paymentUpdateSchema.parse(body);
 
-    // Get work date for admin
+    // معالجة تاريخ العمل
     let workDate = getWorkDate(session);
-    if (clientWorkDate && session.user.role === 'ADMIN') {
+    if (clientWorkDate && hasPermission(session.user, 'MANAGE_ORDERS')) {
       try {
         // تحويل من DD/MM/YYYY إلى Date
         if (clientWorkDate.includes('/')) {

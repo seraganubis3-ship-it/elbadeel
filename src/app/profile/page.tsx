@@ -21,6 +21,9 @@ export default async function ProfilePage() {
       email: true,
       phone: true,
       role: true,
+      adminRole: {
+        select: { name: true }
+      },
       wifeName: true,
       fatherName: true,
       motherName: true,
@@ -81,7 +84,7 @@ export default async function ProfilePage() {
               <p className='text-slate-400 text-sm sm:text-base mb-3'>{user?.email}</p>
               <div className='flex items-center gap-3'>
                 <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'>
-                  {user?.role === 'ADMIN' ? 'مدير' : 'مستخدم'}
+                  {(user as any)?.adminRole?.name || (user?.role === 'ADMIN' ? 'مدير' : 'مستخدم')}
                 </span>
                 <span className='text-slate-500 text-xs'>
                   عضو منذ{' '}
@@ -199,7 +202,7 @@ export default async function ProfilePage() {
             <p className='text-slate-500 text-sm mt-0.5'>قم بتحديث بياناتك الشخصية</p>
           </div>
           <div className='p-6'>
-            <ProfileForm user={user as User} />
+            <ProfileForm user={user as any} />
           </div>
         </div>
 

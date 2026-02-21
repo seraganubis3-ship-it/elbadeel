@@ -31,7 +31,10 @@ export const authConfig = {
           }
 
           const { phone, password, workDate } = parsed.data;
-          const user = await prisma.user.findFirst({ where: { phone } });
+          const user = await prisma.user.findFirst({
+            where: { phone },
+            include: { adminRole: true }
+          });
           if (!user) {
             return null;
           }
@@ -52,6 +55,7 @@ export const authConfig = {
             role: user.role,
             phone: user.phone,
             workDate: workDate || undefined, // تمرير تاريخ العمل إن وُجد
+            permissions: user.adminRole?.permissions || [],
           };
         } catch (error) {
           return null;
@@ -65,8 +69,15 @@ export const authConfig = {
         token.id = user.id;
         token.role = user.role;
         token.phone = user.phone;
-        // حفظ تاريخ العمل للأدمن فقط
-        if (user.role === 'ADMIN' && user.workDate) {
+        token.permissions = user.permissions || [];
+        // حفظ تاريخ العمل
+        if (
+          ((user as any).permissions?.includes('CREATE_ORDER') || 
+           (user as any).permissions?.includes('MANAGE_ORDERS') || 
+           user.role === 'ADMIN' || 
+           user.role === 'STAFF') && 
+          user.workDate
+        ) {
           token.workDate = user.workDate;
         }
       }
@@ -77,8 +88,15 @@ export const authConfig = {
         session.user.id = token.id || token.sub!;
         session.user.role = token.role as string;
         (session.user as any).phone = token.phone;
-        // تمرير تاريخ العمل للأدمن فقط
-        if (token.role === 'ADMIN' && token.workDate) {
+        (session.user as any).permissions = token.permissions || [];
+        // تمرير تاريخ العمل
+        if (
+          ((token as any).permissions?.includes('CREATE_ORDER') || 
+           (token as any).permissions?.includes('MANAGE_ORDERS') || 
+           token.role === 'ADMIN' || 
+           token.role === 'STAFF') && 
+          token.workDate
+        ) {
           session.user.workDate = token.workDate;
         }
       }
