@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+import { FinesModal } from './components/FinesModal';
+
 interface Service {
   id: string;
   name: string;
@@ -23,6 +25,7 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [isFinesModalOpen, setIsFinesModalOpen] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -166,9 +169,19 @@ export default function ServicesPage() {
             </div>
 
             <div className='flex gap-3'>
+              <button
+                onClick={() => setIsFinesModalOpen(true)}
+                className='px-4 py-3 bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 rounded-xl font-bold shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2'
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="hidden sm:inline">الغرامات</span>
+              </button>
+
               <Link
                 href='/admin/categories'
-                className='px-6 py-3 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-xl font-bold shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2'
+                className='px-4 py-3 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-xl font-bold shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2'
               >
                 <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                   <path
@@ -178,12 +191,12 @@ export default function ServicesPage() {
                     d='M4 6h16M4 10h16M4 14h16M4 18h16'
                   />
                 </svg>
-                <span>إدارة الفئات</span>
+                <span className="hidden sm:inline">الفئات</span>
               </Link>
 
               <Link
                 href='/admin/services/create'
-                className='px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2'
+                className='px-4 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2'
               >
                 <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                   <path
@@ -193,11 +206,16 @@ export default function ServicesPage() {
                     d='M12 4v16m8-8H4'
                   />
                 </svg>
-                <span>إضافة خدمة جديدة</span>
+                <span className="hidden sm:inline">إضافة</span>
               </Link>
             </div>
           </div>
         </div>
+
+        <FinesModal 
+          isOpen={isFinesModalOpen} 
+          onClose={() => setIsFinesModalOpen(false)} 
+        />
 
         {/* Stats Cards */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>

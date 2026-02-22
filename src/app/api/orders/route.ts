@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession, requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateOrderNumber } from '@/lib/orderNumbering';
-import { sendWhatsAppMessage, NotificationTemplates, checkWhatsAppStatus } from '@/lib/whatsapp';
+import { 
+  checkWhatsAppStatus, 
+  sendWhatsAppMessage, 
+  NotificationTemplates, 
+  sendWhatsAppByTrigger 
+} from '@/lib/whatsapp';
 import { logger } from '@/lib/logger';
 import { hash } from 'bcryptjs';
 
@@ -410,20 +415,23 @@ export async function POST(request: NextRequest) {
         orderData.customerPhone &&
         orderData.customerPhone !== 'Unknown'
       ) {
-        const notification = NotificationTemplates.newOrder(
-          orderData.customerName,
-          order.id,
-          service.name,
-          orderData.totalCents
-        );
-
-        await sendWhatsAppMessage({
-          phone: orderData.customerPhone,
-          message: notification.message,
+        // Fetch full order for placeholders
+        const fullOrder = await prisma.order.findUnique({
+          where: { id: order.id },
+          include: { 
+            service: { select: { name: true } }, 
+            variant: { select: { name: true } },
+            user: { select: { phone: true, email: true } },
+            payment: { select: { amount: true, status: true } }
+          }
         });
+
+        if (fullOrder) {
+          await sendWhatsAppByTrigger('NEW_ORDER', fullOrder);
+        }
       }
-    } catch {
-      // WhatsApp notification failed silently
+    } catch (err) {
+      console.error('WhatsApp trigger error:', err);
     }
 
     return NextResponse.json({

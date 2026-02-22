@@ -14,7 +14,7 @@ export function printCollectionReport({
   selectedOrders,
   filters,
   collectorName = 'مصلحة الأحوال المدنية',
-  branchName = 'البديل 1',
+  branchName = 'بديل',
   reportDate,
 }: PrintCollectionReportOptions) {
   const ordersToPrint =
@@ -78,24 +78,24 @@ export function printCollectionReport({
       .container { padding: 10px; }
       
       .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; position: relative; }
-      .header-left { text-align: left; font-size: 14px; line-height: 1.6; font-weight: bold; width: 200px; }
+      .header-left { text-align: left; font-size: 12px; line-height: 1.6; font-weight: bold; width: 200px; }
       .header-center { text-align: center; flex: 1; }
       .header-right { text-align: right; width: 200px; }
-      .logo { position: absolute; top: -70px; right: -10px; height: 180px; object-fit: contain; }
+      .logo { position: absolute; top: -50px; right: -10px; height: 160px; object-fit: contain; }
 
-      .main-title { font-size: 20px; font-weight: 900; margin-bottom: 10px; }
-      .subtitle { font-size: 15px; font-weight: bold; }
+      .main-title { font-size: 18px; font-weight: 900; margin-bottom: 5px; }
+      .subtitle { font-size: 13px; font-weight: bold; }
 
-      .metadata-row { border: 2px solid #000; display: flex; justify-content: space-between; padding: 10px; margin-bottom: 5px; font-weight: bold; font-size: 16px; border-radius: 4px; }
+      .metadata-row { border: 2px solid #000; display: flex; justify-content: space-between; padding: 8px; margin-bottom: 5px; font-weight: bold; font-size: 14px; border-radius: 4px; }
       .metadata-item { white-space: nowrap; }
-      .transaction-date { border: 2px solid #000; padding: 5px 15px; width: fit-content; font-weight: bold; margin-bottom: 15px; border-radius: 4px; background: #f3f4f6; }
+      .transaction-date { border: 2px solid #000; padding: 4px 12px; width: fit-content; font-weight: bold; margin-bottom: 10px; border-radius: 4px; background: #f3f4f6; font-size: 13px; }
 
       .data-table { width: 100%; border-collapse: collapse; border: 2px solid #000; }
-      .data-table th { border: 1px solid #000; background: #e5e7eb; padding: 8px; text-align: center; font-weight: 900; font-size: 15px; }
-      .data-table td { border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle; font-weight: bold; font-size: 14px; }
-      .data-table .text-right { text-align: right; padding-right: 15px; }
+      .data-table th { border: 1px solid #000; background: #e5e7eb; padding: 6px; text-align: center; font-weight: 900; font-size: 13px; }
+      .data-table td { border: 1px solid #000; padding: 4px 6px; text-align: center; vertical-align: middle; font-weight: bold; font-size: 12px; }
+      .data-table .text-right { text-align: right; padding-right: 10px; }
       
-      .footer-row td { background: #f9fafb !important; padding: 12px; font-size: 18px; font-weight: 900; border-top: 2px solid #000; }
+      .footer-row td { background: #f9fafb !important; padding: 8px; font-size: 15px; font-weight: 900; border-top: 2px solid #000; }
 
       @media print {
         button { display: none; }
@@ -142,7 +142,7 @@ export function printCollectionReport({
       <div class="container">
         <div class="header">
           <div class="header-right" style="text-align: right;">
-            <img src="/api/proxy-image?url=/images/report-header.png" class="logo" alt="البديل" onerror="this.src='/images/report-header.png'" />
+            <img src="/api/proxy-image?url=/images/report-header.png" class="logo" alt="البديل" onerror="this.src='/images/report-header2.png'" />
           </div>
           <div class="header-center">
             <div class="subtitle">${branchName}</div>
@@ -158,7 +158,7 @@ export function printCollectionReport({
 
         <div class="metadata-row">
           <div class="metadata-item">اسم المحصل : ${collectorName}</div>
-          <div class="metadata-item">الفرع : ${branchName}</div>
+          <div class="metadata-item">${branchName}</div>
           <div class="metadata-item">الاجمالي : ${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
         </div>
 

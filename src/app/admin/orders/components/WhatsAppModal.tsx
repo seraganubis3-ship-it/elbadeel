@@ -1,6 +1,8 @@
 'use client';
 
-import { Order, WhatsAppTemplate, getWhatsappTemplates } from '../types';
+import { useState, useEffect } from 'react';
+import { Order } from '../types';
+import { replacePlaceholders } from '@/lib/whatsapp-utils';
 
 interface WhatsAppModalProps {
   isOpen: boolean;
@@ -14,6 +16,13 @@ interface WhatsAppModalProps {
   onSend: () => void;
 }
 
+interface DBTemplate {
+  id: string;
+  title: string;
+  body: string;
+  category: string;
+}
+
 export function WhatsAppModal({
   isOpen,
   order,
@@ -25,9 +34,26 @@ export function WhatsAppModal({
   onTemplateSelect,
   onSend,
 }: WhatsAppModalProps) {
+  const [dbTemplates, setDbTemplates] = useState<DBTemplate[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLoading(true);
+      fetch('/api/admin/whatsapp/templates')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            // Filter only MANUAL templates for the popup
+            setDbTemplates(data.templates.filter((t: DBTemplate) => t.category === 'MANUAL'));
+          }
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [isOpen]);
+
   if (!isOpen || !order) return null;
 
-  const templates = getWhatsappTemplates(order);
   const phone =
     order.customerPhone && order.customerPhone !== 'unknown'
       ? order.customerPhone
@@ -35,9 +61,10 @@ export function WhatsAppModal({
 
   const handleTemplateChange = (templateId: string) => {
     onTemplateSelect(templateId);
-    const template = templates.find((t: WhatsAppTemplate) => t.id === templateId);
+    const template = dbTemplates.find((t: DBTemplate) => t.id === templateId);
     if (template) {
-      onMessageChange(template.message);
+      const processedMessage = replacePlaceholders(template.body, order);
+      onMessageChange(processedMessage);
     }
   };
 
@@ -108,11 +135,15 @@ export function WhatsAppModal({
                 className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-sm'
               >
                 <option value=''>-- اختر قالب --</option>
-                {templates.map((template: WhatsAppTemplate) => (
-                  <option key={template.id} value={template.id}>
-                    {template.name}
-                  </option>
-                ))}
+                {loading ? (
+                  <option disabled>جاري التحميل...</option>
+                ) : (
+                  dbTemplates.map((template: DBTemplate) => (
+                    <option key={template.id} value={template.id}>
+                      {template.title}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 

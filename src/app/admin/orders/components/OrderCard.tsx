@@ -66,14 +66,14 @@ export function OrderCard({
                     🏢 مكتب
                   </span>
                   <div 
-                    className='flex items-center gap-1.5 px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-800 rounded-xl text-xs sm:text-sm font-bold shadow-sm' 
+                    className='flex flex-wrap items-center gap-1.5 px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-800 rounded-xl text-xs sm:text-sm font-bold shadow-sm' 
                     title={order.createdByAdmin.name}
                   >
-                    <svg className='w-4 h-4 text-indigo-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <svg className='w-4 h-4 text-indigo-500 shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                       <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
                     </svg>
-                    <span className='opacity-80 font-medium'>أنشأه المشرف:</span>
-                    <span className='truncate max-w-[150px]'>{order.createdByAdmin.name}</span>
+                    <span className='opacity-80 font-medium shrink-0'>أنشأه المشرف:</span>
+                    <span className='whitespace-normal'>{order.createdByAdmin.name}</span>
                   </div>
                 </div>
               ) : (

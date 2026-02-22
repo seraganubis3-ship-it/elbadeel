@@ -28,14 +28,17 @@ export async function PATCH(
 ) {
   try {
     await requireAdminOrStaff();
-    const { title, body } = await req.json();
+    const { title, trigger, body, category } = await req.json();
     const template = await (prisma as any).whatsAppTemplate.update({
       where: { id: params.id },
       data: {
         ...(title !== undefined && { title: title.trim() }),
+        ...(trigger !== undefined && { trigger: category === 'MANUAL' ? null : (trigger?.trim() || null) }),
         ...(body !== undefined && { body: body.trim() }),
+        ...(category !== undefined && { category }),
       },
     });
+
     return NextResponse.json({ success: true, template });
   } catch {
     return NextResponse.json({ success: false, error: 'فشل التحديث' }, { status: 500 });

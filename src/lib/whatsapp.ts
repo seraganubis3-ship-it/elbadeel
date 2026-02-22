@@ -87,7 +87,28 @@ export async function sendWhatsAppImage(
   }
 }
 
-// Pre-built notification messages
+import { getParsedMessage } from './whatsapp-templates';
+
+// Send message based on trigger
+export async function sendWhatsAppByTrigger(
+  trigger: string,
+  order: any
+): Promise<WhatsAppResponse> {
+  try {
+    const message = await getParsedMessage(trigger, order);
+    if (!message) return { success: false, error: `No active template found for trigger: ${trigger}` };
+
+    const phone = order.customerPhone || order.user?.phone;
+    if (!phone) return { success: false, error: 'No phone number found' };
+
+    return await sendWhatsAppMessage({ phone, message });
+  } catch (error) {
+    console.error('sendWhatsAppByTrigger error:', error);
+    return { success: false, error: 'Failed to send WhatsApp by trigger' };
+  }
+}
+
+// Pre-built notification messages (DEPRECATED: Prefer database templates)
 export const NotificationTemplates = {
   // New order created
   newOrder: (customerName: string, orderId: string, serviceName: string, amount: number) => ({

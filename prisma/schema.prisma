@@ -400,6 +400,20 @@ model ServiceDocument {
   @@index([active])
 }
 
+model Fine {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  amountCents Int
+  category    String   @default("غرامات")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
 model SystemSettings {
   id                 String   @id @default("main")
   siteName           String   @default("البديل")
@@ -530,6 +544,8 @@ model Delegate {
 model WhatsAppTemplate {
   id        String   @id @default(cuid())
   title     String
+  category  String   @default("AUTOMATIC") // AUTOMATIC or MANUAL
+  trigger   String?  // e.g., NEW_ORDER, STATUS_delivered, NEW_CUSTOMER
   body      String   @db.Text
   orderIndex Int     @default(0)
   active    Boolean  @default(true)

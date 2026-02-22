@@ -565,7 +565,7 @@ export default function AdminOrdersPage() {
       selectedOrders,
       filters,
       collectorName, 
-      branchName: 'البديل 1',
+      branchName: 'البديل',
     });
   };
 

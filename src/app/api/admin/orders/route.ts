@@ -5,7 +5,12 @@ import { prisma } from '@/lib/prisma';
 import { generateUniqueOrderNumber } from '@/lib/orderNumbering';
 import { logger } from '@/lib/logger';
 import { ORDER_STATUS } from '@/constants/orderStatuses';
-import { checkWhatsAppStatus, sendWhatsAppMessage, NotificationTemplates } from '@/lib/whatsapp';
+import {
+  checkWhatsAppStatus,
+  sendWhatsAppMessage,
+  NotificationTemplates,
+  sendWhatsAppByTrigger,
+} from '@/lib/whatsapp';
 import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
@@ -747,41 +752,32 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 📱 Check if this is a NEW user and send welcome message with credentials
+    // 📱 إرسال رسائل واتساب (عميل جديد أو طلب جديد)
     try {
       const whatsappStatus = await checkWhatsAppStatus();
       if (whatsappStatus.status === 'connected' && customerPhone && customerPhone !== '') {
-        // Only send "Welcome + Credentials" if we actually created a new user account
-        // and set their password to their phone number
-        if (isNewUserCreated) {
-          const service = await prisma.service.findUnique({
-            where: { id: serviceId },
-            select: { name: true },
-          });
+        // Fetch full order for placeholders
+        const fullOrder = await prisma.order.findUnique({
+          where: { id: order.id },
+          include: { 
+            service: { select: { name: true } }, 
+            variant: { select: { name: true } },
+            user: { select: { phone: true, email: true } },
+            payment: { select: { amount: true, status: true } }
+          }
+        });
 
-          const welcomeMsg = NotificationTemplates.welcomeNewCustomer(
-            customerName,
-            order.id,
-            service?.name || 'خدمة',
-            finalTotalCents,
-            customerPhone
-          );
-
-          await sendWhatsAppMessage({
-            phone: customerPhone,
-            message: welcomeMsg.message,
-          });
-
-          logger.info(`Welcome WhatsApp message sent to new user: ${customerPhone}`);
-        } else {
-          // For existing users, maybe count previous orders to see if we should say "First Order" without credentials?
-          // Or just standard new order notification?
-          // For now, let's skip sending credentials to existing users to avoid confusion.
+        if (fullOrder) {
+          if (isNewUserCreated) {
+            // Trigger Welcome + Credentials
+            await sendWhatsAppByTrigger('NEW_CUSTOMER', fullOrder);
+          }
+          // Standard New Order Notification (Admin)
+          await sendWhatsAppByTrigger('NEW_ORDER_ADMIN', fullOrder);
         }
       }
     } catch (whatsappError) {
-      // WhatsApp notification failed silently - don't block order creation
-      logger.error('Failed to send welcome WhatsApp message', whatsappError);
+      logger.error('WhatsApp trigger error in admin create order:', whatsappError);
     }
 
     return NextResponse.json({

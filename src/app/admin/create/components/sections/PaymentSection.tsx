@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormData, ServiceVariant } from '../../types';
-import { PREDEFINED_FINES } from '@/constants/fines';
+import { Fine } from '@/constants/fines';
 
 interface PaymentSectionProps {
   formData: FormData;
@@ -9,6 +9,7 @@ interface PaymentSectionProps {
   calculateTotal: () => number;
 
   // Fines & Additional Services
+  finesList: Fine[];
   selectedFines: string[];
   showFinesDropdown: boolean;
   setShowFinesDropdown: (show: boolean) => void;
@@ -28,6 +29,7 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
   setFormData,
   selectedVariant,
   calculateTotal,
+  finesList,
   selectedFines,
   showFinesDropdown,
   setShowFinesDropdown,
@@ -74,7 +76,7 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
             <span className='text-xs lg:text-sm font-bold mt-1 text-rose-600'>
               {
                 selectedFines.filter(
-                  id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'غرامات'
+                  id => finesList.find(f => f.id === id)?.category === 'غرامات'
                 ).length
               }{' '}
               محدد
@@ -95,7 +97,7 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
             <span className='text-xs lg:text-sm font-bold mt-1 text-sky-600'>
               {
                 selectedFines.filter(
-                  id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'خدمات اضافية'
+                  id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية'
                 ).length
               }{' '}
               محدد
@@ -103,7 +105,7 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
           </button>
         </div>
 
-        {/* Dropdowns logic remains the same, just simplified container */}
+        {/* Dropdowns */}
         {(showFinesDropdown || showServicesDropdown) && (
           <div className='p-4 bg-slate-50 border border-slate-200 rounded-2xl animate-in slide-in-from-top-2'>
             {showFinesDropdown && (
@@ -117,7 +119,7 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
                   autoFocus
                 />
                 <div className='max-h-60 overflow-y-auto space-y-1 custom-scrollbar'>
-                  {PREDEFINED_FINES.filter(
+                  {finesList.filter(
                     f => f.category === 'غرامات' && f.name.includes(finesSearchTerm)
                   )
                     .slice(0, 50)
@@ -154,7 +156,7 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
                   autoFocus
                 />
                 <div className='max-h-60 overflow-y-auto space-y-1 custom-scrollbar'>
-                  {PREDEFINED_FINES.filter(
+                  {finesList.filter(
                     s => s.category === 'خدمات اضافية' && s.name.includes(servicesSearchTerm)
                   )
                     .slice(0, 50)

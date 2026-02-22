@@ -10,6 +10,7 @@ import {
   calculateActualFineAmounts,
   calculateFineExpenses,
   calculateLostReportForServices,
+  Fine
 } from '@/constants/fines';
 import { useToast } from '@/components/Toast';
 import {
@@ -91,6 +92,7 @@ export function useCreateOrder() {
 
   // Fines
   const [selectedFines, setSelectedFines] = useState<string[]>([]);
+  const [finesList, setFinesList] = useState<Fine[]>(PREDEFINED_FINES);
   const [showServicesDropdown, setShowServicesDropdown] = useState(false);
   const [showFinesDropdown, setShowFinesDropdown] = useState(false);
   const [finesSearchTerm, setFinesSearchTerm] = useState('');
@@ -168,30 +170,36 @@ export function useCreateOrder() {
     if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
 
-    const fetchServicesAndCategories = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await fetch('/api/admin/categories');
-        if (response.ok) {
-          const data = await response.json();
+        const [catRes, finesRes] = await Promise.all([
+          fetch('/api/admin/categories'),
+          fetch('/api/admin/fines')
+        ]);
+        
+        if (catRes.ok) {
+          const data = await catRes.json();
           if (data.success && data.categories) {
             setCategories(data.categories);
-            // Flatten all services from all categories
             const allServices = data.categories.flatMap((cat: Category) => cat.services || []);
             setServices(allServices);
-            // console.log('✅ Loaded services:', allServices.length);
           }
-        } else {
-          showErrorRef.current?.('خطأ في الاتصال', 'فشل في تحميل الخدمات');
+        }
+        
+        if (finesRes.ok) {
+          const finesData = await finesRes.json();
+          if (finesData.success && finesData.fines?.length > 0) {
+            setFinesList(finesData.fines);
+          }
         }
       } catch (error) {
-        // console.error('Error fetching categories:', error);
         showErrorRef.current?.('خطأ في الاتصال', 'فشل في الاتصال بالخادم');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchServicesAndCategories();
+    fetchInitialData();
   }, []);
 
   // Handle escape key for address modal
@@ -528,7 +536,7 @@ export function useCreateOrder() {
       }
       // Auto-select مصاريف غرامة
       const hasActualFines = newSelectedFines.some(id => {
-        const fine = PREDEFINED_FINES.find(f => f.id === id);
+        const fine = finesList.find(f => f.id === id);
         return fine?.category === 'غرامات' && id !== 'fine_004';
       });
       if (hasActualFines && !newSelectedFines.includes('service_001')) {
@@ -943,20 +951,20 @@ export function useCreateOrder() {
           selectedFines: selectedFines,
           finesDetails: selectedFines
             .filter(id => {
-              const fine = PREDEFINED_FINES.find(f => f.id === id);
+              const fine = finesList.find(f => f.id === id);
               return fine?.category === 'غرامات';
             })
             .map(fineId => {
-              const fine = PREDEFINED_FINES.find(f => f.id === fineId);
+              const fine = finesList.find(f => f.id === fineId);
               return { id: fineId, name: fine?.name || '', amount: fine?.amountCents || 0 };
             }),
           servicesDetails: selectedFines
             .filter(id => {
-              const fine = PREDEFINED_FINES.find(f => f.id === id);
+              const fine = finesList.find(f => f.id === id);
               return fine?.category === 'خدمات اضافية';
             })
             .map(serviceId => {
-              const service = PREDEFINED_FINES.find(f => f.id === serviceId);
+              const service = finesList.find(f => f.id === serviceId);
               const manualAmount = manualServices[serviceId] || 0;
               return {
                 id: serviceId,
@@ -1084,6 +1092,7 @@ export function useCreateOrder() {
     validateSerialLive,
 
     // Fines
+    finesList,
     selectedFines,
     setSelectedFines,
     showServicesDropdown,

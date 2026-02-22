@@ -32,8 +32,25 @@ interface WhatsAppStatus {
 interface Template {
   id: string;
   title: string;
+  trigger: string | null;
   body: string;
+  category: 'AUTOMATIC' | 'MANUAL';
 }
+
+const AVAILABLE_TRIGGERS = [
+  { id: 'NEW_ORDER', name: 'استلام طلب جديد (أونلاين)' },
+  { id: 'NEW_ORDER_ADMIN', name: 'استلام طلب جديد (لوحة التحكم)' },
+  { id: 'NEW_CUSTOMER', name: 'تسجيل عميل جديد' },
+  { id: 'STATUS_waiting_confirmation', name: 'حالة: انتظار المراجعة' },
+  { id: 'STATUS_waiting_payment', name: 'حالة: انتظار الدفع' },
+  { id: 'STATUS_processing', name: 'حالة: تحت التنفيذ' },
+  { id: 'STATUS_settlement', name: 'حالة: تسديد' },
+  { id: 'STATUS_supply', name: 'حالة: ورود' },
+  { id: 'STATUS_delivered', name: 'حالة: تم التسليم' },
+  { id: 'STATUS_fulfillment', name: 'حالة: استيفاء' },
+  { id: 'STATUS_returned', name: 'حالة: مرتجع' },
+  { id: 'STATUS_cancelled', name: 'حالة: ملغي' },
+];
 
 export default function WhatsAppPage() {
   const [status, setStatus] = useState<WhatsAppStatus | null>(null);
@@ -45,12 +62,17 @@ export default function WhatsAppPage() {
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState('');
+  const [newTrigger, setNewTrigger] = useState('');
   const [newBody, setNewBody] = useState('');
+  const [newCategory, setNewCategory] = useState<'AUTOMATIC' | 'MANUAL'>('AUTOMATIC');
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [editTrigger, setEditTrigger] = useState('');
   const [editBody, setEditBody] = useState('');
+  const [editCategory, setEditCategory] = useState<'AUTOMATIC' | 'MANUAL'>('AUTOMATIC');
+
 
   /* ─── WhatsApp Connection ─── */
   const fetchQR = useCallback(async () => {
@@ -88,7 +110,7 @@ export default function WhatsAppPage() {
         toast.success('تم تسجيل الخروج');
         setStatus(null);
         setLoading(true);
-        setTimeout(checkStatus, 2000);
+        setTimeout(checkStatus, 1000);
       } else toast.error('فشل تسجيل الخروج');
     } catch {
       toast.error('حدث خطأ');
@@ -133,8 +155,8 @@ export default function WhatsAppPage() {
   }, [fetchTemplates]);
 
   const handleAdd = async () => {
-    if (!newTitle.trim() || !newBody.trim()) {
-      toast.error('أدخل العنوان والنص');
+    if (!newTitle.trim() || !newBody.trim() || (newCategory === 'AUTOMATIC' && !newTrigger.trim())) {
+      toast.error('أكمل جميع الحقول المطلوبة');
       return;
     }
     setSaving(true);
@@ -142,12 +164,18 @@ export default function WhatsAppPage() {
       const res = await fetch('/api/admin/whatsapp/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTitle, body: newBody }),
+        body: JSON.stringify({ 
+          title: newTitle, 
+          trigger: newCategory === 'MANUAL' ? null : newTrigger,
+          body: newBody,
+          category: newCategory
+        }),
       });
       const data = await res.json();
       if (data.success) {
         setTemplates(prev => [...prev, data.template]);
         setNewTitle('');
+        setNewTrigger('');
         setNewBody('');
         setShowAddForm(false);
         toast.success('تم إضافة الرسالة');
@@ -175,7 +203,9 @@ export default function WhatsAppPage() {
   const startEdit = (t: Template) => {
     setEditingId(t.id);
     setEditTitle(t.title);
+    setEditTrigger(t.trigger || '');
     setEditBody(t.body);
+    setEditCategory(t.category);
     setExpandedId(t.id);
   };
 
@@ -183,12 +213,17 @@ export default function WhatsAppPage() {
     const res = await fetch(`/api/admin/whatsapp/templates/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: editTitle, body: editBody }),
+      body: JSON.stringify({ 
+        title: editTitle, 
+        trigger: editCategory === 'MANUAL' ? null : editTrigger,
+        body: editBody,
+        category: editCategory
+      }),
     });
     const data = await res.json();
     if (data.success) {
       setTemplates(prev =>
-        prev.map(t => (t.id === id ? { ...t, title: editTitle, body: editBody } : t))
+        prev.map(t => (t.id === id ? { ...t, title: editTitle, trigger: editCategory === 'MANUAL' ? null : editTrigger, body: editBody, category: editCategory } : t))
       );
       setEditingId(null);
       toast.success('تم التحديث');
@@ -205,7 +240,7 @@ export default function WhatsAppPage() {
             <Image src='/icons/whatsapp.png' width={40} height={40} alt='WhatsApp' />
             إدارة WhatsApp
           </h1>
-          <p className='text-gray-500 mt-1 text-sm'>ربط WhatsApp وإدارة الرسائل الجاهزة</p>
+          <p className='text-gray-500 mt-1 text-sm'>ربط WhatsApp وإدارة الرسائل التلقائية والجاهزة</p>
         </div>
         <button
           onClick={() => {
@@ -220,6 +255,41 @@ export default function WhatsAppPage() {
             className={loading ? 'animate-spin text-gray-400' : 'text-gray-600'}
           />
         </button>
+      </div>
+
+      {/* Placeholders Guide */}
+      <div className='bg-blue-50 border border-blue-100 rounded-2xl p-5'>
+        <h2 className='text-blue-800 font-bold mb-3 flex items-center gap-2'>
+          <AlertCircle size={18} />
+          دليل المتغيرات الذكية
+        </h2>
+        <p className='text-blue-700 text-sm mb-4'>
+          يمكنك استخدام هذه الأكواد داخل نص الرسالة وسيتم استبدالها تلقائياً ببيانات الطلب:
+        </p>
+        <div className='grid grid-cols-2 md:grid-cols-3 gap-3'>
+          {[
+            { tag: '<customer_name>', desc: 'اسم العميل' },
+            { tag: '<order_id>', desc: 'رقم الطلب (آخر 6 أرقام)' },
+            { tag: '<order_price>', desc: 'إجمالي مبلغ الطلب' },
+            { tag: '<service_name>', desc: 'اسم الخدمة' },
+            { tag: '<variant_name>', desc: 'نوع الخدمة' },
+            { tag: '<status_text>', desc: 'حالة الطلب الحالية' },
+            { tag: '<notes>', desc: 'ملاحظات الإدارة / سبب الحالة' },
+            { tag: '<work_order_number>', desc: 'رقم التشغيل' },
+            { tag: '<pickup_location>', desc: 'مكان الاستلام' },
+            { tag: '<customer_phone>', desc: 'رقم هاتف العميل' },
+            { tag: '<customer_email>', desc: 'البريد الإلكتروني' },
+            { tag: '<password>', desc: 'كلمة مرور العميل (رقم الهاتف)' },
+            { tag: '<remaining_price>', desc: 'المبلغ المتبقي' },
+          ].map(p => (
+            <div key={p.tag} className='flex items-center gap-2 text-xs'>
+              <code className='bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-600 font-bold'>
+                {p.tag}
+              </code>
+              <span className='text-blue-500'>{p.desc}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Connection Cards */}
@@ -324,179 +394,326 @@ export default function WhatsAppPage() {
         </div>
       </div>
 
-      {/* ─── Message Templates Section ─── */}
-      <div className='bg-white rounded-2xl shadow-sm border'>
-        {/* Section Header */}
-        <div className='flex items-center justify-between px-6 py-4 border-b'>
-          <div className='flex items-center gap-3'>
-            <div className='w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center'>
-              <MessageSquare size={18} className='text-green-600' />
-            </div>
-            <div>
-              <h2 className='font-bold text-gray-900'>إعدادات الرسائل الجاهزة</h2>
-              <p className='text-xs text-gray-400'>{templates.length} رسالة محفوظة</p>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              setShowAddForm(v => !v);
-              setNewTitle('');
-              setNewBody('');
-            }}
-            className='flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors'
-          >
-            <Plus size={16} />
-            إضافة رسالة
-          </button>
-        </div>
+      {/* ─── Shared Components for Sections ─── */}
+      <TemplateSection 
+        title="إعدادات الرسائل التلقائية" 
+        subtitle="رسائل يتم إرسالها تلقائياً عند حدوث أحداث معينة"
+        category="AUTOMATIC"
+        templates={templates.filter(t => t.category === 'AUTOMATIC' || !t.category)}
+        loading={templatesLoading}
+        onAdd={() => {
+          setNewCategory('AUTOMATIC');
+          setShowAddForm(true);
+        }}
+        expandedId={expandedId}
+        setExpandedId={setExpandedId}
+        editingId={editingId}
+        setEditingId={setEditingId}
+        editTitle={editTitle}
+        setEditTitle={setEditTitle}
+        editTrigger={editTrigger}
+        setEditTrigger={setEditTrigger}
+        editBody={editBody}
+        setEditBody={setEditBody}
+        editCategory={editCategory}
+        setEditCategory={setEditCategory}
+        saveEdit={saveEdit}
+        handleDelete={handleDelete}
+        handleCopy={handleCopy}
+        startEdit={startEdit}
+      />
 
-        {/* Add Form */}
-        {showAddForm && (
-          <div className='p-5 border-b bg-green-50/40'>
-            <div className='space-y-3'>
-              <div>
-                <label className='text-xs font-bold text-gray-600 block mb-1'>عنوان الرسالة</label>
-                <input
-                  type='text'
-                  value={newTitle}
-                  onChange={e => setNewTitle(e.target.value)}
-                  placeholder='مثال: طلب جاهز للاستلام'
-                  className='w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400'
-                />
+      <TemplateSection 
+        title="إعدادات الرسائل الجاهزة" 
+        subtitle="رسائل تظهر كاختصارات سريعة عند المراسلة اليدوية"
+        category="MANUAL"
+        templates={templates.filter(t => t.category === 'MANUAL')}
+        loading={templatesLoading}
+        onAdd={() => {
+          setNewCategory('MANUAL');
+          setShowAddForm(true);
+        }}
+        expandedId={expandedId}
+        setExpandedId={setExpandedId}
+        editingId={editingId}
+        setEditingId={setEditingId}
+        editTitle={editTitle}
+        setEditTitle={setEditTitle}
+        editTrigger={editTrigger}
+        setEditTrigger={setEditTrigger}
+        editBody={editBody}
+        setEditBody={setEditBody}
+        editCategory={editCategory}
+        setEditCategory={setEditCategory}
+        saveEdit={saveEdit}
+        handleDelete={handleDelete}
+        handleCopy={handleCopy}
+        startEdit={startEdit}
+      />
+
+      {/* Add Modal */}
+      {showAddForm && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50'>
+          <div className='bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200'>
+            <div className='bg-green-600 px-6 py-4 flex items-center justify-between text-white'>
+              <h3 className='font-bold'>إضافة قالب رسالة جديد</h3>
+              <button onClick={() => setShowAddForm(false)} className='hover:bg-white/20 p-1 rounded-lg'>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className='p-6 space-y-4 font-sans'>
+              <div className='grid grid-cols-2 gap-4'>
+                <div className='col-span-2 md:col-span-1'>
+                  <label className='text-xs font-bold text-gray-500 block mb-1'>نوع الرسالة</label>
+                  <select
+                    value={newCategory}
+                    onChange={e => setNewCategory(e.target.value as any)}
+                    className='w-full border rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-400 focus:outline-none'
+                  >
+                    <option value='AUTOMATIC'>تلقائية (Trigger)</option>
+                    <option value='MANUAL'>جاهزة (Popup)</option>
+                  </select>
+                </div>
+                <div className='col-span-2 md:col-span-1'>
+                  <label className='text-xs font-bold text-gray-500 block mb-1'>عنوان القالب</label>
+                  <input
+                    type='text'
+                    value={newTitle}
+                    onChange={e => setNewTitle(e.target.value)}
+                    placeholder='مثال: ترحيب بالعميل'
+                    className='w-full border rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-400 focus:outline-none'
+                  />
+                </div>
               </div>
+
+              {newCategory === 'AUTOMATIC' && (
+                <div>
+                  <label className='text-xs font-bold text-gray-500 block mb-1'>الحدث المشغّل (Trigger)</label>
+                  <select
+                    value={newTrigger}
+                    onChange={e => setNewTrigger(e.target.value)}
+                    className='w-full border rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-400 focus:outline-none'
+                  >
+                    <option value=''>-- اختر الحدث --</option>
+                    {AVAILABLE_TRIGGERS.map(trig => (
+                      <option key={trig.id} value={trig.id}>{trig.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div>
-                <label className='text-xs font-bold text-gray-600 block mb-1'>نص الرسالة</label>
+                <label className='text-xs font-bold text-gray-500 block mb-1'>نص الرسالة</label>
                 <textarea
                   value={newBody}
                   onChange={e => setNewBody(e.target.value)}
                   placeholder='اكتب نص الرسالة هنا...'
-                  rows={4}
-                  className='w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none'
+                  rows={8}
+                  className='w-full border rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-400 focus:outline-none resize-none'
                 />
               </div>
-              <div className='flex gap-2 justify-end'>
+
+              <div className='flex gap-2 justify-end pt-2'>
                 <button
                   onClick={() => setShowAddForm(false)}
-                  className='px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-xl transition-colors'
+                  className='px-6 py-2.5 text-sm text-gray-500 hover:bg-gray-100 rounded-xl transition-all'
                 >
                   إلغاء
                 </button>
                 <button
                   onClick={handleAdd}
                   disabled={saving}
-                  className='px-5 py-2 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50'
+                  className='px-8 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all shadow-md active:scale-95 disabled:opacity-50'
                 >
-                  {saving ? 'جاري الحفظ...' : 'حفظ الرسالة'}
+                  {saving ? 'جاري الحفظ...' : 'حفظ القالب'}
                 </button>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
+    </div>
+  );
+}
 
-        {/* Templates List */}
-        <div className='divide-y'>
-          {templatesLoading ? (
-            <div className='py-12 text-center text-gray-400 text-sm'>
-              <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-gray-300 mx-auto mb-2' />
-              جاري التحميل...
-            </div>
-          ) : templates.length === 0 ? (
-            <div className='py-14 text-center'>
-              <MessageSquare size={36} className='text-gray-200 mx-auto mb-3' />
-              <p className='text-gray-400 text-sm'>لا توجد رسائل جاهزة بعد</p>
-              <p className='text-gray-300 text-xs mt-1'>اضغط «إضافة رسالة» لإنشاء أول قالب</p>
-            </div>
-          ) : (
-            templates.map(t => (
-              <div key={t.id} className='px-5 py-4'>
-                {editingId === t.id ? (
-                  /* Edit Mode */
-                  <div className='space-y-3'>
-                    <input
-                      type='text'
-                      value={editTitle}
-                      onChange={e => setEditTitle(e.target.value)}
-                      className='w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-bold'
-                    />
+// ─── Sub-Components ───
+
+interface TemplateSectionProps {
+  title: string;
+  subtitle: string;
+  category: string;
+  templates: Template[];
+  loading: boolean;
+  onAdd: () => void;
+  expandedId: string | null;
+  setExpandedId: (id: string | null) => void;
+  editingId: string | null;
+  setEditingId: (id: string | null) => void;
+  editTitle: string;
+  setEditTitle: (v: string) => void;
+  editTrigger: string;
+  setEditTrigger: (v: string) => void;
+  editBody: string;
+  setEditBody: (v: string) => void;
+  editCategory: string;
+  setEditCategory: (v: any) => void;
+  saveEdit: (id: string) => void;
+  handleDelete: (id: string) => void;
+  handleCopy: (v: string) => void;
+  startEdit: (t: Template) => void;
+}
+
+function TemplateSection({
+  title, subtitle, templates, loading, onAdd,
+  expandedId, setExpandedId, editingId, setEditingId,
+  editTitle, setEditTitle, editTrigger, setEditTrigger, editBody, setEditBody,
+  editCategory, setEditCategory, saveEdit, handleDelete, handleCopy, startEdit
+}: TemplateSectionProps) {
+  return (
+    <div className='bg-white rounded-2xl shadow-sm border overflow-hidden'>
+      <div className='flex items-center justify-between px-6 py-4 border-b bg-gray-50/50'>
+        <div className='flex items-center gap-3'>
+          <div className='w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center font-bold text-green-700'>
+            {templates.length}
+          </div>
+          <div>
+            <h2 className='font-bold text-gray-900'>{title}</h2>
+            <p className='text-[10px] text-gray-400 uppercase tracking-tighter'>{subtitle}</p>
+          </div>
+        </div>
+        <button
+          onClick={onAdd}
+          className='flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all shadow-sm'
+        >
+          <Plus size={16} />
+          إضافة رسالة
+        </button>
+      </div>
+
+      <div className='divide-y font-sans'>
+        {loading ? (
+          <div className='py-12 text-center text-gray-400 text-sm'>
+            <RefreshCcw size={24} className='animate-spin mx-auto mb-2 opacity-20' />
+            جاري التحميل...
+          </div>
+        ) : templates.length === 0 ? (
+          <div className='py-14 text-center'>
+            <MessageSquare size={36} className='text-gray-200 mx-auto mb-3' />
+            <p className='text-gray-400 text-sm'>لا توجد رسائل في هذا القسم</p>
+          </div>
+        ) : (
+          templates.map(t => (
+            <div key={t.id} className='group hover:bg-gray-50/30 transition-colors'>
+              {editingId === t.id ? (
+                <div className='p-5 bg-blue-50/50 space-y-4 animate-in slide-in-from-top-2 duration-300'>
+                  <div className='grid grid-cols-2 gap-3'>
+                    <div className='col-span-2 md:col-span-1'>
+                      <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>تصنيف الرسالة</label>
+                      <select
+                        value={editCategory}
+                        onChange={e => setEditCategory(e.target.value as any)}
+                        className='w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400'
+                      >
+                        <option value='AUTOMATIC'>تلقائية (Trigger)</option>
+                        <option value='MANUAL'>جاهزة (Popup)</option>
+                      </select>
+                    </div>
+                    <div className='col-span-2 md:col-span-1'>
+                      <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>العنوان</label>
+                      <input
+                        type='text'
+                        value={editTitle}
+                        onChange={e => setEditTitle(e.target.value)}
+                        className='w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 font-bold'
+                      />
+                    </div>
+                  </div>
+                  {editCategory === 'AUTOMATIC' && (
+                    <div>
+                      <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>الحدث المشغّل</label>
+                      <select
+                        value={editTrigger}
+                        onChange={e => setEditTrigger(e.target.value)}
+                        className='w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400'
+                      >
+                        <option value=''>-- اختر الحدث --</option>
+                        {AVAILABLE_TRIGGERS.map(trig => (
+                          <option key={trig.id} value={trig.id}>{trig.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <div>
+                    <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>المحتوى</label>
                     <textarea
                       value={editBody}
                       onChange={e => setEditBody(e.target.value)}
-                      rows={4}
-                      className='w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none'
+                      rows={6}
+                      className='w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 resize-none leading-relaxed'
                     />
-                    <div className='flex gap-2 justify-end'>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className='p-2 text-gray-400 hover:bg-gray-100 rounded-lg'
+                  </div>
+                  <div className='flex gap-2 justify-end'>
+                    <button onClick={() => setEditingId(null)} className='px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-xl'>
+                      إلغاء
+                    </button>
+                    <button onClick={() => saveEdit(t.id)} className='px-6 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200'>
+                      حفظ التغييرات
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className='px-6 py-4'>
+                  <div className='flex items-center justify-between'>
+                    <div className='flex items-center gap-4 flex-1 min-w-0'>
+                      <button 
+                         onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                         className='flex items-center gap-3 text-right flex-1 min-w-0'
                       >
-                        <X size={16} />
-                      </button>
-                      <button
-                        onClick={() => saveEdit(t.id)}
-                        className='p-2 text-green-600 hover:bg-green-50 rounded-lg'
-                      >
-                        <Check size={16} />
+                         {t.category === 'AUTOMATIC' ? (
+                           <div className='bg-green-100 text-green-700 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase shrink-0'>
+                             Auto: {t.trigger || 'NONE'}
+                           </div>
+                         ) : (
+                           <div className='bg-purple-100 text-purple-700 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase shrink-0'>
+                             Manual
+                           </div>
+                         )}
+                         <span className='font-bold text-gray-700 text-sm truncate'>{t.title}</span>
                       </button>
                     </div>
-                  </div>
-                ) : (
-                  /* View Mode */
-                  <div>
-                    <div className='flex items-center justify-between'>
-                      <button
+                    
+                    <div className='flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
+                      <button onClick={() => handleCopy(t.body)} className='p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl'>
+                        <Copy size={16} />
+                      </button>
+                      <button onClick={() => startEdit(t)} className='p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl'>
+                        <Pencil size={16} />
+                      </button>
+                      <button onClick={() => handleDelete(t.id)} className='p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl'>
+                        <Trash2 size={16} />
+                      </button>
+                      <button 
                         onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
-                        className='flex items-center gap-2 text-right flex-1 min-w-0'
+                        className='p-2 text-gray-400 hover:bg-gray-100 rounded-xl'
                       >
-                        <span className='font-bold text-gray-800 text-sm truncate'>{t.title}</span>
-                        {expandedId === t.id ? (
-                          <ChevronUp size={14} className='text-gray-400 flex-shrink-0' />
-                        ) : (
-                          <ChevronDown size={14} className='text-gray-400 flex-shrink-0' />
-                        )}
+                        {expandedId === t.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
-                      <div className='flex items-center gap-1 mr-3'>
-                        <button
-                          onClick={() => handleCopy(t.body)}
-                          title='نسخ'
-                          className='p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors'
-                        >
-                          <Copy size={14} />
-                        </button>
-                        <button
-                          onClick={() => startEdit(t)}
-                          title='تعديل'
-                          className='p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors'
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(t.id)}
-                          title='حذف'
-                          className='p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors'
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
                     </div>
-                    {expandedId === t.id && (
-                      <div className='mt-3 bg-gray-50 rounded-xl px-4 py-3'>
-                        <pre className='text-xs text-gray-600 whitespace-pre-wrap font-sans leading-relaxed'>
-                          {t.body}
-                        </pre>
-                        <button
-                          onClick={() => handleCopy(t.body)}
-                          className='mt-2 flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-semibold'
-                        >
-                          <Copy size={12} /> نسخ النص
-                        </button>
-                      </div>
-                    )}
                   </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
+                  
+                  {expandedId === t.id && (
+                    <div className='mt-4 bg-gray-50 rounded-2xl p-4 border border-gray-100 animate-in slide-in-from-top-1 duration-200'>
+                      <pre className='text-xs text-gray-600 whitespace-pre-wrap leading-relaxed italic'>
+                        "{t.body}"
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

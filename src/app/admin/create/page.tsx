@@ -107,6 +107,7 @@ export default function CreateOrderPage() {
     showSuccessModal,
     setShowSuccessModal,
     createdOrderId,
+    finesList,
   } = useCreateOrder();
 
   // Aliases for compatibility with existing JSX
@@ -343,6 +344,7 @@ export default function CreateOrderPage() {
                   setFormData={setFormData}
                   selectedVariant={selectedVariant}
                   calculateTotal={calculateTotal}
+                  finesList={finesList}
                   selectedFines={selectedFines}
                   showFinesDropdown={showFinesDropdown}
                   setShowFinesDropdown={setShowFinesDropdown}
@@ -353,7 +355,7 @@ export default function CreateOrderPage() {
                   servicesSearchTerm={servicesSearchTerm}
                   setServicesSearchTerm={setServicesSearchTerm}
                   manualServices={manualServices}
-                  handleFineToggle={handleFineToggle}
+                  handleFineToggle={toggleFine}
                   handleManualServiceChange={handleManualServiceChange}
                 />
 
@@ -398,6 +400,7 @@ export default function CreateOrderPage() {
                   customer={customer}
                   selectedService={selectedService}
                   selectedVariant={selectedVariant}
+                  finesList={finesList}
                   selectedFines={selectedFines}
                   manualServices={manualServices}
                   calculateTotal={calculateTotal}

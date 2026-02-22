@@ -1,5 +1,5 @@
 import React from 'react';
-import { PREDEFINED_FINES, calculateFineExpenses } from '@/constants/fines';
+import { calculateFineExpenses, Fine } from '@/constants/fines';
 import { Customer, FormData, Service, ServiceVariant } from '../../types';
 import { ActionsSection } from './ActionsSection';
 
@@ -9,6 +9,7 @@ interface ReviewSectionProps {
   customer: Customer | null;
   selectedService: Service | null;
   selectedVariant: ServiceVariant | null;
+  finesList: Fine[];
   selectedFines: string[];
   manualServices: Record<string, number>;
   calculateTotal: () => number;
@@ -23,6 +24,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
   customer,
   selectedService,
   selectedVariant,
+  finesList,
   selectedFines,
   manualServices,
   calculateTotal,
@@ -248,9 +250,9 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                       +{' '}
                       {formatCurrency(
                         selectedFines.reduce((acc: number, id: string) => {
-                          const f = PREDEFINED_FINES.find(p => p.id === id);
+                          const f = finesList.find(p => p.id === id);
                           if (f?.id === 'service_001') {
-                            return acc + calculateFineExpenses(selectedFines);
+                            return acc + calculateFineExpenses(selectedFines, finesList);
                           }
                           return acc + (manualServices[id] || f?.amountCents || 0);
                         }, 0) / 100

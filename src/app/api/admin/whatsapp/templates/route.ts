@@ -9,8 +9,7 @@ export async function GET() {
   try {
     await requireAdminOrStaff();
     const templates = await (prisma as any).whatsAppTemplate.findMany({
-      where: { active: true },
-      orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }],
+      orderBy: [{ category: 'asc' }, { orderIndex: 'asc' }, { createdAt: 'asc' }],
     });
     return NextResponse.json({ success: true, templates });
   } catch {
@@ -22,14 +21,21 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     await requireAdminOrStaff();
-    const { title, body } = await req.json();
-    if (!title?.trim() || !body?.trim()) {
-      return NextResponse.json({ success: false, error: 'العنوان والنص مطلوبان' }, { status: 400 });
+    const { title, trigger, body, category } = await req.json();
+    if (!title?.trim() || !body?.trim() || (category !== 'MANUAL' && !trigger?.trim())) {
+      return NextResponse.json({ success: false, error: 'العنوان والنص والزناد مطلوبان' }, { status: 400 });
     }
     const count = await (prisma as any).whatsAppTemplate.count();
     const template = await (prisma as any).whatsAppTemplate.create({
-      data: { title: title.trim(), body: body.trim(), orderIndex: count },
+      data: { 
+        title: title.trim(), 
+        trigger: category === 'MANUAL' ? null : (trigger?.trim() || null),
+        category: category || 'AUTOMATIC',
+        body: body.trim(), 
+        orderIndex: count 
+      },
     });
+
     return NextResponse.json({ success: true, template });
   } catch {
     return NextResponse.json({ success: false, error: 'فشل الحفظ' }, { status: 500 });

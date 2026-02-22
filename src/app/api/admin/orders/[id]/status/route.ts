@@ -3,6 +3,7 @@ import { requireAdminOrStaff, getWorkDate } from '@/lib/auth';
 import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { checkWhatsAppStatus, sendWhatsAppByTrigger } from '@/lib/whatsapp';
 
 const statusUpdateSchema = z.object({
   status: z.string(),
@@ -107,13 +108,29 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const updatedOrder = await prisma.order.update({
       where: { id },
       data: updateData,
-      select: {
-        id: true,
-        status: true,
-        statusReason: true,
-        updatedAt: true,
+      include: {
+        service: { select: { name: true } },
+        variant: { select: { name: true } },
+        user: { select: { phone: true } },
+        payment: { select: { amount: true, status: true } },
       },
     });
+
+    // 📱 إرسال رسالة واتساب للعميل عند تغيير الحالة
+    try {
+      const whatsappStatus = await checkWhatsAppStatus();
+      if (
+        whatsappStatus.status === 'connected' &&
+        updatedOrder.customerPhone &&
+        updatedOrder.customerPhone !== 'Unknown'
+      ) {
+        // Trigger generic status template: STATUS_{status}
+        await sendWhatsAppByTrigger(`STATUS_${status}`, updatedOrder);
+      }
+    } catch (err) {
+      console.error('WhatsApp status trigger error:', err);
+    }
+
     const tUpdateEnd = performance.now();
 
     const tTotal = performance.now() - tStart;

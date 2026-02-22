@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Order } from '../types';
+import { replacePlaceholders } from '@/lib/whatsapp-utils';
 
 interface WhatsAppModalProps {
   order: Order;
@@ -19,6 +20,7 @@ interface SavedTemplate {
   id: string;
   title: string;
   body: string;
+  category: string;
 }
 
 export default function WhatsAppModal({
@@ -41,12 +43,21 @@ export default function WhatsAppModal({
     fetch('/api/admin/whatsapp/templates')
       .then(r => r.json())
       .then(data => {
-        if (data.success) setSavedTemplates(data.templates);
+        if (data.success) {
+          // Filter only MANUAL templates for the popup
+          setSavedTemplates(data.templates.filter((t: SavedTemplate) => t.category === 'MANUAL'));
+        }
       })
       .finally(() => setLoadingTemplates(false));
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleTemplateSelect = (template: SavedTemplate) => {
+    setSelectedTemplate(template.id);
+    const processedBody = replacePlaceholders(template.body, order);
+    setMessage(processedBody);
+  };
 
   return (
     <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4'>
@@ -104,10 +115,7 @@ export default function WhatsAppModal({
                 {savedTemplates.map(template => (
                   <button
                     key={template.id}
-                    onClick={() => {
-                      setSelectedTemplate(template.id);
-                      setMessage(template.body);
-                    }}
+                    onClick={() => handleTemplateSelect(template)}
                     className={`text-right w-full p-3 rounded-xl border-2 text-sm transition-all ${
                       selectedTemplate === template.id
                         ? 'border-green-500 bg-green-50 text-green-800'
