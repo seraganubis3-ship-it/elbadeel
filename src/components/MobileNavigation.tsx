@@ -68,22 +68,6 @@ export default function MobileNavigation() {
     },
   ];
 
-  const quickActions = [
-    {
-      name: 'واتساب',
-      href: 'https://wa.me/201021606893',
-      icon: '💬',
-      color: 'from-green-500 to-green-600',
-      external: true,
-    },
-    {
-      name: 'اتصل بنا',
-      href: 'tel:+201000000000',
-      icon: '📞',
-      color: 'from-blue-500 to-blue-600',
-      external: true,
-    },
-  ];
 
   const MobileSidebar = () => (
     <>
@@ -252,28 +236,6 @@ export default function MobileNavigation() {
                   </Link>
                 </>
               )}
-            </div>
-
-            {/* Quick Actions */}
-            <div className='mt-6'>
-              <p className='text-white/40 text-xs font-bold uppercase tracking-wider mb-3 px-2'>
-                تواصل معنا
-              </p>
-              <div className='grid grid-cols-2 gap-2'>
-                {quickActions.map(action => (
-                  <a
-                    key={action.name}
-                    href={action.href}
-                    target={action.external ? '_blank' : undefined}
-                    rel={action.external ? 'noopener noreferrer' : undefined}
-                    onClick={() => setIsOpen(false)}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-br ${action.color} shadow-lg hover:scale-105 transition-transform`}
-                  >
-                    <span className='text-2xl'>{action.icon}</span>
-                    <span className='text-white font-bold text-sm'>{action.name}</span>
-                  </a>
-                ))}
-              </div>
             </div>
           </div>
 
