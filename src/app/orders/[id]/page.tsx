@@ -191,9 +191,6 @@ export default function OrderDetailPage() {
                     💳 دفع المستحقات الآن
                   </Link>
                 )}
-                <button className='w-full py-3 text-center bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors'>
-                  💬 تواصل مع الدعم
-                </button>
                 {order.status === 'pending' && (
                   <button className='w-full py-3 text-center bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl font-bold text-sm transition-colors'>
                     ⚠️ إلغاء الطلب
@@ -202,21 +199,6 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            {/* Need Help Card */}
-            <div className='bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl shadow-blue-900/20 relative overflow-hidden'>
-              <div className='absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2'></div>
-              <h3 className='text-xl font-bold mb-2 relative z-10'>تحتاج مساعدة؟</h3>
-              <p className='text-blue-100 text-sm mb-6 relative z-10 leading-relaxed'>
-                فريقنا جاهز للرد على استفساراتك ومساعدتك في أي وقت.
-              </p>
-              <a
-                href='tel:123456789'
-                className='inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-xl text-sm font-bold transition-all'
-              >
-                <span>📞</span>
-                <span>+20 123 456 7890</span>
-              </a>
-            </div>
           </div>
 
           {/* Main Details */}
