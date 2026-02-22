@@ -25,7 +25,6 @@ export default function PaymentPage() {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]); // previewUrl cleanup in return, but orderId dependency is for fetch
 
   // Separate cleanup effect if needed, or just rely on component unmount

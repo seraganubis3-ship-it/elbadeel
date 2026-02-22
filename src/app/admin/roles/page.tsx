@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/Toast';
 
@@ -33,12 +33,7 @@ export default function RolesManagementPage() {
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    fetchRoles();
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/users/stats');
       if (res.ok) {
@@ -46,9 +41,9 @@ export default function RolesManagementPage() {
         setStats(data);
       }
     } catch {}
-  };
+  }, []);
 
-  const fetchRoles = async () => {
+  const fetchRoles = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/roles');
       if (!res.ok) throw new Error('فشل جلب الرتب');
@@ -59,7 +54,12 @@ export default function RolesManagementPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    fetchRoles();
+    fetchStats();
+  }, [fetchRoles, fetchStats]);
 
   const handleOpenModal = (role?: any) => {
     if (role) {

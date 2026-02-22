@@ -67,34 +67,35 @@ export default function LogicBuilder({ value, onChange, fields }: LogicBuilderPr
         return;
       }
       const data = JSON.parse(value);
-      // We expect a simple object mapping like: {"gender":"male", "age":">18"}
-      // We need to convert it to our Rule[] format.
-      // Note: This format is legacy/simplified. We might want to upgrade it,
-      // but let's stick to the current string format for compatibility if other systems use it.
-      // Format: key: value. If value starts with > or < or !, we extract op.
+      
+      if (Array.isArray(data)) {
+        // New Array Format: [ { field, op, value }, ... ]
+        setRules(data);
+      } else if (typeof data === 'object' && data !== null) {
+        // Legacy Object Format: { field: "opValue" }
+        const loadedRules: Rule[] = [];
+        Object.entries(data).forEach(([k, v]) => {
+          let valStr = String(v);
+          let op = 'eq';
 
-      const loadedRules: Rule[] = [];
-      Object.entries(data).forEach(([k, v]) => {
-        let valStr = String(v);
-        let op = 'eq';
+          if (valStr.startsWith('>')) {
+            op = 'gt';
+            valStr = valStr.substring(1);
+          } else if (valStr.startsWith('<')) {
+            op = 'lt';
+            valStr = valStr.substring(1);
+          } else if (valStr.startsWith('!')) {
+            op = 'neq';
+            valStr = valStr.substring(1);
+          } else if (valStr.startsWith('*')) {
+            op = 'contains';
+            valStr = valStr.substring(1);
+          }
 
-        if (valStr.startsWith('>')) {
-          op = 'gt';
-          valStr = valStr.substring(1);
-        } else if (valStr.startsWith('<')) {
-          op = 'lt';
-          valStr = valStr.substring(1);
-        } else if (valStr.startsWith('!')) {
-          op = 'neq';
-          valStr = valStr.substring(1);
-        } else if (valStr.startsWith('*')) {
-          op = 'contains';
-          valStr = valStr.substring(1);
-        } // Custom convention
-
-        loadedRules.push({ field: k, op, value: valStr });
-      });
-      setRules(loadedRules);
+          loadedRules.push({ field: k, op, value: valStr });
+        });
+        setRules(loadedRules);
+      }
     } catch {
       setRules([]);
     }
@@ -106,17 +107,9 @@ export default function LogicBuilder({ value, onChange, fields }: LogicBuilderPr
       onChange('');
       return;
     }
-    const obj: Record<string, string> = {};
-    newRules.forEach(r => {
-      if (!r.field) return;
-      let prefix = '';
-      if (r.op === 'gt') prefix = '>';
-      if (r.op === 'lt') prefix = '<';
-      if (r.op === 'neq') prefix = '!';
-      if (r.op === 'contains') prefix = '*';
-      obj[r.field] = prefix + r.value;
-    });
-    onChange(JSON.stringify(obj));
+    // We now save as an array to avoid overwriting rules for the same field
+    const validRules = newRules.filter(r => r.field);
+    onChange(JSON.stringify(validRules));
   };
 
   const addRule = () => {

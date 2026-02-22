@@ -128,7 +128,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         await sendWhatsAppByTrigger(`STATUS_${status}`, updatedOrder);
       }
     } catch (err) {
-      console.error('WhatsApp status trigger error:', err);
+      // console.log('Updating order status', params.id, body.status)
+;
     }
 
     const tUpdateEnd = performance.now();

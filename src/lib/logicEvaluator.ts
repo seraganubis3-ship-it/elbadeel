@@ -39,6 +39,19 @@ export const parseConditionValue = (field: string, encodedValue: string): Condit
 };
 
 /**
+ * Normalizes Arabic text for more robust comparison.
+ * Handles variations of Alef and Teh Marbuta.
+ */
+const normalizeText = (text: string | null | undefined): string => {
+  if (!text) return '';
+  return String(text)
+    .trim()
+    .toLowerCase()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه');
+};
+
+/**
  * Evaluates a set of conditions against providing values.
  * All conditions must be true (AND logic).
  */
@@ -49,28 +62,48 @@ export const evaluateLogic = (
   if (!logicJson) return true;
 
   try {
-    const rules: LogicRule = JSON.parse(logicJson);
-    const conditions = Object.entries(rules).map(([field, val]) => parseConditionValue(field, val));
+    const data = JSON.parse(logicJson);
+    let conditions: Condition[] = [];
+
+    if (Array.isArray(data)) {
+      // New format: Array of Condition objects
+      conditions = data;
+    } else if (typeof data === 'object' && data !== null) {
+      // Legacy format: { field: "operatorValue" }
+      conditions = Object.entries(data).map(([field, val]) => 
+        parseConditionValue(field, val as string)
+      );
+    }
+
+    if (conditions.length === 0) return true;
 
     return conditions.every(condition => {
       const actualValueRaw = currentValues[condition.field];
-      const actualValue =
-        actualValueRaw !== undefined && actualValueRaw !== null ? String(actualValueRaw) : '';
-      const targetValue = condition.value;
+      const actualValue = String(actualValueRaw || '');
+      const targetValue = String(condition.value || '');
 
       switch (condition.op) {
         case 'eq':
-          return actualValue === targetValue;
+          return normalizeText(actualValue) === normalizeText(targetValue);
         case 'neq':
-          return actualValue !== targetValue;
-        case 'gt':
-          return parseFloat(actualValue) > parseFloat(targetValue);
-        case 'lt':
-          return parseFloat(actualValue) < parseFloat(targetValue);
-        case 'contains':
-          return actualValue.toLowerCase().includes(targetValue.toLowerCase());
+          return normalizeText(actualValue) !== normalizeText(targetValue);
+        case 'gt': {
+          const actualNum = parseFloat(actualValue);
+          const targetNum = parseFloat(targetValue);
+          return !isNaN(actualNum) && !isNaN(targetNum) && actualNum > targetNum;
+        }
+        case 'lt': {
+          const actualNum = parseFloat(actualValue);
+          const targetNum = parseFloat(targetValue);
+          return !isNaN(actualNum) && !isNaN(targetNum) && actualNum < targetNum;
+        }
+        case 'contains': {
+          const normTarget = normalizeText(targetValue);
+          if (normTarget === '') return false;
+          return normalizeText(actualValue).includes(normTarget);
+        }
         default:
-          return actualValue === targetValue;
+          return normalizeText(actualValue) === normalizeText(targetValue);
       }
     });
   } catch (error) {

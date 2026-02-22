@@ -37,7 +37,6 @@ interface UserSession {
 
 // Global definition for TypeScript
 declare global {
-  // eslint-disable-next-line no-var
   var sessionStore: Map<string, UserSession> | undefined;
 }
 

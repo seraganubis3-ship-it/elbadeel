@@ -705,7 +705,7 @@ function TemplateSection({
                   {expandedId === t.id && (
                     <div className='mt-4 bg-gray-50 rounded-2xl p-4 border border-gray-100 animate-in slide-in-from-top-1 duration-200'>
                       <pre className='text-xs text-gray-600 whitespace-pre-wrap leading-relaxed italic'>
-                        "{t.body}"
+                        &quot;{t.body}&quot;
                       </pre>
                     </div>
                   )}

@@ -108,7 +108,6 @@ export async function PUT(request: NextRequest) {
     const tDbEnd = performance.now();
 
     const tTotal = performance.now() - tStart;
-    console.log(`[PERF] Bulk status update for ${orderIds.length} orders: Total=${tTotal.toFixed(2)}ms, Auth=${(tAuthEnd-tAuthStart).toFixed(2)}ms, Prep=${(tPrepEnd-tPrepStart).toFixed(2)}ms, DB=${(tDbEnd-tDbStart).toFixed(2)}ms`);
 
     const updatedOrders = result.filter(order => order !== null);
 

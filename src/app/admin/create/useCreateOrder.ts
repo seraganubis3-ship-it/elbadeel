@@ -546,7 +546,7 @@ export function useCreateOrder() {
       }
       return newSelectedFines;
     });
-  }, []);
+  }, [finesList]);
 
   // Handle manual service change
   const handleManualServiceChange = useCallback((serviceId: string, amount: number) => {
@@ -1014,6 +1014,8 @@ export function useCreateOrder() {
       phoneConflict,
       calculateTotal,
       getCurrentWorkDate,
+      serialValid,
+      finesList,
       showWarning,
       showError,
     ]
