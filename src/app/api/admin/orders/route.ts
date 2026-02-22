@@ -74,12 +74,15 @@ export async function GET(request: NextRequest) {
     const photographyDate = searchParams.get('photographyDate'); // Add this
     const serviceIds = searchParams.getAll('serviceIds');
     const categoryId = searchParams.get('categoryId');
+    const status = searchParams.get('status');
+    const deliveryType = searchParams.get('deliveryType');
     const createdByAdmin = searchParams.get('createdByAdmin');
     const search = searchParams.get('search');
     const sortBy = searchParams.get('sortBy') || 'id_desc';
 
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limitParam = searchParams.get('limit');
+    const limit = limitParam ? parseInt(limitParam) : 50;
     const skip = (page - 1) * limit;
 
     let orderBy: any = { id: 'desc' };
@@ -120,6 +123,8 @@ export async function GET(request: NextRequest) {
         : {}),
       ...(serviceIds.length > 0 ? { serviceId: { in: serviceIds } } : {}),
       ...(categoryId ? { service: { categoryId } } : {}),
+      ...(status && status !== 'all' ? { status } : {}),
+      ...(deliveryType && deliveryType !== 'all' ? { deliveryType } : {}),
       ...(createdByAdmin === 'true' && !createdByAdminId
         ? { createdByAdminId: { not: null } }
         : {}),

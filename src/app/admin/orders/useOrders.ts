@@ -133,6 +133,7 @@ export function useOrders(
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const ordersPerPage = 50;
 
   // Selection
@@ -179,6 +180,7 @@ export function useOrders(
 
         if (!hasFilter) {
           setOrders([]);
+          setTotalPages(1);
           setLoading(false);
           setIsRefetching(false);
           return;
@@ -189,6 +191,9 @@ export function useOrders(
         if (userIdFilter) params.set('userId', userIdFilter);
         if (employeeId) params.set('createdByAdminId', employeeId);
         if (categoryId) params.set('categoryId', categoryId);
+        if (statusFilter !== 'all') params.set('status', statusFilter);
+        if (deliveryFilter !== 'all') params.set('deliveryType', deliveryFilter);
+        
         if (dateFrom && dateTo) {
           params.set('from', dateFrom);
           params.set('to', dateTo);
@@ -207,9 +212,8 @@ export function useOrders(
         }
 
         params.set('sortBy', sortBy);
-
-        // Add default limits to fetch more data for client-side filtering options
-        params.set('limit', '100');
+        params.set('page', String(currentPage));
+        params.set('limit', String(ordersPerPage));
 
         const response = await fetch(
           `/api/admin/orders${params.toString() ? `?${params.toString()}` : ''}`,
@@ -220,6 +224,9 @@ export function useOrders(
         if (response.ok) {
           const data = await response.json();
           setOrders(data.orders || []);
+          if (data.pagination) {
+            setTotalPages(data.pagination.totalPages || 1);
+          }
         }
       } catch (error) {
         // console.error('Error fetching orders:', error);
@@ -240,6 +247,10 @@ export function useOrders(
       orderSourceFilter,
       searchTerm,
       sortBy,
+      currentPage,
+      statusFilter,
+      deliveryFilter,
+      ordersPerPage
     ]
   );
 
@@ -374,8 +385,7 @@ export function useOrders(
   // Order selection
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
-  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+  const currentOrders = filteredOrders; // Since it's already sliced by server-side pagination
 
   const toggleOrderSelection = (orderId: string) => {
     // Check main orders list first, then fallback to selectedOrdersData to avoiding losing data
