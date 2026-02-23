@@ -133,10 +133,10 @@ export default function PrintOfficialDocumentsSignatureReport() {
         /* Premium Ornate Frame */
         .premium-frame {
           position: fixed;
-          top: 0mm;
-          bottom: 0mm;
-          left: 0mm;
-          right: 0mm;
+          top: 3mm;
+          bottom: 3mm;
+          left: 3mm;
+          right: 3mm;
           border: 2px solid #000;
           pointer-events: none;
           z-index: 9999;
@@ -145,37 +145,38 @@ export default function PrintOfficialDocumentsSignatureReport() {
         .premium-frame::after {
           content: '';
           position: absolute;
-          top: 0mm;
-          bottom: 0mm;
-          left: 0mm;
-          right: 0mm;
+          top: 1.2mm;
+          bottom: 1.2mm;
+          left: 1.2mm;
+          right: 1.2mm;
+          border: 1px dashed #000;
           opacity: 0.5;
         }
 
         .corner {
           position: absolute;
-          width: 50px;
-          height: 50px;
+          width: 60px;
+          height: 60px;
           z-index: 10000;
         }
 
         .corner-tl {
-          top: -1px;
-          left: -1px;
+          top: -2px;
+          left: -2px;
         }
         .corner-tr {
-          top: -1px;
-          right: -1px;
+          top: -2px;
+          right: -2px;
           transform: scaleX(-1);
         }
         .corner-bl {
-          bottom: -1px;
-          left: -1px;
+          bottom: -2px;
+          left: -2px;
           transform: scaleY(-1);
         }
         .corner-br {
-          bottom: -1px;
-          right: -1px;
+          bottom: -2px;
+          right: -2px;
           transform: scale(-1);
         }
 

@@ -152,7 +152,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={() => setShowSearchDropdown(true)}
-                placeholder='تسجيل عميل (الاسم، الهاتف)...'
+                placeholder='تسجيل عميل (الاسم، الهاتف، الرقم القومي)...'
                 className={`w-full bg-slate-50 border-2 ${
                   searching
                     ? 'border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.15)]'

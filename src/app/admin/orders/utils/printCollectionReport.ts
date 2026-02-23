@@ -64,12 +64,9 @@ export function printCollectionReport({
     day: '2-digit',
   });
 
-  const totalAmount = ordersToPrint.reduce((sum, o) => {
-      // Use priceCents or totalCents? Image shows price. 
-      // Image has "قيمة الإيصال". Let's use order.totalCents or quantity * price.
-      // Usually totalCents is the price the customer paid.
-      return sum + (o.totalCents || 0);
-  }, 0) / 100;
+  const totalReceipts = ordersToPrint.reduce((sum, o) => sum + (o.totalCents || 0), 0) / 100;
+  const totalPaid = ordersToPrint.reduce((sum, o) => sum + (o.paidAmount || 0), 0) / 100;
+  const totalRemaining = ordersToPrint.reduce((sum, o) => sum + (o.remainingAmount || 0), 0) / 100;
 
   const reportStyles = `
     <style>
@@ -95,7 +92,7 @@ export function printCollectionReport({
       .data-table td { border: 1px solid #000; padding: 4px 6px; text-align: center; vertical-align: middle; font-weight: bold; font-size: 12px; }
       .data-table .text-right { text-align: right; padding-right: 10px; }
       
-      .footer-row td { background: #f9fafb !important; padding: 8px; font-size: 15px; font-weight: 900; border-top: 2px solid #000; }
+      .footer-row td { background: #f9fafb !important; padding: 8px; font-size: 14px; font-weight: 900; border-top: 2px solid #000; }
 
       @media print {
         button { display: none; }
@@ -112,20 +109,21 @@ export function printCollectionReport({
       timeZone: 'Africa/Cairo',
     });
     
-    // In image: الخدمة المقدمة
-    // Example: بطاقة رقم قومي عادية بالاستمارة
-    // User wants to add time here
     const serviceDisplay = `${order.service.name} ${order.variant?.name ? '- ' + order.variant.name : ''} (${time})`;
     
     const priceCents = order.totalCents || 0;
+    const paid = order.paidAmount || 0;
+    const remaining = order.remainingAmount || 0;
     
     return `
       <tr>
         <td width="5%">${idx + 1}</td>
-        <td width="15%">${order.id.slice(-6).toUpperCase()}</td>
-        <td width="35%" class="text-right">${order.customerName}</td>
-        <td width="35%" class="text-right">${serviceDisplay}</td>
+        <td width="12%">${order.id.slice(-6).toUpperCase()}</td>
+        <td width="28%" class="text-right">${order.customerName}</td>
+        <td width="25%" class="text-right">${serviceDisplay}</td>
         <td width="10%">${(priceCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+        <td width="10%" style="color: green;">${(paid / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+        <td width="10%" style="color: ${remaining > 0 ? 'red' : 'black'};">${(remaining / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
       </tr>
     `;
   }).join('');
@@ -159,7 +157,7 @@ export function printCollectionReport({
         <div class="metadata-row">
           <div class="metadata-item">اسم المحصل : ${collectorName}</div>
           <div class="metadata-item">${branchName}</div>
-          <div class="metadata-item">الاجمالي : ${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+          <div class="metadata-item" style="color: green;">المحصل : ${totalPaid.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
         </div>
 
         <div class="transaction-date">تاريخ التحصيل : ${transactionDate}</div>
@@ -172,13 +170,17 @@ export function printCollectionReport({
               <th>اسم العميل</th>
               <th>الخدمة المقدمة</th>
               <th>قيمة الإيصال</th>
+              <th>المدفوع</th>
+              <th>المتبقي</th>
             </tr>
           </thead>
           <tbody>
             ${rowsHtml}
             <tr class="footer-row">
               <td colspan="4" style="text-align: left; padding-left: 50px;">اجمالي المتحصلات :</td>
-              <td>${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+              <td>${totalReceipts.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+              <td style="color: green;">${totalPaid.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+              <td style="color: ${totalRemaining > 0 ? 'red' : 'black'};">${totalRemaining.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
             </tr>
           </tbody>
         </table>

@@ -19,6 +19,11 @@ interface UseOrdersReturn {
   updatingStatus: string | null;
   updatingBulk: boolean;
 
+  // Global Counts
+  totalOrders: number;
+  activeOrdersCount: number;
+  completedOrdersCount: number;
+
   // Filters
   filters: OrderFilters;
   setSearchTerm: (term: string) => void;
@@ -134,6 +139,9 @@ export function useOrders(
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [activeOrdersCount, setActiveOrdersCount] = useState(0);
+  const [completedOrdersCount, setCompletedOrdersCount] = useState(0);
   const ordersPerPage = 50;
 
   // Selection
@@ -226,6 +234,9 @@ export function useOrders(
           setOrders(data.orders || []);
           if (data.pagination) {
             setTotalPages(data.pagination.totalPages || 1);
+            setTotalOrders(data.pagination.total || 0);
+            setActiveOrdersCount(data.pagination.activeCount || 0);
+            setCompletedOrdersCount(data.pagination.completedCount || 0);
           }
         }
       } catch (error) {
@@ -311,8 +322,28 @@ export function useOrders(
     }
 
     setFilteredOrders(filtered);
-    setCurrentPage(1);
   }, [orders, statusFilter, deliveryFilter, dateFrom, dateTo, deliveryTodayFilter, sortBy]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    statusFilter,
+    deliveryFilter,
+    dateFrom,
+    dateTo,
+    photographyDate,
+    selectedServiceIds,
+    orderSourceFilter,
+    categoryId,
+    employeeId,
+  ]);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
 
   // Fetch services
   useEffect(() => {
@@ -581,6 +612,9 @@ export function useOrders(
     // Pagination
     currentPage,
     totalPages,
+    totalOrders,
+    activeOrdersCount,
+    completedOrdersCount,
     ordersPerPage,
     paginate: setCurrentPage,
 

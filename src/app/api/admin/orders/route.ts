@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
         : {}),
     };
 
-    const [orders, total] = await Promise.all([
+    const [orders, total, activeCount, completedCount] = await Promise.all([
       prisma.order.findMany({
         where: whereClause,
         include: {
@@ -160,6 +160,18 @@ export async function GET(request: NextRequest) {
         skip: skip,
       }),
       prisma.order.count({ where: whereClause }),
+      prisma.order.count({
+        where: {
+          ...whereClause,
+          status: { notIn: ['delivered', 'cancelled', 'returned'] },
+        },
+      }),
+      prisma.order.count({
+        where: {
+          ...whereClause,
+          status: 'delivered',
+        },
+      }),
     ]);
 
     let mappedOrders: OrderResponse[] = [];
@@ -223,6 +235,8 @@ export async function GET(request: NextRequest) {
         page,
         limit,
         total,
+        activeCount,
+        completedCount,
         totalPages: Math.ceil(total / limit),
       },
     });

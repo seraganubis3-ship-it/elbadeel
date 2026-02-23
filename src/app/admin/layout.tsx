@@ -60,25 +60,59 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // Check if user has admin privileges
+  // Map routes to required permissions
+  const routePermissions: Record<string, string> = {
+    '/admin/create': 'CREATE_ORDER',
+    '/admin/orders': 'MANAGE_ORDERS',
+    '/admin/services': 'MANAGE_SERVICES',
+    '/admin/categories': 'MANAGE_SERVICES',
+    '/admin/users': 'MANAGE_USERS',
+    '/admin/roles': 'MANAGE_USERS',
+    '/admin/inventory': 'MANAGE_INVENTORY',
+    '/admin/reports': 'VIEW_REPORTS',
+    '/admin/whatsapp': 'MANAGE_WHATSAPP',
+    '/admin/promo-codes': 'MANAGE_PROMOCODES',
+    '/admin/delegates': 'MANAGE_DELEGATES',
+    '/admin/work-orders': 'MANAGE_WORKORDERS',
+    '/admin/settings': 'MANAGE_SETTINGS',
+  };
+
+  const isAuthorizedPath = () => {
+    if (pathname === '/admin') return true;
+    
+    // Find matching route
+    const matchingRoute = Object.keys(routePermissions).find(route => 
+      pathname === route || pathname.startsWith(route + '/')
+    );
+
+    if (matchingRoute) {
+      const requiredPermission = routePermissions[matchingRoute] as string;
+      return hasPermission(session?.user as any, requiredPermission);
+    }
+
+    return true;
+  };
+
+  // Check if user has admin privileges and is authorized for this route
   if (
     !session?.user ||
     !session.user.role ||
-    !hasPermission(session.user as any, 'VIEW_DASHBOARD')
+    !hasPermission(session.user as any, 'VIEW_DASHBOARD') ||
+    !isAuthorizedPath()
   ) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-emerald-50 to-slate-100 px-4'>
         <div className='text-center max-w-md w-full'>
           <h1 className='text-xl sm:text-2xl font-bold text-gray-900 mb-4'>غير مصرح لك بالوصول</h1>
           <p className='text-gray-600 mb-6 text-sm sm:text-base'>
-            يجب أن تكون مدير أو موظف أو مراجع للوصول إلى لوحة التحكم
+            عفواً، ليس لديك الصلاحيات الكافية للوصول إلى هذه الصفحة.
           </p>
           <div className='space-y-3'>
             <Link
-              href='/login'
+              href='/admin'
               className='inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-semibold rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-300 text-sm sm:text-base'
             >
-              تسجيل دخول إداري
+              العودة للوحة التحكم
             </Link>
             <Link
               href='/'

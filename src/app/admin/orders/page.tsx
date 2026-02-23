@@ -55,6 +55,9 @@ export default function AdminOrdersPage() {
     sortBy,
     currentPage,
     totalPages,
+    totalOrders,
+    activeOrdersCount,
+    completedOrdersCount,
     paginate,
     selectedOrders,
     selectedOrdersData,
@@ -184,6 +187,10 @@ export default function AdminOrdersPage() {
 
       if (name.includes('مترجم') && (name.includes('بطاقة') || slug === 'national-id'))
         return 'TRANSLATED_ID';
+
+      // Force "تصديق" to general to get its own table
+      if (name.includes('تصديق') || slug.includes('attest')) return 'GENERAL';
+
       if (name.includes('بطاقة') || slug === 'national-id') return 'NATIONAL_ID';
       if (name.includes('جواز') || slug === 'passports') return 'PASSPORT';
       if (name.includes('وفاة') || slug.includes('death')) return 'DEATH_CERT';
@@ -362,17 +369,59 @@ export default function AdminOrdersPage() {
       });
     }
 
-    // 6. General
+    // 6. General - Grouped by actual service name
     if (groupedOrders.GENERAL && groupedOrders.GENERAL.length > 0) {
-      sections.push({
-        title: 'خدمات أخرى',
-        data: groupedOrders.GENERAL,
-        columns: [
+      const byService: Record<string, any[]> = {};
+      groupedOrders.GENERAL.forEach(o => {
+        const sName = o.service?.name || 'خدمة غير محددة';
+        if (!byService[sName]) byService[sName] = [];
+        byService[sName]!.push(o);
+      });
+
+      Object.entries(byService).forEach(([serviceName, groupOrders]) => {
+        const sLow = serviceName.toLowerCase();
+        const isMarriage = sLow.includes('زواج') || sLow.includes('طلاق');
+        const isDeath = sLow.includes('وفاة');
+        const isBirth = sLow.includes('ميلاد');
+
+        let columns = [
           { key: 'customerName', label: 'الاسم' },
           { key: 'idNumber', label: 'الرقم القومي' },
           { key: 'overrideTotalFines', label: 'الرسوم', type: 'number' },
           { key: 'overrideDetails', label: 'التفاصيل' },
-        ],
+        ];
+
+        if (isBirth) {
+          columns = [
+            { key: 'customerName', label: 'الاسم' },
+            { key: 'birthDate', label: 'تاريخ الميلاد' },
+            { key: 'motherName', label: 'اسم الأم' },
+            { key: 'quantity', label: 'العدد', type: 'number' },
+            { key: 'idNumber', label: 'الرقم القومي' },
+          ];
+        } else if (isDeath) {
+          columns = [
+            { key: 'customerName', label: 'الاسم' },
+            { key: 'birthDate', label: 'تاريخ الوفاة' },
+            { key: 'motherName', label: 'اسم الأم' },
+            { key: 'quantity', label: 'العدد', type: 'number' },
+          ];
+        } else if (isMarriage) {
+          columns = [
+            { key: 'customerName', label: 'اسم الزوج/الزوجة' },
+            { key: 'motherName', label: 'اسم الأم' },
+            { key: 'wifeName', label: 'الطرف الآخر' },
+            { key: 'wifeMotherName', label: 'أم الطرف الآخر' },
+            { key: 'marriageDate', label: 'تاريخ الزواج' },
+            { key: 'quantity', label: 'العدد', type: 'number' },
+          ];
+        }
+
+        sections.push({
+          title: serviceName,
+          data: groupOrders,
+          columns: columns,
+        });
       });
     }
 
@@ -931,11 +980,7 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // Calculate stats
-  const activeOrdersCount = filteredOrders.filter(
-    o => o.status !== 'completed' && o.status !== 'cancelled'
-  ).length;
-  const completedOrdersCount = filteredOrders.filter(o => o.status === 'completed').length;
+  // Stats are now provided via useOrders hook
 
   // Loading state
   if (loading) {
@@ -1008,7 +1053,7 @@ export default function AdminOrdersPage() {
         {/* Header with Stats */}
         <OrdersHeader
           orderSourceFilter={filters.orderSourceFilter}
-          filteredOrdersCount={filteredOrders.length}
+          filteredOrdersCount={totalOrders}
           activeOrdersCount={activeOrdersCount}
           completedOrdersCount={completedOrdersCount}
         />

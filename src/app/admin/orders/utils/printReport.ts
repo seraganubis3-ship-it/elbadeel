@@ -8,6 +8,41 @@ interface PrintReportOptions {
   reportDate?: string | undefined;
 }
 
+/**
+ * Robust date formatter that handles:
+ * 1. Native Date objects
+ * 2. DD/MM/YYYY strings (manual parsing)
+ * 3. ISO strings
+ */
+function formatDate(date: any): string {
+  if (!date) return '---';
+
+  // Handle DD/MM/YYYY strings
+  if (typeof date === 'string' && date.includes('/')) {
+    const parts = date.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0]!);
+      const month = parseInt(parts[1]!);
+      const year = parseInt(parts[2]!);
+      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+        // Return in ar-EG style if possible, or just the string if it's already well-formatted
+        // To be safe and consistent with ar-EG, we format it:
+        try {
+          const d = new Date(year, month - 1, day);
+          if (!isNaN(d.getTime())) return d.toLocaleDateString('ar-EG');
+        } catch (e) {}
+      }
+    }
+    return date; // Return as-is if parsing fails
+  }
+
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '---';
+  if (d.getFullYear() < 1900) return '---';
+
+  return d.toLocaleDateString('ar-EG');
+}
+
 export function printOrdersReport({
   orders,
   selectedOrders,
@@ -280,6 +315,9 @@ export function printOrdersReport({
     if (name.includes('مترجم') && (name.includes('بطاقة') || slug === 'national-id'))
       return 'TRANSLATED_ID';
 
+    // Services with attestations (تصديق) should have their own individual tables
+    if (name.includes('تصديق') || slug.includes('attest')) return 'GENERAL';
+
     if (name.includes('بطاقة') || slug === 'national-id') return 'NATIONAL_ID';
     if (name.includes('جواز') || slug === 'passports') return 'PASSPORT';
     if (name.includes('وفاة') || slug.includes('death')) return 'DEATH_CERT';
@@ -413,14 +451,6 @@ export function printOrdersReport({
         const mono =
           'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
 
-        const formatDate = (date: any) => {
-          if (!date) return '---';
-          const d = new Date(date);
-          if (isNaN(d.getTime())) return '---';
-          if (d.getFullYear() < 1920) return '---'; // Prevent epoch 0 or bad years
-          return d.toLocaleDateString('ar-EG');
-        };
-
         const bDate = formatDate(order.birthDate);
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${order.idNumber || '---'}</td></tr>`;
       })
@@ -439,15 +469,7 @@ export function printOrdersReport({
         const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
         const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
 
-        const formatDate = (date: any) => {
-          if (!date) return '---';
-          const d = new Date(date);
-          if (isNaN(d.getTime())) return '---';
-          if (d.getFullYear() < 1920) return '---';
-          return d.toLocaleDateString('ar-EG');
-        };
-
-        const dDate = formatDate(order.birthDate); // Reuse birthDate field for event date
+        const dDate = formatDate(order.deathDate || order.birthDate); // Reuse birthDate field for event date
         return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${dDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td></tr>`;
       })
       .join('');
@@ -489,14 +511,6 @@ export function printOrdersReport({
         const isSupply = order.status === 'supply';
         const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important;' : ''}"`;
         const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
-
-        const formatDate = (date: any) => {
-          if (!date) return '---';
-          const d = new Date(date);
-          if (isNaN(d.getTime())) return '---';
-          if (d.getFullYear() < 1920) return '---';
-          return d.toLocaleDateString('ar-EG');
-        };
 
         const mDate = formatDate(order.marriageDate);
 
@@ -543,17 +557,10 @@ export function printOrdersReport({
   if (partitionedOrders.GENERAL.length > 0) {
     const byService: Record<string, Order[]> = {};
     partitionedOrders.GENERAL.forEach(o => {
-      const sName = o.service?.name || 'خدمات أخرى';
+      const sName = o.service?.name || 'خدمة غير محددة';
       if (!byService[sName]) byService[sName] = [];
       byService[sName]!.push(o);
     });
-
-    const formatDate = (date: any) => {
-      if (!date) return '---';
-      const d = new Date(date);
-      if (isNaN(d.getTime()) || d.getFullYear() < 1920) return '---';
-      return d.toLocaleDateString('ar-EG');
-    };
 
     Object.entries(byService).forEach(([serviceName, groupOrders]) => {
       const groupTotalQuantity = groupOrders.reduce((sum, o) => sum + (o.quantity || 1), 0);
