@@ -5,13 +5,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { hasPermission } from '@/lib/permissions';
+import {
+  PREDEFINED_FINES,
+  calculateActualFineAmounts,
+  calculateFineExpenses,
+  calculateLostReportForServices,
+  Fine,
+} from '@/constants/fines';
+import { useToast } from '@/components/Toast';
 
 interface OrderDetailClientProps {
   order: any;
 }
 
 export default function OrderDetailClient({ order }: OrderDetailClientProps) {
-  useRouter();
+  const router = useRouter();
   const { data: session } = useSession();
   const [currentOrder, setCurrentOrder] = useState(order);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -32,6 +40,45 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
   // Independent State for inline editing
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState('');
+  const [isEditingService, setIsEditingService] = useState(false);
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
+
+  // Fines state
+  const [selectedFines, setSelectedFines] = useState<string[]>([]);
+  const [finesList] = useState<Fine[]>(PREDEFINED_FINES);
+  const [showServicesDropdown, setShowServicesDropdown] = useState(false);
+  const [showFinesDropdown, setShowFinesDropdown] = useState(false);
+  const [finesSearchTerm, setFinesSearchTerm] = useState('');
+  const [servicesSearchTerm, setServicesSearchTerm] = useState('');
+  const [manualServices, setManualServices] = useState<{ [key: string]: number }>({});
+  const [isEditingFines, setIsEditingFines] = useState(false);
+
+  // Initialize fines from order
+  useEffect(() => {
+    if (currentOrder.selectedFines) {
+      try {
+        const fines = JSON.parse(currentOrder.selectedFines);
+        if (Array.isArray(fines)) setSelectedFines(fines);
+      } catch (e) {
+        // Fallback for non-JSON or malformed data
+      }
+    }
+
+    if (currentOrder.servicesDetails) {
+      try {
+        const services = JSON.parse(currentOrder.servicesDetails);
+        if (Array.isArray(services)) {
+          const manual: { [key: string]: number } = {};
+          services.forEach((s: any) => {
+            if (s.id && s.id !== 'service_001') {
+              manual[s.id] = s.amount / 100;
+            }
+          });
+          setManualServices(manual);
+        }
+      } catch (e) {}
+    }
+  }, [currentOrder.selectedFines, currentOrder.servicesDetails]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -214,16 +261,47 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
     if (!editingField) return;
 
     try {
+      let finalValue: any = tempValue;
+      const isFinancialField = ['quantity', 'deliveryFee', 'otherFees', 'discount', 'photographyLocation'].includes(editingField);
+      
+      // Parse numeric fields
+      if (['quantity', 'deliveryFee', 'otherFees', 'discount'].includes(editingField)) {
+        finalValue = parseFloat(tempValue) || 0;
+      }
+      
+      // Handle Date fields
+      if (editingField === 'photographyDate' && tempValue) {
+        finalValue = new Date(tempValue).toISOString();
+      }
+
+      const body: any = { [editingField]: finalValue };
+      let newTotalCents = currentOrder.totalCents;
+
+      // If it's a financial field, we need to recalculate the total
+      if (isFinancialField || editingField === 'policeStation') {
+        // We need to update currentOrder locally first so calculateTotalPrice sees the new value
+        const updatedTempOrder = { ...currentOrder, [editingField]: finalValue };
+        
+        // Temporarily set currentOrder to calculate total accurately
+        // (Wait, calculateTotalPrice uses state, so let's pass the override to it)
+        newTotalCents = calculateTotalPriceOverride(updatedTempOrder);
+        body.totalCents = newTotalCents;
+      }
+
       const response = await fetch(`/api/admin/orders/${currentOrder.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [editingField]: tempValue }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          setCurrentOrder((prev: any) => ({ ...prev, [editingField]: tempValue }));
+          setCurrentOrder((prev: any) => ({ 
+            ...prev, 
+            [editingField]: finalValue,
+            totalCents: body.totalCents !== undefined ? body.totalCents : prev.totalCents
+          }));
           setEditingField(null);
           setSuccessMessage('تم التحديث بنجاح');
           setShowSuccessMessage(true);
@@ -234,6 +312,214 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
       }
     } catch (error) {
       alert('فشل التحديث');
+    }
+  };
+
+  // Helper for recalculation during inline edits
+  const calculateTotalPriceOverride = (overriddenOrder: any) => {
+    if (!overriddenOrder.variant) return 0;
+    let total = overriddenOrder.variant.priceCents * overriddenOrder.quantity;
+
+    // Photography fee
+    if (overriddenOrder.photographyLocation === 'dandy_mall') total += 200 * 100;
+    else if (overriddenOrder.photographyLocation === 'civil_registry_haram') total += 50 * 100;
+    else if (overriddenOrder.photographyLocation === 'home_photography') total += 200 * 100;
+
+    // Delivery fee
+    if (overriddenOrder.deliveryType === 'ADDRESS') total += (overriddenOrder.deliveryFee || 0) * 100;
+
+    // Fines
+    total += calculateActualFineAmounts(selectedFines, finesList);
+    total += calculateFineExpenses(selectedFines, finesList);
+    total += calculateLostReportForServices(selectedFines, finesList);
+
+    // Manual services
+    const manualServicesTotal = Object.values(manualServices).reduce(
+      (sum, amount) => sum + (Number(amount) || 0) * 100,
+      0
+    );
+    total += manualServicesTotal;
+
+    // Other fees
+    total += (overriddenOrder.otherFees || 0) * 100;
+
+    // Passport Surcharge logic
+    const isPassportService =
+      overriddenOrder.service.name.includes('جواز') || overriddenOrder.service.name.includes('سفر');
+
+    if (
+      isPassportService &&
+      (overriddenOrder.variant.name.includes('عادي') || overriddenOrder.variant.name.includes('سريع'))
+    ) {
+      const station = overriddenOrder.policeStation?.trim();
+      if (['العجوزة', 'الشيخ زايد', '6 أكتوبر'].includes(station)) {
+        total += 20000;
+      }
+    }
+
+    // Discount
+    const discountAmount = overriddenOrder.discount || 0;
+    total -= discountAmount;
+
+    return Math.max(0, total);
+  };
+
+  // Fine Handlers
+  const handleFineToggle = useCallback(
+    (fineId: string) => {
+      setSelectedFines(prev => {
+        let newSelectedFines;
+        if (prev.includes(fineId)) {
+          newSelectedFines = prev.filter(id => id !== fineId);
+        } else {
+          newSelectedFines = [...prev, fineId];
+        }
+        // Auto-select مصاريف غرامة
+        const hasActualFines = newSelectedFines.some(id => {
+          const fine = finesList.find(f => f.id === id);
+          return fine?.category === 'غرامات' && id !== 'fine_004';
+        });
+        if (hasActualFines && !newSelectedFines.includes('service_001')) {
+          newSelectedFines = [...newSelectedFines, 'service_001'];
+        } else if (!hasActualFines && newSelectedFines.includes('service_001')) {
+          newSelectedFines = newSelectedFines.filter(id => id !== 'service_001');
+        }
+        return newSelectedFines;
+      });
+    },
+    [finesList]
+  );
+
+  const handleManualServiceChange = useCallback((serviceId: string, amount: number) => {
+    setManualServices(prev => ({ ...prev, [serviceId]: amount }));
+  }, []);
+
+  const calculateTotalPrice = useCallback(() => {
+    if (!currentOrder.variant) return 0;
+    let total = currentOrder.variant.priceCents * currentOrder.quantity;
+
+    // Photography fee (logic from useCreateOrder)
+    if (currentOrder.photographyLocation === 'dandy_mall') total += 200 * 100;
+    else if (currentOrder.photographyLocation === 'civil_registry_haram') total += 50 * 100;
+    else if (currentOrder.photographyLocation === 'home_photography') total += 200 * 100;
+
+    // Delivery fee
+    if (currentOrder.deliveryType === 'ADDRESS') total += (currentOrder.deliveryFee || 0) * 100;
+
+    // Fines
+    total += calculateActualFineAmounts(selectedFines, finesList);
+    total += calculateFineExpenses(selectedFines, finesList);
+    total += calculateLostReportForServices(selectedFines, finesList);
+
+    // Manual services
+    const manualServicesTotal = Object.values(manualServices).reduce(
+      (sum, amount) => sum + (Number(amount) || 0) * 100,
+      0
+    );
+    total += manualServicesTotal;
+
+    // Other fees
+    total += (currentOrder.otherFees || 0) * 100;
+
+    // Passport Surcharge logic
+    const isPassportService =
+      currentOrder.service.name.includes('جواز') || currentOrder.service.name.includes('سفر');
+
+    if (
+      isPassportService &&
+      (currentOrder.variant.name.includes('عادي') || currentOrder.variant.name.includes('سريع'))
+    ) {
+      const station = currentOrder.policeStation?.trim();
+      if (['العجوزة', 'الشيخ زايد', '6 أكتوبر'].includes(station)) {
+        total += 20000;
+      }
+    }
+
+    // Discount
+    const discountAmount = currentOrder.discount || 0;
+    total -= discountAmount;
+
+    return Math.max(0, total);
+  }, [
+    currentOrder.variant,
+    currentOrder.quantity,
+    currentOrder.photographyLocation,
+    currentOrder.deliveryType,
+    currentOrder.deliveryFee,
+    currentOrder.otherFees,
+    currentOrder.discount,
+    currentOrder.service.name,
+    currentOrder.policeStation,
+    selectedFines,
+    finesList,
+    manualServices,
+  ]);
+
+  const saveFinesChanges = async () => {
+    setIsUpdating(true);
+    try {
+      const newTotalCents = calculateTotalPrice();
+      const finesDetails = selectedFines
+        .filter(id => {
+          const fine = finesList.find(f => f.id === id);
+          return fine?.category === 'غرامات';
+        })
+        .map(fineId => {
+          const fine = finesList.find(f => f.id === fineId);
+          return { id: fineId, name: fine?.name || '', amount: fine?.amountCents || 0 };
+        });
+
+      const servicesDetails = selectedFines
+        .filter(id => {
+          const fine = finesList.find(f => f.id === id);
+          return fine?.category === 'خدمات اضافية';
+        })
+        .map(serviceId => {
+          const service = finesList.find(f => f.id === serviceId);
+          const manualAmount = manualServices[serviceId] || 0;
+          return {
+            id: serviceId,
+            name: service?.name || '',
+            amount:
+              serviceId === 'service_001'
+                ? calculateActualFineAmounts(selectedFines, finesList)
+                : manualAmount * 100,
+          };
+        });
+
+      const response = await fetch(`/api/admin/orders/${currentOrder.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          selectedFines: selectedFines,
+          finesDetails: finesDetails,
+          servicesDetails: servicesDetails,
+          totalCents: newTotalCents,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setCurrentOrder((prev: any) => ({
+            ...prev,
+            selectedFines: JSON.stringify(selectedFines),
+            finesDetails: JSON.stringify(finesDetails),
+            servicesDetails: JSON.stringify(servicesDetails),
+            totalCents: newTotalCents,
+          }));
+          setIsEditingFines(false);
+          setSuccessMessage('تم تحديث الغرامات والحسابات بنجاح');
+          setShowSuccessMessage(true);
+          setTimeout(() => setShowSuccessMessage(false), 3000);
+        }
+      } else {
+        alert('فشل في حفظ التعديلات');
+      }
+    } catch (error) {
+      alert('حدث خطأ أثناء الاتصال بالخادم');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -473,10 +759,31 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
 
             {/* Service Details */}
             <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-8'>
-              <h2 className='text-xl font-bold text-slate-900 mb-6 flex items-center gap-2'>
-                <span className='w-2 h-8 bg-emerald-500 rounded-full'></span>
-                تفاصيل الخدمة
-              </h2>
+              <div className='flex justify-between items-center mb-6'>
+                <h2 className='text-xl font-bold text-slate-900 flex items-center gap-2'>
+                  <span className='w-2 h-8 bg-emerald-500 rounded-full'></span>
+                  تفاصيل الخدمة
+                </h2>
+                {!isEditingService ? (
+                  <button
+                    onClick={() => setIsEditingService(true)}
+                    className='px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-bold hover:bg-emerald-100 transition-all border border-emerald-100 flex items-center gap-2'
+                  >
+                    <span>تعديل التفاصيل</span>
+                    <span className='text-lg'>📋</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setIsEditingService(false);
+                      setEditingField(null);
+                    }}
+                    className='px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all'
+                  >
+                    إغلاق التعديل
+                  </button>
+                )}
+              </div>
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8'>
                 <div className='bg-slate-50 rounded-2xl p-4 border border-slate-100'>
@@ -492,11 +799,13 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   <p className='text-lg font-bold text-slate-900'>{currentOrder.variant.name}</p>
                 </div>
                 <div className='bg-slate-50 rounded-2xl p-4 border border-slate-100'>
-                  <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-1'>
-                    السعر
-                  </p>
+                  <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>
+                      السعر الإجمالي
+                    </p>
+                  </div>
                   <p className='text-2xl font-black text-emerald-600'>
-                    {(currentOrder.totalCents / 100).toFixed(2)} جنية
+                    {((isEditingFines) ? calculateTotalPrice() : currentOrder.totalCents) / 100} جنية
                   </p>
                 </div>
                 <div className='bg-slate-50 rounded-2xl p-4 border border-slate-100'>
@@ -508,6 +817,52 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   </p>
                 </div>
 
+                {/* Editable Quantity */}
+                <div className='md:col-span-2 bg-emerald-50/30 rounded-2xl p-4 border border-emerald-100 hover:border-emerald-300 transition-colors group relative'>
+                  <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
+                      الكمية
+                    </p>
+                    {isEditingService && !editingField && (
+                      <button
+                        onClick={() =>
+                          handleStartEdit('quantity', currentOrder.quantity.toString())
+                        }
+                        className='text-emerald-500 text-xs font-bold px-2 py-1 hover:bg-emerald-100 rounded-lg transition-all'
+                      >
+                        تعديل ✎
+                      </button>
+                    )}
+                  </div>
+                  {editingField === 'quantity' ? (
+                    <div className='flex gap-2'>
+                      <input
+                        type='number'
+                        autoFocus
+                        value={tempValue}
+                        onChange={e => setTempValue(e.target.value)}
+                        className='flex-1 bg-white border-2 border-emerald-200 rounded-lg px-3 py-1 text-sm font-bold focus:ring-0 focus:border-emerald-500'
+                      />
+                      <button
+                        onClick={handleSaveField}
+                        className='bg-green-500 text-white p-2 rounded-lg hover:bg-green-600'
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setEditingField(null)}
+                        className='bg-slate-200 text-slate-600 p-2 rounded-lg hover:bg-slate-300'
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <p className='text-lg font-bold text-slate-900'>
+                      {currentOrder.quantity}
+                    </p>
+                  )}
+                </div>
+
                 {/* Editable Fields - Police Station */}
                 {(currentOrder.service.name.includes('جواز') ||
                   currentOrder.service.name.includes('سفر') ||
@@ -517,12 +872,12 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                       <p className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
                         قسم الشرطة
                       </p>
-                      {!editingField && (
+                      {isEditingService && !editingField && (
                         <button
                           onClick={() =>
                             handleStartEdit('policeStation', currentOrder.policeStation)
                           }
-                          className='text-blue-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 hover:bg-blue-100 rounded-lg'
+                          className='text-blue-500 text-xs font-bold px-2 py-1 hover:bg-blue-100 rounded-lg transition-all'
                         >
                           تعديل ✎
                         </button>
@@ -568,12 +923,12 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                       <p className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
                         مكان الاستلام
                       </p>
-                      {!editingField && (
+                      {isEditingService && !editingField && (
                         <button
                           onClick={() =>
                             handleStartEdit('pickupLocation', currentOrder.pickupLocation)
                           }
-                          className='text-blue-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 hover:bg-blue-100 rounded-lg'
+                          className='text-blue-500 text-xs font-bold px-2 py-1 hover:bg-blue-100 rounded-lg transition-all'
                         >
                           تعديل ✎
                         </button>
@@ -616,12 +971,12 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                     <p className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
                       الصفة
                     </p>
-                    {!editingField && (
+                    {isEditingService && !editingField && (
                       <button
                         onClick={() =>
                           handleStartEdit('title', currentOrder.title || '')
                         }
-                        className='text-purple-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 hover:bg-purple-100 rounded-lg'
+                        className='text-purple-500 text-xs font-bold px-2 py-1 hover:bg-purple-100 rounded-lg transition-all'
                       >
                         تعديل ✎
                       </button>
@@ -659,19 +1014,72 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   )}
                 </div>
 
+                {/* Editable Fields - Photography Location (مكان التصوير) */}
+                <div className='md:col-span-2 bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100 hover:border-indigo-300 transition-colors group relative'>
+                   <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
+                      مكان التصوير
+                    </p>
+                    {isEditingService && !editingField && (
+                      <button
+                        onClick={() => handleStartEdit('photographyLocation', currentOrder.photographyLocation || '')}
+                        className='text-indigo-500 text-xs font-bold px-2 py-1 hover:bg-indigo-100 rounded-lg transition-all'
+                      >
+                        تعديل ✎
+                      </button>
+                    )}
+                  </div>
+                  {editingField === 'photographyLocation' ? (
+                    <div className='flex gap-2'>
+                      <select
+                        autoFocus
+                        value={tempValue}
+                        onChange={e => setTempValue(e.target.value)}
+                        className='flex-1 bg-white border-2 border-indigo-200 rounded-lg px-3 py-1 text-sm font-bold focus:ring-0 focus:border-indigo-500'
+                      >
+                        <option value=''>غير محدد</option>
+                        <option value='dandy_mall'>داندي مول</option>
+                        <option value='civil_registry_haram'>سجل مدني الهرم</option>
+                        <option value='home_photography'>تصوير منزلي</option>
+                        <option value='office'>تصوير في المكتب</option>
+                      </select>
+                      <button
+                        onClick={handleSaveField}
+                        className='bg-green-500 text-white p-2 rounded-lg hover:bg-green-600'
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setEditingField(null)}
+                        className='bg-slate-200 text-slate-600 p-2 rounded-lg hover:bg-slate-300'
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <p className='text-lg font-bold text-slate-900'>
+                      {currentOrder.photographyLocation === 'dandy_mall' ? 'داندي مول' :
+                       currentOrder.photographyLocation === 'civil_registry_haram' ? 'سجل مدني الهرم' :
+                       currentOrder.photographyLocation === 'home_photography' ? 'تصوير منزلي' :
+                       currentOrder.photographyLocation === 'office' ? 'تصوير في المكتب' : 
+                       currentOrder.photographyLocation || <span className='text-slate-400 italic font-normal'>غير محدد</span>}
+                    </p>
+                  )}
+                </div>
+
                 {/* Editable Fields - Capture Date (تاريخ التصوير) */}
                 <div className='md:col-span-2 bg-teal-50/50 rounded-2xl p-4 border border-teal-100 hover:border-teal-300 transition-colors group relative'>
                   <div className='flex justify-between items-start mb-1'>
                     <p className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
                       تاريخ التصوير
                     </p>
-                    {!editingField && (
+                    {isEditingService && !editingField && (
                       <button
                         onClick={() => {
                           const val = currentOrder.photographyDate ? (new Date(currentOrder.photographyDate).toISOString().split('T')[0] || '') : '';
                           handleStartEdit('photographyDate', val);
                         }}
-                        className='text-teal-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 hover:bg-teal-100 rounded-lg'
+                        className='text-teal-500 text-xs font-bold px-2 py-1 hover:bg-teal-100 rounded-lg transition-all'
                       >
                         تعديل ✎
                       </button>
@@ -687,16 +1095,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                         className='flex-1 bg-white border-2 border-teal-200 rounded-lg px-3 py-1 text-sm font-bold focus:ring-0 focus:border-teal-500'
                       />
                       <button
-                        onClick={() => {
-                          // The API likely expects a proper Date format, let's pass an ISO string
-                          const finalValue = tempValue ? new Date(tempValue).toISOString() : null;
-                          handleSaveField(); // Wait, the default handleSaveField just passes `tempValue`. I can pass the correctly formatted value there or handle it inside the edit loop.
-                          // Actually, handleSaveField uses tempValue state directly. Let's make sure tempValue is updated before saving or override it.
-                          // It's cleaner to let `handleSaveField` handle it. But `handleSaveField` just sends `tempValue`.
-                          // So if user selects '2023-10-05', tempValue is '2023-10-05', Prisma can parse it as ISO Date if we append T00:00:00Z.
-                          setTempValue(prev => prev ? new Date(prev).toISOString() : '');
-                          setTimeout(handleSaveField, 10);
-                        }}
+                        onClick={handleSaveField}
                         className='bg-green-500 text-white p-2 rounded-lg hover:bg-green-600'
                       >
                         ✓
@@ -725,60 +1124,486 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
               </div>
             </div>
 
+
+
+            {/* Fines & Additional Services */}
+            <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-8'>
+              <div className='flex items-center justify-between mb-6'>
+                <h2 className='text-xl font-bold text-slate-900 flex items-center gap-2'>
+                  <span className='w-2 h-8 bg-rose-500 rounded-full'></span>
+                  الغرامات والخدمات الإضافية
+                </h2>
+                {!isEditingFines ? (
+                  <button
+                    onClick={() => setIsEditingFines(true)}
+                    className='px-4 py-2 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-100 transition-all border border-rose-100 flex items-center gap-2'
+                  >
+                    <span>تعديل الغرامات</span>
+                    <span className='text-lg'>⚖️</span>
+                  </button>
+                ) : (
+                  <div className='flex gap-2'>
+                    <button
+                      onClick={() => {
+                        setIsEditingFines(false);
+                        // Reset state from order
+                        if (currentOrder.selectedFines) {
+                          try {
+                            const fines = JSON.parse(currentOrder.selectedFines);
+                            if (Array.isArray(fines)) setSelectedFines(fines);
+                          } catch (e) {}
+                        }
+                        if (currentOrder.servicesDetails) {
+                          try {
+                            const services = JSON.parse(currentOrder.servicesDetails);
+                            if (Array.isArray(services)) {
+                              const manual: { [key: string]: number } = {};
+                              services.forEach((s: any) => {
+                                if (s.id && s.id !== 'service_001') {
+                                  manual[s.id] = s.amount / 100;
+                                }
+                              });
+                              setManualServices(manual);
+                            }
+                          } catch (e) {}
+                        }
+                      }}
+                      className='px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all'
+                    >
+                      إلغاء
+                    </button>
+                    <button
+                      onClick={saveFinesChanges}
+                      disabled={isUpdating}
+                      className='px-4 py-2 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-all shadow-md shadow-rose-200 flex items-center gap-2'
+                    >
+                      {isUpdating ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {!isEditingFines ? (
+                <div className='space-y-4'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <div className='p-4 bg-rose-50/50 rounded-2xl border border-rose-100'>
+                      <p className='text-xs font-bold text-rose-400 uppercase tracking-wider mb-2'>الغرامات المختارة</p>
+                      <div className='flex flex-wrap gap-2'>
+                        {selectedFines.filter(id => finesList.find(f => f.id === id)?.category === 'غرامات').length > 0 ? (
+                          selectedFines
+                            .filter(id => finesList.find(f => f.id === id)?.category === 'غرامات')
+                            .map(id => (
+                              <span key={id} className='px-3 py-1 bg-white text-rose-700 rounded-lg text-xs font-bold border border-rose-200'>
+                                {finesList.find(f => f.id === id)?.name}
+                              </span>
+                            ))
+                        ) : (
+                          <span className='text-sm text-slate-400'>لا توجد غرامات</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className='p-4 bg-sky-50/50 rounded-2xl border border-sky-100'>
+                      <p className='text-xs font-bold text-sky-400 uppercase tracking-wider mb-2'>الخدمات الإضافية</p>
+                      <div className='flex flex-wrap gap-2'>
+                        {selectedFines.filter(id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية').length > 0 ? (
+                          selectedFines
+                            .filter(id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية')
+                            .map(id => (
+                              <span key={id} className='px-3 py-1 bg-white text-sky-700 rounded-lg text-xs font-bold border border-sky-200'>
+                                {finesList.find(f => f.id === id)?.name}
+                                {id !== 'service_001' && manualServices[id] ? ` (${manualServices[id]} ج)` : ''}
+                              </span>
+                            ))
+                        ) : (
+                          <span className='text-sm text-slate-400'>لا توجد خدمات إضافية</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {isEditingFines && (
+                    <div className='p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between'>
+                      <span className='font-bold text-emerald-800'>الإجمالي المتوقع:</span>
+                      <span className='text-2xl font-black text-emerald-600'>{(calculateTotalPrice() / 100).toFixed(2)} جنيه</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className='space-y-6 animate-in fade-in slide-in-from-top-4 duration-300'>
+                  {/* Fines Selection UI (similar to PaymentSection) */}
+                  <div className='grid grid-cols-2 gap-4'>
+                    <button
+                      type='button'
+                      onClick={() => { setShowFinesDropdown(!showFinesDropdown); setShowServicesDropdown(false); }}
+                      className={`flex flex-col items-center justify-center p-5 border rounded-2xl transition-all ${
+                        showFinesDropdown
+                          ? 'bg-rose-50 border-rose-200 text-rose-800 ring-4 ring-rose-500/10'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className='text-3xl mb-2'>⚖️</span>
+                      <span className='text-base font-black'>غرامات</span>
+                      <span className='text-xs font-bold mt-1 text-rose-600'>
+                        {selectedFines.filter(id => finesList.find(f => f.id === id)?.category === 'غرامات').length} محدد
+                      </span>
+                    </button>
+
+                    <button
+                      type='button'
+                      onClick={() => { setShowServicesDropdown(!showServicesDropdown); setShowFinesDropdown(false); }}
+                      className={`flex flex-col items-center justify-center p-5 border rounded-2xl transition-all ${
+                        showServicesDropdown
+                          ? 'bg-sky-50 border-sky-200 text-sky-800 ring-4 ring-sky-500/10'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className='text-3xl mb-2'>➕</span>
+                      <span className='text-base font-black'>خدمات إضافية</span>
+                      <span className='text-xs font-bold mt-1 text-sky-600'>
+                        {selectedFines.filter(id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية').length} محدد
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Dropdowns */}
+                  {(showFinesDropdown || showServicesDropdown) && (
+                    <div className='p-4 bg-slate-50 border border-slate-200 rounded-2xl max-h-[400px] overflow-hidden flex flex-col'>
+                      {showFinesDropdown && (
+                        <div className='space-y-3 flex flex-col h-full'>
+                          <input
+                            type='text'
+                            placeholder='ابحث في الغرامات...'
+                            value={finesSearchTerm}
+                            onChange={e => setFinesSearchTerm(e.target.value)}
+                            className='w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-base focus:border-rose-400 outline-none shadow-sm'
+                            autoFocus
+                          />
+                          <div className='overflow-y-auto space-y-1 pr-1 custom-scrollbar'>
+                            {finesList
+                              .filter(f => f.category === 'غرامات' && f.name.includes(finesSearchTerm))
+                              .map(f => (
+                                <div
+                                  key={f.id}
+                                  onClick={() => handleFineToggle(f.id)}
+                                  className={`p-3 rounded-xl cursor-pointer flex justify-between items-center transition-all ${
+                                    selectedFines.includes(f.id)
+                                      ? 'bg-rose-500 text-white shadow-md'
+                                      : 'bg-white hover:bg-slate-100 text-slate-700'
+                                  }`}
+                                >
+                                  <span className='text-base font-bold'>{f.name}</span>
+                                  <span className={`text-sm font-black px-2 py-0.5 rounded ${
+                                    selectedFines.includes(f.id) ? 'bg-black/20' : 'bg-slate-100'
+                                  }`}>
+                                    {(f.amountCents / 100).toFixed(0)} ج
+                                  </span>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {showServicesDropdown && (
+                        <div className='space-y-3 flex flex-col h-full'>
+                          <input
+                            type='text'
+                            placeholder='ابحث في الخدمات...'
+                            value={servicesSearchTerm}
+                            onChange={e => setServicesSearchTerm(e.target.value)}
+                            className='w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-base focus:border-sky-400 outline-none shadow-sm'
+                            autoFocus
+                          />
+                          <div className='overflow-y-auto space-y-1 pr-1 custom-scrollbar'>
+                            {finesList
+                              .filter(s => s.category === 'خدمات اضافية' && s.name.includes(servicesSearchTerm))
+                              .map(s => (
+                                <div key={s.id} className='bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm'>
+                                  <div
+                                    onClick={() => handleFineToggle(s.id)}
+                                    className={`p-3 cursor-pointer flex justify-between items-center transition-all ${
+                                      selectedFines.includes(s.id)
+                                        ? 'bg-sky-50 text-sky-700'
+                                        : 'hover:bg-slate-50 text-slate-700'
+                                    }`}
+                                  >
+                                    <span className='text-base font-bold'>{s.name}</span>
+                                    {selectedFines.includes(s.id) && <span className='text-sky-500 font-bold font-mono'>✓</span>}
+                                  </div>
+                                  {selectedFines.includes(s.id) && s.id !== 'service_001' && (
+                                    <div className='p-3 bg-slate-50 border-t border-slate-100 animate-in slide-in-from-top-1'>
+                                      <div className='relative'>
+                                        <input
+                                          type='number'
+                                          value={manualServices[s.id] || ''}
+                                          onChange={e => handleManualServiceChange(s.id, parseFloat(e.target.value) || 0)}
+                                          className='w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-black outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/10'
+                                          placeholder='القيمة بالجنيه...'
+                                          onClick={e => e.stopPropagation()}
+                                        />
+                                        <span className='absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400'>ج.م</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Pricing Preview while editing */}
+                  <div className='p-6 bg-slate-900 rounded-[2rem] text-white shadow-xl shadow-slate-200 animate-in zoom-in-95 duration-300'>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2'>
+                      <span className='w-2 h-2 bg-emerald-400 rounded-full animate-pulse'></span>
+                      معاينة الحسابات الجديدة
+                    </p>
+                    <div className='flex items-center justify-between'>
+                      <div>
+                        <p className='text-sm text-slate-300 font-medium'>إجمالي الطلب بعد التعديل:</p>
+                        <p className='text-xs text-slate-500 mt-1 italic'>* شامل جميع الغرامات والخدمات والخصومات</p>
+                      </div>
+                      <div className='text-right'>
+                        <span className='text-3xl font-black text-emerald-400'>{(calculateTotalPrice() / 100).toFixed(2)}</span>
+                        <span className='text-sm font-bold text-slate-400 ml-2'>جنيه</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+
             {/* Customer Information */}
             <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-8'>
-              <h2 className='text-xl font-bold text-slate-900 mb-6 flex items-center gap-2'>
-                <span className='w-2 h-8 bg-purple-500 rounded-full'></span>
-                بيانات العميل
-              </h2>
+              <div className='flex justify-between items-center mb-6'>
+                <h2 className='text-xl font-bold text-slate-900 flex items-center gap-2'>
+                  <span className='w-2 h-8 bg-purple-500 rounded-full'></span>
+                  بيانات العميل
+                </h2>
+                {!isEditingCustomer ? (
+                  <button
+                    onClick={() => setIsEditingCustomer(true)}
+                    className='px-4 py-2 bg-purple-50 text-purple-600 rounded-xl font-bold hover:bg-purple-100 transition-all border border-purple-100 flex items-center gap-2'
+                  >
+                    <span>تعديل البيانات</span>
+                    <span className='text-lg'>👤</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setIsEditingCustomer(false);
+                      setEditingField(null);
+                    }}
+                    className='px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all'
+                  >
+                    إغلاق التعديل
+                  </button>
+                )}
+              </div>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8'>
-                <div>
-                  <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-1'>
-                    الاسم
-                  </p>
-                  <p className='text-lg font-bold text-slate-900'>
-                    {currentOrder.customerName || '-'}
-                  </p>
+                {/* Editable Customer Name */}
+                <div className='p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-purple-200 transition-all group relative'>
+                   <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>الاسم</p>
+                    {isEditingCustomer && !editingField && (
+                        <button
+                          onClick={() => handleStartEdit('customerName', currentOrder.customerName)}
+                          className='text-purple-500 text-xs font-bold px-2 py-1 hover:bg-purple-100 rounded-lg transition-all'
+                        >
+                          تعديل ✎
+                        </button>
+                      )}
+                  </div>
+                  {editingField === 'customerName' ? (
+                    <div className='flex gap-2'>
+                      <input
+                        autoFocus
+                        value={tempValue}
+                        onChange={e => setTempValue(e.target.value)}
+                        className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-1 text-sm font-bold'
+                      />
+                      <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
+                      <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                    </div>
+                  ) : (
+                    <p className='text-lg font-bold text-slate-900'>{currentOrder.customerName || '-'}</p>
+                  )}
                 </div>
-                <div>
-                  <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-1'>
-                    الهاتف
-                  </p>
-                  <p className='text-lg font-bold text-slate-900 font-mono dir-ltr text-right'>
-                    {currentOrder.customerPhone || '-'}
-                  </p>
+
+                {/* Editable Customer Phone */}
+                <div className={`p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}>
+                  <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>الهاتف</p>
+                    {isEditingCustomer && !editingField && (
+                      <button
+                        onClick={() => handleStartEdit('customerPhone', currentOrder.customerPhone)}
+                        className='text-purple-500 text-xs font-bold px-2 py-1 hover:bg-purple-100 rounded-lg transition-all'
+                      >
+                        تعديل ✎
+                      </button>
+                    )}
+                  </div>
+                  {editingField === 'customerPhone' ? (
+                    <div className='flex gap-2'>
+                      <input
+                        autoFocus
+                        value={tempValue}
+                        onChange={e => setTempValue(e.target.value)}
+                        className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-1 text-sm font-bold'
+                      />
+                      <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
+                      <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                    </div>
+                  ) : (
+                    <p className='text-lg font-bold text-slate-900 font-mono dir-ltr text-right'>{currentOrder.customerPhone || '-'}</p>
+                  )}
                 </div>
-                <div>
-                  <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-1'>
-                    البريد الإلكتروني
-                  </p>
-                  <p className='text-lg font-bold text-slate-900'>
-                    {currentOrder.customerEmail || '-'}
-                  </p>
+
+                {/* Editable National ID */}
+                <div className={`p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}>
+                  <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>الرقم القومي</p>
+                    {isEditingCustomer && !editingField && (
+                      <button
+                        onClick={() => handleStartEdit('idNumber', currentOrder.idNumber || '')}
+                        className='text-purple-500 text-xs font-bold px-2 py-1 hover:bg-purple-100 rounded-lg transition-all'
+                      >
+                        تعديل ✎
+                      </button>
+                    )}
+                  </div>
+                  {editingField === 'idNumber' ? (
+                    <div className='flex gap-2'>
+                      <input
+                        autoFocus
+                        value={tempValue}
+                        onChange={e => setTempValue(e.target.value)}
+                        className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-1 text-sm font-bold'
+                      />
+                      <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
+                      <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                    </div>
+                  ) : (
+                    <p className='text-lg font-bold text-slate-900 font-mono'>{currentOrder.idNumber || '-'}</p>
+                  )}
                 </div>
-                <div className='md:col-span-2'>
-                  <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-1'>
-                    العنوان
-                  </p>
-                  <p className='text-lg font-bold text-slate-900 leading-relaxed'>
-                    {currentOrder.address || '-'}
-                  </p>
+
+                {/* Editable Customer Email */}
+                <div className={`p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}>
+                  <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>البريد الإلكتروني</p>
+                    {isEditingCustomer && !editingField && (
+                      <button
+                        onClick={() => handleStartEdit('customerEmail', currentOrder.customerEmail)}
+                        className='text-purple-500 text-xs font-bold px-2 py-1 hover:bg-purple-100 rounded-lg transition-all'
+                      >
+                        تعديل ✎
+                      </button>
+                    )}
+                  </div>
+                  {editingField === 'customerEmail' ? (
+                    <div className='flex gap-2'>
+                      <input
+                        autoFocus
+                        value={tempValue}
+                        onChange={e => setTempValue(e.target.value)}
+                        className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-1 text-sm font-bold'
+                      />
+                      <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
+                      <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                    </div>
+                  ) : (
+                    <p className='text-lg font-bold text-slate-900'>{currentOrder.customerEmail || '-'}</p>
+                  )}
+                </div>
+
+                {/* Editable Address */}
+                <div className={`md:col-span-2 p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}>
+                  <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>العنوان</p>
+                    {isEditingCustomer && !editingField && (
+                      <button
+                        onClick={() => handleStartEdit('address', currentOrder.address || '')}
+                        className='text-purple-500 text-xs font-bold px-2 py-1 hover:bg-purple-100 rounded-lg transition-all'
+                      >
+                        تعديل ✎
+                      </button>
+                    )}
+                  </div>
+                  {editingField === 'address' ? (
+                    <div className='flex gap-2'>
+                      <textarea
+                        autoFocus
+                        value={tempValue}
+                        onChange={e => setTempValue(e.target.value)}
+                        className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-2 text-sm font-bold resize-none'
+                        rows={2}
+                      />
+                      <div className='flex flex-col gap-2'>
+                        <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
+                        <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className='text-lg font-bold text-slate-900 leading-relaxed'>{currentOrder.address || '-'}</p>
+                  )}
                 </div>
               </div>
             </div>
 
+
             {/* Notes */}
-            {currentOrder.notes && (
-              <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-8'>
-                <h2 className='text-xl font-bold text-slate-900 mb-6 flex items-center gap-2'>
+            <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-8'>
+              <div className='flex justify-between items-center mb-6'>
+                <h2 className='text-xl font-bold text-slate-900 flex items-center gap-2'>
                   <span className='w-2 h-8 bg-amber-500 rounded-full'></span>
                   ملاحظات
                 </h2>
-                <div className='bg-amber-50 rounded-2xl p-6 border border-amber-100'>
-                  <p className='text-slate-800 font-medium leading-relaxed'>{currentOrder.notes}</p>
-                </div>
+                {!editingField && (
+                  <button
+                    onClick={() => handleStartEdit('notes', currentOrder.notes || '')}
+                    className='text-amber-500 text-xs font-bold px-3 py-1 hover:bg-amber-50 rounded-lg border border-amber-100 transition-colors'
+                  >
+                    تعديل الملاحظات ✎
+                  </button>
+                )}
               </div>
-            )}
+              
+              {editingField === 'notes' ? (
+                <div className='space-y-4'>
+                  <textarea
+                    autoFocus
+                    value={tempValue}
+                    onChange={e => setTempValue(e.target.value)}
+                    placeholder='أضف ملاحظاتك هنا...'
+                    className='w-full bg-amber-50/50 border-2 border-amber-200 rounded-2xl p-4 text-slate-800 font-medium focus:ring-0 focus:border-amber-500 transition-all min-h-[120px]'
+                  />
+                  <div className='flex justify-end gap-2'>
+                    <button
+                      onClick={() => setEditingField(null)}
+                      className='px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all'
+                    >
+                      إلغاء
+                    </button>
+                    <button
+                      onClick={handleSaveField}
+                      className='px-6 py-2 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-all shadow-md shadow-amber-100'
+                    >
+                      حفظ الملاحظات
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className='bg-amber-50/50 rounded-2xl p-6 border border-amber-100 transition-all'>
+                  {currentOrder.notes ? (
+                    <p className='text-slate-800 font-medium leading-relaxed whitespace-pre-wrap'>{currentOrder.notes}</p>
+                  ) : (
+                    <p className='text-slate-400 italic'>لا توجد ملاحظات</p>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Documents */}
             {currentOrder.documents && currentOrder.documents.length > 0 && (
@@ -882,9 +1707,11 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   </span>
                 </div>
                 <div className='flex justify-between items-center pt-2'>
-                  <span className='text-slate-900 font-bold'>الإجمالي النهائي</span>
+                  <div className='flex items-center gap-2'>
+                    <span className='text-slate-900 font-bold'>الإجمالي النهائي</span>
+                  </div>
                   <span className='font-black text-xl text-emerald-600'>
-                    {(currentOrder.totalCents / 100).toFixed(2)}
+                    {((isEditingFines) ? calculateTotalPrice() : currentOrder.totalCents) / 100}
                   </span>
                 </div>
               </div>

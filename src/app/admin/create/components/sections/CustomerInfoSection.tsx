@@ -43,7 +43,7 @@ interface CustomerInfoSectionProps {
   dependentSuggestion?: string;
 
   handleKeyDown?: (e: React.KeyboardEvent) => void;
-  phoneConflict?: { id: string; name: string; phone: string } | null;
+  phoneConflict?: Customer | null;
 }
 
 export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
@@ -221,7 +221,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
           {/* National ID Input (Takes 5/12 space) */}
           <div className='lg:col-span-5 relative group/nid'>
             <div className='absolute -top-2.5 right-4 bg-white px-2 text-[10px] font-black text-slate-400 z-10'>
-              الرقم القومي
+              الرقم القومي {(isDeathCert || isMarriageDivorce) && <span className='text-emerald-500 font-bold'>(اختياري)</span>}
             </div>
             <input
               type='text'
@@ -276,12 +276,24 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
 
           {/* تحذير التكرار - يمتد على كل العرض */}
           {phoneConflict && (
-            <div className='md:col-span-12 flex items-center gap-3 bg-red-50 border-2 border-red-400 rounded-2xl px-4 py-2.5'>
-              <span className='text-xl flex-shrink-0'>⚠️</span>
+            <div className='md:col-span-12 flex items-start gap-4 bg-amber-50 border-2 border-amber-200 rounded-2xl px-5 py-4 shadow-sm'>
+              <div className='w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-xl flex-shrink-0'>
+                💡
+              </div>
               <div className='flex-1 min-w-0'>
-                <div className='text-red-700 font-black text-sm'>رقم الهاتف مسجَّل مسبقاً!</div>
-                <div className='text-red-600 font-bold text-xs mt-0.5'>
-                  هذا الرقم باسم <span className='font-black'>&quot;{phoneConflict.name}&quot;</span> — اختره من نتائج البحث أو استخدم رقماً مختلفاً
+                <div className='text-amber-900 font-extrabold text-sm mb-1'>رقم الهاتف مسجَّل مسبقاً</div>
+                <div className='text-amber-800 font-bold text-xs leading-relaxed'>
+                  هذا الرقم مرتبط بحساب <span className='bg-amber-100 px-1.5 py-0.5 rounded text-amber-950 underline decoration-amber-500/50 underline-offset-2'>&quot;{phoneConflict.name}&quot;</span>. 
+                  يمكنك استخدامه لهذا الطلب، وسيتم تسجيل الطلب بالاسم الجديد الذي تدخلـه دون تعديل اسم صاحب الحساب الأصلي.
+                </div>
+                <div className='mt-2 flex gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => selectCustomer(phoneConflict)}
+                    className='text-[10px] bg-amber-600 text-white px-3 py-1 rounded-lg font-black hover:bg-amber-700 transition-colors'
+                  >
+                    استخدام هذا الحساب
+                  </button>
                 </div>
               </div>
             </div>
@@ -349,7 +361,10 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
         {/* Date and Age Grid */}
         <div className='grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-3 items-end'>
           <div className='md:col-span-8 space-y-1'>
-            <MandatoryLabel label='تاريخ الميلاد' />
+            <label className='text-sm font-black text-black block mr-1 flex items-center justify-between'>
+              <span>تاريخ الميلاد</span>
+              {(isDeathCert || isMarriageDivorce) && <span className='text-[10px] text-emerald-500 font-bold'>(اختياري لهذه الخدمة)</span>}
+            </label>
             <input
               type='text'
               value={formData.birthDate}
@@ -477,7 +492,15 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
             </div>
 
             <div className='md:col-span-1 space-y-1'>
-              <label className='text-sm font-black text-black block mr-1'>الصفة</label>
+              <MandatoryLabel 
+                label='الصفة' 
+                show={
+                  formData.serviceName.includes('كمبيوتر') || 
+                  formData.serviceName.includes('مميكن') || 
+                  formData.serviceName.includes('تصديق') || 
+                  formData.serviceName.includes('بيان زواج و طلاق')
+                } 
+              />
               <input
                 type='text'
                 value={formData.title || ''}

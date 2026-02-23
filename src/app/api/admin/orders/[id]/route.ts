@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { hasPermission } from '@/lib/permissions';
 import { generatePresignedUrl } from '@/lib/presignedUrl';
 
 export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
@@ -161,8 +162,8 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
     // Check authentication and admin role
     const session = await requireAuth();
 
-    // Check if user is admin
-    if (session.user.role !== 'ADMIN') {
+    // Check if user is admin or has permission to manage orders
+    if (session.user.role !== 'ADMIN' && !hasPermission(session.user, 'MANAGE_ORDERS')) {
       return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذه الصفحة' }, { status: 403 });
     }
 
@@ -239,6 +240,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         } else if (updateData[field] === '' || updateData[field] === null) {
           processedUpdateData[field] = null;
         }
+      }
+    }
+
+    // Handle fine-related fields - stringify if objects
+    const jsonFields = ['selectedFines', 'finesDetails', 'servicesDetails', 'attachedDocuments'];
+    for (const field of jsonFields) {
+      if (updateData[field] !== undefined && updateData[field] !== null && typeof updateData[field] === 'object') {
+        processedUpdateData[field] = JSON.stringify(updateData[field]);
       }
     }
 

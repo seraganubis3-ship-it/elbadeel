@@ -87,7 +87,7 @@ export function useCreateOrder() {
   const serialValidateTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Phone duplicate detection
-  const [phoneConflict, setPhoneConflict] = useState<{ id: string; name: string; phone: string } | null>(null);
+  const [phoneConflict, setPhoneConflict] = useState<Customer | null>(null);
   const phoneCheckTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Fines
@@ -287,7 +287,7 @@ export function useCreateOrder() {
           if (Array.isArray(data.users) && data.users.length > 0) {
             const match = data.users.find((u: any) => u.phone?.replace(/\D/g, '') === phone);
             if (match && match.id !== customer?.id) {
-              setPhoneConflict({ id: match.id, name: match.name, phone: match.phone });
+              setPhoneConflict(match);
               return;
             }
           }
@@ -818,25 +818,21 @@ export function useCreateOrder() {
         return;
       }
 
-      // ⚠️ Block if phone belongs to a different existing customer
-      if (phoneConflict && phoneConflict.id !== customer?.id) {
-        showWarning(
-          '⚠️ رقم الهاتف مسجل مسبقاً',
-          `هذا الرقم مسجل باسم "${phoneConflict.name}" — اختر العميل من نتائج البحث أو استخدم رقماً مختلفاً`
-        );
-        return;
-      }
+      // ⚠️ Note: Phone conflict (existing account) is now handled gracefully in the API
+      // by linking the order to the existing account without overwriting the User name.
+      // So we no longer block submission here.
 
       const hasIdNumber = formData.idNumber && formData.idNumber.length === 14;
       const hasBirthDate = formData.birthDate && formData.birthDate.trim().length > 0;
 
-      if (!hasIdNumber && !hasBirthDate) {
+      // Allow skipping ID/BirthDate for specific certificates (Death, Marriage, Divorce)
+      const serviceName = selectedService.name;
+      const isFlexibleCertificate = serviceName.includes('وفاة') || serviceName.includes('زواج') || serviceName.includes('طلاق');
+
+      if (!isFlexibleCertificate && !hasIdNumber && !hasBirthDate) {
         showWarning('بيانات ناقصة', 'يرجى إدخال الرقم القومي (14 رقم) أو تاريخ الميلاد على الأقل');
         return;
       }
-
-      // 2. SERVICE-SPECIFIC VALIDATION
-      const serviceName = selectedService.name;
 
       // Mandatory Form Serial for ID Cards (بطاقة)
       if (serviceName.includes('بطاقة')) {
@@ -851,16 +847,28 @@ export function useCreateOrder() {
       }
 
       if (serviceName.includes('ميلاد')) {
-        // اسم الأم مطلوب فقط إذا لم يكن هناك رقم قومي
-        const hasNationalId = formData.idNumber && formData.idNumber.length === 14;
-        if (!hasNationalId && !formData.motherName?.trim()) {
-          showWarning('نقص في البيانات', 'اسم الأم مطلوب لاستخراج شهادة الميلاد (أو أدخل الرقم القومي)');
-          return;
-        }
+        // تاريخ الميلاد مطلوب لاستخراج شهادة الميلاد
         if (!formData.birthDate?.trim()) {
           showWarning('نقص في البيانات', 'تاريخ الميلاد مطلوب لاستخراج شهادة الميلاد');
           return;
         }
+        // اسم الأم مطلوب فقط إذا لم يكن هناك رقم قومي
+        if (!hasIdNumber && !formData.motherName?.trim()) {
+          showWarning('نقص في البيانات', 'اسم الأم مطلوب لاستخراج شهادة الميلاد (أو أدخل الرقم القومي)');
+          return;
+        }
+      }
+
+      // Mandatory "Relation" (الصفة) for specific services
+      const isRelationMandatory = 
+        serviceName.includes('كمبيوتر') || 
+        serviceName.includes('مميكن') || 
+        serviceName.includes('تصديق') || 
+        serviceName.includes('بيان زواج و طلاق');
+
+      if (isRelationMandatory && !formData.title?.trim()) {
+        showWarning('بيانات ناقصة', 'يرجى إدخال الصفة لهذه الخدمة');
+        return;
       }
 
       if (serviceName.includes('وفاة')) {

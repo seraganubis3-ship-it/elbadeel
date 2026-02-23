@@ -135,6 +135,7 @@ export async function GET(request: NextRequest) {
               { id: { contains: search, mode: 'insensitive' } },
               { customerName: { contains: search, mode: 'insensitive' } },
               { customerPhone: { contains: search } },
+              { idNumber: { contains: search, mode: 'insensitive' } },
               { user: { phone: { contains: search } } },
               { user: { name: { contains: search, mode: 'insensitive' } } },
             ],
@@ -512,8 +513,8 @@ export async function POST(request: NextRequest) {
         const isEmpty = current === null || current === undefined || current === '';
         if (isEmpty && value !== undefined && value !== '') updates[key] = value;
       };
-      // Always update name and address info if provided in the order
-      if (customerName) updates.name = customerName;
+      // Update name only if it's missing or empty, to avoid overwriting account holder with dependent names
+      if (!(u as any).name && customerName) updates.name = customerName;
       if (!(u as any).email && customerEmail) updates.email = customerEmail;
 
       assignIfMissing('phone', normalizedPhone || customerPhone);

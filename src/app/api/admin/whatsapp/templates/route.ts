@@ -9,6 +9,7 @@ export async function GET() {
   try {
     await requireAdminOrStaff();
     const templates = await (prisma as any).whatsAppTemplate.findMany({
+      where: { active: true },
       orderBy: [{ category: 'asc' }, { orderIndex: 'asc' }, { createdAt: 'asc' }],
     });
     return NextResponse.json({ success: true, templates });

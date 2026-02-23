@@ -21,7 +21,6 @@ interface UserRow {
 
 interface UserStats {
   total: number;
-  active: number;
   admins: number;
   staff: number;
   users: number;
@@ -33,7 +32,6 @@ export default function AdminUsersPage() {
   const [adminRoles, setAdminRoles] = useState<any[]>([]);
   const [stats, setStats] = useState<UserStats>({
     total: 0,
-    active: 0,
     admins: 0,
     staff: 0,
     users: 0,
@@ -41,7 +39,6 @@ export default function AdminUsersPage() {
   });
   const [q, setQ] = useState('');
   const [role, setRole] = useState('');
-  const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -55,7 +52,6 @@ export default function AdminUsersPage() {
     phone: '',
     role: '',
     adminRoleId: '',
-    isActive: true,
     newPassword: '',
   });
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -66,13 +62,12 @@ export default function AdminUsersPage() {
   const debounceRef = useRef<any>(null);
 
   const fetchUsers = useCallback(
-    async (resetPage?: boolean, nextRole?: string, nextQ?: string, nextStatus?: string) => {
+    async (resetPage?: boolean, nextRole?: string, nextQ?: string) => {
       setLoading(true);
       try {
         const targetPage = resetPage ? 1 : page;
         const effectiveRole = typeof nextRole === 'string' ? nextRole : role;
         const effectiveQ = typeof nextQ === 'string' ? nextQ : q;
-        const effectiveStatus = typeof nextStatus === 'string' ? nextStatus : status;
 
         const params = new URLSearchParams();
 
@@ -86,7 +81,6 @@ export default function AdminUsersPage() {
         }
 
         if (effectiveRole) params.set('role', effectiveRole);
-        if (effectiveStatus) params.set('status', effectiveStatus);
         params.set('page', String(targetPage));
         params.set('pageSize', String(pageSize));
 
@@ -102,7 +96,7 @@ export default function AdminUsersPage() {
         setLoading(false);
       }
     },
-    [page, role, q, status, activeFilter, pageSize]
+    [page, role, q, activeFilter, pageSize]
   );
 
   const fetchStats = useCallback(async () => {
@@ -115,7 +109,6 @@ export default function AdminUsersPage() {
         // إذا فشل الـ API، احسب الإحصائيات من البيانات الموجودة
         const calculatedStats = {
           total: rows.length,
-          active: rows.filter(u => u.isActive !== false).length,
           admins: rows.filter(u => u.role === 'ADMIN' || u.adminRole !== null).length,
           staff: rows.filter(u => u.role === 'STAFF').length,
           users: rows.filter(u => u.role === 'USER').length,
@@ -171,7 +164,6 @@ export default function AdminUsersPage() {
     if (rows.length > 0) {
       const calculatedStats = {
         total: rows.length,
-        active: rows.filter(u => u.isActive !== false).length,
         admins: rows.filter(u => u.role === 'ADMIN' || u.adminRole !== null).length,
         staff: rows.filter(u => u.role === 'STAFF').length,
         users: rows.filter(u => u.role === 'USER').length,
@@ -200,11 +192,6 @@ export default function AdminUsersPage() {
     fetchUsers(true, val, undefined);
   };
 
-  const onStatusChange = (val: string) => {
-    setStatus(val);
-    setPage(1);
-    fetchUsers(true, undefined, undefined, val);
-  };
 
   const changeRole = async (id: string, newRoleValue: string) => {
     let roleToSave = 'USER';
@@ -232,18 +219,6 @@ export default function AdminUsersPage() {
     }
   };
 
-  const toggleUserStatus = async (id: string, currentStatus: boolean) => {
-    const form = new FormData();
-    form.append('isActive', String(!currentStatus));
-    const res = await fetch(`/api/admin/users/${id}/status`, { method: 'POST', body: form });
-    if (res.ok) {
-      fetchUsers(false);
-      fetchStats();
-      showMessage('تم تحديث حالة المستخدم بنجاح! 🔄', true);
-    } else {
-      showMessage('حدث خطأ في تحديث حالة المستخدم', false);
-    }
-  };
 
   const deleteUser = async (id: string) => {
     if (confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
@@ -283,7 +258,6 @@ export default function AdminUsersPage() {
       phone: user.phone || '',
       role: user.role || '',
       adminRoleId: user.adminRoleId || '',
-      isActive: user.isActive !== false,
       newPassword: '', // إعادة تعيين كلمة المرور عند فتح المودال
     });
     setIsEditing(false);
@@ -306,8 +280,6 @@ export default function AdminUsersPage() {
         form.append('password', editForm.newPassword);
       }
 
-      // isActive غير مدعوم حالياً في الـ API
-      // form.append("isActive", String(editForm.isActive));
 
       const res = await fetch(`/api/admin/users?id=${selectedUser.id}`, {
         method: 'PUT',
@@ -362,7 +334,7 @@ export default function AdminUsersPage() {
                   إدارة المستخدمين
                 </h1>
                 <p className='text-gray-600 mt-2 text-lg'>إدارة وتتبع جميع المستخدمين في النظام</p>
-                {(q || role || status) && (
+                {(q || role) && (
                   <div className='mt-3 flex flex-wrap gap-2'>
                     <span className='text-sm text-gray-500'>التصفية:</span>
                     {q && (
@@ -373,11 +345,6 @@ export default function AdminUsersPage() {
                     {role && (
                       <span className='px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full border border-green-200'>
                         الدور: {role}
-                      </span>
-                    )}
-                    {status && (
-                      <span className='px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full border border-purple-200'>
-                        الحالة: {status === 'active' ? 'نشط' : 'غير نشط'}
                       </span>
                     )}
                   </div>
@@ -429,29 +396,6 @@ export default function AdminUsersPage() {
             </div>
           </div>
 
-          <div className='bg-white rounded-xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 hover:scale-105'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm text-gray-600 font-medium'>نشط</p>
-                <p className='text-2xl font-bold text-green-600'>{stats.active}</p>
-              </div>
-              <div className='w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg'>
-                <svg
-                  className='w-6 h-6 text-white'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
 
           <div className='bg-white rounded-xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 hover:scale-105'>
             <div className='flex items-center justify-between'>
@@ -738,22 +682,13 @@ export default function AdminUsersPage() {
                 <option value='USER'>مستخدم</option>
                 <option value='VIEWER'>مشاهد</option>
               </select>
-              <select
-                value={status}
-                onChange={e => onStatusChange(e.target.value)}
-                className='px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 min-w-[140px] focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
-              >
-                <option value=''>كل الحالات</option>
-                <option value='active'>نشط</option>
-                <option value='inactive'>غير نشط</option>
-              </select>
               {activeFilter && (
                 <button
                   type='button'
                   onClick={() => {
                     setActiveFilter('');
                     setQ('');
-                    fetchUsers(true, '', '', status);
+                    fetchUsers(true, '', '');
                   }}
                   className='px-4 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl border border-red-200 hover:border-red-300 transition-all duration-200 flex items-center gap-2'
                   title='إلغاء الفلتر'
@@ -823,9 +758,6 @@ export default function AdminUsersPage() {
                     الدور
                   </th>
                   <th className='px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider'>
-                    الحالة
-                  </th>
-                  <th className='px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider'>
                     تاريخ الإنشاء
                   </th>
                   <th className='px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider'>
@@ -836,7 +768,7 @@ export default function AdminUsersPage() {
               <tbody className='bg-white divide-y divide-gray-200'>
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className='px-6 py-12 text-center'>
+                    <td colSpan={4} className='px-6 py-12 text-center'>
                       <div className='flex items-center justify-center'>
                         <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
                         <span className='mr-3 text-gray-500'>جاري التحميل...</span>
@@ -845,7 +777,7 @@ export default function AdminUsersPage() {
                   </tr>
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className='px-6 py-12 text-center text-gray-500'>
+                    <td colSpan={4} className='px-6 py-12 text-center text-gray-500'>
                       <div className='flex flex-col items-center'>
                         <svg
                           className='w-12 h-12 text-gray-300 mb-4'
@@ -956,23 +888,6 @@ export default function AdminUsersPage() {
                             </optgroup>
                           )}
                         </select>
-                      </td>
-                      <td className='px-6 py-6 whitespace-nowrap'>
-                        <button
-                          onClick={() => toggleUserStatus(u.id, u.isActive || true)}
-                          className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md ${
-                            u.isActive !== false
-                              ? 'bg-green-100 text-green-800 hover:bg-green-200 border border-green-200'
-                              : 'bg-red-100 text-red-800 hover:bg-red-200 border border-red-200'
-                          }`}
-                        >
-                          <div
-                            className={`w-3 h-3 rounded-full mr-2 ${
-                              u.isActive !== false ? 'bg-green-500' : 'bg-red-500'
-                            }`}
-                          ></div>
-                          {u.isActive !== false ? '✅ نشط' : '❌ غير نشط'}
-                        </button>
                       </td>
                       <td className='px-6 py-6 whitespace-nowrap text-sm text-gray-600'>
                         <div className='bg-gray-50 px-3 py-2 rounded-lg border border-gray-200'>
@@ -1242,31 +1157,6 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                   </div>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1'>الحالة</label>
-                    {isEditing ? (
-                      <select
-                        value={editForm.isActive ? 'active' : 'inactive'}
-                        onChange={e =>
-                          setEditForm({ ...editForm, isActive: e.target.value === 'active' })
-                        }
-                        className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black'
-                      >
-                        <option value='active'>نشط</option>
-                        <option value='inactive'>غير نشط</option>
-                      </select>
-                    ) : (
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                          selectedUser.isActive !== false
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {selectedUser.isActive !== false ? 'نشط' : 'غير نشط'}
-                      </span>
-                    )}
-                  </div>
                 </div>
 
                 <div>
@@ -1372,7 +1262,6 @@ export default function AdminUsersPage() {
                           phone: selectedUser.phone || '',
                           role: selectedUser.role || '',
                           adminRoleId: selectedUser.adminRoleId || '',
-                          isActive: selectedUser.isActive !== false,
                           newPassword: '',
                         });
                       }}

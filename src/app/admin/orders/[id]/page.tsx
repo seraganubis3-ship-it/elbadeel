@@ -240,7 +240,13 @@ export default function OrderDetailsPage() {
 
             {/* Financial Section */}
             <div className='space-y-8'>
-              <OrderSummary order={order} />
+              <OrderSummary 
+                order={order} 
+                isEditing={!!editingSections['financials']}
+                onToggleEdit={() => toggleEditing('financials')}
+                onSave={fields => updateOrderField(fields, 'financials')}
+                updating={updating}
+              />
               <OrderPaymentDetails
                 order={order}
                 showPaymentForm={showPaymentForm}
