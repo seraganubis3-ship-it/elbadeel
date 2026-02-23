@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { requireAdminOrStaff } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await requireAuth();
-    if (!['ADMIN', 'STAFF'].includes(session.user.role || '')) {
-      return NextResponse.json({ error: 'غير مصرح لك بالوصول هذه الصفحة' }, { status: 403 });
-    }
+    const session = await requireAdminOrStaff();
 
     const { id: orderId } = params;
     const body = await request.json();
@@ -29,17 +26,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     return NextResponse.json({ success: true, document });
   } catch (error) {
-        console.error('Document Upload Error:', error);
+    console.error('Document Upload Error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء حفظ المستند' }, { status: 500 });
   }
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await requireAuth();
-    if (!['ADMIN', 'STAFF'].includes(session.user.role || '')) {
-      return NextResponse.json({ error: 'غير مصرح لك بالوصول هذه الصفحة' }, { status: 403 });
-    }
+    const session = await requireAdminOrStaff();
 
     const { searchParams } = new URL(request.url);
     const docId = searchParams.get('docId');
@@ -68,7 +62,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     return NextResponse.json({ success: true });
   } catch (error) {
-        console.error('Document Delete Error:', error);
+    console.error('Document Delete Error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء حذف المستند' }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, requireAdminOrStaff } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { hasPermission } from '@/lib/permissions';
 import { generatePresignedUrl } from '@/lib/presignedUrl';
@@ -189,10 +189,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 }
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await requireAuth();
-    if (!['ADMIN', 'STAFF'].includes(session.user.role || '')) {
-      return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذه الصفحة' }, { status: 403 });
-    }
+    const session = await requireAdminOrStaff();
 
     const { id } = params;
     const data = await request.json();

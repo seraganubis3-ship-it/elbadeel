@@ -14,12 +14,8 @@ const paymentUpdateSchema = z.object({
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // Check authentication and admin role
-    const session = await requireAuth();
-
-    if (session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'غير مصرح لك بالوصول لهذه الصفحة' }, { status: 403 });
-    }
+    // Check authentication and staff permissions
+    const session = await requireAdminOrStaff();
 
     const { id } = params;
     const body = await request.json();
