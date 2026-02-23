@@ -77,34 +77,51 @@ export const evaluateLogic = (
 
     if (conditions.length === 0) return true;
 
+    // Temporary debug log to find out why matches are failing
+    // console.log('EVAL LOGIC:', JSON.stringify({ conditions, currentValues }, null, 2));
+
     return conditions.every(condition => {
       const actualValueRaw = currentValues[condition.field];
       const actualValue = String(actualValueRaw || '');
       const targetValue = String(condition.value || '');
 
-      switch (condition.op) {
-        case 'eq':
-          return normalizeText(actualValue) === normalizeText(targetValue);
-        case 'neq':
-          return normalizeText(actualValue) !== normalizeText(targetValue);
-        case 'gt': {
-          const actualNum = parseFloat(actualValue);
-          const targetNum = parseFloat(targetValue);
-          return !isNaN(actualNum) && !isNaN(targetNum) && actualNum > targetNum;
+      const isMatch = (() => {
+        switch (condition.op) {
+          case 'eq': {
+            // Check for numeric range "min-max"
+            const rangeMatch = targetValue.match(/^(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/);
+            if (rangeMatch && !isNaN(parseFloat(actualValue))) {
+              const min = parseFloat(rangeMatch[1] as string);
+              const max = parseFloat(rangeMatch[2] as string);
+              const actualNum = parseFloat(actualValue);
+              return actualNum >= min && actualNum <= max;
+            }
+            return normalizeText(actualValue) === normalizeText(targetValue);
+          }
+          case 'neq':
+            return normalizeText(actualValue) !== normalizeText(targetValue);
+          case 'gt': {
+            const actualNum = parseFloat(actualValue);
+            const targetNum = parseFloat(targetValue);
+            return !isNaN(actualNum) && !isNaN(targetNum) && actualNum > targetNum;
+          }
+          case 'lt': {
+            const actualNum = parseFloat(actualValue);
+            const targetNum = parseFloat(targetValue);
+            return !isNaN(actualNum) && !isNaN(targetNum) && actualNum < targetNum;
+          }
+          case 'contains': {
+            const normTarget = normalizeText(targetValue);
+            if (normTarget === '') return false;
+            return normalizeText(actualValue).includes(normTarget);
+          }
+          default:
+            return normalizeText(actualValue) === normalizeText(targetValue);
         }
-        case 'lt': {
-          const actualNum = parseFloat(actualValue);
-          const targetNum = parseFloat(targetValue);
-          return !isNaN(actualNum) && !isNaN(targetNum) && actualNum < targetNum;
-        }
-        case 'contains': {
-          const normTarget = normalizeText(targetValue);
-          if (normTarget === '') return false;
-          return normalizeText(actualValue).includes(normTarget);
-        }
-        default:
-          return normalizeText(actualValue) === normalizeText(targetValue);
-      }
+      })();
+
+      // console.log(`EVAL COND: ${condition.field} ${condition.op} ${condition.value} | actual: ${actualValue} | match: ${isMatch}`);
+      return isMatch;
     });
   } catch (error) {
     // console.error('Logic Evaluation Error:', error);

@@ -58,12 +58,13 @@ export default function PersonalDataForm({
 
     onChange('idNumber', numericVal);
 
-    // Auto-calculate birth date if 14 digits
+    // Auto-calculate birth date and gender if 14 digits
     if (numericVal.length === 14) {
       const century = numericVal[0]; // 2 = 1900-1999, 3 = 2000-2099
       const year = numericVal.substring(1, 3);
       const month = numericVal.substring(3, 5);
       const day = numericVal.substring(5, 7);
+      const genderDigit = parseInt(numericVal[12] || '0', 10); // 13th digit
 
       let fullYear = '';
       if (century === '2') fullYear = '19' + year;
@@ -73,6 +74,12 @@ export default function PersonalDataForm({
         // Format YYYY-MM-DD for date input
         const birthDate = `${fullYear}-${month}-${day}`;
         onChange('birthDate', birthDate);
+      }
+
+      // Extract gender (Odd = Male, Even = Female)
+      if (!isNaN(genderDigit)) {
+        const gender = genderDigit % 2 !== 0 ? 'male' : 'female';
+        onChange('gender', gender);
       }
     }
   };

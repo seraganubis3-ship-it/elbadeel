@@ -278,23 +278,23 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
             </div>
           </div>
           {/* Documents List */}
-          {(service as any).documents && (service as any).documents.length > 0 && (
+          {(service as any).documents && (service as any).documents.filter((doc: any) => !doc.showIf).length > 0 && (
             <div className='bg-gradient-to-br from-slate-50 to-emerald-50/30 rounded-3xl p-6 sm:p-10 border border-slate-200/60'>
               <div className='text-center mb-8'>
                 <div className='inline-flex items-center gap-2 px-4 py-2 bg-white border border-emerald-100 rounded-full mb-4 shadow-sm'>
                   <span className='text-emerald-600'>📋</span>
-                  <span className='text-emerald-700 text-xs font-bold'>قائمة التجهيزات</span>
+                  <span className='text-emerald-700 text-xs font-bold'>قائمة التجهيزات الأساسية</span>
                 </div>
                 <h2 className='text-xl sm:text-2xl font-black text-slate-800 mb-2'>
-                  المستندات المطلوبة
+                  المستندات المطلوبة الأساسية
                 </h2>
                 <p className='text-slate-500 text-sm'>
-                  يرجى تجهيز هذه المستندات قبل البدء في الطلب
+                  هذه هي المستندات الثابتة. قد تطلب مستندات أخرى بناءً على إجاباتك في نموذج الطلب.
                 </p>
               </div>
 
               <div className='flex flex-wrap justify-center gap-3'>
-                {(service as any).documents.map((doc: any, index: number) => (
+                {(service as any).documents.filter((doc: any) => !doc.showIf).map((doc: any, index: number) => (
                   <div
                     key={doc.id}
                     className='flex items-center gap-3 bg-white px-5 py-3 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all'
@@ -302,6 +302,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
                     <span className='w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold'>
                       {index + 1}
                     </span>
+
                     <span className='font-semibold text-slate-700 text-sm'>{doc.title}</span>
                     {!doc.required && (
                       <span className='text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full'>

@@ -119,7 +119,7 @@ export default function CreateOrderPage() {
   if (loading) return <LoadingState />;
 
   return (
-    <div className='min-h-screen bg-slate-50 text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-emerald-500/30'>
+    <div className='enlarge-text min-h-screen bg-slate-50 text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-emerald-500/30'>
       {/* Static Background Decoration - No Animations for Performance */}
       <div className='fixed inset-0 pointer-events-none overflow-hidden'>
         <div className='absolute top-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-gradient-to-bl from-emerald-400/15 to-green-500/15 rounded-full' />

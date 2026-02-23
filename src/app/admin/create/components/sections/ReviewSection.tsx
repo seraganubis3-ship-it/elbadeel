@@ -87,17 +87,19 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                 </button>
               </div>
 
-              {customer ? (
+              {customer || formData.customerName ? (
                 <div className='space-y-4 relative z-10'>
                   <div className='flex items-center gap-4'>
                     <div className='w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-100 text-blue-600 flex items-center justify-center font-black text-2xl'>
-                      {customer.name.charAt(0)}
+                      {(formData.customerName || customer?.name || '؟').charAt(0)}
                     </div>
                     <div>
-                      <div className='font-black text-slate-900 text-lg'>{customer.name}</div>
+                      <div className='font-black text-slate-900 text-lg'>
+                        {formData.customerName || customer?.name}
+                      </div>
                       <div className='text-slate-500 font-bold flex items-center gap-2'>
                         <span className='text-slate-400'>📞</span>
-                        {customer.phone}
+                        {formData.customerPhone || customer?.phone}
                       </div>
                     </div>
                   </div>
@@ -107,7 +109,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                         الرقم القومي
                       </span>
                       <span className='font-bold text-slate-700 text-sm'>
-                        {formData.customerIdNumber || '---'}
+                        {formData.customerIdNumber || customer?.idNumber || '---'}
                       </span>
                     </div>
                     <div className='bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-sm'>
@@ -115,7 +117,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                         المحافظة
                       </span>
                       <span className='font-bold text-slate-700 text-sm'>
-                        {customer.governorate || '---'}
+                        {formData.governorate || customer?.governorate || '---'}
                       </span>
                     </div>
                   </div>
@@ -216,37 +218,36 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
           {/* Left Column: Financials & Actions */}
           <div className='space-y-6'>
             {/* 3. Financial Receipt */}
-            <div className='bg-gradient-to-b from-slate-900 to-slate-950 text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden ring-1 ring-white/10'>
-              <div className='absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none'></div>
-              <div className='absolute bottom-0 left-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none'></div>
+            <div className='bg-blue-50 text-slate-800 rounded-3xl p-6 shadow-md relative overflow-hidden ring-1 ring-blue-100 border border-blue-200'>
+              <div className='absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none'></div>
 
-              <div className='flex justify-between items-start mb-8 relative z-10'>
-                <h3 className='text-2xl font-black flex items-center gap-3'>
-                  <span>💰</span> ملخص الحساب
+              <div className='flex justify-between items-start mb-6 relative z-10'>
+                <h3 className='text-2xl font-black flex items-center gap-3 text-slate-900'>
+                  <span className='p-2 bg-blue-100 rounded-xl text-blue-600'>💰</span> ملخص الحساب
                 </h3>
                 <button
                   onClick={() => setActiveTab('financials')}
-                  className='text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold transition-colors'
+                  className='text-sm bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm'
                 >
-                  تعديل
+                  تعديل الأسعار
                 </button>
               </div>
 
-              <div className='space-y-4 relative z-10 text-base'>
-                <div className='flex justify-between items-center py-3 border-b border-white/5 group hover:bg-white/5 px-2 rounded-lg transition-colors -mx-2'>
-                  <span className='text-slate-400 font-bold'>
+              <div className='space-y-4 relative z-10 text-lg'>
+                <div className='flex justify-between items-center py-3 border-b border-slate-200 group hover:bg-white/50 px-2 rounded-lg transition-colors -mx-2'>
+                  <span className='text-slate-600 font-bold'>
                     سعر الخدمة ({selectedVariant?.name})
                   </span>
-                  <span className='font-bold'>
+                  <span className='font-black text-slate-800'>
                     {formatCurrency(((selectedVariant?.priceCents || 0) / 100) * formData.quantity)}
                   </span>
                 </div>
 
                 {/* Fines */}
                 {selectedFines.length > 0 && (
-                  <div className='flex justify-between items-center py-3 border-b border-white/5 group hover:bg-white/5 px-2 rounded-lg transition-colors -mx-2'>
-                    <span className='text-slate-400 font-bold'>إضافات وغرامات</span>
-                    <span className='font-bold text-rose-400'>
+                  <div className='flex justify-between items-center py-3 border-b border-slate-200 group hover:bg-white/50 px-2 rounded-lg transition-colors -mx-2'>
+                    <span className='text-slate-600 font-bold'>إضافات وغرامات</span>
+                    <span className='font-black text-rose-600'>
                       +{' '}
                       {formatCurrency(
                         selectedFines.reduce((acc: number, id: string) => {
@@ -263,9 +264,9 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
 
                 {/* Delivery */}
                 {formData.deliveryFee > 0 && (
-                  <div className='flex justify-between items-center py-3 border-b border-white/5 group hover:bg-white/5 px-2 rounded-lg transition-colors -mx-2'>
-                    <span className='text-slate-400 font-bold'>رسوم التوصيل</span>
-                    <span className='font-bold text-blue-400'>
+                  <div className='flex justify-between items-center py-3 border-b border-slate-200 group hover:bg-white/50 px-2 rounded-lg transition-colors -mx-2'>
+                    <span className='text-slate-600 font-bold'>رسوم التوصيل</span>
+                    <span className='font-black text-blue-600'>
                       + {formatCurrency(formData.deliveryFee)}
                     </span>
                   </div>
@@ -280,48 +281,48 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                   (selectedVariant.name.includes('عادي') ||
                     selectedVariant.name.includes('سريع')) &&
                   ['العجوزة', 'الشيخ زايد', '6 أكتوبر'].includes(formData.policeStation) && (
-                    <div className='flex justify-between items-center py-3 border-b border-white/5 group hover:bg-white/5 px-2 rounded-lg transition-colors -mx-2'>
-                      <span className='text-slate-400 font-bold'>رسوم منطقة جوازات</span>
-                      <span className='text-emerald-400 font-bold'>+ {formatCurrency(200)}</span>
+                    <div className='flex justify-between items-center py-3 border-b border-slate-200 group hover:bg-white/50 px-2 rounded-lg transition-colors -mx-2'>
+                      <span className='text-slate-600 font-bold'>رسوم منطقة جوازات</span>
+                      <span className='text-emerald-600 font-black'>+ {formatCurrency(200)}</span>
                     </div>
                   )}
 
                 {/* Discount */}
                 {Number(formData.discount) > 0 && (
-                  <div className='flex justify-between items-center py-3 border-b border-white/5 group hover:bg-white/5 px-2 rounded-lg transition-colors -mx-2'>
-                    <span className='text-slate-400 font-bold'>خصم خاص</span>
-                    <span className='font-bold text-emerald-400'>
+                  <div className='flex justify-between items-center py-3 border-b border-slate-200 group hover:bg-white/50 px-2 rounded-lg transition-colors -mx-2'>
+                    <span className='text-slate-600 font-bold'>خصم خاص</span>
+                    <span className='font-black text-emerald-600'>
                       - {formatCurrency(Number(formData.discount))}
                     </span>
                   </div>
                 )}
 
                 {/* Total */}
-                <div className='pt-6 mt-4 flex justify-between items-end border-t border-white/10'>
-                  <span className='text-slate-400 font-bold text-sm uppercase tracking-wider'>
+                <div className='pt-6 mt-4 flex justify-between items-end border-t-2 border-slate-300'>
+                  <span className='text-slate-800 font-bold text-lg uppercase tracking-wider'>
                     الإجمالي النهائي
                   </span>
-                  <span className='text-4xl font-black text-transparent bg-clip-text bg-gradient-to-l from-emerald-400 to-cyan-400'>
+                  <span className='text-4xl font-black text-emerald-700 bg-emerald-100 px-4 py-2 rounded-xl'>
                     {formatCurrency(calculateTotal() / 100)}
                   </span>
                 </div>
 
                 {/* Paid Info */}
-                <div className='bg-white/5 rounded-2xl p-4 flex justify-between items-center mt-6 ring-1 ring-white/5'>
-                  <div className='text-center flex-1 border-l border-white/10'>
-                    <div className='text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest'>
+                <div className='bg-white rounded-2xl p-5 flex justify-between items-center mt-6 border border-slate-200 shadow-sm'>
+                  <div className='text-center flex-1 border-l border-slate-200'>
+                    <div className='text-sm text-slate-500 font-bold mb-1 uppercase tracking-widest'>
                       المدفوع
                     </div>
-                    <div className='text-xl font-black text-emerald-400'>
+                    <div className='text-2xl font-black text-emerald-600'>
                       {formatCurrency(Number(formData.paidAmount))}
                     </div>
                   </div>
                   <div className='text-center flex-1'>
-                    <div className='text-[10px] text-slate-400 font-bold mb-1 uppercase tracking-widest'>
+                    <div className='text-sm text-slate-500 font-bold mb-1 uppercase tracking-widest'>
                       المتبقي
                     </div>
                     <div
-                      className={`text-xl font-black ${formData.remainingAmount > 0 ? 'text-rose-400' : 'text-slate-400'}`}
+                      className={`text-2xl font-black ${formData.remainingAmount > 0 ? 'text-rose-600' : 'text-slate-600'}`}
                     >
                       {formatCurrency(formData.remainingAmount)}
                     </div>

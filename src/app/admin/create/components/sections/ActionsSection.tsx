@@ -22,7 +22,7 @@ export const ActionsSection: React.FC<ActionsSectionProps> = ({
 
   return (
     <>
-      <div id='actions-section' className='space-y-4'>
+      <div id='actions-section' className='space-y-4 pt-4'>
         <div className='grid grid-cols-2 gap-3'>
           <button
             type='button'
@@ -32,7 +32,7 @@ export const ActionsSection: React.FC<ActionsSectionProps> = ({
                 underImplementationReason: 'تم وضع الطلب تحت التنفيذ',
               }))
             }
-            className='flex items-center justify-center py-3 bg-white border border-orange-200 text-orange-600 rounded-xl hover:bg-orange-50 font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-sm'
+            className='flex items-center justify-center py-3 bg-amber-100 text-amber-800 border border-amber-200 rounded-xl hover:bg-amber-200 font-bold text-sm transition-all active:scale-95 shadow-sm'
           >
             تحت التنفيذ
           </button>
@@ -46,7 +46,7 @@ export const ActionsSection: React.FC<ActionsSectionProps> = ({
                 alert('يرجى البحث عن العميل أولاً');
               }
             }}
-            className='flex items-center justify-center py-3 bg-white border border-indigo-200 text-indigo-600 rounded-xl hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-sm'
+            className='flex items-center justify-center py-3 bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-xl hover:bg-indigo-200 font-bold text-sm transition-all active:scale-95 shadow-sm'
           >
             إيصال مجمع
           </button>
@@ -55,17 +55,17 @@ export const ActionsSection: React.FC<ActionsSectionProps> = ({
         <button
           type='submit'
           disabled={submitting}
-          className='w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-2xl flex items-center justify-center gap-3'
+          className='w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-3'
         >
           {submitting ? (
             <>
-              <div className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
+              <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
               <span>جاري الحفظ...</span>
             </>
           ) : (
             <>
               <span>تأكيد وإنشاء الطلب</span>
-              <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -77,13 +77,13 @@ export const ActionsSection: React.FC<ActionsSectionProps> = ({
           )}
         </button>
 
-        <div className='flex items-center justify-center gap-4 pt-2'>
+        <div className='flex items-center justify-center pt-2'>
           <button
             type='button'
             onClick={handleReset}
-            className='w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-100 transition-all border border-red-200'
+            className='w-full py-3 bg-red-100 text-red-700 rounded-xl font-bold text-sm hover:bg-red-200 transition-all border border-red-200'
           >
-            إلغاء العملية
+            إلغاء العملية والتفريغ
           </button>
         </div>
       </div>
