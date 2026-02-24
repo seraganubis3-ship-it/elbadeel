@@ -32,8 +32,6 @@ export const metadata: Metadata = {
   authors: [{ name: 'البديل', url: 'https://albadel.com.eg' }],
   creator: 'البديل',
   publisher: 'البديل',
-  category: 'خدمات حكومية',
-  classification: 'البديل للخدمات الحكومية',
   manifest: '/manifest.json',
   themeColor: '#2563eb',
   appleWebApp: {
@@ -46,6 +44,56 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  metadataBase: new URL('https://albadel.com.eg'),
+  alternates: {
+    canonical: '/',
+    languages: {
+      ar: '/',
+      'ar-EG': '/',
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ar_EG',
+    url: 'https://albadel.com.eg',
+    siteName: 'البديل للخدمات الحكومية',
+    title: 'البديل للخدمات الحكومية | استخراج بطاقة رقم قومي وخدمات الحكومية في مصر',
+    description:
+      'مكتب البديل للخدمات الحكومية في مصر لاستخراج بطاقة رقم قومي، جواز سفر، فيش جنائي، قيد عائلي وتصديق المستندات بسرعة وأمان. أنجز أوراقك الرسمية بدون زحام مع فريق متخصص وأسعار تنافسية وخدمة موثوقة.',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'البديل للخدمات الحكومية',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'البديل للخدمات الحكومية | استخراج بطاقة رقم قومي وخدمات الحكومية في مصر',
+    description:
+      'مكتب البديل للخدمات الحكومية في مصر لاستخراج بطاقة رقم قومي، جواز سفر، فيش جنائي، قيد عائلي وتصديق المستندات بسرعة وأمان. أنجز أوراقك الرسمية بدون زحام مع فريق متخصص وأسعار تنافسية وخدمة موثوقة.',
+    images: ['/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'koDjEJPIQLr8pn6D6kB38eWHm0tv-jSJNqR_popxUJc',
+    yandex: 'your-yandex-verification-code',
+    yahoo: 'your-yahoo-verification-code',
+  },
+  category: 'خدمات حكومية',
+  classification: 'البديل للخدمات الحكومية',
   other: {
     'geo.region': 'EG',
     'geo.placename': 'مصر',

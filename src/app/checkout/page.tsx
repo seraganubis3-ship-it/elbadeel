@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import CheckoutClient from './CheckoutClient';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'إتمام الطلب - خدمات البديل',
   description: 'أكمل طلبك وأنشئ حسابك في ثوانٍ معدودة',

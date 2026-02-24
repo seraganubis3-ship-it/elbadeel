@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import FAQClient from './FAQClient';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'الأسئلة الشائعة - البديل للخدمات الحكومية',
   description:
