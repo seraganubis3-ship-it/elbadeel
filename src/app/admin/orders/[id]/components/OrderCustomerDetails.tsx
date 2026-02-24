@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Order } from '../types';
+import { formatDateForInput } from '@/lib/date-utils';
 
 interface OrderCustomerDetailsProps {
   order: Order;
@@ -30,7 +31,7 @@ export default function OrderCustomerDetails({
   }>({
     customerName: order.customerName || '',
     idNumber: order.idNumber || '',
-    birthDate: order.birthDate ? new Date(order.birthDate).toISOString().split('T')[0] || '' : '',
+    birthDate: formatDateForInput(order.birthDate),
     customerPhone: order.customerPhone || '',
     additionalPhone: order.additionalPhone || '',
     profession: order.profession || '',

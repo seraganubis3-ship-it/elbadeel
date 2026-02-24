@@ -66,16 +66,94 @@ export async function POST(request: NextRequest) {
         const parsedCreatedAt = new Date(offlineOrder.createdAt);
         const createdAt = isNaN(parsedCreatedAt.getTime()) ? new Date() : parsedCreatedAt;
 
+        // Sanitize data for Prisma
+        const sanitizeDate = (dateStr: any) => {
+          if (!dateStr || dateStr === '' || dateStr === 'undefined') return null;
+          let d;
+          if (typeof dateStr === 'string' && dateStr.includes('/')) {
+            const [day, month, year] = dateStr.split('/');
+            d = new Date(`${year}-${month}-${day}`);
+          } else {
+            d = new Date(dateStr);
+          }
+          return isNaN(d.getTime()) ? null : d;
+        };
+
+        const sanitizeString = (val: any) => {
+          if (Array.isArray(val)) return JSON.stringify(val);
+          if (typeof val === 'object' && val !== null) return JSON.stringify(val);
+          return val || '';
+        };
+
+        const sanitizeNumber = (val: any, defaultVal: number = 0) => {
+          if (val === undefined || val === null || val === '') return defaultVal;
+          const num = parseInt(val);
+          return isNaN(num) ? defaultVal : num;
+        };
+
+        const sanitizedData = {
+          // Fields defined in prisma.order.create according to schema.prisma
+          id: orderId,
+          userId,
+          serviceId: offlineOrder.serviceId,
+          variantId: offlineOrder.variantId,
+          createdByAdminId: adminUserId,
+          createdAt,
+          totalPrice: sanitizeNumber(offlineOrder.totalCents),
+          totalCents: sanitizeNumber(offlineOrder.totalCents),
+          deliveryFee: sanitizeNumber(offlineOrder.deliveryFee),
+          discount: sanitizeNumber(offlineOrder.discount),
+          quantity: sanitizeNumber(offlineOrder.quantity, 1),
+          otherFees: sanitizeNumber(offlineOrder.otherFees),
+          status: offlineOrder.status || 'PROCESSING',
+          customerName: offlineOrder.customerName,
+          customerPhone: offlineOrder.customerPhone,
+          additionalPhone: offlineOrder.additionalPhone || '',
+          customerEmail: offlineOrder.customerEmail || '',
+          address: offlineOrder.address || '',
+          governorate: offlineOrder.governorate || '',
+          city: offlineOrder.city || '',
+          district: offlineOrder.district || '',
+          street: offlineOrder.street || '',
+          buildingNumber: offlineOrder.buildingNumber || '',
+          apartmentNumber: offlineOrder.apartmentNumber || '',
+          landmark: offlineOrder.landmark || '',
+          notes: offlineOrder.notes || '',
+          adminNotes: offlineOrder.adminNotes || '',
+          deliveryType: offlineOrder.deliveryType || 'OFFICE',
+          idNumber: offlineOrder.idNumber || '',
+          fatherName: offlineOrder.fatherName || '',
+          motherName: offlineOrder.motherName || '',
+          nationality: offlineOrder.nationality || '',
+          wifeName: offlineOrder.wifeName || '',
+          wifeMotherName: offlineOrder.wifeMotherName || '',
+          photographyLocation: offlineOrder.photographyLocation || '',
+          deceasedName: offlineOrder.deceasedName || '',
+          serviceDetails: offlineOrder.serviceDetails || '',
+          gender: offlineOrder.gender || '',
+          policeStation: offlineOrder.policeStation || '',
+          pickupLocation: offlineOrder.pickupLocation || '',
+          originalDocuments: offlineOrder.originalDocuments || '',
+          customerFollowUp: offlineOrder.customerFollowUp || '',
+          destination: offlineOrder.destination || '',
+          title: offlineOrder.title || '',
+          hasAttachments: !!offlineOrder.hasAttachments,
+          offlineId: offlineOrder.offlineId,
+          // Sanitize Dates
+          birthDate: sanitizeDate(offlineOrder.birthDate),
+          photographyDate: sanitizeDate(offlineOrder.photographyDate),
+          marriageDate: sanitizeDate(offlineOrder.marriageDate),
+          divorceDate: sanitizeDate(offlineOrder.divorceDate),
+          deathDate: sanitizeDate(offlineOrder.deathDate),
+          // Sanitize Arrays/Objects to Strings
+          selectedFines: sanitizeString(offlineOrder.selectedFines),
+          finesDetails: sanitizeString(offlineOrder.finesDetails),
+          servicesDetails: sanitizeString(offlineOrder.servicesDetails),
+          attachedDocuments: sanitizeString(offlineOrder.attachedDocuments),
+        };
+
         const newOrder = await prisma.order.create({
-          data: {
-            ...offlineOrder,
-            id: orderId,
-            userId,
-            createdByAdminId: adminUserId,
-            createdAt,
-            // Ensure status logic is consistent or use the one from offline
-            status: offlineOrder.status || 'PROCESSING',
-          },
+          data: sanitizedData,
         });
 
         // 4. Handle Payment if exists
@@ -87,7 +165,7 @@ export async function POST(request: NextRequest) {
               method: offlineOrder.paymentMethod || 'CASH',
               status: 'CONFIRMED',
               senderPhone: offlineOrder.customerPhone,
-              createdAt: new Date(offlineOrder.createdAt),
+              createdAt: sanitizedData.createdAt,
             },
           });
         }

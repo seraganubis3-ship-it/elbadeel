@@ -55,11 +55,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
     }
   }, [pathname, session, workDate]);
+  const [showOfflineMsg, setShowOfflineMsg] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (status === 'loading' && typeof window !== 'undefined' && !navigator.onLine) {
+      timer = setTimeout(() => setShowOfflineMsg(true), 3000);
+    }
+    return () => clearTimeout(timer);
+  }, [status]);
+
   // Check loading status
   if (status === 'loading') {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-emerald-50 to-slate-100'>
-        <div className='w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin'></div>
+        <div className='flex flex-col items-center gap-6 p-8 text-center'>
+          <div className='relative'>
+            <div className='w-16 h-16 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin shadow-lg shadow-emerald-100/50'></div>
+            {typeof window !== 'undefined' && !navigator.onLine && (
+              <div
+                className='absolute -top-1 -right-1 w-5 h-5 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center text-[10px] animate-pulse'
+                title='وضع الأوفلاين'
+              >
+                📡
+              </div>
+            )}
+          </div>
+
+          <div className='space-y-4'>
+            <p className='text-slate-400 font-bold text-sm tracking-widest uppercase animate-pulse'>
+              جاري التحميل...
+            </p>
+            {showOfflineMsg && typeof window !== 'undefined' && !navigator.onLine && (
+              <div className='animate-in fade-in zoom-in duration-500'>
+                <span className='inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200 shadow-sm'>
+                  <span className='relative flex h-2 w-2'>
+                    <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75'></span>
+                    <span className='relative inline-flex rounded-full h-2 w-2 bg-amber-500'></span>
+                  </span>
+                  لوحة التحكم تعمل أوفلاين
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }

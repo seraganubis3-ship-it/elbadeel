@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Order } from '../types';
+import { safeLocaleDate } from '@/lib/date-utils';
 
 interface OrderDetailHeaderProps {
   order: Order;
@@ -39,7 +40,7 @@ export default function OrderDetailHeader({ order, onDelete, onPrint }: OrderDet
                 </span>
               </div>
               <p className='text-slate-500 text-sm sm:text-base font-bold mt-1'>
-                {new Date(order.createdAt).toLocaleDateString('ar-EG', { dateStyle: 'long' })} •{' '}
+                {safeLocaleDate(order.createdAt, { dateStyle: 'long' })} •{' '}
                 {order.variant?.name || 'نوع غير محدد'}
               </p>
             </div>

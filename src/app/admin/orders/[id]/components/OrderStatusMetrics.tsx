@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Order, getStatusBadge } from '../types';
+import { safeLocaleDate } from '@/lib/date-utils';
 
 interface OrderStatusMetricsProps {
   order: Order;
@@ -64,8 +65,7 @@ export default function OrderStatusMetrics({
             </div>
             {order.estimatedCompletionDate && (
               <p className='text-[10px] sm:text-xs text-blue-50 font-black opacity-90'>
-                التسليم المتوقع:{' '}
-                {new Date(order.estimatedCompletionDate).toLocaleDateString('ar-EG')}
+                التسليم المتوقع: {safeLocaleDate(order.estimatedCompletionDate)}
               </p>
             )}
           </div>
@@ -293,7 +293,7 @@ export default function OrderStatusMetrics({
             </div>
             <div className='text-right'>
               <div className='text-lg font-bold text-orange-600 group-hover:scale-110 transition-transform duration-300'>
-                {new Date(order.createdAt).toLocaleDateString('ar-EG')}
+                {safeLocaleDate(order.createdAt)}
               </div>
               <div className='text-sm text-orange-700 font-medium'>تاريخ الطلب</div>
             </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Order } from '../types';
+import { formatDateForInput } from '@/lib/date-utils';
 
 interface OrderPersonalDetailsProps {
   order: Order;
@@ -33,13 +34,9 @@ export default function OrderPersonalDetails({
     nationality: order.nationality || 'EGYPTIAN',
     wifeName: order.wifeName || '',
     wifeMotherName: order.wifeMotherName || '',
-    marriageDate: order.marriageDate
-      ? new Date(order.marriageDate).toISOString().split('T')[0] || ''
-      : '',
-    divorceDate: order.divorceDate
-      ? new Date(order.divorceDate).toISOString().split('T')[0] || ''
-      : '',
-    deathDate: order.deathDate ? new Date(order.deathDate).toISOString().split('T')[0] || '' : '',
+    marriageDate: formatDateForInput(order.marriageDate),
+    divorceDate: formatDateForInput(order.divorceDate),
+    deathDate: formatDateForInput(order.deathDate),
   });
 
   const handleSave = () => {

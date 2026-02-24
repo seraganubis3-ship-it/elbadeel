@@ -51,18 +51,18 @@
   ],
   "shortcuts": [
     {
-      "name": "طلب جديد",
-      "url": "/checkout",
+      "name": "طلباتي",
+      "url": "/orders",
       "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "الأسئلة الشائعة",
-      "url": "/faq",
+      "name": "طلب خدمة",
+      "url": "/services",
       "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ],
   "share_target": {
-    "action": "/checkout",
+    "action": "/services",
     "method": "GET",
     "params": {
       "title": "title",
@@ -72,7 +72,7 @@
   },
   "file_handlers": [
     {
-      "action": "/checkout",
+      "action": "/services",
       "accept": {
         "image/*": [".jpg", ".jpeg", ".png", ".pdf"]
       }
@@ -81,11 +81,11 @@
   "protocol_handlers": [
     {
       "protocol": "web+albadel",
-      "url": "/checkout?query=%s"
+      "url": "/services?query=%s"
     }
   ],
   "note_taking": {
-    "new_note_url": "/checkout"
+    "new_note_url": "/services"
   },
   "widgets": [
     {

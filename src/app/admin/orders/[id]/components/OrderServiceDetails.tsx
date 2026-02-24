@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Order } from '../types';
+import { formatDateForInput } from '@/lib/date-utils';
 
 interface OrderServiceDetailsProps {
   order: Order;
@@ -33,10 +34,8 @@ export default function OrderServiceDetails({
     quantity: order.quantity || 1,
     policeStation: order.policeStation || '',
     pickupLocation: order.pickupLocation || '',
-    createdAt: order.createdAt ? new Date(order.createdAt).toISOString().split('T')[0] : '',
-    photographyDate: order.photographyDate
-      ? new Date(order.photographyDate).toISOString().split('T')[0]
-      : '',
+    createdAt: formatDateForInput(order.createdAt),
+    photographyDate: formatDateForInput(order.photographyDate),
     serviceSource: order.serviceSource || '',
     destination: order.destination || '',
   });
@@ -50,7 +49,12 @@ export default function OrderServiceDetails({
       // The API handles parsing. If I send "", API sets null.
       if (key === 'createdAt' || key === 'photographyDate') {
         if (value) {
-          (updates as any)[key] = new Date(value as string).toISOString();
+          const formatted = formatDateForInput(value as string);
+          if (formatted) {
+            (updates as any)[key] = new Date(formatted).toISOString();
+          } else {
+            (updates as any)[key] = null;
+          }
         } else {
           // If explicitly cleared, we should send null or allow API to handle empty string
           (updates as any)[key] = null;

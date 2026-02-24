@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Order } from '../types';
 import { AttachmentModal } from '@/app/admin/create/components/modals/AttachmentModal';
+import { safeLocaleDate } from '@/lib/date-utils';
 
 interface OrderAttachmentsProps {
   order: Order;
@@ -237,7 +238,7 @@ export default function OrderAttachments({
                             </span>
                           )}
                           {(doc.fileSize / 1024 / 1024).toFixed(2)} MB •{' '}
-                          {new Date(doc.uploadedAt).toLocaleDateString('ar-EG')}
+                          {safeLocaleDate(doc.uploadedAt)}
                         </p>
                       </div>
                       <Link

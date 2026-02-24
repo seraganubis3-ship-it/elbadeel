@@ -1,6 +1,7 @@
 'use client';
 
 import { Order } from '../types';
+import { safeLocaleDate } from '@/lib/date-utils';
 
 interface OrderPaymentDetailsProps {
   order: Order;
@@ -130,7 +131,7 @@ export default function OrderPaymentDetails({
             <div className='flex justify-between items-center text-sm sm:text-lg'>
               <span className='text-slate-500 font-bold'>تاريخ العملية</span>
               <span className='font-black text-slate-800'>
-                {new Date(order.payment.createdAt).toLocaleDateString('ar-EG')}
+                {safeLocaleDate(order.payment.createdAt)}
               </span>
             </div>
           </div>
