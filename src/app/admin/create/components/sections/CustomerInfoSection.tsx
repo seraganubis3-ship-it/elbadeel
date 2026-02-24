@@ -44,6 +44,7 @@ interface CustomerInfoSectionProps {
 
   handleKeyDown?: (e: React.KeyboardEvent) => void;
   phoneConflict?: Customer | null;
+  clearCustomer: () => void;
 }
 
 export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
@@ -78,6 +79,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
   handleKeyDown,
   selectedService,
   phoneConflict,
+  clearCustomer,
 }) => {
   const isDeathCert = selectedService?.name?.includes('وفاة');
   const isBirthCert = selectedService?.name?.includes('ميلاد');
@@ -126,7 +128,25 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
           <div className='w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-emerald-100 text-emerald-600'></div>
           <div>
             <h2 className='text-xl font-bold text-slate-800'>بيانات الطلب والعميل</h2>
-            <p className='text-xs text-slate-500 font-medium'>المعلومات الأساسية</p>
+            <div className='flex items-center gap-2'>
+              <p className='text-xs text-slate-500 font-medium'>المعلومات الأساسية</p>
+              {customer && (
+                <div className='flex items-center gap-1.5 animate-in fade-in zoom-in duration-300'>
+                  <span className='w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200'></span>
+                  <span className='text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 flex items-center gap-2'>
+                    عميل مسجل (ID: {customer.id})
+                    <button
+                      type='button'
+                      onClick={clearCustomer}
+                      className='hover:text-rose-600 transition-colors bg-white w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-sm text-[8px]'
+                      title='فصل الحساب (تسجيل كعميل جديد)'
+                    >
+                      ✕
+                    </button>
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -152,6 +172,10 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={() => setShowSearchDropdown(true)}
+                onBlur={() => {
+                  // Small delay to allow clicking on dropdown items before they vanish
+                  setTimeout(() => setShowSearchDropdown(false), 200);
+                }}
                 placeholder='تسجيل عميل (الاسم، الهاتف، الرقم القومي)...'
                 className={`w-full bg-slate-50 border-2 ${
                   searching
@@ -201,14 +225,14 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                         👤
                       </div>
                       <div className='flex-1'>
-                        <div className='font-bold text-slate-700 group-hover:text-emerald-700 transition-colors lg:text-sm'>
+                        <div className='font-bold text-slate-700 group-hover:text-emerald-700 transition-colors lg:text-sm text-right'>
                           {result.name}
                         </div>
-                        <div className='text-xs text-slate-400 font-mono flex items-center gap-2'>
-                          <span>{result.phone}</span>
+                        <div className='text-xs text-slate-400 font-mono flex items-center gap-2 justify-end'>
                           {result.idNumber && (
                             <span className='bg-slate-100 px-1 rounded'>{result.idNumber}</span>
                           )}
+                          <span>{result.phone}</span>
                         </div>
                       </div>
                     </div>
@@ -298,7 +322,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                 <div className='mt-2 flex gap-2'>
                   <button
                     type='button'
-                    onClick={() => selectCustomer(phoneConflict)}
+                    onClick={() => phoneConflict && selectCustomer(phoneConflict)}
                     className='text-[10px] bg-amber-600 text-white px-3 py-1 rounded-lg font-black hover:bg-amber-700 transition-colors'
                   >
                     استخدام هذا الحساب

@@ -215,6 +215,9 @@ export function useCreateOrder() {
   // Search customer
   const searchCustomer = useCallback(
     (name: string) => {
+      if (customer && customer.name !== name) {
+        setCustomer(null);
+      }
       if (abortController) abortController.abort();
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
@@ -308,6 +311,9 @@ export function useCreateOrder() {
   useEffect(() => {
     if (phoneCheckTimeout.current) clearTimeout(phoneCheckTimeout.current);
     if (formData.customerPhone.length === 11) {
+      if (customer && customer.phone?.replace(/\D/g, '') !== formData.customerPhone) {
+        setCustomer(null);
+      }
       // Don't flag if we already selected this customer
       if (customer && customer.phone?.replace(/\D/g, '') === formData.customerPhone) {
         setPhoneConflict(null);
@@ -1169,5 +1175,10 @@ export function useCreateOrder() {
     showSuccessModal,
     setShowSuccessModal,
     createdOrderId,
+    clearCustomer: () => {
+      setCustomer(null);
+      setSuggestion('');
+      setSuggestedUser(null);
+    },
   };
 }
