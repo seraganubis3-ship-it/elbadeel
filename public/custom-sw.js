@@ -89,8 +89,8 @@ self.addEventListener('push', event => {
 
 // 4. Cache Size Limiting Logic
 const DYNAMIC_CACHE = 'dynamic-cache-v1';
-const MAX_DYNAMIC_ITEMS = 50; // Limit dynamic items to save space/data
-const MAX_STATIC_ITEMS = 100;
+const MAX_DYNAMIC_ITEMS = 500; // Increased significantly for long-term offline
+const MAX_STATIC_ITEMS = 500;
 
 async function limitCacheSize(cacheName, maxItems) {
   const cache = await caches.open(cacheName);
