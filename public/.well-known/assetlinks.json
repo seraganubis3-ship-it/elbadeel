@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "eg.com.albadel.twa",
-        "sha256_cert_fingerprints": ["D5:0D:A2:59:E7:7F:3B:95:6B:62:45:F2:EF:5E:BF:EC:ED:1F:32:D6:03:DE:92:EB:5D:7B:C5:0E:F3:F4:9F:21"]
+        "sha256_cert_fingerprints": ["08:99:5E:8D:A8:BC:29:07:46:C4:C9:55:84:5E:C6:5E:5C:E3:7B:42:6C:B4:B6:82:11:63:93:7E:AD:2C:2D:0B"]
       }
     }]
