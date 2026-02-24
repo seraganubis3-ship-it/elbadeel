@@ -1,0 +1,25 @@
+{
+  "name": "البديل للخدمات الحكومية",
+  "short_name": "البديل",
+  "description": "منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية والخدمات الحكومية في مصر",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "orientation": "portrait",
+  "scope": "/"
+}
