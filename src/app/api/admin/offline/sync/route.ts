@@ -63,13 +63,16 @@ export async function POST(request: NextRequest) {
 
         // 3. Create the Order
         const orderId = await generateUniqueOrderNumber();
+        const parsedCreatedAt = new Date(offlineOrder.createdAt);
+        const createdAt = isNaN(parsedCreatedAt.getTime()) ? new Date() : parsedCreatedAt;
+
         const newOrder = await prisma.order.create({
           data: {
             ...offlineOrder,
             id: orderId,
             userId,
             createdByAdminId: adminUserId,
-            createdAt: new Date(offlineOrder.createdAt),
+            createdAt,
             // Ensure status logic is consistent or use the one from offline
             status: offlineOrder.status || 'PROCESSING',
           },

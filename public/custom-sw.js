@@ -46,9 +46,13 @@ self.addEventListener('push', event => {
 });
 
 // 4. Offline Support Logic
-// Ensured we respond to fetch events to pass capability checks
 self.addEventListener('fetch', event => {
   if (event.request.mode === 'navigate') {
-    console.log('Handling navigation request', event.request.url);
+    event.respondWith(
+      fetch(event.request).catch(async () => {
+        const cache = await caches.open(CACHE_NAME);
+        return (await cache.match(OFFLINE_URL)) || (await cache.match('/admin/create'));
+      })
+    );
   }
 });

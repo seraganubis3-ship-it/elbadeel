@@ -17,31 +17,37 @@ export interface OfflineOrder {
 }
 
 class OfflineManager {
-  private db: Promise<IDBPDatabase>;
+  private dbInstance: Promise<IDBPDatabase> | null = null;
 
-  constructor() {
-    this.db = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        // Lookups
-        if (!db.objectStoreNames.contains('services')) {
-          db.createObjectStore('services', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('fines')) {
-          db.createObjectStore('fines', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('customers')) {
-          db.createObjectStore('customers', { keyPath: 'id' });
-        }
-        // Pending Actions
-        if (!db.objectStoreNames.contains('pending_orders')) {
-          db.createObjectStore('pending_orders', { keyPath: 'offlineId' });
-        }
-        // Metadata
-        if (!db.objectStoreNames.contains('metadata')) {
-          db.createObjectStore('metadata');
-        }
-      },
-    });
+  private get db(): Promise<IDBPDatabase> {
+    if (typeof window === 'undefined') {
+      throw new Error('OfflineManager: indexedDB is only available in the browser.');
+    }
+    if (!this.dbInstance) {
+      this.dbInstance = openDB(DB_NAME, DB_VERSION, {
+        upgrade(db) {
+          // Lookups
+          if (!db.objectStoreNames.contains('services')) {
+            db.createObjectStore('services', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('fines')) {
+            db.createObjectStore('fines', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('customers')) {
+            db.createObjectStore('customers', { keyPath: 'id' });
+          }
+          // Pending Actions
+          if (!db.objectStoreNames.contains('pending_orders')) {
+            db.createObjectStore('pending_orders', { keyPath: 'offlineId' });
+          }
+          // Metadata
+          if (!db.objectStoreNames.contains('metadata')) {
+            db.createObjectStore('metadata');
+          }
+        },
+      });
+    }
+    return this.dbInstance;
   }
 
   // --- Lookups ---

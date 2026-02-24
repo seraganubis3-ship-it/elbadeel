@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/Toast';
 import { Order, getStatusBadge } from '../types';
 import { hasPermission } from '@/lib/permissions';
+import { offlineManager } from '@/lib/offline-manager';
 
 export function useOrderDetail(orderId: string) {
   const { data: session } = useSession();
@@ -50,6 +51,26 @@ export function useOrderDetail(orderId: string) {
 
   const fetchOrderDetails = useCallback(async () => {
     try {
+      // If it's explicitly an offline ID, try local first
+      if (orderId.startsWith('OFF-')) {
+        const pendingOrders = await offlineManager.getPendingOrders();
+        const offlineOrder = pendingOrders.find(o => o.offlineId === orderId);
+        if (offlineOrder) {
+          // Adapt offline order to expected Order type
+          setOrder({
+            ...offlineOrder,
+            id: offlineOrder.offlineId,
+            status: offlineOrder.status || 'PROCESSING',
+            createdAt: offlineOrder.createdAt.toString(),
+            service: { name: 'طلب أوفلاين', id: offlineOrder.serviceId },
+            variant: { name: '---', id: offlineOrder.variantId },
+            user: { name: offlineOrder.customerName, phone: offlineOrder.customerPhone },
+          } as any);
+          setLoading(false);
+          return;
+        }
+      }
+
       const response = await fetch(`/api/admin/orders/${orderId}`);
       if (response.ok) {
         const data = await response.json();
@@ -73,10 +94,38 @@ export function useOrderDetail(orderId: string) {
           }));
         }
       } else {
-        setTimeout(() => router.push('/admin/orders'), 2000);
+        // Fallback to offline if fetch fails even for non-OFF- IDs (maybe it's a known order cached locally?)
+        const pendingOrders = await offlineManager.getPendingOrders();
+        const offlineOrder = pendingOrders.find(o => o.offlineId === orderId || o.id === orderId);
+        if (offlineOrder) {
+          setOrder({
+            ...offlineOrder,
+            id: offlineOrder.offlineId,
+            status: offlineOrder.status || 'PROCESSING',
+            createdAt: offlineOrder.createdAt.toString(),
+            service: { name: 'طلب أوفلاين', id: offlineOrder.serviceId },
+            variant: { name: '---', id: offlineOrder.variantId },
+            user: { name: offlineOrder.customerName, phone: offlineOrder.customerPhone },
+          } as any);
+        } else {
+          setTimeout(() => router.push('/admin/orders'), 2000);
+        }
       }
     } catch {
-      // Error handled silently
+      // Potentially network error, try offline lookup
+      const pendingOrders = await offlineManager.getPendingOrders();
+      const offlineOrder = pendingOrders.find(o => o.offlineId === orderId);
+      if (offlineOrder) {
+        setOrder({
+          ...offlineOrder,
+          id: offlineOrder.offlineId,
+          status: offlineOrder.status || 'PROCESSING',
+          createdAt: offlineOrder.createdAt.toString(),
+          service: { name: 'طلب أوفلاين', id: offlineOrder.serviceId },
+          variant: { name: '---', id: offlineOrder.variantId },
+          user: { name: offlineOrder.customerName, phone: offlineOrder.customerPhone },
+        } as any);
+      }
     } finally {
       setLoading(false);
     }

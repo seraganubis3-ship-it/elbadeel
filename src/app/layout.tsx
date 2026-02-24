@@ -33,7 +33,6 @@ export const metadata: Metadata = {
   creator: 'البديل',
   publisher: 'البديل',
   manifest: '/manifest.json',
-  themeColor: '#ffffff',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -112,6 +111,10 @@ export const metadata: Metadata = {
     'DC.language': 'ar',
     'DC.coverage': 'مصر',
   },
+};
+
+export const viewport = {
+  themeColor: '#ffffff',
 };
 
 import { prisma } from '@/lib/prisma';
