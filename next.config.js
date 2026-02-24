@@ -4,9 +4,7 @@ const withPWA = require('next-pwa')({
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
   buildExcludes: [/middleware-manifest\.json$/],
-  workboxOptions: {
-    importScripts: ['/custom-sw.js'],
-  },
+  importScripts: ['/custom-sw.js'],
 });
 
 /** @type {import('next').NextConfig} */
