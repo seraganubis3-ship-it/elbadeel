@@ -108,6 +108,7 @@ export default function CreateOrderPage() {
     setShowSuccessModal,
     createdOrderId,
     finesList,
+    clearCustomer,
   } = useCreateOrder();
 
   // Aliases for compatibility with existing JSX
@@ -197,6 +198,8 @@ export default function CreateOrderPage() {
                   selectCustomer={selectCustomer}
                   handleUpdateCustomerName={handleUpdateCustomerName}
                   handleNationalIdChange={handleNationalIdChange}
+                  phoneConflict={phoneConflict}
+                  clearCustomer={clearCustomer}
                   // Dependent Props
                   searchingDependent={searchingDependent}
                   suggestedDependent={suggestedDependent}
@@ -212,7 +215,6 @@ export default function CreateOrderPage() {
                   suggestion={suggestion}
                   handleKeyDown={handleKeyDown}
                   selectedService={selectedService}
-                  phoneConflict={phoneConflict}
                 />
 
                 <div className='flex justify-end pt-4 gap-3'>
