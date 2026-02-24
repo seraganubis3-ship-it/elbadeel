@@ -96,6 +96,16 @@ class OfflineManager {
       .slice(0, 50);
   }
 
+  async upsertCustomer(customer: any) {
+    const db = await this.db;
+    // Ensure we have an ID for the keyPath
+    const customerToSave = {
+      ...customer,
+      id: customer.id || `TEMP-${customer.phone?.replace(/\D/g, '') || Date.now()}`,
+    };
+    return db.put('customers', customerToSave);
+  }
+
   // --- Orders ---
 
   async saveOfflineOrder(order: OfflineOrder) {

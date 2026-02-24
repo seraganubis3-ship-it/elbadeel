@@ -1025,6 +1025,14 @@ export function useCreateOrder() {
             offlineId,
             createdAt: orderData.workDate, // Map workDate to createdAt for the store
           });
+
+          // Index customer for immediate offline search
+          await offlineManager.upsertCustomer({
+            name: orderData.customerName,
+            phone: orderData.customerPhone,
+            idNumber: orderData.idNumber,
+          });
+
           setCreatedOrderId(offlineId);
           setShowSuccessModal(true);
           showWarning(
@@ -1039,6 +1047,14 @@ export function useCreateOrder() {
           const orderId = data.order.id;
           setCreatedOrderId(orderId);
           setShowSuccessModal(true);
+
+          // Index customer for immediate search if they just got created/updated
+          if (data.order.user) {
+            await offlineManager.upsertCustomer({
+              ...data.order.user,
+              id: data.order.user.id || data.order.userId, // Ensure ID is present
+            });
+          }
 
           // Optionally trigger a sync for any other pending orders
           offlineManager.syncOrders().catch(() => {});
