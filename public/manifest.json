@@ -5,15 +5,23 @@
   "description": "منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية والخدمات الحكومية في مصر",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "minimal-ui"],
+  "display_override": ["window-controls-overlay", "minimal-ui", "tabbed"],
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "categories": ["government", "business", "productivity"],
   "lang": "ar",
   "dir": "rtl",
+  "orientation": "portrait",
+  "scope": "/",
+  "iarc_rating_id": "e58c679a-9118-4053-9008-011155987151",
+  "prefer_related_applications": false,
+  "related_applications": [],
   "launch_handler": {
     "client_mode": "focus-existing"
   },
+  "scope_extensions": [
+    { "origin": "https://albadel.com.eg" }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -34,11 +42,11 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Home Dashboard"
+      "label": "Home Dashboard Desktop"
     },
     {
       "src": "/screenshot-mobile.png",
-      "sizes": "390x844",
+      "sizes": "500x844",
       "type": "image/png",
       "label": "Home Dashboard Mobile"
     }
@@ -47,14 +55,59 @@
     {
       "name": "طلب جديد",
       "url": "/checkout",
-      "icons": [
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "الأسئلة الشائعة",
+      "url": "/faq",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ],
+  "share_target": {
+    "action": "/checkout",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "/checkout",
+      "accept": {
+        "image/*": [".jpg", ".jpeg", ".png", ".pdf"]
+      }
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+albadel",
+      "url": "/checkout?query=%s"
+    }
+  ],
+  "note_taking": {
+    "new_note_url": "/checkout"
+  },
+  "widgets": [
+    {
+      "name": "حالة الطلب",
+      "description": "تابع آخر تحديثات طلباتك",
+      "tag": "order-status",
+      "ms_ac_template": "/widgets/order-status.json",
+      "data": "/api/widgets/order-status",
+      "type": "application/json",
+      "screenshots": [
         {
-          "src": "/icons/icon-192x192.png",
-          "sizes": "192x192"
+          "src": "/screenshot-mobile.png",
+          "sizes": "500x844",
+          "type": "image/png",
+          "label": "Widget Preview"
         }
       ]
     }
   ],
-  "orientation": "portrait",
-  "scope": "/"
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }
