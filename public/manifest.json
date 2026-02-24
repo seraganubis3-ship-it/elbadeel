@@ -5,8 +5,10 @@
   "description": "منصة موثوقة وسريعة لاستخراج جميع أنواع الأوراق الرسمية والخدمات الحكومية في مصر",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui"],
   "background_color": "#0a5a3a",
   "theme_color": "#0a5a3a",
+  "categories": ["government", "business", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
