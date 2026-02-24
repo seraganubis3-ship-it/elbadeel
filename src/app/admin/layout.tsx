@@ -9,6 +9,8 @@ import AdminWorkDateWrapper from '@/components/AdminWorkDateWrapper';
 import { hasPermission } from '@/lib/permissions';
 import { OfflineSyncTrigger } from '@/components/OfflineSyncTrigger';
 
+export const dynamic = 'force-dynamic';
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
