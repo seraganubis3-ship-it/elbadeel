@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   creator: 'البديل',
   publisher: 'البديل',
   manifest: '/manifest.json',
-  themeColor: '#0a5a3a',
+  themeColor: '#ffffff',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
