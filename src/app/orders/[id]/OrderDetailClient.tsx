@@ -264,7 +264,6 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
               <h3 className='text-lg font-bold text-gray-900 mb-4'>الإجراءات</h3>
 
               <div className='space-y-3'>
-
                 <button className='w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium'>
                   <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                     <path

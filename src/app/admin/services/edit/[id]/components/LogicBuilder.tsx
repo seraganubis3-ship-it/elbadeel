@@ -67,7 +67,7 @@ export default function LogicBuilder({ value, onChange, fields }: LogicBuilderPr
         return;
       }
       const data = JSON.parse(value);
-      
+
       if (Array.isArray(data)) {
         // New Array Format: [ { field, op, value }, ... ]
         setRules(data);

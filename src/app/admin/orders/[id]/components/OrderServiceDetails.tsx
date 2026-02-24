@@ -142,7 +142,9 @@ export default function OrderServiceDetails({
         </div>
 
         <div className='p-4 sm:p-6 bg-slate-50/50 rounded-2xl border border-slate-100'>
-          <p className='text-xs sm:text-base font-bold text-slate-400 uppercase tracking-wider mb-1 sm:mb-2'>المصدر</p>
+          <p className='text-xs sm:text-base font-bold text-slate-400 uppercase tracking-wider mb-1 sm:mb-2'>
+            المصدر
+          </p>
           {isEditing ? (
             <input
               type='text'
@@ -158,7 +160,9 @@ export default function OrderServiceDetails({
         </div>
 
         <div className='p-4 sm:p-6 bg-slate-50/50 rounded-2xl border border-slate-100'>
-          <p className='text-xs sm:text-base font-bold text-slate-400 uppercase tracking-wider mb-1 sm:mb-2'>الجهة</p>
+          <p className='text-xs sm:text-base font-bold text-slate-400 uppercase tracking-wider mb-1 sm:mb-2'>
+            الجهة
+          </p>
           {isEditing ? (
             <input
               type='text'
@@ -234,7 +238,9 @@ export default function OrderServiceDetails({
           <div className={isEditing ? 'col-span-1 md:col-span-2' : ''}>
             {isEditing ? (
               <div className='space-y-1 sm:space-y-2'>
-                <label className='text-xs sm:text-sm font-bold text-slate-400'>ملاحظات الخدمة</label>
+                <label className='text-xs sm:text-sm font-bold text-slate-400'>
+                  ملاحظات الخدمة
+                </label>
                 <textarea
                   value={formData.serviceDetails}
                   onChange={e => setFormData({ ...formData, serviceDetails: e.target.value })}
@@ -261,12 +267,14 @@ export default function OrderServiceDetails({
                 تاريخ التصوير
               </p>
               <p className='text-lg sm:text-xl font-black text-slate-800 tracking-tight'>
-                {order.photographyDate ? new Date(order.photographyDate).toLocaleDateString('ar-EG', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                }) : '----'}
+                {order.photographyDate
+                  ? new Date(order.photographyDate).toLocaleDateString('ar-EG', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                  : '----'}
               </p>
             </div>
           )}
@@ -354,7 +362,9 @@ export default function OrderServiceDetails({
                   </button>
                 </div>
                 {serialError && (
-                  <p className='mt-2 text-red-500 text-xs sm:text-sm font-bold pr-1 sm:pr-2'>{serialError}</p>
+                  <p className='mt-2 text-red-500 text-xs sm:text-sm font-bold pr-1 sm:pr-2'>
+                    {serialError}
+                  </p>
                 )}
               </div>
             )}

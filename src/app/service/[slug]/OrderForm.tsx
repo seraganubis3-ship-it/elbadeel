@@ -147,7 +147,8 @@ export default function OrderForm({
     if (isPassportService) {
       if (requestType) {
         if (requestType === 'بدل تالف') return variant.name.includes('تالف');
-        if (requestType === 'بدل فاقد') return variant.name.includes('فاقد') || variant.name.includes('فقد');
+        if (requestType === 'بدل فاقد')
+          return variant.name.includes('فاقد') || variant.name.includes('فقد');
       }
       const selectedGov = dynamicValues['governorate'];
       if (selectedGov && selectedGov !== 'الجيزة') {
@@ -573,7 +574,7 @@ export default function OrderForm({
                 dynamicValues={dynamicValues}
                 isGuest={!user}
                 password={formData.password}
-                onPasswordChange={(val) => handleInputChange('password', val)}
+                onPasswordChange={val => handleInputChange('password', val)}
               />
             </StepWrapper>
           );
@@ -656,7 +657,7 @@ export default function OrderForm({
                 appliedPromo={appliedPromo}
                 isGuest={!user}
                 password={formData.password}
-                onPasswordChange={(val) => handleInputChange('password', val)}
+                onPasswordChange={val => handleInputChange('password', val)}
               />
             </StepWrapper>
           );

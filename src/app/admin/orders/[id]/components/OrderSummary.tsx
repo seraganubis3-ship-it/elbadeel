@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Order } from '../types';
-import { 
-  PREDEFINED_FINES, 
-  Fine, 
-  calculateActualFineAmounts, 
-  calculateFineExpenses, 
-  calculateLostReportForServices 
+import {
+  PREDEFINED_FINES,
+  Fine,
+  calculateActualFineAmounts,
+  calculateFineExpenses,
+  calculateLostReportForServices,
 } from '@/constants/fines';
 
 interface OrderSummaryProps {
@@ -16,10 +16,16 @@ interface OrderSummaryProps {
   updating?: boolean;
 }
 
-export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, updating }: OrderSummaryProps) {
+export default function OrderSummary({
+  order,
+  isEditing,
+  onToggleEdit,
+  onSave,
+  updating,
+}: OrderSummaryProps) {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState('');
-  
+
   // Fines & Services State
   const [selectedFines, setSelectedFines] = useState<string[]>([]);
   const [manualServices, setManualServices] = useState<Record<string, number>>({});
@@ -53,9 +59,7 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
   }, [order.selectedFines, order.servicesDetails]);
 
   const handleFineToggle = (id: string) => {
-    setSelectedFines(prev => 
-      prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
-    );
+    setSelectedFines(prev => (prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]));
   };
 
   const handleManualServiceChange = (id: string, amount: number) => {
@@ -68,12 +72,13 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
   };
 
   const calculateNewTotal = (overrides?: Partial<Order>) => {
-    const dFee = overrides?.deliveryFee !== undefined ? overrides.deliveryFee : (order.deliveryFee || 0);
-    const oFees = overrides?.otherFees !== undefined ? overrides.otherFees : (order.otherFees || 0);
-    const disc = overrides?.discount !== undefined ? overrides.discount : (order.discount || 0);
+    const dFee =
+      overrides?.deliveryFee !== undefined ? overrides.deliveryFee : order.deliveryFee || 0;
+    const oFees = overrides?.otherFees !== undefined ? overrides.otherFees : order.otherFees || 0;
+    const disc = overrides?.discount !== undefined ? overrides.discount : order.discount || 0;
 
     let total = (order.variant?.priceCents || 0) * (order.quantity || 1);
-    
+
     // Add photography fee
     const pFee =
       order.photographyLocation === 'dandy_mall'
@@ -84,20 +89,23 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
             ? 20000
             : 0;
     total += pFee;
-    
+
     // Add delivery & other fees
     total += dFee;
     total += oFees;
-    
+
     // Deduct discount
     total -= disc;
-    
+
     // Calculate fines & services from state
     const finesTotal = calculateActualFineAmounts(selectedFines);
     const finesExpenses = calculateFineExpenses(selectedFines);
     const lostReportExpenses = calculateLostReportForServices(selectedFines);
-    const manualTotal = Object.values(manualServices).reduce((acc, curr) => acc + Math.round(curr * 100), 0);
-    
+    const manualTotal = Object.values(manualServices).reduce(
+      (acc, curr) => acc + Math.round(curr * 100),
+      0
+    );
+
     return total + finesTotal + finesExpenses + lostReportExpenses + manualTotal;
   };
 
@@ -105,7 +113,7 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
     if (!editingField || !onSave) return;
     try {
       const payload: Partial<Order> = {};
-      
+
       if (editingField === 'fines') {
         const finesDetails = selectedFines
           .filter(id => {
@@ -124,10 +132,10 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
           })
           .map(id => {
             const f = PREDEFINED_FINES.find(fine => fine.id === id);
-            return { 
+            return {
               id,
-              name: f?.name, 
-              amount: Math.round((manualServices[id] || 0) * 100) 
+              name: f?.name,
+              amount: Math.round((manualServices[id] || 0) * 100),
             };
           });
 
@@ -137,7 +145,7 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
           sDetails.push({
             id: 'service_001',
             name: 'مصاريف غرامة',
-            amount: autoExpenses
+            amount: autoExpenses,
           });
         }
 
@@ -148,10 +156,10 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
       } else {
         let value: number = 0;
         if (tempValue.trim() !== '') {
-           value = parseFloat(tempValue);
-           if (isNaN(value)) value = 0;
+          value = parseFloat(tempValue);
+          if (isNaN(value)) value = 0;
         }
-        
+
         const cents = Math.round(value * 100);
         if (editingField === 'deliveryFee') {
           payload.deliveryFee = cents;
@@ -189,7 +197,12 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
         <div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
           <div className='flex items-center gap-3 sm:gap-4 w-full sm:w-auto'>
             <div className='w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 text-indigo-600 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0'>
-              <svg className='w-5 h-5 sm:w-6 sm:h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <svg
+                className='w-5 h-5 sm:w-6 sm:h-6'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -199,8 +212,12 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
               </svg>
             </div>
             <div>
-              <h2 className='text-lg sm:text-2xl font-black text-slate-800 tracking-tight'>ملخص التكاليف</h2>
-              <p className='text-slate-500 font-bold text-sm sm:text-lg'>التفاصيل المالية والرسوم</p>
+              <h2 className='text-lg sm:text-2xl font-black text-slate-800 tracking-tight'>
+                ملخص التكاليف
+              </h2>
+              <p className='text-slate-500 font-bold text-sm sm:text-lg'>
+                التفاصيل المالية والرسوم
+              </p>
             </div>
           </div>
           {onToggleEdit && (
@@ -218,15 +235,35 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
             >
               {isEditing ? (
                 <>
-                  <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                  <svg
+                    className='w-4 h-4 sm:w-5 sm:h-5'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M6 18L18 6M6 6l12 12'
+                    />
                   </svg>
                   إغلاق التعديل
                 </>
               ) : (
                 <>
-                  <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
+                  <svg
+                    className='w-4 h-4 sm:w-5 sm:h-5'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
+                    />
                   </svg>
                   تعديل الأسعار
                 </>
@@ -260,21 +297,27 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
         )}
 
         {/* Delivery Fee */}
-        {(isEditing || (order.deliveryFee > 0)) && (
-          <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all relative ${isEditing ? 'bg-indigo-50/30 border-indigo-100' : 'border-transparent'}`}>
+        {(isEditing || order.deliveryFee > 0) && (
+          <div
+            className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all relative ${isEditing ? 'bg-indigo-50/30 border-indigo-100' : 'border-transparent'}`}
+          >
             <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2'>
               <div className='flex items-center gap-2'>
-                <span className='text-slate-500 font-bold text-base sm:text-xl font-arabic'>مصاريف الشحن والتوصيل</span>
+                <span className='text-slate-500 font-bold text-base sm:text-xl font-arabic'>
+                  مصاريف الشحن والتوصيل
+                </span>
                 {isEditing && !editingField && (
                   <button
-                    onClick={() => handleStartEdit('deliveryFee', ((order.deliveryFee || 0) / 100).toString())}
+                    onClick={() =>
+                      handleStartEdit('deliveryFee', ((order.deliveryFee || 0) / 100).toString())
+                    }
                     className='text-indigo-600 bg-indigo-100/50 hover:bg-indigo-200 px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg text-xs sm:text-sm font-bold transition-all'
                   >
                     ✎
                   </button>
                 )}
               </div>
-              
+
               {editingField === 'deliveryFee' ? (
                 <div className='flex items-center gap-2 w-full sm:w-auto'>
                   <input
@@ -290,7 +333,19 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                     disabled={updating}
                     className='bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-xl transition-all'
                   >
-                    <svg className='w-5 h-5 sm:w-6 sm:h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' /></svg>
+                    <svg
+                      className='w-5 h-5 sm:w-6 sm:h-6'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M5 13l4 4L19 7'
+                      />
+                    </svg>
                   </button>
                 </div>
               ) : (
@@ -305,20 +360,24 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
 
         {/* Other Fees */}
         {(isEditing || (order.otherFees && order.otherFees > 0)) && (
-          <div className={`p-4 rounded-2xl border transition-all relative ${isEditing ? 'bg-indigo-50/30 border-indigo-100' : 'border-transparent'}`}>
+          <div
+            className={`p-4 rounded-2xl border transition-all relative ${isEditing ? 'bg-indigo-50/30 border-indigo-100' : 'border-transparent'}`}
+          >
             <div className='flex justify-between items-center'>
               <div className='flex items-center gap-2'>
                 <span className='text-slate-500 font-bold text-xl'>رسوم أخرى</span>
                 {isEditing && !editingField && (
                   <button
-                    onClick={() => handleStartEdit('otherFees', ((order.otherFees || 0) / 100).toString())}
+                    onClick={() =>
+                      handleStartEdit('otherFees', ((order.otherFees || 0) / 100).toString())
+                    }
                     className='text-indigo-600 bg-indigo-100/50 hover:bg-indigo-200 px-3 py-1 rounded-lg text-sm font-bold transition-all'
                   >
                     تعديل ✎
                   </button>
                 )}
               </div>
-              
+
               {editingField === 'otherFees' ? (
                 <div className='flex items-center gap-2'>
                   <input
@@ -334,14 +393,28 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                     disabled={updating}
                     className='bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-xl transition-all'
                   >
-                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' /></svg>
+                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M5 13l4 4L19 7'
+                      />
+                    </svg>
                   </button>
                   <button
                     onClick={() => setEditingField(null)}
                     disabled={updating}
                     className='bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-xl transition-all'
                   >
-                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' /></svg>
+                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M6 18L18 6M6 6l12 12'
+                      />
+                    </svg>
                   </button>
                 </div>
               ) : (
@@ -358,7 +431,9 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
         {isEditing && (
           <div className='bg-slate-50 p-6 rounded-[2rem] border border-slate-200 space-y-6'>
             <div className='flex items-center justify-between mb-4'>
-              <h3 className='text-xl font-black text-slate-800 tracking-tight'>إدارة الغرامات والخدمات</h3>
+              <h3 className='text-xl font-black text-slate-800 tracking-tight'>
+                إدارة الغرامات والخدمات
+              </h3>
               {editingField === 'fines' && (
                 <div className='flex gap-2'>
                   <button
@@ -367,7 +442,14 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                     className='bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-lg shadow-emerald-100 flex items-center gap-2'
                   >
                     <span>حفظ التعديلات</span>
-                    <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' /></svg>
+                    <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M5 13l4 4L19 7'
+                      />
+                    </svg>
                   </button>
                   <button
                     onClick={() => {
@@ -400,7 +482,12 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                 <span className='text-4xl mb-3'>⚖️</span>
                 <span className='text-lg font-black uppercase tracking-widest'>غرامات</span>
                 <span className='text-sm font-bold mt-2 text-rose-600 bg-rose-100 px-3 py-1 rounded-full text-center'>
-                  {selectedFines.filter(id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'غرامات').length} محدد
+                  {
+                    selectedFines.filter(
+                      id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'غرامات'
+                    ).length
+                  }{' '}
+                  محدد
                 </span>
               </button>
 
@@ -420,7 +507,14 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                 <span className='text-4xl mb-3'>➕</span>
                 <span className='text-lg font-black uppercase tracking-widest'>إضافات</span>
                 <span className='text-sm font-bold mt-2 text-sky-600 bg-sky-100 px-3 py-1 rounded-full text-center'>
-                  {selectedFines.filter(id => PREDEFINED_FINES.find(f => f.id === id)?.category === 'خدمات اضافية' && id !== 'service_001').length} محدد
+                  {
+                    selectedFines.filter(
+                      id =>
+                        PREDEFINED_FINES.find(f => f.id === id)?.category === 'خدمات اضافية' &&
+                        id !== 'service_001'
+                    ).length
+                  }{' '}
+                  محدد
                 </span>
               </button>
             </div>
@@ -432,7 +526,19 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                   <div className='space-y-4 flex flex-col'>
                     <div className='relative'>
                       <span className='absolute inset-y-0 right-4 flex items-center text-slate-400'>
-                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' /></svg>
+                        <svg
+                          className='w-5 h-5'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+                          />
+                        </svg>
                       </span>
                       <input
                         type='text'
@@ -444,9 +550,9 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                       />
                     </div>
                     <div className='max-h-80 overflow-y-auto space-y-2 pr-2 custom-scrollbar'>
-                      {PREDEFINED_FINES
-                        .filter(f => f.category === 'غرامات' && f.name.includes(finesSearchTerm))
-                        .map(f => (
+                      {PREDEFINED_FINES.filter(
+                        f => f.category === 'غرامات' && f.name.includes(finesSearchTerm)
+                      ).map(f => (
                         <div
                           key={f.id}
                           onClick={() => handleFineToggle(f.id)}
@@ -457,15 +563,36 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                           }`}
                         >
                           <div className='flex items-center gap-3'>
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 ${selectedFines.includes(f.id) ? 'border-white bg-white/20' : 'border-slate-200'}`}>
-                              {selectedFines.includes(f.id) && <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' /></svg>}
+                            <div
+                              className={`w-6 h-6 rounded-full flex items-center justify-center border-2 ${selectedFines.includes(f.id) ? 'border-white bg-white/20' : 'border-slate-200'}`}
+                            >
+                              {selectedFines.includes(f.id) && (
+                                <svg
+                                  className='w-4 h-4'
+                                  fill='none'
+                                  stroke='currentColor'
+                                  viewBox='0 0 24 24'
+                                >
+                                  <path
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                    strokeWidth={3}
+                                    d='M5 13l4 4L19 7'
+                                  />
+                                </svg>
+                              )}
                             </div>
                             <span className='text-lg font-bold'>{f.name}</span>
                           </div>
-                          <span className={`text-base font-black px-3 py-1 rounded-xl ${
-                            selectedFines.includes(f.id) ? 'bg-black/20' : 'bg-slate-100 text-slate-500'
-                          }`}>
-                            {(f.amountCents / 100).toFixed(0)} <span className='text-xs font-bold opacity-80'>ج.م</span>
+                          <span
+                            className={`text-base font-black px-3 py-1 rounded-xl ${
+                              selectedFines.includes(f.id)
+                                ? 'bg-black/20'
+                                : 'bg-slate-100 text-slate-500'
+                            }`}
+                          >
+                            {(f.amountCents / 100).toFixed(0)}{' '}
+                            <span className='text-xs font-bold opacity-80'>ج.م</span>
                           </span>
                         </div>
                       ))}
@@ -477,7 +604,19 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                   <div className='space-y-4 flex flex-col'>
                     <div className='relative'>
                       <span className='absolute inset-y-0 right-4 flex items-center text-slate-400'>
-                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' /></svg>
+                        <svg
+                          className='w-5 h-5'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+                          />
+                        </svg>
                       </span>
                       <input
                         type='text'
@@ -489,41 +628,72 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                       />
                     </div>
                     <div className='max-h-80 overflow-y-auto space-y-2 pr-2 custom-scrollbar'>
-                      {PREDEFINED_FINES
-                        .filter(s => s.category === 'خدمات اضافية' && s.id !== 'service_001' && s.name.includes(servicesSearchTerm))
-                        .map(s => (
-                        <div key={s.id} className={`rounded-2xl border-2 transition-all ${
-                          selectedFines.includes(s.id) ? 'bg-sky-50 border-sky-300' : 'bg-white border-slate-50 hover:border-sky-100'
-                        }`}>
+                      {PREDEFINED_FINES.filter(
+                        s =>
+                          s.category === 'خدمات اضافية' &&
+                          s.id !== 'service_001' &&
+                          s.name.includes(servicesSearchTerm)
+                      ).map(s => (
+                        <div
+                          key={s.id}
+                          className={`rounded-2xl border-2 transition-all ${
+                            selectedFines.includes(s.id)
+                              ? 'bg-sky-50 border-sky-300'
+                              : 'bg-white border-slate-50 hover:border-sky-100'
+                          }`}
+                        >
                           <div
                             onClick={() => handleFineToggle(s.id)}
                             className={`p-4 cursor-pointer flex justify-between items-center transition-all`}
                           >
                             <div className='flex items-center gap-3'>
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 ${selectedFines.includes(s.id) ? 'border-sky-500 bg-sky-500 text-white' : 'border-slate-200'}`}>
-                                {selectedFines.includes(s.id) && <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' /></svg>}
+                              <div
+                                className={`w-6 h-6 rounded-full flex items-center justify-center border-2 ${selectedFines.includes(s.id) ? 'border-sky-500 bg-sky-500 text-white' : 'border-slate-200'}`}
+                              >
+                                {selectedFines.includes(s.id) && (
+                                  <svg
+                                    className='w-4 h-4'
+                                    fill='none'
+                                    stroke='currentColor'
+                                    viewBox='0 0 24 24'
+                                  >
+                                    <path
+                                      strokeLinecap='round'
+                                      strokeLinejoin='round'
+                                      strokeWidth={3}
+                                      d='M5 13l4 4L19 7'
+                                    />
+                                  </svg>
+                                )}
                               </div>
                               <span className='text-lg font-bold text-slate-800'>{s.name}</span>
                             </div>
                             {!selectedFines.includes(s.id) && s.amountCents > 0 && (
                               <span className='text-base font-black text-slate-400 bg-slate-50 px-3 py-1 rounded-xl'>
-                                {(s.amountCents / 100).toFixed(0)} <span className='text-xs'>ج.م</span>
+                                {(s.amountCents / 100).toFixed(0)}{' '}
+                                <span className='text-xs'>ج.م</span>
                               </span>
                             )}
                           </div>
                           {selectedFines.includes(s.id) && (
                             <div className='p-4 bg-white/80 border-t border-sky-100 flex items-center gap-4 animate-in fade-in slide-in-from-top-1'>
-                              <label className='text-sm font-black text-sky-800 shrink-0'>أدخل القيمة:</label>
+                              <label className='text-sm font-black text-sky-800 shrink-0'>
+                                أدخل القيمة:
+                              </label>
                               <div className='relative grow'>
                                 <input
                                   type='number'
                                   value={manualServices[s.id] || ''}
-                                  onChange={e => handleManualServiceChange(s.id, parseFloat(e.target.value) || 0)}
+                                  onChange={e =>
+                                    handleManualServiceChange(s.id, parseFloat(e.target.value) || 0)
+                                  }
                                   className='w-full pr-4 pl-12 py-3 bg-sky-50 border-2 border-sky-200 rounded-xl text-lg font-black text-sky-900 focus:ring-4 focus:ring-sky-500/10 focus:bg-white outline-none transition-all'
                                   placeholder='0'
                                   onClick={e => e.stopPropagation()}
                                 />
-                                <span className='absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-sky-500'>ج.م</span>
+                                <span className='absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-sky-500'>
+                                  ج.م
+                                </span>
                               </div>
                             </div>
                           )}
@@ -608,20 +778,24 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
 
         {/* Discount */}
         {(isEditing || (order.discount && order.discount > 0)) && (
-          <div className={`p-4 rounded-2xl border transition-all relative ${isEditing ? 'bg-emerald-50/50 border-emerald-100' : 'bg-emerald-50/50 border-emerald-100'}`}>
+          <div
+            className={`p-4 rounded-2xl border transition-all relative ${isEditing ? 'bg-emerald-50/50 border-emerald-100' : 'bg-emerald-50/50 border-emerald-100'}`}
+          >
             <div className='flex justify-between items-center text-emerald-700 font-black text-xl'>
               <div className='flex items-center gap-2'>
                 <span className='font-bold'>الخصم المطبق</span>
                 {isEditing && !editingField && (
                   <button
-                    onClick={() => handleStartEdit('discount', ((order.discount || 0) / 100).toString())}
+                    onClick={() =>
+                      handleStartEdit('discount', ((order.discount || 0) / 100).toString())
+                    }
                     className='text-emerald-700 bg-emerald-200/50 hover:bg-emerald-200 px-3 py-1 rounded-lg text-sm font-bold transition-all'
                   >
                     تعديل ✎
                   </button>
                 )}
               </div>
-              
+
               {editingField === 'discount' ? (
                 <div className='flex items-center gap-2'>
                   <input
@@ -637,14 +811,28 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                     disabled={updating}
                     className='bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-xl transition-all'
                   >
-                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' /></svg>
+                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M5 13l4 4L19 7'
+                      />
+                    </svg>
                   </button>
                   <button
                     onClick={() => setEditingField(null)}
                     disabled={updating}
                     className='bg-emerald-200 hover:bg-emerald-300 text-emerald-800 p-2 rounded-xl transition-all'
                   >
-                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' /></svg>
+                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M6 18L18 6M6 6l12 12'
+                      />
+                    </svg>
                   </button>
                 </div>
               ) : (
@@ -664,7 +852,9 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
               <p className='text-[10px] sm:text-sm font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 px-1'>
                 الإجمالي النهائي
               </p>
-              <h3 className='text-xl sm:text-3xl font-black text-slate-900 tracking-tight'>المبلغ المطلوب</h3>
+              <h3 className='text-xl sm:text-3xl font-black text-slate-900 tracking-tight'>
+                المبلغ المطلوب
+              </h3>
             </div>
             <div className='w-full sm:w-auto'>
               <div className='text-4xl sm:text-6xl font-black text-slate-950 tracking-tighter leading-none mb-1 sm:mb-2'>

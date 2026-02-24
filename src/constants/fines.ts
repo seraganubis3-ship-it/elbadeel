@@ -96,7 +96,10 @@ export const PREDEFINED_FINES: Fine[] = [
 ];
 
 // Helper functions
-export const getFinesByCategory = (category: string, finesData: Fine[] = PREDEFINED_FINES): Fine[] => {
+export const getFinesByCategory = (
+  category: string,
+  finesData: Fine[] = PREDEFINED_FINES
+): Fine[] => {
   return finesData.filter(fine => fine.category === category);
 };
 
@@ -104,7 +107,10 @@ export const getFineById = (id: string, finesData: Fine[] = PREDEFINED_FINES): F
   return finesData.find(fine => fine.id === id);
 };
 
-export const calculateFinesTotal = (fineIds: string[], finesData: Fine[] = PREDEFINED_FINES): number => {
+export const calculateFinesTotal = (
+  fineIds: string[],
+  finesData: Fine[] = PREDEFINED_FINES
+): number => {
   return fineIds.reduce((total, fineId) => {
     const fine = getFineById(fineId, finesData);
     return total + (fine ? fine.amountCents : 0);
@@ -127,7 +133,10 @@ export const calculateMandatoryFeeAmount = (selectedFines: string[]): number => 
 export const MANDATORY_FEE_AMOUNT = 1000; // 10 جنيه = 1000 سنت
 
 // Calculate actual fine amounts (for display in مصاريف الغرامات)
-export const calculateActualFineAmounts = (selectedFines: string[], finesData: Fine[] = PREDEFINED_FINES): number => {
+export const calculateActualFineAmounts = (
+  selectedFines: string[],
+  finesData: Fine[] = PREDEFINED_FINES
+): number => {
   // Only count actual fines (not services) and exclude محضر فقد
   const actualFines = selectedFines.filter(id => {
     const fine = finesData.find(f => f.id === id);
@@ -141,7 +150,10 @@ export const calculateActualFineAmounts = (selectedFines: string[], finesData: F
 };
 
 // Calculate automatic fine expenses (10 جنيه per fine except محضر فقد) - hidden from display
-export const calculateFineExpenses = (selectedFines: string[], finesData: Fine[] = PREDEFINED_FINES): number => {
+export const calculateFineExpenses = (
+  selectedFines: string[],
+  finesData: Fine[] = PREDEFINED_FINES
+): number => {
   // Only count actual fines (not services) and exclude محضر فقد
   const actualFines = selectedFines.filter(id => {
     const fine = finesData.find(f => f.id === id);
@@ -152,7 +164,10 @@ export const calculateFineExpenses = (selectedFines: string[], finesData: Fine[]
 };
 
 // Calculate lost report amount (محضر فقد) for services - يضاف في مصاريف اضافية
-export const calculateLostReportForServices = (selectedFines: string[], finesData: Fine[] = PREDEFINED_FINES): number => {
+export const calculateLostReportForServices = (
+  selectedFines: string[],
+  finesData: Fine[] = PREDEFINED_FINES
+): number => {
   // Check if محضر فقد is selected
   if (selectedFines.includes('fine_004')) {
     const lostReport = getFineById('fine_004', finesData);

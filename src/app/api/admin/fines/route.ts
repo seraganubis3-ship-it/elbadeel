@@ -5,10 +5,7 @@ import { requireAdmin } from '@/lib/auth';
 export async function GET() {
   try {
     const fines = await prisma.fine.findMany({
-      orderBy: [
-        { category: 'asc' },
-        { name: 'asc' }
-      ],
+      orderBy: [{ category: 'asc' }, { name: 'asc' }],
     });
     return NextResponse.json({ success: true, fines });
   } catch (error) {
@@ -24,14 +21,14 @@ export async function POST(request: Request) {
   try {
     await requireAdmin();
     const body = await request.json();
-    
+
     // Seed mode for initial migration
     if (body.seed && Array.isArray(body.fines)) {
       const createdFines = [];
       for (const fine of body.fines) {
         // Upsert based on name + category or just create if empty DB
         const existing = await prisma.fine.findFirst({
-          where: { id: fine.id }
+          where: { id: fine.id },
         });
         if (!existing) {
           const newFine = await prisma.fine.create({
@@ -41,7 +38,7 @@ export async function POST(request: Request) {
               description: fine.description || '',
               amountCents: fine.amountCents,
               category: fine.category,
-            }
+            },
           });
           createdFines.push(newFine);
         }
@@ -50,12 +47,9 @@ export async function POST(request: Request) {
     }
 
     const { name, description, amountCents, category } = body;
-    
+
     if (!name || amountCents === undefined || !category) {
-      return NextResponse.json(
-        { success: false, error: 'جميع الحقول مطلوبة' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'جميع الحقول مطلوبة' }, { status: 400 });
     }
 
     const fine = await prisma.fine.create({

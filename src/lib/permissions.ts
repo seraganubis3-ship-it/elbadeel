@@ -35,17 +35,21 @@ export function can(role: RoleName | undefined, action: string): boolean {
 export function hasPermission(user: any, permissionId: string): boolean {
   if (!user || !user.role) return false;
   if (user.role === 'ADMIN') return true;
-  
+
   const userPerms = user.permissions || [];
   if (userPerms.includes(permissionId)) return true;
 
   // Fallbacks for legacy STAFF/VIEWER without explicit permissions assigned
   if (userPerms.length === 0) {
     if (user.role === 'STAFF') {
-      return ['CREATE_ORDER', 'MANAGE_ORDERS', 'MANAGE_WORKORDERS', 'VIEW_DASHBOARD'].includes(permissionId);
+      return ['CREATE_ORDER', 'MANAGE_ORDERS', 'MANAGE_WORKORDERS', 'VIEW_DASHBOARD'].includes(
+        permissionId
+      );
     }
     if (user.role === 'VIEWER') {
-      return ['MANAGE_ORDERS', 'MANAGE_SERVICES', 'VIEW_REPORTS', 'VIEW_DASHBOARD'].includes(permissionId);
+      return ['MANAGE_ORDERS', 'MANAGE_SERVICES', 'VIEW_REPORTS', 'VIEW_DASHBOARD'].includes(
+        permissionId
+      );
     }
   }
 

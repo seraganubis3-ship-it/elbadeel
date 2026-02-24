@@ -105,7 +105,7 @@ export async function requireAdminOrStaff(options: { skipDB?: boolean } = {}) {
   if (options.skipDB) {
     const userRole = session.user.role;
     const permissions = (session.user as any).permissions || [];
-    
+
     if (
       userRole !== 'ADMIN' &&
       userRole !== 'STAFF' &&

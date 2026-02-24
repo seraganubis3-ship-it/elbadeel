@@ -441,7 +441,7 @@ export default function CreateOrderPage() {
     } finally {
       setLoading(false);
     }
-  }, []); 
+  }, []);
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);

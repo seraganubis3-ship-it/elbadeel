@@ -284,6 +284,7 @@ model Order {
   promoCodeId    String?
   promoCode      PromoCode? @relation(fields: [promoCodeId], references: [id])
   discountAmount Int        @default(0)
+  offlineId      String?    @unique
 
   @@index([userId])
   @@index([serviceId])

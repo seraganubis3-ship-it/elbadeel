@@ -33,7 +33,7 @@ export const authConfig = {
           const { phone, password, workDate } = parsed.data;
           const user = await prisma.user.findFirst({
             where: { phone },
-            include: { adminRole: true }
+            include: { adminRole: true },
           });
           if (!user) {
             return null;
@@ -72,10 +72,10 @@ export const authConfig = {
         token.permissions = user.permissions || [];
         // حفظ تاريخ العمل
         if (
-          ((user as any).permissions?.includes('CREATE_ORDER') || 
-           (user as any).permissions?.includes('MANAGE_ORDERS') || 
-           user.role === 'ADMIN' || 
-           user.role === 'STAFF') && 
+          ((user as any).permissions?.includes('CREATE_ORDER') ||
+            (user as any).permissions?.includes('MANAGE_ORDERS') ||
+            user.role === 'ADMIN' ||
+            user.role === 'STAFF') &&
           user.workDate
         ) {
           token.workDate = user.workDate;
@@ -91,10 +91,10 @@ export const authConfig = {
         (session.user as any).permissions = token.permissions || [];
         // تمرير تاريخ العمل
         if (
-          ((token as any).permissions?.includes('CREATE_ORDER') || 
-           (token as any).permissions?.includes('MANAGE_ORDERS') || 
-           token.role === 'ADMIN' || 
-           token.role === 'STAFF') && 
+          ((token as any).permissions?.includes('CREATE_ORDER') ||
+            (token as any).permissions?.includes('MANAGE_ORDERS') ||
+            token.role === 'ADMIN' ||
+            token.role === 'STAFF') &&
           token.workDate
         ) {
           session.user.workDate = token.workDate;

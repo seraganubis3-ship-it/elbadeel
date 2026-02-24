@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import AdminWorkDateWrapper from '@/components/AdminWorkDateWrapper';
 import { hasPermission } from '@/lib/permissions';
+import { OfflineSyncTrigger } from '@/components/OfflineSyncTrigger';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -41,7 +42,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (
       pathname === '/admin' &&
       session?.user &&
-      (hasPermission(session.user as any, 'CREATE_ORDER') || hasPermission(session.user as any, 'MANAGE_ORDERS'))
+      (hasPermission(session.user as any, 'CREATE_ORDER') ||
+        hasPermission(session.user as any, 'MANAGE_ORDERS'))
     ) {
       const hasShown = sessionStorage.getItem('dashboardWorkDateShown');
       if (!hasShown) {
@@ -79,10 +81,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const isAuthorizedPath = () => {
     if (pathname === '/admin') return true;
-    
+
     // Find matching route
-    const matchingRoute = Object.keys(routePermissions).find(route => 
-      pathname === route || pathname.startsWith(route + '/')
+    const matchingRoute = Object.keys(routePermissions).find(
+      route => pathname === route || pathname.startsWith(route + '/')
     );
 
     if (matchingRoute) {
@@ -252,7 +254,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           stroke='currentColor'
           viewBox='0 0 24 24'
         >
-          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' />
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'
+          />
         </svg>
       ),
     },
@@ -398,11 +405,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const filteredNavigation = navigation.filter(item => {
     if (session?.user?.role === 'ADMIN') return true;
-    
+
     // Default legacy fallbacks if no dynamic permissions are set for this role
     if (permissions.length === 0) {
       if (session?.user?.role === 'STAFF') {
-        return ['/admin', '/admin/create', '/admin/orders', '/admin/work-orders'].includes(item.href);
+        return ['/admin', '/admin/create', '/admin/orders', '/admin/work-orders'].includes(
+          item.href
+        );
       }
       if (session?.user?.role === 'VIEWER') {
         return ['/admin', '/admin/orders', '/admin/services', '/admin/reports'].includes(item.href);
@@ -472,18 +481,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span>إنشاء طلب</span>
               </Link>
             )}
-            {(hasPermission(session.user as any, 'CREATE_ORDER') || hasPermission(session.user as any, 'MANAGE_ORDERS')) && workDate && (
-              <button
-                onClick={() => {
-                  setTempWorkDate(workDate || '');
-                  setShowWorkDateModal(true);
-                }}
-                className='hidden sm:flex items-center gap-2 px-4 py-2 bg-white/15  text-white text-sm font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg group relative overflow-hidden'
-              >
-                <div className='absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity' />
-                <div className='p-1.5 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors'>
+            {(hasPermission(session.user as any, 'CREATE_ORDER') ||
+              hasPermission(session.user as any, 'MANAGE_ORDERS')) &&
+              workDate && (
+                <button
+                  onClick={() => {
+                    setTempWorkDate(workDate || '');
+                    setShowWorkDateModal(true);
+                  }}
+                  className='hidden sm:flex items-center gap-2 px-4 py-2 bg-white/15  text-white text-sm font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg group relative overflow-hidden'
+                >
+                  <div className='absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity' />
+                  <div className='p-1.5 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors'>
+                    <svg
+                      className='w-4 h-4 text-blue-300'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                      />
+                    </svg>
+                  </div>
+                  <div className='flex flex-col items-start leading-none'>
+                    <span className='text-[10px] text-blue-200 uppercase tracking-wider font-medium'>
+                      تاريخ العمل
+                    </span>
+                    <span className='font-mono text-base tracking-widest'>{workDate}</span>
+                  </div>
                   <svg
-                    className='w-4 h-4 text-blue-300'
+                    className='w-4 h-4 text-blue-300 opacity-50 group-hover:translate-y-1 transition-transform'
                     fill='none'
                     stroke='currentColor'
                     viewBox='0 0 24 24'
@@ -492,31 +523,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       strokeLinecap='round'
                       strokeLinejoin='round'
                       strokeWidth={2}
-                      d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                      d='M19 9l-7 7-7-7'
                     />
                   </svg>
-                </div>
-                <div className='flex flex-col items-start leading-none'>
-                  <span className='text-[10px] text-blue-200 uppercase tracking-wider font-medium'>
-                    تاريخ العمل
-                  </span>
-                  <span className='font-mono text-base tracking-widest'>{workDate}</span>
-                </div>
-                <svg
-                  className='w-4 h-4 text-blue-300 opacity-50 group-hover:translate-y-1 transition-transform'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M19 9l-7 7-7-7'
-                  />
-                </svg>
-              </button>
-            )}
+                </button>
+              )}
 
             {/* Back to Website Button */}
             <Link
@@ -554,13 +565,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {session.user.name || session.user.email}
                 </p>
                 <p className='text-emerald-200 text-xs'>
-                  {(session.user as any).adminRole?.name || (session.user.role === 'ADMIN'
-                    ? 'مدير النظام'
-                    : session.user.role === 'STAFF'
-                      ? 'موظف'
-                      : session.user.role === 'VIEWER'
-                        ? 'مراجع'
-                        : 'مستخدم')}
+                  {(session.user as any).adminRole?.name ||
+                    (session.user.role === 'ADMIN'
+                      ? 'مدير النظام'
+                      : session.user.role === 'STAFF'
+                        ? 'موظف'
+                        : session.user.role === 'VIEWER'
+                          ? 'مراجع'
+                          : 'مستخدم')}
                 </p>
               </div>
             </div>
@@ -733,36 +745,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Mobile User Info */}
           <div className='p-4 sm:p-6 border-t border-emerald-500/20'>
             {/* Work Date Display for Mobile */}
-            {(hasPermission(session.user as any, 'CREATE_ORDER') || hasPermission(session.user as any, 'MANAGE_ORDERS')) && workDate && (
-              <button
-                onClick={() => {
-                  const newDate = prompt('أدخل تاريخ العمل الجديد (DD/MM/YYYY):', workDate);
-                  if (newDate && newDate !== workDate) {
-                    localStorage.setItem('adminWorkDate', newDate);
-                    window.location.reload();
-                  }
-                }}
-                className='w-full mb-3 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600/80  text-white text-xs font-medium rounded-lg border border-blue-400/30 hover:bg-blue-500/80 transition-colors cursor-pointer'
-              >
-                <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
-                  />
-                </svg>
-                <span>تاريخ العمل: {workDate}</span>
-                <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
-                  />
-                </svg>
-              </button>
-            )}
+            {(hasPermission(session.user as any, 'CREATE_ORDER') ||
+              hasPermission(session.user as any, 'MANAGE_ORDERS')) &&
+              workDate && (
+                <button
+                  onClick={() => {
+                    const newDate = prompt('أدخل تاريخ العمل الجديد (DD/MM/YYYY):', workDate);
+                    if (newDate && newDate !== workDate) {
+                      localStorage.setItem('adminWorkDate', newDate);
+                      window.location.reload();
+                    }
+                  }}
+                  className='w-full mb-3 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600/80  text-white text-xs font-medium rounded-lg border border-blue-400/30 hover:bg-blue-500/80 transition-colors cursor-pointer'
+                >
+                  <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                    />
+                  </svg>
+                  <span>تاريخ العمل: {workDate}</span>
+                  <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
+                    />
+                  </svg>
+                </button>
+              )}
 
             {/* Back to Website Button */}
             <Link
@@ -797,13 +811,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {session.user.name || session.user.email}
                 </p>
                 <p className='text-emerald-200 text-xs'>
-                  {(session.user as any).adminRole?.name || (session.user.role === 'ADMIN'
-                    ? 'مدير النظام'
-                    : session.user.role === 'STAFF'
-                      ? 'موظف'
-                      : session.user.role === 'VIEWER'
-                        ? 'مراجع'
-                        : 'مستخدم')}
+                  {(session.user as any).adminRole?.name ||
+                    (session.user.role === 'ADMIN'
+                      ? 'مدير النظام'
+                      : session.user.role === 'STAFF'
+                        ? 'موظف'
+                        : session.user.role === 'VIEWER'
+                          ? 'مراجع'
+                          : 'مستخدم')}
                 </p>
               </div>
             </div>
@@ -915,6 +930,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         )}
       </div>
+      <OfflineSyncTrigger />
     </div>
   );
 }

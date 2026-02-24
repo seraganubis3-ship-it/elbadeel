@@ -133,6 +133,7 @@ export async function GET(request: NextRequest) {
         ? {
             OR: [
               { id: { contains: search, mode: 'insensitive' } },
+              { offlineId: { contains: search, mode: 'insensitive' } },
               { customerName: { contains: search, mode: 'insensitive' } },
               { customerPhone: { contains: search } },
               { idNumber: { contains: search, mode: 'insensitive' } },
@@ -612,12 +613,19 @@ export async function POST(request: NextRequest) {
     const orderId = await generateUniqueOrderNumber();
     const now = new Date();
     let workDate: Date;
-    
+
     if (clientWorkDate && hasPermission(session.user, 'CREATE_ORDER')) {
       try {
         if (clientWorkDate.includes('/')) {
           const [day, month, year] = clientWorkDate.split('/');
-          workDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), now.getHours(), now.getMinutes(), now.getSeconds());
+          workDate = new Date(
+            parseInt(year),
+            parseInt(month) - 1,
+            parseInt(day),
+            now.getHours(),
+            now.getMinutes(),
+            now.getSeconds()
+          );
           if (isNaN(workDate.getTime())) workDate = getWorkDate(session);
         } else {
           workDate = new Date(clientWorkDate);
@@ -630,7 +638,7 @@ export async function POST(request: NextRequest) {
     } else {
       workDate = getWorkDate(session);
     }
-    
+
     // Ensure exact time is saved for accurate reporting later
     workDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
 
@@ -779,12 +787,12 @@ export async function POST(request: NextRequest) {
         // Fetch full order for placeholders
         const fullOrder = await prisma.order.findUnique({
           where: { id: order.id },
-          include: { 
-            service: { select: { name: true } }, 
+          include: {
+            service: { select: { name: true } },
             variant: { select: { name: true } },
             user: { select: { phone: true, email: true } },
-            payment: { select: { amount: true, status: true } }
-          }
+            payment: { select: { amount: true, status: true } },
+          },
         });
 
         if (fullOrder) {

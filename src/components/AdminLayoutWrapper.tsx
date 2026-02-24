@@ -115,7 +115,10 @@ export default function AdminLayoutWrapper({ children }: AdminLayoutWrapperProps
                         {session.user.name?.split(' ')[0] || 'حسابي'}
                       </p>
                       <div className='flex items-center gap-1'>
-                        <Link href='/settings' className='text-xs text-white/60 hover:text-white transition-colors'>
+                        <Link
+                          href='/settings'
+                          className='text-xs text-white/60 hover:text-white transition-colors'
+                        >
                           الإعدادات
                         </Link>
                         {(session.user as any).adminRole?.name || session.user.role === 'ADMIN' ? (

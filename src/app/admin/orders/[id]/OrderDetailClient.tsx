@@ -145,7 +145,6 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
     setShowWaModal(false);
   };
 
-
   // Function to export order as text file
   const exportOrder = () => {
     const orderData = {
@@ -218,7 +217,11 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          setCurrentOrder((prev: any) => ({ ...prev, status: newStatus, statusReason: reason ?? prev.statusReason }));
+          setCurrentOrder((prev: any) => ({
+            ...prev,
+            status: newStatus,
+            statusReason: reason ?? prev.statusReason,
+          }));
           setSuccessMessage(result.message);
           setShowSuccessMessage(true);
           setTimeout(() => setShowSuccessMessage(false), 3000);
@@ -262,13 +265,19 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
 
     try {
       let finalValue: any = tempValue;
-      const isFinancialField = ['quantity', 'deliveryFee', 'otherFees', 'discount', 'photographyLocation'].includes(editingField);
-      
+      const isFinancialField = [
+        'quantity',
+        'deliveryFee',
+        'otherFees',
+        'discount',
+        'photographyLocation',
+      ].includes(editingField);
+
       // Parse numeric fields
       if (['quantity', 'deliveryFee', 'otherFees', 'discount'].includes(editingField)) {
         finalValue = parseFloat(tempValue) || 0;
       }
-      
+
       // Handle Date fields
       if (editingField === 'photographyDate' && tempValue) {
         finalValue = new Date(tempValue).toISOString();
@@ -281,7 +290,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
       if (isFinancialField || editingField === 'policeStation') {
         // We need to update currentOrder locally first so calculateTotalPrice sees the new value
         const updatedTempOrder = { ...currentOrder, [editingField]: finalValue };
-        
+
         // Temporarily set currentOrder to calculate total accurately
         // (Wait, calculateTotalPrice uses state, so let's pass the override to it)
         newTotalCents = calculateTotalPriceOverride(updatedTempOrder);
@@ -297,10 +306,10 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          setCurrentOrder((prev: any) => ({ 
-            ...prev, 
+          setCurrentOrder((prev: any) => ({
+            ...prev,
             [editingField]: finalValue,
-            totalCents: body.totalCents !== undefined ? body.totalCents : prev.totalCents
+            totalCents: body.totalCents !== undefined ? body.totalCents : prev.totalCents,
           }));
           setEditingField(null);
           setSuccessMessage('تم التحديث بنجاح');
@@ -326,7 +335,8 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
     else if (overriddenOrder.photographyLocation === 'home_photography') total += 200 * 100;
 
     // Delivery fee
-    if (overriddenOrder.deliveryType === 'ADDRESS') total += (overriddenOrder.deliveryFee || 0) * 100;
+    if (overriddenOrder.deliveryType === 'ADDRESS')
+      total += (overriddenOrder.deliveryFee || 0) * 100;
 
     // Fines
     total += calculateActualFineAmounts(selectedFines, finesList);
@@ -349,7 +359,8 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
 
     if (
       isPassportService &&
-      (overriddenOrder.variant.name.includes('عادي') || overriddenOrder.variant.name.includes('سريع'))
+      (overriddenOrder.variant.name.includes('عادي') ||
+        overriddenOrder.variant.name.includes('سريع'))
     ) {
       const station = overriddenOrder.policeStation?.trim();
       if (['العجوزة', 'الشيخ زايد', '6 أكتوبر'].includes(station)) {
@@ -525,28 +536,44 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
 
   return (
     <div className='min-h-screen bg-slate-50 text-slate-900 font-sans pb-20'>
-
       {/* WhatsApp Message Modal */}
       {showWaModal && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4' onClick={() => setShowWaModal(false)}>
-          <div className='bg-white rounded-2xl shadow-2xl w-full max-w-lg' onClick={e => e.stopPropagation()}>
+        <div
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4'
+          onClick={() => setShowWaModal(false)}
+        >
+          <div
+            className='bg-white rounded-2xl shadow-2xl w-full max-w-lg'
+            onClick={e => e.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className='flex items-center justify-between px-6 py-4 border-b'>
               <div className='flex items-center gap-2'>
                 <div className='w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center'>
-                  <svg className='w-4 h-4 text-green-600' fill='currentColor' viewBox='0 0 24 24'><path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z'/></svg>
+                  <svg className='w-4 h-4 text-green-600' fill='currentColor' viewBox='0 0 24 24'>
+                    <path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z' />
+                  </svg>
                 </div>
                 <div>
                   <div className='font-bold text-gray-900 text-sm'>مراسلة العميل</div>
-                  <div className='text-xs text-gray-400'>{currentOrder.customerName} — {currentOrder.customerPhone}</div>
+                  <div className='text-xs text-gray-400'>
+                    {currentOrder.customerName} — {currentOrder.customerPhone}
+                  </div>
                 </div>
               </div>
-              <button onClick={() => setShowWaModal(false)} className='text-gray-400 hover:text-gray-600 text-xl leading-none'>✕</button>
+              <button
+                onClick={() => setShowWaModal(false)}
+                className='text-gray-400 hover:text-gray-600 text-xl leading-none'
+              >
+                ✕
+              </button>
             </div>
 
             {/* Templates */}
             {templatesLoading ? (
-              <div className='px-6 py-4 text-center text-gray-400 text-sm'>جاري تحميل الرسائل...</div>
+              <div className='px-6 py-4 text-center text-gray-400 text-sm'>
+                جاري تحميل الرسائل...
+              </div>
             ) : waTemplates.length > 0 ? (
               <div className='px-6 pt-4'>
                 <p className='text-xs font-bold text-gray-400 mb-2'>رسائل جاهزة</p>
@@ -562,13 +589,17 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                       }`}
                     >
                       <div className='font-bold text-xs'>{t.title}</div>
-                      <div className='text-[11px] text-gray-400 truncate mt-0.5'>{t.body.slice(0, 60)}...</div>
+                      <div className='text-[11px] text-gray-400 truncate mt-0.5'>
+                        {t.body.slice(0, 60)}...
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className='px-6 pt-4 text-xs text-gray-400 text-center'>لا توجد رسائل جاهزة — أضفها من صفحة إعدادات الواتساب</div>
+              <div className='px-6 pt-4 text-xs text-gray-400 text-center'>
+                لا توجد رسائل جاهزة — أضفها من صفحة إعدادات الواتساب
+              </div>
             )}
 
             {/* Text area */}
@@ -585,7 +616,10 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
 
             {/* Footer */}
             <div className='flex gap-2 px-6 pb-5'>
-              <button onClick={() => setShowWaModal(false)} className='flex-1 py-2.5 border rounded-xl text-sm text-gray-500 hover:bg-gray-50'>
+              <button
+                onClick={() => setShowWaModal(false)}
+                className='flex-1 py-2.5 border rounded-xl text-sm text-gray-500 hover:bg-gray-50'
+              >
                 إلغاء
               </button>
               <button
@@ -593,7 +627,9 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                 disabled={!waMessage.trim()}
                 className='flex-1 py-2.5 bg-green-500 hover:bg-green-600 disabled:opacity-40 text-white rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2'
               >
-                <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 24 24'><path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z'/></svg>
+                <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 24 24'>
+                  <path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z' />
+                </svg>
                 إرسال على واتساب
               </button>
             </div>
@@ -648,25 +684,36 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
         </div>
 
         {/* Status Reason Banner */}
-        {currentOrder.statusReason && (currentOrder.status === 'settlement' || currentOrder.status === 'returned') && (
-          <div className={`rounded-2xl border-2 p-5 flex items-start gap-4 ${
-            currentOrder.status === 'settlement'
-              ? 'bg-amber-50 border-amber-200'
-              : 'bg-rose-50 border-rose-200'
-          }`}>
-            <span className='text-2xl mt-0.5'>{currentOrder.status === 'settlement' ? '⚠️' : '↩️'}</span>
-            <div>
-              <p className={`font-black text-lg ${
-                currentOrder.status === 'settlement' ? 'text-amber-800' : 'text-rose-800'
-              }`}>
-                {currentOrder.status === 'settlement' ? 'سبب الاستيفاء' : 'سبب المرتجع'}
-              </p>
-              <p className={`mt-1 text-base font-medium ${
-                currentOrder.status === 'settlement' ? 'text-amber-700' : 'text-rose-700'
-              }`}>{currentOrder.statusReason}</p>
+        {currentOrder.statusReason &&
+          (currentOrder.status === 'settlement' || currentOrder.status === 'returned') && (
+            <div
+              className={`rounded-2xl border-2 p-5 flex items-start gap-4 ${
+                currentOrder.status === 'settlement'
+                  ? 'bg-amber-50 border-amber-200'
+                  : 'bg-rose-50 border-rose-200'
+              }`}
+            >
+              <span className='text-2xl mt-0.5'>
+                {currentOrder.status === 'settlement' ? '⚠️' : '↩️'}
+              </span>
+              <div>
+                <p
+                  className={`font-black text-lg ${
+                    currentOrder.status === 'settlement' ? 'text-amber-800' : 'text-rose-800'
+                  }`}
+                >
+                  {currentOrder.status === 'settlement' ? 'سبب الاستيفاء' : 'سبب المرتجع'}
+                </p>
+                <p
+                  className={`mt-1 text-base font-medium ${
+                    currentOrder.status === 'settlement' ? 'text-amber-700' : 'text-rose-700'
+                  }`}
+                >
+                  {currentOrder.statusReason}
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Reason Modal */}
         {showReasonModal && (
@@ -686,7 +733,10 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
               />
               <div className='flex gap-3 mt-4'>
                 <button
-                  onClick={() => { setShowReasonModal(false); setPendingStatus(''); }}
+                  onClick={() => {
+                    setShowReasonModal(false);
+                    setPendingStatus('');
+                  }}
                   className='flex-1 py-3 border-2 border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50'
                 >
                   إلغاء
@@ -695,7 +745,9 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   onClick={confirmStatusWithReason}
                   disabled={isUpdating}
                   className={`flex-1 py-3 rounded-xl font-bold text-white disabled:opacity-50 ${
-                    pendingStatus === 'settlement' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-rose-500 hover:bg-rose-600'
+                    pendingStatus === 'settlement'
+                      ? 'bg-amber-500 hover:bg-amber-600'
+                      : 'bg-rose-500 hover:bg-rose-600'
                   }`}
                 >
                   تأكيد التغيير
@@ -805,7 +857,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                     </p>
                   </div>
                   <p className='text-2xl font-black text-emerald-600'>
-                    {((isEditingFines) ? calculateTotalPrice() : currentOrder.totalCents) / 100} جنية
+                    {(isEditingFines ? calculateTotalPrice() : currentOrder.totalCents) / 100} جنية
                   </p>
                 </div>
                 <div className='bg-slate-50 rounded-2xl p-4 border border-slate-100'>
@@ -857,9 +909,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                       </button>
                     </div>
                   ) : (
-                    <p className='text-lg font-bold text-slate-900'>
-                      {currentOrder.quantity}
-                    </p>
+                    <p className='text-lg font-bold text-slate-900'>{currentOrder.quantity}</p>
                   )}
                 </div>
 
@@ -973,9 +1023,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                     </p>
                     {isEditingService && !editingField && (
                       <button
-                        onClick={() =>
-                          handleStartEdit('title', currentOrder.title || '')
-                        }
+                        onClick={() => handleStartEdit('title', currentOrder.title || '')}
                         className='text-purple-500 text-xs font-bold px-2 py-1 hover:bg-purple-100 rounded-lg transition-all'
                       >
                         تعديل ✎
@@ -1016,13 +1064,18 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
 
                 {/* Editable Fields - Photography Location (مكان التصوير) */}
                 <div className='md:col-span-2 bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100 hover:border-indigo-300 transition-colors group relative'>
-                   <div className='flex justify-between items-start mb-1'>
+                  <div className='flex justify-between items-start mb-1'>
                     <p className='text-xs font-bold text-slate-500 uppercase tracking-wider'>
                       مكان التصوير
                     </p>
                     {isEditingService && !editingField && (
                       <button
-                        onClick={() => handleStartEdit('photographyLocation', currentOrder.photographyLocation || '')}
+                        onClick={() =>
+                          handleStartEdit(
+                            'photographyLocation',
+                            currentOrder.photographyLocation || ''
+                          )
+                        }
                         className='text-indigo-500 text-xs font-bold px-2 py-1 hover:bg-indigo-100 rounded-lg transition-all'
                       >
                         تعديل ✎
@@ -1058,11 +1111,19 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                     </div>
                   ) : (
                     <p className='text-lg font-bold text-slate-900'>
-                      {currentOrder.photographyLocation === 'dandy_mall' ? 'داندي مول' :
-                       currentOrder.photographyLocation === 'civil_registry_haram' ? 'سجل مدني الهرم' :
-                       currentOrder.photographyLocation === 'home_photography' ? 'تصوير منزلي' :
-                       currentOrder.photographyLocation === 'office' ? 'تصوير في المكتب' : 
-                       currentOrder.photographyLocation || <span className='text-slate-400 italic font-normal'>غير محدد</span>}
+                      {currentOrder.photographyLocation === 'dandy_mall'
+                        ? 'داندي مول'
+                        : currentOrder.photographyLocation === 'civil_registry_haram'
+                          ? 'سجل مدني الهرم'
+                          : currentOrder.photographyLocation === 'home_photography'
+                            ? 'تصوير منزلي'
+                            : currentOrder.photographyLocation === 'office'
+                              ? 'تصوير في المكتب'
+                              : currentOrder.photographyLocation || (
+                                  <span className='text-slate-400 italic font-normal'>
+                                    غير محدد
+                                  </span>
+                                )}
                     </p>
                   )}
                 </div>
@@ -1076,7 +1137,10 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                     {isEditingService && !editingField && (
                       <button
                         onClick={() => {
-                          const val = currentOrder.photographyDate ? (new Date(currentOrder.photographyDate).toISOString().split('T')[0] || '') : '';
+                          const val = currentOrder.photographyDate
+                            ? new Date(currentOrder.photographyDate).toISOString().split('T')[0] ||
+                              ''
+                            : '';
                           handleStartEdit('photographyDate', val);
                         }}
                         className='text-teal-500 text-xs font-bold px-2 py-1 hover:bg-teal-100 rounded-lg transition-all'
@@ -1123,8 +1187,6 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                 </div>
               </div>
             </div>
-
-
 
             {/* Fines & Additional Services */}
             <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-8'>
@@ -1187,13 +1249,20 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                 <div className='space-y-4'>
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     <div className='p-4 bg-rose-50/50 rounded-2xl border border-rose-100'>
-                      <p className='text-xs font-bold text-rose-400 uppercase tracking-wider mb-2'>الغرامات المختارة</p>
+                      <p className='text-xs font-bold text-rose-400 uppercase tracking-wider mb-2'>
+                        الغرامات المختارة
+                      </p>
                       <div className='flex flex-wrap gap-2'>
-                        {selectedFines.filter(id => finesList.find(f => f.id === id)?.category === 'غرامات').length > 0 ? (
+                        {selectedFines.filter(
+                          id => finesList.find(f => f.id === id)?.category === 'غرامات'
+                        ).length > 0 ? (
                           selectedFines
                             .filter(id => finesList.find(f => f.id === id)?.category === 'غرامات')
                             .map(id => (
-                              <span key={id} className='px-3 py-1 bg-white text-rose-700 rounded-lg text-xs font-bold border border-rose-200'>
+                              <span
+                                key={id}
+                                className='px-3 py-1 bg-white text-rose-700 rounded-lg text-xs font-bold border border-rose-200'
+                              >
                                 {finesList.find(f => f.id === id)?.name}
                               </span>
                             ))
@@ -1203,15 +1272,26 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                       </div>
                     </div>
                     <div className='p-4 bg-sky-50/50 rounded-2xl border border-sky-100'>
-                      <p className='text-xs font-bold text-sky-400 uppercase tracking-wider mb-2'>الخدمات الإضافية</p>
+                      <p className='text-xs font-bold text-sky-400 uppercase tracking-wider mb-2'>
+                        الخدمات الإضافية
+                      </p>
                       <div className='flex flex-wrap gap-2'>
-                        {selectedFines.filter(id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية').length > 0 ? (
+                        {selectedFines.filter(
+                          id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية'
+                        ).length > 0 ? (
                           selectedFines
-                            .filter(id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية')
+                            .filter(
+                              id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية'
+                            )
                             .map(id => (
-                              <span key={id} className='px-3 py-1 bg-white text-sky-700 rounded-lg text-xs font-bold border border-sky-200'>
+                              <span
+                                key={id}
+                                className='px-3 py-1 bg-white text-sky-700 rounded-lg text-xs font-bold border border-sky-200'
+                              >
                                 {finesList.find(f => f.id === id)?.name}
-                                {id !== 'service_001' && manualServices[id] ? ` (${manualServices[id]} ج)` : ''}
+                                {id !== 'service_001' && manualServices[id]
+                                  ? ` (${manualServices[id]} ج)`
+                                  : ''}
                               </span>
                             ))
                         ) : (
@@ -1220,11 +1300,13 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                       </div>
                     </div>
                   </div>
-                  
+
                   {isEditingFines && (
                     <div className='p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between'>
                       <span className='font-bold text-emerald-800'>الإجمالي المتوقع:</span>
-                      <span className='text-2xl font-black text-emerald-600'>{(calculateTotalPrice() / 100).toFixed(2)} جنيه</span>
+                      <span className='text-2xl font-black text-emerald-600'>
+                        {(calculateTotalPrice() / 100).toFixed(2)} جنيه
+                      </span>
                     </div>
                   )}
                 </div>
@@ -1234,7 +1316,10 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   <div className='grid grid-cols-2 gap-4'>
                     <button
                       type='button'
-                      onClick={() => { setShowFinesDropdown(!showFinesDropdown); setShowServicesDropdown(false); }}
+                      onClick={() => {
+                        setShowFinesDropdown(!showFinesDropdown);
+                        setShowServicesDropdown(false);
+                      }}
                       className={`flex flex-col items-center justify-center p-5 border rounded-2xl transition-all ${
                         showFinesDropdown
                           ? 'bg-rose-50 border-rose-200 text-rose-800 ring-4 ring-rose-500/10'
@@ -1244,13 +1329,21 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                       <span className='text-3xl mb-2'>⚖️</span>
                       <span className='text-base font-black'>غرامات</span>
                       <span className='text-xs font-bold mt-1 text-rose-600'>
-                        {selectedFines.filter(id => finesList.find(f => f.id === id)?.category === 'غرامات').length} محدد
+                        {
+                          selectedFines.filter(
+                            id => finesList.find(f => f.id === id)?.category === 'غرامات'
+                          ).length
+                        }{' '}
+                        محدد
                       </span>
                     </button>
 
                     <button
                       type='button'
-                      onClick={() => { setShowServicesDropdown(!showServicesDropdown); setShowFinesDropdown(false); }}
+                      onClick={() => {
+                        setShowServicesDropdown(!showServicesDropdown);
+                        setShowFinesDropdown(false);
+                      }}
                       className={`flex flex-col items-center justify-center p-5 border rounded-2xl transition-all ${
                         showServicesDropdown
                           ? 'bg-sky-50 border-sky-200 text-sky-800 ring-4 ring-sky-500/10'
@@ -1260,7 +1353,12 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                       <span className='text-3xl mb-2'>➕</span>
                       <span className='text-base font-black'>خدمات إضافية</span>
                       <span className='text-xs font-bold mt-1 text-sky-600'>
-                        {selectedFines.filter(id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية').length} محدد
+                        {
+                          selectedFines.filter(
+                            id => finesList.find(f => f.id === id)?.category === 'خدمات اضافية'
+                          ).length
+                        }{' '}
+                        محدد
                       </span>
                     </button>
                   </div>
@@ -1280,7 +1378,9 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                           />
                           <div className='overflow-y-auto space-y-1 pr-1 custom-scrollbar'>
                             {finesList
-                              .filter(f => f.category === 'غرامات' && f.name.includes(finesSearchTerm))
+                              .filter(
+                                f => f.category === 'غرامات' && f.name.includes(finesSearchTerm)
+                              )
                               .map(f => (
                                 <div
                                   key={f.id}
@@ -1292,9 +1392,11 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                                   }`}
                                 >
                                   <span className='text-base font-bold'>{f.name}</span>
-                                  <span className={`text-sm font-black px-2 py-0.5 rounded ${
-                                    selectedFines.includes(f.id) ? 'bg-black/20' : 'bg-slate-100'
-                                  }`}>
+                                  <span
+                                    className={`text-sm font-black px-2 py-0.5 rounded ${
+                                      selectedFines.includes(f.id) ? 'bg-black/20' : 'bg-slate-100'
+                                    }`}
+                                  >
                                     {(f.amountCents / 100).toFixed(0)} ج
                                   </span>
                                 </div>
@@ -1302,7 +1404,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                           </div>
                         </div>
                       )}
-                      
+
                       {showServicesDropdown && (
                         <div className='space-y-3 flex flex-col h-full'>
                           <input
@@ -1315,9 +1417,16 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                           />
                           <div className='overflow-y-auto space-y-1 pr-1 custom-scrollbar'>
                             {finesList
-                              .filter(s => s.category === 'خدمات اضافية' && s.name.includes(servicesSearchTerm))
+                              .filter(
+                                s =>
+                                  s.category === 'خدمات اضافية' &&
+                                  s.name.includes(servicesSearchTerm)
+                              )
                               .map(s => (
-                                <div key={s.id} className='bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm'>
+                                <div
+                                  key={s.id}
+                                  className='bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm'
+                                >
                                   <div
                                     onClick={() => handleFineToggle(s.id)}
                                     className={`p-3 cursor-pointer flex justify-between items-center transition-all ${
@@ -1327,7 +1436,9 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                                     }`}
                                   >
                                     <span className='text-base font-bold'>{s.name}</span>
-                                    {selectedFines.includes(s.id) && <span className='text-sky-500 font-bold font-mono'>✓</span>}
+                                    {selectedFines.includes(s.id) && (
+                                      <span className='text-sky-500 font-bold font-mono'>✓</span>
+                                    )}
                                   </div>
                                   {selectedFines.includes(s.id) && s.id !== 'service_001' && (
                                     <div className='p-3 bg-slate-50 border-t border-slate-100 animate-in slide-in-from-top-1'>
@@ -1335,12 +1446,19 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                                         <input
                                           type='number'
                                           value={manualServices[s.id] || ''}
-                                          onChange={e => handleManualServiceChange(s.id, parseFloat(e.target.value) || 0)}
+                                          onChange={e =>
+                                            handleManualServiceChange(
+                                              s.id,
+                                              parseFloat(e.target.value) || 0
+                                            )
+                                          }
                                           className='w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-black outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/10'
                                           placeholder='القيمة بالجنيه...'
                                           onClick={e => e.stopPropagation()}
                                         />
-                                        <span className='absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400'>ج.م</span>
+                                        <span className='absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400'>
+                                          ج.م
+                                        </span>
                                       </div>
                                     </div>
                                   )}
@@ -1360,11 +1478,17 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                     </p>
                     <div className='flex items-center justify-between'>
                       <div>
-                        <p className='text-sm text-slate-300 font-medium'>إجمالي الطلب بعد التعديل:</p>
-                        <p className='text-xs text-slate-500 mt-1 italic'>* شامل جميع الغرامات والخدمات والخصومات</p>
+                        <p className='text-sm text-slate-300 font-medium'>
+                          إجمالي الطلب بعد التعديل:
+                        </p>
+                        <p className='text-xs text-slate-500 mt-1 italic'>
+                          * شامل جميع الغرامات والخدمات والخصومات
+                        </p>
                       </div>
                       <div className='text-right'>
-                        <span className='text-3xl font-black text-emerald-400'>{(calculateTotalPrice() / 100).toFixed(2)}</span>
+                        <span className='text-3xl font-black text-emerald-400'>
+                          {(calculateTotalPrice() / 100).toFixed(2)}
+                        </span>
                         <span className='text-sm font-bold text-slate-400 ml-2'>جنيه</span>
                       </div>
                     </div>
@@ -1372,7 +1496,6 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                 </div>
               )}
             </div>
-
 
             {/* Customer Information */}
             <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-8'>
@@ -1404,16 +1527,18 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
               <div className='grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8'>
                 {/* Editable Customer Name */}
                 <div className='p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-purple-200 transition-all group relative'>
-                   <div className='flex justify-between items-start mb-1'>
-                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>الاسم</p>
+                  <div className='flex justify-between items-start mb-1'>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>
+                      الاسم
+                    </p>
                     {isEditingCustomer && !editingField && (
-                        <button
-                          onClick={() => handleStartEdit('customerName', currentOrder.customerName)}
-                          className='text-purple-500 text-xs font-bold px-2 py-1 hover:bg-purple-100 rounded-lg transition-all'
-                        >
-                          تعديل ✎
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleStartEdit('customerName', currentOrder.customerName)}
+                        className='text-purple-500 text-xs font-bold px-2 py-1 hover:bg-purple-100 rounded-lg transition-all'
+                      >
+                        تعديل ✎
+                      </button>
+                    )}
                   </div>
                   {editingField === 'customerName' ? (
                     <div className='flex gap-2'>
@@ -1423,18 +1548,34 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                         onChange={e => setTempValue(e.target.value)}
                         className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-1 text-sm font-bold'
                       />
-                      <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
-                      <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                      <button
+                        onClick={handleSaveField}
+                        className='bg-green-500 text-white p-2 rounded-lg'
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setEditingField(null)}
+                        className='bg-slate-200 text-slate-600 p-2 rounded-lg'
+                      >
+                        ×
+                      </button>
                     </div>
                   ) : (
-                    <p className='text-lg font-bold text-slate-900'>{currentOrder.customerName || '-'}</p>
+                    <p className='text-lg font-bold text-slate-900'>
+                      {currentOrder.customerName || '-'}
+                    </p>
                   )}
                 </div>
 
                 {/* Editable Customer Phone */}
-                <div className={`p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}>
+                <div
+                  className={`p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}
+                >
                   <div className='flex justify-between items-start mb-1'>
-                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>الهاتف</p>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>
+                      الهاتف
+                    </p>
                     {isEditingCustomer && !editingField && (
                       <button
                         onClick={() => handleStartEdit('customerPhone', currentOrder.customerPhone)}
@@ -1452,18 +1593,34 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                         onChange={e => setTempValue(e.target.value)}
                         className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-1 text-sm font-bold'
                       />
-                      <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
-                      <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                      <button
+                        onClick={handleSaveField}
+                        className='bg-green-500 text-white p-2 rounded-lg'
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setEditingField(null)}
+                        className='bg-slate-200 text-slate-600 p-2 rounded-lg'
+                      >
+                        ×
+                      </button>
                     </div>
                   ) : (
-                    <p className='text-lg font-bold text-slate-900 font-mono dir-ltr text-right'>{currentOrder.customerPhone || '-'}</p>
+                    <p className='text-lg font-bold text-slate-900 font-mono dir-ltr text-right'>
+                      {currentOrder.customerPhone || '-'}
+                    </p>
                   )}
                 </div>
 
                 {/* Editable National ID */}
-                <div className={`p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}>
+                <div
+                  className={`p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}
+                >
                   <div className='flex justify-between items-start mb-1'>
-                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>الرقم القومي</p>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>
+                      الرقم القومي
+                    </p>
                     {isEditingCustomer && !editingField && (
                       <button
                         onClick={() => handleStartEdit('idNumber', currentOrder.idNumber || '')}
@@ -1481,18 +1638,34 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                         onChange={e => setTempValue(e.target.value)}
                         className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-1 text-sm font-bold'
                       />
-                      <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
-                      <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                      <button
+                        onClick={handleSaveField}
+                        className='bg-green-500 text-white p-2 rounded-lg'
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setEditingField(null)}
+                        className='bg-slate-200 text-slate-600 p-2 rounded-lg'
+                      >
+                        ×
+                      </button>
                     </div>
                   ) : (
-                    <p className='text-lg font-bold text-slate-900 font-mono'>{currentOrder.idNumber || '-'}</p>
+                    <p className='text-lg font-bold text-slate-900 font-mono'>
+                      {currentOrder.idNumber || '-'}
+                    </p>
                   )}
                 </div>
 
                 {/* Editable Customer Email */}
-                <div className={`p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}>
+                <div
+                  className={`p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}
+                >
                   <div className='flex justify-between items-start mb-1'>
-                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>البريد الإلكتروني</p>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>
+                      البريد الإلكتروني
+                    </p>
                     {isEditingCustomer && !editingField && (
                       <button
                         onClick={() => handleStartEdit('customerEmail', currentOrder.customerEmail)}
@@ -1510,18 +1683,34 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                         onChange={e => setTempValue(e.target.value)}
                         className='flex-1 bg-white border-2 border-purple-200 rounded-lg px-3 py-1 text-sm font-bold'
                       />
-                      <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
-                      <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                      <button
+                        onClick={handleSaveField}
+                        className='bg-green-500 text-white p-2 rounded-lg'
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setEditingField(null)}
+                        className='bg-slate-200 text-slate-600 p-2 rounded-lg'
+                      >
+                        ×
+                      </button>
                     </div>
                   ) : (
-                    <p className='text-lg font-bold text-slate-900'>{currentOrder.customerEmail || '-'}</p>
+                    <p className='text-lg font-bold text-slate-900'>
+                      {currentOrder.customerEmail || '-'}
+                    </p>
                   )}
                 </div>
 
                 {/* Editable Address */}
-                <div className={`md:col-span-2 p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}>
+                <div
+                  className={`md:col-span-2 p-4 rounded-2xl border transition-all relative ${isEditingCustomer ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}
+                >
                   <div className='flex justify-between items-start mb-1'>
-                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>العنوان</p>
+                    <p className='text-xs font-bold text-slate-400 uppercase tracking-wider'>
+                      العنوان
+                    </p>
                     {isEditingCustomer && !editingField && (
                       <button
                         onClick={() => handleStartEdit('address', currentOrder.address || '')}
@@ -1541,17 +1730,28 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                         rows={2}
                       />
                       <div className='flex flex-col gap-2'>
-                        <button onClick={handleSaveField} className='bg-green-500 text-white p-2 rounded-lg'>✓</button>
-                        <button onClick={() => setEditingField(null)} className='bg-slate-200 text-slate-600 p-2 rounded-lg'>×</button>
+                        <button
+                          onClick={handleSaveField}
+                          className='bg-green-500 text-white p-2 rounded-lg'
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => setEditingField(null)}
+                          className='bg-slate-200 text-slate-600 p-2 rounded-lg'
+                        >
+                          ×
+                        </button>
                       </div>
                     </div>
                   ) : (
-                    <p className='text-lg font-bold text-slate-900 leading-relaxed'>{currentOrder.address || '-'}</p>
+                    <p className='text-lg font-bold text-slate-900 leading-relaxed'>
+                      {currentOrder.address || '-'}
+                    </p>
                   )}
                 </div>
               </div>
             </div>
-
 
             {/* Notes */}
             <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-8'>
@@ -1569,7 +1769,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   </button>
                 )}
               </div>
-              
+
               {editingField === 'notes' ? (
                 <div className='space-y-4'>
                   <textarea
@@ -1597,7 +1797,9 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
               ) : (
                 <div className='bg-amber-50/50 rounded-2xl p-6 border border-amber-100 transition-all'>
                   {currentOrder.notes ? (
-                    <p className='text-slate-800 font-medium leading-relaxed whitespace-pre-wrap'>{currentOrder.notes}</p>
+                    <p className='text-slate-800 font-medium leading-relaxed whitespace-pre-wrap'>
+                      {currentOrder.notes}
+                    </p>
                   ) : (
                     <p className='text-slate-400 italic'>لا توجد ملاحظات</p>
                   )}
@@ -1711,7 +1913,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                     <span className='text-slate-900 font-bold'>الإجمالي النهائي</span>
                   </div>
                   <span className='font-black text-xl text-emerald-600'>
-                    {((isEditingFines) ? calculateTotalPrice() : currentOrder.totalCents) / 100}
+                    {(isEditingFines ? calculateTotalPrice() : currentOrder.totalCents) / 100}
                   </span>
                 </div>
               </div>

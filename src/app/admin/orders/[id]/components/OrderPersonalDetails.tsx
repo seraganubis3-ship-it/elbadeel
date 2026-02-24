@@ -61,7 +61,9 @@ export default function OrderPersonalDetails({
             </svg>
           </div>
           <div>
-            <h2 className='text-lg sm:text-xl font-bold text-slate-800'>المعلومات الشخصية والعائلية</h2>
+            <h2 className='text-lg sm:text-xl font-bold text-slate-800'>
+              المعلومات الشخصية والعائلية
+            </h2>
             <p className='text-slate-500 text-xs sm:text-sm font-medium'>
               بيانات الأبوين، الجنسية، والحالة الاجتماعية
             </p>

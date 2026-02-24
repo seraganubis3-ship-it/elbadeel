@@ -358,7 +358,10 @@ export function printOrdersReport({
   if (partitionedOrders.NATIONAL_ID.length > 0) {
     const grouped = groupByVariant(partitionedOrders.NATIONAL_ID);
     Object.entries(grouped).forEach(([variantName, groupOrders]) => {
-      const groupTotalQuantity = groupOrders.reduce((sum: number, o: any) => sum + (o.quantity || 1), 0);
+      const groupTotalQuantity = groupOrders.reduce(
+        (sum: number, o: any) => sum + (o.quantity || 1),
+        0
+      );
       const rows = groupOrders
         .map((order, idx) => {
           globalTotalQuantity += order.quantity || 1;
@@ -566,60 +569,76 @@ export function printOrdersReport({
       const groupTotalQuantity = groupOrders.reduce((sum, o) => sum + (o.quantity || 1), 0);
       const sLow = serviceName.toLowerCase();
       const isMariage = sLow.includes('زواج') || sLow.includes('طلاق');
-      const isDeath   = sLow.includes('وفاة');
-      const isBirth   = sLow.includes('ميلاد');
+      const isDeath = sLow.includes('وفاة');
+      const isBirth = sLow.includes('ميلاد');
 
       let thead = '';
-      let rows  = '';
+      let rows = '';
 
       if (isMariage) {
         thead = `<tr><th width="5%">م</th><th width="20%">اسم الزوج / الزوجة</th><th width="14%">الوالدة</th><th width="20%">اسم الزوجة / الزوج</th><th width="14%">الوالدة</th><th width="14%">تاريخ الزواج</th><th width="8%">العدد</th><th width="5%">النوع</th></tr>`;
-        rows = groupOrders.map((order, idx) => {
-          globalTotalQuantity += order.quantity || 1;
-          const isSupply = order.status === 'supply';
-          const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
-          const vName = order.variant?.name || '';
-          const mDate = formatDate(order.marriageDate || order.birthDate);
-          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: right; font-weight: bold;">${order.wifeName || '---'}</td><td style="text-align: right;">${order.wifeMotherName || '---'}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${mDate}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
-        }).join('');
+        rows = groupOrders
+          .map((order, idx) => {
+            globalTotalQuantity += order.quantity || 1;
+            const isSupply = order.status === 'supply';
+            const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
+            const vName = order.variant?.name || '';
+            const mDate = formatDate(order.marriageDate || order.birthDate);
+            return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: right; font-weight: bold;">${order.wifeName || '---'}</td><td style="text-align: right;">${order.wifeMotherName || '---'}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${mDate}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
+          })
+          .join('');
       } else if (isDeath) {
         thead = `<tr><th width="5%">م</th><th width="30%">اسم العميل</th><th width="18%">تاريخ الوفاة</th><th width="28%">اسم الوالدة</th><th width="10%">العدد</th><th width="9%">النوع</th></tr>`;
-        rows = groupOrders.map((order, idx) => {
-          globalTotalQuantity += order.quantity || 1;
-          const isSupply = order.status === 'supply';
-          const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
-          const dDate = formatDate(order.deathDate || order.birthDate);
-          const vName = order.variant?.name || '';
-          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${dDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
-        }).join('');
+        rows = groupOrders
+          .map((order, idx) => {
+            globalTotalQuantity += order.quantity || 1;
+            const isSupply = order.status === 'supply';
+            const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
+            const dDate = formatDate(order.deathDate || order.birthDate);
+            const vName = order.variant?.name || '';
+            return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${dDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
+          })
+          .join('');
       } else if (isBirth) {
         thead = `<tr><th width="5%">م</th><th width="22%">اسم العميل</th><th width="14%">تاريخ الميلاد</th><th width="22%">اسم الوالدة</th><th width="8%">العدد</th><th width="18%">الرقم القومي</th><th width="11%">النوع</th></tr>`;
-        rows = groupOrders.map((order, idx) => {
-          globalTotalQuantity += order.quantity || 1;
-          const isSupply = order.status === 'supply';
-          const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
-          const mono = 'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
-          const bDate = formatDate(order.birthDate);
-          const vName = order.variant?.name || '';
-          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${order.idNumber || '---'}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
-        }).join('');
+        rows = groupOrders
+          .map((order, idx) => {
+            globalTotalQuantity += order.quantity || 1;
+            const isSupply = order.status === 'supply';
+            const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
+            const mono =
+              'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
+            const bDate = formatDate(order.birthDate);
+            const vName = order.variant?.name || '';
+            return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${order.idNumber || '---'}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
+          })
+          .join('');
       } else {
         // Generic fallback
         thead = `<tr><th width="5%">م</th><th width="28%">اسم العميل</th><th width="16%">الرقم القومي</th><th width="12%">العدد</th><th width="12%">النوع</th><th width="10%">رسوم</th><th width="17%">تفاصيل</th></tr>`;
-        rows = groupOrders.map((order, idx) => {
-          globalTotalQuantity += order.quantity || 1;
-          const fees = (order as any).overrideTotalFines !== undefined ? (order as any).overrideTotalFines : order.otherFees || 0;
-          globalTotalFines += fees;
-          const isSettlement = order.status === 'settlement' || order.status === 'pending_payment';
-          const isSupply = order.status === 'supply';
-          let color = '';
-          if (isSettlement) color = 'background-color: #fca5a5';
-          else if (isSupply) color = 'background-color: #bfdbfe';
-          const cellStyle = `style="text-align: center; ${color ? color + ' !important; -webkit-print-color-adjust: exact;' : ''}"`;
-          const vName = order.variant?.name || '';
-          const details = (order as any).overrideDetails !== undefined ? (order as any).overrideDetails : order.serviceDetails || '---';
-          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;">${order.idNumber || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
-        }).join('');
+        rows = groupOrders
+          .map((order, idx) => {
+            globalTotalQuantity += order.quantity || 1;
+            const fees =
+              (order as any).overrideTotalFines !== undefined
+                ? (order as any).overrideTotalFines
+                : order.otherFees || 0;
+            globalTotalFines += fees;
+            const isSettlement =
+              order.status === 'settlement' || order.status === 'pending_payment';
+            const isSupply = order.status === 'supply';
+            let color = '';
+            if (isSettlement) color = 'background-color: #fca5a5';
+            else if (isSupply) color = 'background-color: #bfdbfe';
+            const cellStyle = `style="text-align: center; ${color ? color + ' !important; -webkit-print-color-adjust: exact;' : ''}"`;
+            const vName = order.variant?.name || '';
+            const details =
+              (order as any).overrideDetails !== undefined
+                ? (order as any).overrideDetails
+                : order.serviceDetails || '---';
+            return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;">${order.idNumber || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
+          })
+          .join('');
       }
 
       contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">${serviceName}</div><div class="header-order-num-container"><span class="order-label">رقم امر شغل :</span><span class="order-line"></span></div></div><table class="data-table"><thead>${thead}</thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="6" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;

@@ -498,10 +498,10 @@ export default function AdminOrdersPage() {
       showError('تنبيه', 'لا توجد طلبات للطباعة');
       return;
     }
-    
+
     // Find selected employee name based on filter, or default to current user
     const selectedEmployee = admins.find(a => a.id === filters.employeeId);
-    
+
     executePrintCollectionReport(selectedEmployee?.name || 'الكل');
   };
 
@@ -613,7 +613,7 @@ export default function AdminOrdersPage() {
       orders: currentOrders,
       selectedOrders,
       filters,
-      collectorName, 
+      collectorName,
       branchName: 'البديل',
     });
   };
@@ -777,7 +777,8 @@ export default function AdminOrdersPage() {
         let cardType = 'عادي';
         if (variantName.includes('سريع') || variantName.includes('urgent')) cardType = 'سريع';
         if (variantName.includes('فوري') || variantName.includes('immediate')) cardType = 'فوري';
-        if (variantName.includes('سوبر فوري') || variantName.includes('immediate')) cardType = 'فوري';
+        if (variantName.includes('سوبر فوري') || variantName.includes('immediate'))
+          cardType = 'فوري';
         if (variantName.includes('عاجل') || variantName.includes('immediate')) cardType = 'عاجل';
         if (variantName.includes('عادي') || variantName.includes('immediate')) cardType = 'عادي';
 
@@ -908,11 +909,7 @@ export default function AdminOrdersPage() {
     const order = orders.find(o => o.id === orderId);
 
     // Check for outstanding balance ONLY when delivering
-    if (
-      newStatus === 'delivered' &&
-      order &&
-      (order.remainingAmount || 0) > 0
-    ) {
+    if (newStatus === 'delivered' && order && (order.remainingAmount || 0) > 0) {
       setPaymentAlertOrder(order);
       setPendingStatus(newStatus); // Track intended status
       setShowPaymentAlert(true);
@@ -1333,7 +1330,9 @@ export default function AdminOrdersPage() {
         <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
           <div className='bg-white rounded-2xl shadow-2xl w-full max-w-md p-6'>
             <h3 className='text-xl font-black text-slate-900 mb-2'>
-              {pendingStatusReason.newStatus === 'fulfillment' ? '⚠️ سبب الاستيفاء' : '↩️ سبب المرتجع'}
+              {pendingStatusReason.newStatus === 'fulfillment'
+                ? '⚠️ سبب الاستيفاء'
+                : '↩️ سبب المرتجع'}
             </h3>
             <p className='text-slate-500 text-sm mb-4'>اكتب السبب ليظهر في تفاصيل الطلب</p>
             <textarea
@@ -1346,7 +1345,10 @@ export default function AdminOrdersPage() {
             />
             <div className='flex gap-3 mt-4'>
               <button
-                onClick={() => { setShowStatusReasonModal(false); setPendingStatusReason(null); }}
+                onClick={() => {
+                  setShowStatusReasonModal(false);
+                  setPendingStatusReason(null);
+                }}
                 className='flex-1 py-3 border-2 border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50'
               >
                 إلغاء
@@ -1354,13 +1356,20 @@ export default function AdminOrdersPage() {
               <button
                 onClick={async () => {
                   if (!pendingStatusReason) return;
-                  await updateOrderStatus(pendingStatusReason.orderId, pendingStatusReason.newStatus, undefined, statusReasonText);
+                  await updateOrderStatus(
+                    pendingStatusReason.orderId,
+                    pendingStatusReason.newStatus,
+                    undefined,
+                    statusReasonText
+                  );
                   setShowStatusReasonModal(false);
                   setPendingStatusReason(null);
                   setStatusReasonText('');
                 }}
                 className={`flex-1 py-3 rounded-xl font-bold text-white ${
-                  pendingStatusReason.newStatus === 'settlement' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-rose-500 hover:bg-rose-600'
+                  pendingStatusReason.newStatus === 'settlement'
+                    ? 'bg-amber-500 hover:bg-amber-600'
+                    : 'bg-rose-500 hover:bg-rose-600'
                 }`}
               >
                 تأكيد التغيير

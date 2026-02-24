@@ -96,7 +96,8 @@ export async function sendWhatsAppByTrigger(
 ): Promise<WhatsAppResponse> {
   try {
     const message = await getParsedMessage(trigger, order);
-    if (!message) return { success: false, error: `No active template found for trigger: ${trigger}` };
+    if (!message)
+      return { success: false, error: `No active template found for trigger: ${trigger}` };
 
     const phone = order.customerPhone || order.user?.phone;
     if (!phone) return { success: false, error: 'No phone number found' };

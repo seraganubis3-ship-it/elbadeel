@@ -18,7 +18,10 @@ export default function AdminWorkDateWrapper({ children }: AdminWorkDateWrapperP
       const user = session.user as any;
 
       // إذا كان المستخدم لديه صلاحية وإنشاء طلبات أو إدارة ومفيش تاريخ عمل
-      if ((hasPermission(user, 'CREATE_ORDER') || hasPermission(user, 'MANAGE_ORDERS')) && !user.workDate) {
+      if (
+        (hasPermission(user, 'CREATE_ORDER') || hasPermission(user, 'MANAGE_ORDERS')) &&
+        !user.workDate
+      ) {
         // التحقق من localStorage كبديل مؤقت
         const savedWorkDate = localStorage.getItem('adminWorkDate');
         if (!savedWorkDate) {

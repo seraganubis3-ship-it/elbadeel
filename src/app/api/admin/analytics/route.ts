@@ -292,8 +292,8 @@ export async function GET(request: NextRequest) {
                 name: true,
                 role: true,
                 adminRole: {
-                  select: { name: true }
-                }
+                  select: { name: true },
+                },
               },
             },
           },
@@ -435,7 +435,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(analytics);
   } catch (error) {
-        console.error('Analytics API error:', error);
+    console.error('Analytics API error:', error);
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
   }
 }

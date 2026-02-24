@@ -75,9 +75,8 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
             <span className='text-base font-black uppercase tracking-widest'>غرامات</span>
             <span className='text-xs lg:text-sm font-bold mt-1 text-rose-600'>
               {
-                selectedFines.filter(
-                  id => finesList.find(f => f.id === id)?.category === 'غرامات'
-                ).length
+                selectedFines.filter(id => finesList.find(f => f.id === id)?.category === 'غرامات')
+                  .length
               }{' '}
               محدد
             </span>
@@ -119,9 +118,8 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
                   autoFocus
                 />
                 <div className='max-h-60 overflow-y-auto space-y-1 custom-scrollbar'>
-                  {finesList.filter(
-                    f => f.category === 'غرامات' && f.name.includes(finesSearchTerm)
-                  )
+                  {finesList
+                    .filter(f => f.category === 'غرامات' && f.name.includes(finesSearchTerm))
                     .slice(0, 50)
                     .map(f => (
                       <div
@@ -156,9 +154,10 @@ export const PaymentSection: React.FC<PaymentSectionProps> = ({
                   autoFocus
                 />
                 <div className='max-h-60 overflow-y-auto space-y-1 custom-scrollbar'>
-                  {finesList.filter(
-                    s => s.category === 'خدمات اضافية' && s.name.includes(servicesSearchTerm)
-                  )
+                  {finesList
+                    .filter(
+                      s => s.category === 'خدمات اضافية' && s.name.includes(servicesSearchTerm)
+                    )
                     .slice(0, 50)
                     .map(s => (
                       <div

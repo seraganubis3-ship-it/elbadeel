@@ -105,7 +105,12 @@ export default function PromoCodesPage() {
         <div className='bg-white rounded-2xl shadow-sm border border-slate-100 p-16 text-center flex flex-col items-center'>
           <div className='w-24 h-24 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4 border-2 border-dashed border-slate-200'>
             <svg className='w-10 h-10' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} d='M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01' />
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={1.5}
+                d='M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01'
+              />
             </svg>
           </div>
           <h3 className='text-xl font-black text-slate-700 mb-2'>لا توجد كوبونات خصم حالياً</h3>
@@ -140,12 +145,16 @@ export default function PromoCodesPage() {
                 className='bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden'
               >
                 {/* Decorative background element */}
-                <div className={`absolute -right-12 -top-12 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none transition-all group-hover:scale-150 ${isActive ? 'bg-emerald-400' : 'bg-slate-400'}`}></div>
+                <div
+                  className={`absolute -right-12 -top-12 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none transition-all group-hover:scale-150 ${isActive ? 'bg-emerald-400' : 'bg-slate-400'}`}
+                ></div>
 
                 {/* Header */}
                 <div className='flex justify-between items-start mb-6 relative z-10'>
                   <div>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-black ring-1 uppercase tracking-widest mb-3 ${statusColor}`}>
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-black ring-1 uppercase tracking-widest mb-3 ${statusColor}`}
+                    >
                       {statusText}
                     </span>
                     <h3 className='text-2xl font-black text-slate-800 font-mono tracking-tight flex items-center gap-2'>
@@ -153,7 +162,7 @@ export default function PromoCodesPage() {
                       {code.code}
                     </h3>
                   </div>
-                  
+
                   {/* Actions */}
                   <div className='flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
                     <button
@@ -161,8 +170,18 @@ export default function PromoCodesPage() {
                       className='w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors'
                       title='تعديل الكوبون'
                     >
-                      <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
+                      <svg
+                        className='w-4 h-4'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={2.5}
+                          d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
+                        />
                       </svg>
                     </button>
                     <button
@@ -170,8 +189,18 @@ export default function PromoCodesPage() {
                       className='w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors'
                       title={code._count?.orders > 0 ? 'إيقاف الكوبون' : 'حذف الكوبون'}
                     >
-                      <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
+                      <svg
+                        className='w-4 h-4'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth={2.5}
+                          d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                        />
                       </svg>
                     </button>
                   </div>
@@ -180,18 +209,28 @@ export default function PromoCodesPage() {
                 {/* Values Container */}
                 <div className='grid grid-cols-2 gap-4 mb-6 relative z-10'>
                   <div className='bg-slate-50 rounded-2xl p-4 border border-slate-100'>
-                    <div className='text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1'>قيمة الخصم</div>
+                    <div className='text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1'>
+                      قيمة الخصم
+                    </div>
                     <div className='text-lg font-black text-emerald-700 flex items-baseline gap-1'>
                       {code.type === 'PERCENTAGE' ? (
-                        <>{code.value}<span className='text-sm text-emerald-600'>%</span></>
+                        <>
+                          {code.value}
+                          <span className='text-sm text-emerald-600'>%</span>
+                        </>
                       ) : (
-                        <>{code.value / 100}<span className='text-sm text-emerald-600'>ج.م</span></>
+                        <>
+                          {code.value / 100}
+                          <span className='text-sm text-emerald-600'>ج.م</span>
+                        </>
                       )}
                     </div>
                   </div>
-                  
+
                   <div className='bg-slate-50 rounded-2xl p-4 border border-slate-100'>
-                    <div className='text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1'>مرات الاستخدام</div>
+                    <div className='text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1'>
+                      مرات الاستخدام
+                    </div>
                     <div className='text-lg font-black text-blue-700 flex items-baseline gap-1'>
                       {code.currentUsage}
                       <span className='text-sm text-slate-400 font-medium'>
@@ -206,29 +245,39 @@ export default function PromoCodesPage() {
                   {code.type === 'PERCENTAGE' && code.maxDiscount && (
                     <div className='flex justify-between items-center text-sm font-medium'>
                       <span className='text-slate-500'>الحد الأقصى للخصم:</span>
-                      <span className='text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md'>{code.maxDiscount / 100} ج.م</span>
+                      <span className='text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md'>
+                        {code.maxDiscount / 100} ج.م
+                      </span>
                     </div>
                   )}
 
                   <div className='flex justify-between items-center text-sm font-medium'>
                     <span className='text-slate-500'>بواسطة:</span>
-                    <span className='text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md text-xs'>{code.createdBy?.name || '---'}</span>
+                    <span className='text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md text-xs'>
+                      {code.createdBy?.name || '---'}
+                    </span>
                   </div>
 
                   <div className='flex justify-between items-center text-xs font-bold pt-2'>
                     <span className='text-slate-400'>
-                      صالح من: <span className='text-slate-600'>{code.startDate ? new Date(code.startDate).toLocaleDateString('ar-EG') : 'الآن'}</span>
+                      صالح من:{' '}
+                      <span className='text-slate-600'>
+                        {code.startDate
+                          ? new Date(code.startDate).toLocaleDateString('ar-EG')
+                          : 'الآن'}
+                      </span>
                     </span>
                     {code.endDate ? (
                       <span className={`${isExpired ? 'text-rose-500' : 'text-slate-600'}`}>
                         حتى: {new Date(code.endDate).toLocaleDateString('ar-EG')}
                       </span>
                     ) : (
-                      <span className='text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded'>مفتوح للأبد</span>
+                      <span className='text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded'>
+                        مفتوح للأبد
+                      </span>
                     )}
                   </div>
                 </div>
-
               </div>
             );
           })}

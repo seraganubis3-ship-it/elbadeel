@@ -191,7 +191,12 @@ export default function WorkPermitAuthorizationPrintPage() {
         <div className='corner corner-tl'>
           <svg className='ornate-svg' viewBox='0 0 100 100'>
             <path d='M0,0 L100,0 C100,55 55,100 0,100 Z' />
-            <path d='M10,10 L80,10 C80,45 45,80 10,80 Z' fill='none' stroke='#000' strokeWidth='2' />
+            <path
+              d='M10,10 L80,10 C80,45 45,80 10,80 Z'
+              fill='none'
+              stroke='#000'
+              strokeWidth='2'
+            />
             <circle cx='30' cy='30' r='5' fill='#fff' stroke='#000' strokeWidth='2' />
           </svg>
         </div>
@@ -199,7 +204,12 @@ export default function WorkPermitAuthorizationPrintPage() {
         <div className='corner corner-tr'>
           <svg className='ornate-svg' viewBox='0 0 100 100'>
             <path d='M0,0 L100,0 C100,55 55,100 0,100 Z' />
-            <path d='M10,10 L80,10 C80,45 45,80 10,80 Z' fill='none' stroke='#000' strokeWidth='2' />
+            <path
+              d='M10,10 L80,10 C80,45 45,80 10,80 Z'
+              fill='none'
+              stroke='#000'
+              strokeWidth='2'
+            />
             <circle cx='30' cy='30' r='5' fill='#fff' stroke='#000' strokeWidth='2' />
           </svg>
         </div>
@@ -207,7 +217,12 @@ export default function WorkPermitAuthorizationPrintPage() {
         <div className='corner corner-bl'>
           <svg className='ornate-svg' viewBox='0 0 100 100'>
             <path d='M0,0 L100,0 C100,55 55,100 0,100 Z' />
-            <path d='M10,10 L80,10 C80,45 45,80 10,80 Z' fill='none' stroke='#000' strokeWidth='2' />
+            <path
+              d='M10,10 L80,10 C80,45 45,80 10,80 Z'
+              fill='none'
+              stroke='#000'
+              strokeWidth='2'
+            />
             <circle cx='30' cy='30' r='5' fill='#fff' stroke='#000' strokeWidth='2' />
           </svg>
         </div>
@@ -215,7 +230,12 @@ export default function WorkPermitAuthorizationPrintPage() {
         <div className='corner corner-br'>
           <svg className='ornate-svg' viewBox='0 0 100 100'>
             <path d='M0,0 L100,0 C100,55 55,100 0,100 Z' />
-            <path d='M10,10 L80,10 C80,45 45,80 10,80 Z' fill='none' stroke='#000' strokeWidth='2' />
+            <path
+              d='M10,10 L80,10 C80,45 45,80 10,80 Z'
+              fill='none'
+              stroke='#000'
+              strokeWidth='2'
+            />
             <circle cx='30' cy='30' r='5' fill='#fff' stroke='#000' strokeWidth='2' />
           </svg>
         </div>
@@ -248,10 +268,10 @@ export default function WorkPermitAuthorizationPrintPage() {
               {delegate.name}
             </span>{' '}
             مفوض البديل للخدمات الحكومية (رقم قومي:{' '}
-            <span className='font-black ltr inline-block text-blue-900'>{delegate.idNumber}</span>
-            ) وكارنيه وزارة الاتصالات وتكنولوجيا المعلومات، بأنه تم تفويضي من قبل أصحاب الشأن لاستخراج{' '}
-            <span className='text-blue-900 font-black text-2xl'>تصريح عمل</span> بالنيابة عن المواطنين طالبي الخدمة
-            المذكورين أدناه، وهذا إقرار مني بذلك.
+            <span className='font-black ltr inline-block text-blue-900'>{delegate.idNumber}</span>)
+            وكارنيه وزارة الاتصالات وتكنولوجيا المعلومات، بأنه تم تفويضي من قبل أصحاب الشأن لاستخراج{' '}
+            <span className='text-blue-900 font-black text-2xl'>تصريح عمل</span> بالنيابة عن
+            المواطنين طالبي الخدمة المذكورين أدناه، وهذا إقرار مني بذلك.
           </div>
 
           {/* Customer Table */}
@@ -281,7 +301,6 @@ export default function WorkPermitAuthorizationPrintPage() {
         <div className='grid grid-cols-2 gap-6 mt-6'>
           <div className='space-y-3'>
             <div className='h-40 flex items-center justify-center'>
-             
               {delegate.idCardFront ? (
                 <Image
                   src={delegate.idCardFront}
@@ -296,7 +315,6 @@ export default function WorkPermitAuthorizationPrintPage() {
               ) : null}
             </div>
             <div className='h-40 flex items-center justify-center'>
-             
               {delegate.idCardBack ? (
                 <Image
                   src={delegate.idCardBack}
@@ -314,7 +332,6 @@ export default function WorkPermitAuthorizationPrintPage() {
 
           <div className='space-y-3'>
             <div className='h-40 flex items-center justify-center'>
-             
               {delegate.unionCardFront ? (
                 <Image
                   src={delegate.unionCardFront}
@@ -329,7 +346,6 @@ export default function WorkPermitAuthorizationPrintPage() {
               ) : null}
             </div>
             <div className='h-40 flex items-center justify-center'>
-             
               {delegate.unionCardBack ? (
                 <Image
                   src={delegate.unionCardBack}

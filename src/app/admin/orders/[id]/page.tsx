@@ -128,9 +128,9 @@ export default function OrderDetailsPage() {
           {/* Main Content Area (8 Cols) */}
           <div className='xl:col-span-8 space-y-8'>
             {/* Quick Metrics Row - Always Visible */}
-            <OrderStatusMetrics 
-              order={order} 
-              onUpdateReason={(reason) => updateOrderField({ statusReason: reason })}
+            <OrderStatusMetrics
+              order={order}
+              onUpdateReason={reason => updateOrderField({ statusReason: reason })}
               updating={updating}
             />
 
@@ -240,8 +240,8 @@ export default function OrderDetailsPage() {
 
             {/* Financial Section */}
             <div className='space-y-8'>
-              <OrderSummary 
-                order={order} 
+              <OrderSummary
+                order={order}
                 isEditing={!!editingSections['financials']}
                 onToggleEdit={() => toggleEditing('financials')}
                 onSave={fields => updateOrderField(fields, 'financials')}
@@ -336,8 +336,12 @@ export default function OrderDetailsPage() {
             <div className='bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-300 overflow-hidden'>
               <div className='p-6 sm:p-8 border-b border-amber-100 bg-amber-50 relative'>
                 <div className='absolute top-4 right-4 text-3xl sm:text-4xl opacity-20'>⚠️</div>
-                <h3 className='text-xl sm:text-2xl font-black text-amber-900 mb-1'>مبالغ مستحقة!</h3>
-                <p className='text-amber-700 font-bold text-xs sm:text-sm'>لا يمكن التسليم بدون سداد الرصيد</p>
+                <h3 className='text-xl sm:text-2xl font-black text-amber-900 mb-1'>
+                  مبالغ مستحقة!
+                </h3>
+                <p className='text-amber-700 font-bold text-xs sm:text-sm'>
+                  لا يمكن التسليم بدون سداد الرصيد
+                </p>
               </div>
 
               <div className='p-6 sm:p-8'>
@@ -376,7 +380,9 @@ export default function OrderDetailsPage() {
                   }}
                   className='w-full justify-center rounded-xl sm:rounded-2xl bg-emerald-600 px-6 py-3.5 sm:py-5 text-base sm:text-xl font-black text-white shadow-xl shadow-emerald-100 hover:bg-emerald-500 transition-all active:scale-[0.98] flex items-center gap-3'
                 >
-                  <span className='w-5 h-5 sm:w-6 sm:h-6 bg-white/20 rounded-full flex items-center justify-center'>✓</span>
+                  <span className='w-5 h-5 sm:w-6 sm:h-6 bg-white/20 rounded-full flex items-center justify-center'>
+                    ✓
+                  </span>
                   تسجيل الدفع والتسليم
                 </button>
                 <button

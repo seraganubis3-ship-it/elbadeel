@@ -70,12 +70,12 @@ export default function DocumentUploader({
         {requiredDocuments.map((doc, index) => {
           const file = selectedFiles[doc.id] || null;
           return (
-            <DocumentItem 
-              key={doc.id} 
-              doc={doc} 
-              file={file} 
-              index={index} 
-              onFileSelect={onFileSelect} 
+            <DocumentItem
+              key={doc.id}
+              doc={doc}
+              file={file}
+              index={index}
+              onFileSelect={onFileSelect}
             />
           );
         })}
@@ -84,11 +84,16 @@ export default function DocumentUploader({
   );
 }
 
-function DocumentItem({ doc, file, index, onFileSelect }: { 
-  doc: any, 
-  file: File | null, 
-  index: number, 
-  onFileSelect: (docId: string, file: File | null) => void 
+function DocumentItem({
+  doc,
+  file,
+  index,
+  onFileSelect,
+}: {
+  doc: any;
+  file: File | null;
+  index: number;
+  onFileSelect: (docId: string, file: File | null) => void;
 }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -193,12 +198,7 @@ function DocumentItem({ doc, file, index, onFileSelect }: {
                     className='object-cover w-full h-full'
                   />
                 ) : (
-                  <svg
-                    className='w-7 h-7'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
+                  <svg className='w-7 h-7' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                     <path
                       strokeLinecap='round'
                       strokeLinejoin='round'
@@ -210,17 +210,10 @@ function DocumentItem({ doc, file, index, onFileSelect }: {
               </div>
               <div className='flex-1 min-w-0 text-right'>
                 <p className='font-bold text-slate-800 truncate text-sm'>{file.name}</p>
-                <p className='text-xs text-slate-500'>
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                </p>
+                <p className='text-xs text-slate-500'>{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
               <div className='w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg'>
-                <svg
-                  className='w-5 h-5'
-                  fill='none'
-                  viewBox='0 0 24 24'
-                  stroke='currentColor'
-                >
+                <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                   <path
                     strokeLinecap='round'
                     strokeLinejoin='round'
@@ -240,12 +233,7 @@ function DocumentItem({ doc, file, index, onFileSelect }: {
               className='absolute top-2 left-2 p-2 bg-white rounded-xl text-rose-500 shadow-md hover:bg-rose-50 border border-slate-200 transition-all z-10 hover:scale-105'
               title='حذف الملف'
             >
-              <svg
-                className='w-4 h-4'
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-              >
+              <svg className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'

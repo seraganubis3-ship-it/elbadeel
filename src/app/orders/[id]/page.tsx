@@ -198,7 +198,6 @@ export default function OrderDetailPage() {
                 )}
               </div>
             </div>
-
           </div>
 
           {/* Main Details */}

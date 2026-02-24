@@ -27,7 +27,12 @@ export default function OrderPaymentDetails({
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2 sm:gap-3'>
             <div className='w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 text-emerald-600 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0'>
-              <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <svg
+                className='w-4 h-4 sm:w-5 sm:h-5'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -43,7 +48,12 @@ export default function OrderPaymentDetails({
             className='p-1.5 sm:p-2 hover:bg-slate-200 rounded-lg sm:rounded-xl transition-colors text-slate-400 hover:text-emerald-600 border border-slate-100'
             title='تعديل بيانات الدفع'
           >
-            <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <svg
+              className='w-4 h-4 sm:w-5 sm:h-5'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
               <path
                 strokeLinecap='round'
                 strokeLinejoin='round'
@@ -58,20 +68,28 @@ export default function OrderPaymentDetails({
       <div className='p-4 sm:p-6'>
         <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
           <div className='bg-slate-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 text-center'>
-            <p className='text-[10px] sm:text-sm font-bold text-slate-400 uppercase mb-1 sm:mb-2'>المطلوب</p>
+            <p className='text-[10px] sm:text-sm font-bold text-slate-400 uppercase mb-1 sm:mb-2'>
+              المطلوب
+            </p>
             <p className='text-lg sm:text-xl font-black text-slate-800 tracking-tight'>
               {(order.totalCents / 100).toFixed(2)}
             </p>
           </div>
           <div className='bg-emerald-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-emerald-100 text-center'>
-            <p className='text-[10px] sm:text-sm font-bold text-emerald-400 uppercase mb-1 sm:mb-2'>المدفوع</p>
+            <p className='text-[10px] sm:text-sm font-bold text-emerald-400 uppercase mb-1 sm:mb-2'>
+              المدفوع
+            </p>
             <p className='text-lg sm:text-xl font-black text-emerald-700 tracking-tight'>
               {order.payment ? (order.payment.amount / 100).toFixed(2) : '0.00'}
             </p>
           </div>
           <div className='bg-orange-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-orange-100 text-center'>
-            <p className='text-[10px] sm:text-sm font-bold text-orange-400 uppercase mb-1 sm:mb-2'>المتبقي</p>
-            <p className='text-lg sm:text-xl font-black text-orange-700 tracking-tight'>{remainingAmount.toFixed(2)}</p>
+            <p className='text-[10px] sm:text-sm font-bold text-orange-400 uppercase mb-1 sm:mb-2'>
+              المتبقي
+            </p>
+            <p className='text-lg sm:text-xl font-black text-orange-700 tracking-tight'>
+              {remainingAmount.toFixed(2)}
+            </p>
           </div>
         </div>
 
@@ -118,7 +136,9 @@ export default function OrderPaymentDetails({
           </div>
         ) : (
           <div className='text-center py-4 sm:py-6 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-dashed border-slate-200'>
-            <p className='text-base sm:text-lg text-slate-400 font-bold italic'>لا توجد بيانات دفع مسجلة</p>
+            <p className='text-base sm:text-lg text-slate-400 font-bold italic'>
+              لا توجد بيانات دفع مسجلة
+            </p>
           </div>
         )}
 

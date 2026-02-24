@@ -243,7 +243,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     // Handle fine-related fields - stringify if objects
     const jsonFields = ['selectedFines', 'finesDetails', 'servicesDetails', 'attachedDocuments'];
     for (const field of jsonFields) {
-      if (updateData[field] !== undefined && updateData[field] !== null && typeof updateData[field] === 'object') {
+      if (
+        updateData[field] !== undefined &&
+        updateData[field] !== null &&
+        typeof updateData[field] === 'object'
+      ) {
         processedUpdateData[field] = JSON.stringify(updateData[field]);
       }
     }

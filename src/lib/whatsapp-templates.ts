@@ -63,8 +63,10 @@ export function parseTemplate(template: string, order: OrderData): string {
   // Calculate remaining price safely
   let remPriceNum = order.remainingAmount;
   if (remPriceNum === undefined && order.totalCents !== undefined) {
-    const totalPaid = (order.payment?.status === 'CONFIRMED' || order.payment?.status === 'PAID') 
-      ? (order.payment.amount || 0) : 0;
+    const totalPaid =
+      order.payment?.status === 'CONFIRMED' || order.payment?.status === 'PAID'
+        ? order.payment.amount || 0
+        : 0;
     remPriceNum = Math.max(0, (order.totalCents - totalPaid) / 100);
   }
   replacements[PLACEHOLDERS.REMAINING_PRICE] = (remPriceNum || 0).toFixed(2);
@@ -114,4 +116,3 @@ export async function getParsedMessage(trigger: string, order: any): Promise<str
 
   return parseTemplate(template.body, order);
 }
-

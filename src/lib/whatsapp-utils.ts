@@ -1,7 +1,7 @@
 export function replacePlaceholders(body: string, order: any): string {
   if (!body) return '';
   let result = body;
-  
+
   const placeholders: Record<string, string> = {
     '<customer_name>': order.customerName || '',
     '<order_id>': order.id?.slice(-6) || '',
@@ -15,7 +15,9 @@ export function replacePlaceholders(body: string, order: any): string {
     '<customer_phone>': order.customerPhone || '',
     '<customer_email>': order.customerEmail || '',
     '<password>': order.customerPhone || '',
-    '<remaining_price>': ((order.totalPrice || order.totalFines || 0) - (order.totalPaid || 0)).toString(),
+    '<remaining_price>': (
+      (order.totalPrice || order.totalFines || 0) - (order.totalPaid || 0)
+    ).toString(),
   };
 
   Object.entries(placeholders).forEach(([tag, val]) => {

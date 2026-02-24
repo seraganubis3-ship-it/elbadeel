@@ -101,21 +101,22 @@ export function printCollectionReport({
     </style>
   `;
 
-  const rowsHtml = ordersToPrint.map((order, idx) => {
-    const time = new Date(order.createdAt).toLocaleTimeString('ar-EG', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-      timeZone: 'Africa/Cairo',
-    });
-    
-    const serviceDisplay = `${order.service.name} ${order.variant?.name ? '- ' + order.variant.name : ''} (${time})`;
-    
-    const priceCents = order.totalCents || 0;
-    const paid = order.paidAmount || 0;
-    const remaining = order.remainingAmount || 0;
-    
-    return `
+  const rowsHtml = ordersToPrint
+    .map((order, idx) => {
+      const time = new Date(order.createdAt).toLocaleTimeString('ar-EG', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Africa/Cairo',
+      });
+
+      const serviceDisplay = `${order.service.name} ${order.variant?.name ? '- ' + order.variant.name : ''} (${time})`;
+
+      const priceCents = order.totalCents || 0;
+      const paid = order.paidAmount || 0;
+      const remaining = order.remainingAmount || 0;
+
+      return `
       <tr>
         <td width="5%">${idx + 1}</td>
         <td width="12%">${order.id.slice(-6).toUpperCase()}</td>
@@ -126,7 +127,8 @@ export function printCollectionReport({
         <td width="10%" style="color: ${remaining > 0 ? 'red' : 'black'};">${(remaining / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
       </tr>
     `;
-  }).join('');
+    })
+    .join('');
 
   const fullHtml = `
     <!DOCTYPE html>

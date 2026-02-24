@@ -33,18 +33,29 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           <span className='text-4xl'>🎉</span>
         </div>
 
-        <h3 className='text-2xl font-black text-slate-900 mb-2'>تم إنشاء الطلب بنجاح!</h3>
+        <h3 className='text-2xl font-black text-slate-900 mb-2'>
+          {orderId?.startsWith('OFF-') ? 'تم الحفظ محلياً!' : 'تم إنشاء الطلب بنجاح!'}
+        </h3>
 
-        <p className='text-slate-500 font-medium mb-8'>
+        <p className='text-slate-500 font-medium mb-4'>
           رقم الطلب: <span className='font-mono font-bold text-emerald-600'>#{orderId}</span>
         </p>
+
+        {orderId?.startsWith('OFF-') && (
+          <div className='bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-8 flex items-start gap-3 text-right'>
+            <span className='text-xl'>⚠️</span>
+            <p className='text-xs text-amber-800 leading-relaxed font-bold'>
+              أنت أوفلاين حالياً. تم حفظ الطلب برقم مؤقت، وسيتم رفعه للسيرفر تلقائياً عند عودة النت.
+              يمكنك طباعة الإيصال بهذا الرقم والمتابعة به.
+            </p>
+          </div>
+        )}
 
         <div className='grid grid-cols-2 gap-4 w-full'>
           <button
             onClick={() => {
-              if (orderId) {
-                router.push(`/admin/orders/${orderId}`);
-              }
+              // Trigger Print logic (handled by a shared print component or window.print)
+              window.print();
             }}
             className='flex items-center justify-center gap-2 w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-emerald-200 active:scale-95'
           >

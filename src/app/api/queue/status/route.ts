@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-        console.error('Queue status error:', error);
+    console.error('Queue status error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to get queue status' },
       { status: 500 }

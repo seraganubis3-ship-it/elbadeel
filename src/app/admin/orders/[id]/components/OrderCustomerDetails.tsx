@@ -58,7 +58,9 @@ export default function OrderCustomerDetails({
           </div>
           <div>
             <h2 className='text-lg sm:text-xl font-bold text-slate-800'>معلومات العميل الأساسية</h2>
-            <p className='text-slate-500 text-xs sm:text-sm font-medium'>بيانات التواصل والتحقق الشخصي</p>
+            <p className='text-slate-500 text-xs sm:text-sm font-medium'>
+              بيانات التواصل والتحقق الشخصي
+            </p>
           </div>
         </div>
 

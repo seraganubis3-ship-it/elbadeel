@@ -44,11 +44,7 @@ export const parseConditionValue = (field: string, encodedValue: string): Condit
  */
 const normalizeText = (text: string | null | undefined): string => {
   if (!text) return '';
-  return String(text)
-    .trim()
-    .toLowerCase()
-    .replace(/[أإآ]/g, 'ا')
-    .replace(/ة/g, 'ه');
+  return String(text).trim().toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه');
 };
 
 /**
@@ -70,7 +66,7 @@ export const evaluateLogic = (
       conditions = data;
     } else if (typeof data === 'object' && data !== null) {
       // Legacy format: { field: "operatorValue" }
-      conditions = Object.entries(data).map(([field, val]) => 
+      conditions = Object.entries(data).map(([field, val]) =>
         parseConditionValue(field, val as string)
       );
     }

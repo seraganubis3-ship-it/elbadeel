@@ -201,7 +201,7 @@ export function useOrders(
         if (categoryId) params.set('categoryId', categoryId);
         if (statusFilter !== 'all') params.set('status', statusFilter);
         if (deliveryFilter !== 'all') params.set('deliveryType', deliveryFilter);
-        
+
         if (dateFrom && dateTo) {
           params.set('from', dateFrom);
           params.set('to', dateTo);
@@ -261,7 +261,7 @@ export function useOrders(
       currentPage,
       statusFilter,
       deliveryFilter,
-      ordersPerPage
+      ordersPerPage,
     ]
   );
 

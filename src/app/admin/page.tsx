@@ -46,14 +46,17 @@ export default async function AdminPage() {
       AND DATE(o."createdAt" + (sv."etaDays" || ' days')::INTERVAL) = CURRENT_DATE
   `;
 
-  const deliveryDueToday = dueTodayRows.length > 0 ? await prisma.order.findMany({
-    where: { id: { in: dueTodayRows.map(r => r.id) } },
-    include: {
-      service: true,
-      variant: true,
-      user: true,
-    },
-  }) : [];
+  const deliveryDueToday =
+    dueTodayRows.length > 0
+      ? await prisma.order.findMany({
+          where: { id: { in: dueTodayRows.map(r => r.id) } },
+          include: {
+            service: true,
+            variant: true,
+            user: true,
+          },
+        })
+      : [];
 
   // Get pending orders count
   const pendingOrdersCount = await prisma.order.count({

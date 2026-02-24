@@ -24,16 +24,19 @@ export async function POST(req: NextRequest) {
     await requireAdminOrStaff();
     const { title, trigger, body, category } = await req.json();
     if (!title?.trim() || !body?.trim() || (category !== 'MANUAL' && !trigger?.trim())) {
-      return NextResponse.json({ success: false, error: 'العنوان والنص والزناد مطلوبان' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: 'العنوان والنص والزناد مطلوبان' },
+        { status: 400 }
+      );
     }
     const count = await (prisma as any).whatsAppTemplate.count();
     const template = await (prisma as any).whatsAppTemplate.create({
-      data: { 
-        title: title.trim(), 
-        trigger: category === 'MANUAL' ? null : (trigger?.trim() || null),
+      data: {
+        title: title.trim(),
+        trigger: category === 'MANUAL' ? null : trigger?.trim() || null,
         category: category || 'AUTOMATIC',
-        body: body.trim(), 
-        orderIndex: count 
+        body: body.trim(),
+        orderIndex: count,
       },
     });
 

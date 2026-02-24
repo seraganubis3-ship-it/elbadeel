@@ -108,7 +108,9 @@ export default function OrderFollowUpDetails({
             </svg>
           </div>
           <div className='mr-4 sm:mr-5'>
-            <h2 className='text-xl sm:text-3xl font-black text-slate-800 tracking-tight'>التصنيف والمتابعة</h2>
+            <h2 className='text-xl sm:text-3xl font-black text-slate-800 tracking-tight'>
+              التصنيف والمتابعة
+            </h2>
             <p className='text-slate-500 font-bold text-xs sm:text-lg'>
               توصيف العميل ونوع العلاقة والبيانات الإضافية
             </p>

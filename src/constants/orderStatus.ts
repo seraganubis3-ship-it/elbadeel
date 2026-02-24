@@ -36,7 +36,7 @@ export const ORDER_STATUS_CONFIG = {
     color: 'bg-green-100 text-green-800',
     icon: '🚚',
   },
-    fulfillment: {
+  fulfillment: {
     text: 'استيفاء',
     class: 'bg-teal-100 text-teal-800',
     color: 'bg-teal-100 text-teal-800',

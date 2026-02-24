@@ -35,7 +35,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     await requireAdmin();
     const { id } = await params;
-    
+
     // Check if used? We'll just soft delete or physically delete if not heavily integrated yet.
     await prisma.fine.delete({
       where: { id },

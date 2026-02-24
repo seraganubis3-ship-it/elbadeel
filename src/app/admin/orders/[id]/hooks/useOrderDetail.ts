@@ -208,11 +208,7 @@ export function useOrderDetail(orderId: string) {
     if (!order) return;
 
     // Check for outstanding balance when delivering
-    if (
-      !force &&
-      newStatus === 'delivered' &&
-      (order.remainingAmount || 0) > 0
-    ) {
+    if (!force && newStatus === 'delivered' && (order.remainingAmount || 0) > 0) {
       setShowPaymentAlert(true);
       return;
     }

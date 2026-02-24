@@ -10,16 +10,11 @@ import {
   calculateActualFineAmounts,
   calculateFineExpenses,
   calculateLostReportForServices,
-  Fine
+  Fine,
 } from '@/constants/fines';
 import { useToast } from '@/components/Toast';
-import {
-  Service,
-  ServiceVariant,
-  Category,
-  Customer,
-  initialFormData,
-} from './types';
+import { Service, ServiceVariant, Category, Customer, initialFormData } from './types';
+import { offlineManager } from '@/lib/offline-manager';
 
 export function useCreateOrder() {
   const { data: session } = useSession();
@@ -172,28 +167,32 @@ export function useCreateOrder() {
 
     const fetchInitialData = async () => {
       try {
-        const [catRes, finesRes] = await Promise.all([
-          fetch('/api/admin/categories'),
-          fetch('/api/admin/fines')
-        ]);
-        
-        if (catRes.ok) {
-          const data = await catRes.json();
-          if (data.success && data.categories) {
-            setCategories(data.categories);
-            const allServices = data.categories.flatMap((cat: Category) => cat.services || []);
-            setServices(allServices);
+        const prefetchRes = await fetch('/api/admin/offline/prefetch');
+        if (prefetchRes.ok) {
+          const prefetchData = await prefetchRes.json();
+          if (prefetchData.success) {
+            await offlineManager.savePrefetchedData(prefetchData.data);
+            setServices(prefetchData.data.services);
+            setFinesList(prefetchData.data.fines);
+            setCategories([]); // Note: categories structure might need adjustment if needed
           }
-        }
-        
-        if (finesRes.ok) {
-          const finesData = await finesRes.json();
-          if (finesData.success && finesData.fines?.length > 0) {
-            setFinesList(finesData.fines);
-          }
+        } else {
+          // Fallback to offline storage if prefetch fails
+          const offlineServices = await offlineManager.getServices();
+          const offlineFines = await offlineManager.getFines();
+          if (offlineServices.length > 0) setServices(offlineServices);
+          if (offlineFines.length > 0) setFinesList(offlineFines);
         }
       } catch (error) {
-        showErrorRef.current?.('خطأ في الاتصال', 'فشل في الاتصال بالخادم');
+        // Fallback to offline storage on network error
+        const offlineServices = await offlineManager.getServices();
+        const offlineFines = await offlineManager.getFines();
+        if (offlineServices.length > 0) setServices(offlineServices);
+        if (offlineFines.length > 0) setFinesList(offlineFines);
+        showWarning(
+          'أنت تعمل الآن في وضع الأوفلاين',
+          'فشل الاتصال بالخادم، تم تحميل البيانات من الذاكرة المحلية.'
+        );
       } finally {
         setLoading(false);
       }
@@ -225,6 +224,18 @@ export function useCreateOrder() {
           setAbortController(controller);
           setSearching(true);
           try {
+            // Local Search first (for better responsiveness and offline support)
+            const localResults = await offlineManager.searchCustomers(name);
+            if (localResults.length > 0) {
+              setSearchResults(localResults);
+              setSuggestedUser(localResults[0]);
+              setShowSearchDropdown(true);
+              const bestMatch = localResults[0].name;
+              if (bestMatch.toLowerCase().startsWith(name.toLowerCase())) {
+                setSuggestion(bestMatch);
+              }
+            }
+
             const params = new URLSearchParams();
             if (name) params.append('name', name);
             const response = await fetch(`/api/admin/users/search?${params.toString()}`, {
@@ -244,11 +255,6 @@ export function useCreateOrder() {
                 } else {
                   setSuggestion('');
                 }
-              } else {
-                setSearchResults([]);
-                setSuggestedUser(null);
-                setShowSearchDropdown(false);
-                setSuggestion('');
               }
             }
           } catch (error) {
@@ -315,7 +321,6 @@ export function useCreateOrder() {
       if (phoneCheckTimeout.current) clearTimeout(phoneCheckTimeout.current);
     };
   }, [formData.customerPhone, customer, checkPhoneExists]);
-
 
   // Select customer
   const selectCustomer = useCallback((cust: Customer) => {
@@ -526,27 +531,30 @@ export function useCreateOrder() {
   );
 
   // Handle fine toggle
-  const handleFineToggle = useCallback((fineId: string) => {
-    setSelectedFines(prev => {
-      let newSelectedFines;
-      if (prev.includes(fineId)) {
-        newSelectedFines = prev.filter(id => id !== fineId);
-      } else {
-        newSelectedFines = [...prev, fineId];
-      }
-      // Auto-select مصاريف غرامة
-      const hasActualFines = newSelectedFines.some(id => {
-        const fine = finesList.find(f => f.id === id);
-        return fine?.category === 'غرامات' && id !== 'fine_004';
+  const handleFineToggle = useCallback(
+    (fineId: string) => {
+      setSelectedFines(prev => {
+        let newSelectedFines;
+        if (prev.includes(fineId)) {
+          newSelectedFines = prev.filter(id => id !== fineId);
+        } else {
+          newSelectedFines = [...prev, fineId];
+        }
+        // Auto-select مصاريف غرامة
+        const hasActualFines = newSelectedFines.some(id => {
+          const fine = finesList.find(f => f.id === id);
+          return fine?.category === 'غرامات' && id !== 'fine_004';
+        });
+        if (hasActualFines && !newSelectedFines.includes('service_001')) {
+          newSelectedFines = [...newSelectedFines, 'service_001'];
+        } else if (!hasActualFines && newSelectedFines.includes('service_001')) {
+          newSelectedFines = newSelectedFines.filter(id => id !== 'service_001');
+        }
+        return newSelectedFines;
       });
-      if (hasActualFines && !newSelectedFines.includes('service_001')) {
-        newSelectedFines = [...newSelectedFines, 'service_001'];
-      } else if (!hasActualFines && newSelectedFines.includes('service_001')) {
-        newSelectedFines = newSelectedFines.filter(id => id !== 'service_001');
-      }
-      return newSelectedFines;
-    });
-  }, [finesList]);
+    },
+    [finesList]
+  );
 
   // Handle manual service change
   const handleManualServiceChange = useCallback((serviceId: string, amount: number) => {
@@ -827,7 +835,10 @@ export function useCreateOrder() {
 
       // Allow skipping ID/BirthDate for specific certificates (Death, Marriage, Divorce)
       const serviceName = selectedService.name;
-      const isFlexibleCertificate = serviceName.includes('وفاة') || serviceName.includes('زواج') || serviceName.includes('طلاق');
+      const isFlexibleCertificate =
+        serviceName.includes('وفاة') ||
+        serviceName.includes('زواج') ||
+        serviceName.includes('طلاق');
 
       if (!isFlexibleCertificate && !hasIdNumber && !hasBirthDate) {
         showWarning('بيانات ناقصة', 'يرجى إدخال الرقم القومي (14 رقم) أو تاريخ الميلاد على الأقل');
@@ -841,7 +852,10 @@ export function useCreateOrder() {
           return;
         }
         if (serialValid && !serialValid.ok) {
-          showWarning('رقم الاستمارة غير صحيح', serialValid.msg || 'يرجى التأكد من صحة رقم الاستمارة وملاءمته لهذا النوع');
+          showWarning(
+            'رقم الاستمارة غير صحيح',
+            serialValid.msg || 'يرجى التأكد من صحة رقم الاستمارة وملاءمته لهذا النوع'
+          );
           return;
         }
       }
@@ -854,16 +868,19 @@ export function useCreateOrder() {
         }
         // اسم الأم مطلوب فقط إذا لم يكن هناك رقم قومي
         if (!hasIdNumber && !formData.motherName?.trim()) {
-          showWarning('نقص في البيانات', 'اسم الأم مطلوب لاستخراج شهادة الميلاد (أو أدخل الرقم القومي)');
+          showWarning(
+            'نقص في البيانات',
+            'اسم الأم مطلوب لاستخراج شهادة الميلاد (أو أدخل الرقم القومي)'
+          );
           return;
         }
       }
 
       // Mandatory "Relation" (الصفة) for specific services
-      const isRelationMandatory = 
-        serviceName.includes('كمبيوتر') || 
-        serviceName.includes('مميكن') || 
-        serviceName.includes('تصديق') || 
+      const isRelationMandatory =
+        serviceName.includes('كمبيوتر') ||
+        serviceName.includes('مميكن') ||
+        serviceName.includes('تصديق') ||
         serviceName.includes('بيان زواج و طلاق');
 
       if (isRelationMandatory && !formData.title?.trim()) {
@@ -987,18 +1004,38 @@ export function useCreateOrder() {
           workDate: getCurrentWorkDate(),
         };
 
-        const response = await fetch('/api/admin/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderData),
-        });
+        let response;
+        try {
+          response = await fetch('/api/admin/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData),
+          });
+        } catch (fetchErr) {
+          // Network error - go to offline mode
+          const offlineId = offlineManager.generateOfflineId();
+          await offlineManager.saveOfflineOrder({
+            ...orderData,
+            offlineId,
+            createdAt: orderData.workDate, // Map workDate to createdAt for the store
+          });
+          setCreatedOrderId(offlineId);
+          setShowSuccessModal(true);
+          showWarning(
+            'تم الحفظ محلياً',
+            'تعذر الاتصال بالخادم، تم حفظ الطلب في ذاكرة المتصفح وسيتم رفعه تلقائياً عند عودة النت.'
+          );
+          return;
+        }
 
         if (response.ok) {
           const data = await response.json();
           const orderId = data.order.id;
-          // showSuccess('تم إنشاء الطلب بنجاح! 🎉', `تم إنشاء الطلب #${orderId} بنجاح`); // Removed toast to avoid duplicate feedback with modal
           setCreatedOrderId(orderId);
           setShowSuccessModal(true);
+
+          // Optionally trigger a sync for any other pending orders
+          offlineManager.syncOrders().catch(() => {});
         } else {
           const errorData = await response.json();
           showError(

@@ -53,7 +53,7 @@ async function upsertService(serviceData) {
   if (fields?.create) {
     // Delete existing fields to start fresh (safest for complex nested structures)
     await prisma.serviceField.deleteMany({ where: { serviceId: service.id } });
-    
+
     for (const f of fields.create) {
       const { options, ...fieldData } = f;
       const field = await prisma.serviceField.create({
@@ -138,7 +138,7 @@ async function seedServices() {
           orderIndex: 3,
           showIf: JSON.stringify([
             { field: 'request_type', op: 'neq', value: 'first_time' },
-            { field: 'request_type', op: 'neq', value: 'lost' }
+            { field: 'request_type', op: 'neq', value: 'lost' },
           ]),
         },
         {
@@ -155,7 +155,7 @@ async function seedServices() {
           orderIndex: 4,
           showIf: JSON.stringify([
             { field: 'request_type', op: 'eq', value: 'renewal_status' },
-            { field: 'new_status', op: 'eq', value: 'married' }
+            { field: 'new_status', op: 'eq', value: 'married' },
           ]),
         },
         {
@@ -165,7 +165,7 @@ async function seedServices() {
           orderIndex: 5,
           showIf: JSON.stringify([
             { field: 'request_type', op: 'eq', value: 'renewal_status' },
-            { field: 'new_status', op: 'eq', value: 'married' }
+            { field: 'new_status', op: 'eq', value: 'married' },
           ]),
         },
         {
@@ -175,7 +175,7 @@ async function seedServices() {
           orderIndex: 6,
           showIf: JSON.stringify([
             { field: 'request_type', op: 'eq', value: 'renewal_status' },
-            { field: 'new_status', op: 'eq', value: 'divorced' }
+            { field: 'new_status', op: 'eq', value: 'divorced' },
           ]),
         },
         {
@@ -185,7 +185,7 @@ async function seedServices() {
           orderIndex: 6,
           showIf: JSON.stringify([
             { field: 'request_type', op: 'eq', value: 'renewal_status' },
-            { field: 'new_status', op: 'eq', value: 'widowed' }
+            { field: 'new_status', op: 'eq', value: 'widowed' },
           ]),
         },
         {
@@ -195,7 +195,7 @@ async function seedServices() {
           orderIndex: 7,
           showIf: JSON.stringify([
             { field: 'request_type', op: 'eq', value: 'renewal_address' },
-            { field: 'address_proof_type', op: 'eq', value: 'utility_bill' }
+            { field: 'address_proof_type', op: 'eq', value: 'utility_bill' },
           ]),
         },
         {
@@ -329,9 +329,24 @@ async function seedServices() {
     },
     documents: {
       create: [
-        { title: 'صورة شهادة الميلاد الورقية', description: 'الصادرة من الصحة', required: false, orderIndex: 1 },
-        { title: 'صورة بطاقة الأب أو الأم', description: 'لاستخراج أول مرة', required: false, orderIndex: 2 },
-        { title: 'صورة بطاقة صاحب الشهادة', description: 'للاستخراج اللاحق', required: false, orderIndex: 3 },
+        {
+          title: 'صورة شهادة الميلاد الورقية',
+          description: 'الصادرة من الصحة',
+          required: false,
+          orderIndex: 1,
+        },
+        {
+          title: 'صورة بطاقة الأب أو الأم',
+          description: 'لاستخراج أول مرة',
+          required: false,
+          orderIndex: 2,
+        },
+        {
+          title: 'صورة بطاقة صاحب الشهادة',
+          description: 'للاستخراج اللاحق',
+          required: false,
+          orderIndex: 3,
+        },
         { title: 'صورة الشهادة القديمة', description: 'إن وجدت', required: false, orderIndex: 4 },
       ],
     },

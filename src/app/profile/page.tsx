@@ -22,7 +22,7 @@ export default async function ProfilePage() {
       phone: true,
       role: true,
       adminRole: {
-        select: { name: true }
+        select: { name: true },
       },
       wifeName: true,
       fatherName: true,

@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession, requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateOrderNumber } from '@/lib/orderNumbering';
-import { 
-  checkWhatsAppStatus, 
-  sendWhatsAppMessage, 
-  NotificationTemplates, 
-  sendWhatsAppByTrigger 
+import {
+  checkWhatsAppStatus,
+  sendWhatsAppMessage,
+  NotificationTemplates,
+  sendWhatsAppByTrigger,
 } from '@/lib/whatsapp';
 import { logger } from '@/lib/logger';
 import { hash } from 'bcryptjs';
@@ -337,7 +337,10 @@ export async function POST(request: NextRequest) {
     if (!order) throw new Error('Failed to create order after multiple attempts');
 
     // تحديث بيانات المستخدم لو فيه حاجة ناقصة (في حالة الـ Session فقط لضمان الملكية)
-    if (session?.user?.id && (wifeName || fatherName || motherName || birthDate || nationality || idNumber)) {
+    if (
+      session?.user?.id &&
+      (wifeName || fatherName || motherName || birthDate || nationality || idNumber)
+    ) {
       const userUpdateData: Record<string, any> = {};
       if (wifeName) userUpdateData.wifeName = wifeName;
       if (fatherName) userUpdateData.fatherName = fatherName;
@@ -418,12 +421,12 @@ export async function POST(request: NextRequest) {
         // Fetch full order for placeholders
         const fullOrder = await prisma.order.findUnique({
           where: { id: order.id },
-          include: { 
-            service: { select: { name: true } }, 
+          include: {
+            service: { select: { name: true } },
             variant: { select: { name: true } },
             user: { select: { phone: true, email: true } },
-            payment: { select: { amount: true, status: true } }
-          }
+            payment: { select: { amount: true, status: true } },
+          },
         });
 
         if (fullOrder) {

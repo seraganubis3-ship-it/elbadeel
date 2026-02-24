@@ -5,10 +5,7 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 // DELETE: soft-delete a template
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await requireAdminOrStaff();
     await (prisma as any).whatsAppTemplate.update({
@@ -22,10 +19,7 @@ export async function DELETE(
 }
 
 // PATCH: update title / body
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await requireAdminOrStaff();
     const { title, trigger, body, category } = await req.json();
@@ -33,7 +27,9 @@ export async function PATCH(
       where: { id: params.id },
       data: {
         ...(title !== undefined && { title: title.trim() }),
-        ...(trigger !== undefined && { trigger: category === 'MANUAL' ? null : (trigger?.trim() || null) }),
+        ...(trigger !== undefined && {
+          trigger: category === 'MANUAL' ? null : trigger?.trim() || null,
+        }),
         ...(body !== undefined && { body: body.trim() }),
         ...(category !== undefined && { category }),
       },

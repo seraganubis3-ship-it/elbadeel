@@ -13,7 +13,12 @@ export default function OrderNotes({ order }: OrderNotesProps) {
     <div className='bg-white rounded-[1.5rem] sm:rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 p-4 sm:p-8'>
       <div className='flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 pb-4 border-b border-slate-50'>
         <div className='w-10 h-10 sm:w-12 sm:h-12 bg-amber-50 text-amber-600 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0'>
-          <svg className='w-5 h-5 sm:w-6 sm:h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+          <svg
+            className='w-5 h-5 sm:w-6 sm:h-6'
+            fill='none'
+            stroke='currentColor'
+            viewBox='0 0 24 24'
+          >
             <path
               strokeLinecap='round'
               strokeLinejoin='round'
@@ -23,7 +28,9 @@ export default function OrderNotes({ order }: OrderNotesProps) {
           </svg>
         </div>
         <div>
-          <h2 className='text-lg sm:text-2xl font-black text-slate-800 tracking-tight'>الملاحظات</h2>
+          <h2 className='text-lg sm:text-2xl font-black text-slate-800 tracking-tight'>
+            الملاحظات
+          </h2>
           <p className='text-slate-500 font-bold text-xs sm:text-lg'>التفضيلات وتعليمات الإدارة</p>
         </div>
       </div>
@@ -37,7 +44,9 @@ export default function OrderNotes({ order }: OrderNotesProps) {
                 ملاحظات العميل
               </h3>
             </div>
-            <p className='text-base sm:text-xl font-bold text-slate-700 leading-relaxed pr-2 sm:pr-4'>{order.notes}</p>
+            <p className='text-base sm:text-xl font-bold text-slate-700 leading-relaxed pr-2 sm:pr-4'>
+              {order.notes}
+            </p>
           </div>
         )}
 

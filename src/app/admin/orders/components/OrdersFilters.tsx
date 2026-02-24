@@ -205,7 +205,12 @@ export function OrdersFilters({
               stroke='currentColor'
               viewBox='0 0 24 24'
             >
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+              />
             </svg>
           </div>
           <input
@@ -222,8 +227,18 @@ export function OrdersFilters({
           className='px-6 sm:px-10 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl sm:rounded-2xl transition-all font-black text-base sm:text-lg shadow-lg shadow-blue-500/30 hover:shadow-blue-600/40 active:scale-95 flex items-center justify-center gap-2 md:w-auto w-full'
         >
           <span>بحث</span>
-          <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+          <svg
+            className='w-4 h-4 sm:w-5 sm:h-5'
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+            />
           </svg>
         </button>
       </div>
@@ -232,7 +247,9 @@ export function OrdersFilters({
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 relative z-10'>
         {/* Status Filter */}
         <div className='space-y-1 sm:space-y-1.5'>
-          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>حالة الطلب</label>
+          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>
+            حالة الطلب
+          </label>
           <div className='relative'>
             <select
               value={statusFilter}
@@ -247,8 +264,18 @@ export function OrdersFilters({
               ))}
             </select>
             <div className='absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none'>
-              <svg className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+              <svg
+                className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M19 9l-7 7-7-7'
+                />
               </svg>
             </div>
           </div>
@@ -256,7 +283,9 @@ export function OrdersFilters({
 
         {/* Delivery Type Filter */}
         <div className='space-y-1 sm:space-y-1.5'>
-          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>طريقة التسليم</label>
+          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>
+            طريقة التسليم
+          </label>
           <div className='relative'>
             <select
               value={deliveryFilter}
@@ -268,8 +297,18 @@ export function OrdersFilters({
               <option value='DELIVERY'>🚚 توصيل للمنزل</option>
             </select>
             <div className='absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none'>
-              <svg className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+              <svg
+                className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M19 9l-7 7-7-7'
+                />
               </svg>
             </div>
           </div>
@@ -277,7 +316,9 @@ export function OrdersFilters({
 
         {/* Services Dropdown */}
         <div className='space-y-1 sm:space-y-1.5 relative' ref={dropdownRef}>
-          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>الخدمات</label>
+          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>
+            الخدمات
+          </label>
           <button
             onClick={() => setIsServicesDropdownOpen(!isServicesDropdownOpen)}
             className='w-full pr-4 pl-9 py-2.5 sm:py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-xs sm:text-sm font-medium text-slate-700 flex items-center justify-between hover:bg-slate-100 outline-none'
@@ -294,7 +335,12 @@ export function OrdersFilters({
                 stroke='currentColor'
                 viewBox='0 0 24 24'
               >
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M19 9l-7 7-7-7'
+                />
               </svg>
             </div>
           </button>
@@ -312,7 +358,9 @@ export function OrdersFilters({
                     onChange={() => onServiceToggle(service.id)}
                     className='w-4 h-4 sm:w-5 sm:h-5 text-blue-600 border-slate-300 rounded focus:ring-blue-500 transition-all cursor-pointer'
                   />
-                  <span className='mr-3 text-xs sm:text-sm font-medium text-slate-700'>{service.name}</span>
+                  <span className='mr-3 text-xs sm:text-sm font-medium text-slate-700'>
+                    {service.name}
+                  </span>
                 </label>
               ))}
             </div>
@@ -321,7 +369,9 @@ export function OrdersFilters({
 
         {/* Category Filter */}
         <div className='space-y-1 sm:space-y-1.5'>
-          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>الفئة</label>
+          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>
+            الفئة
+          </label>
           <div className='relative'>
             <select
               value={categoryId}
@@ -336,8 +386,18 @@ export function OrdersFilters({
               ))}
             </select>
             <div className='absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none'>
-              <svg className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+              <svg
+                className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M19 9l-7 7-7-7'
+                />
               </svg>
             </div>
           </div>
@@ -345,7 +405,9 @@ export function OrdersFilters({
 
         {/* Employee Filter */}
         <div className='space-y-1 sm:space-y-1.5'>
-          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>الموظف</label>
+          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>
+            الموظف
+          </label>
           <div className='relative'>
             <select
               value={employeeId}
@@ -360,8 +422,18 @@ export function OrdersFilters({
               ))}
             </select>
             <div className='absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none'>
-              <svg className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+              <svg
+                className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M19 9l-7 7-7-7'
+                />
               </svg>
             </div>
           </div>
@@ -369,7 +441,9 @@ export function OrdersFilters({
 
         {/* Photography Date Filter */}
         <div className='space-y-1 sm:space-y-1.5'>
-          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>ت. التصوير</label>
+          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>
+            ت. التصوير
+          </label>
           <div className='relative'>
             <input
               type='text'
@@ -381,8 +455,18 @@ export function OrdersFilters({
               dir='ltr'
             />
             <div className='absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none'>
-              <svg className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
+              <svg
+                className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                />
               </svg>
             </div>
           </div>
@@ -390,7 +474,9 @@ export function OrdersFilters({
 
         {/* Date From */}
         <div className='space-y-1 sm:space-y-1.5'>
-          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>من تاريخ</label>
+          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>
+            من تاريخ
+          </label>
           <div className='relative'>
             <input
               type='text'
@@ -402,16 +488,28 @@ export function OrdersFilters({
               dir='ltr'
             />
             <div className='absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none'>
-              <svg className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
+              <svg
+                className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                />
               </svg>
             </div>
           </div>
         </div>
-        
+
         {/* Date To */}
         <div className='space-y-1 sm:space-y-1.5'>
-          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>إلى تاريخ</label>
+          <label className='text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider px-1'>
+            إلى تاريخ
+          </label>
           <div className='relative'>
             <input
               type='text'
@@ -423,8 +521,18 @@ export function OrdersFilters({
               dir='ltr'
             />
             <div className='absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none'>
-              <svg className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
+              <svg
+                className='w-4 h-4 sm:w-5 sm:h-5 text-slate-400'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                />
               </svg>
             </div>
           </div>
@@ -434,7 +542,9 @@ export function OrdersFilters({
       {/* Active Filters Summary */}
       {hasFilter && (
         <div className='mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-600 relative z-10'>
-          <span className='font-bold bg-slate-100 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg'>الفلاتر النشطة:</span>
+          <span className='font-bold bg-slate-100 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg'>
+            الفلاتر النشطة:
+          </span>
           {orderSourceFilter !== 'all' && (
             <span className='px-2.5 py-1 sm:px-3 sm:py-1.5 bg-blue-50 text-blue-700 border border-blue-200/60 rounded-xl font-bold flex items-center gap-1.5 animate-fade-in'>
               {orderSourceFilter === 'office' ? '🏢 مكتب' : '🌐 أونلاين'}
@@ -442,7 +552,9 @@ export function OrdersFilters({
           )}
           {selectedServiceIds.length > 0 && (
             <span className='px-2.5 py-1 sm:px-3 sm:py-1.5 bg-purple-50 text-purple-700 border border-purple-200/60 rounded-xl font-bold flex items-center gap-1.5 animate-fade-in'>
-              <span className='w-4 h-4 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center text-[10px]'>{selectedServiceIds.length}</span>
+              <span className='w-4 h-4 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center text-[10px]'>
+                {selectedServiceIds.length}
+              </span>
               خدمات
             </span>
           )}

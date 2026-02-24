@@ -74,10 +74,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     if (workOrderNumber) updateData.workOrderNumber = workOrderNumber;
 
-    if (
-      ['fulfillment', 'returned', 'settlement'].includes(status) &&
-      statusReason !== undefined
-    ) {
+    if (['fulfillment', 'returned', 'settlement'].includes(status) && statusReason !== undefined) {
       updateData.statusReason = statusReason;
     }
 
@@ -91,7 +88,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       updateData.estimatedCompletionDate = estimatedCompletion;
     }
 
-    // handle payment update as a separate promise but we'll wait for it if necessary 
+    // handle payment update as a separate promise but we'll wait for it if necessary
     // to keep it simple and safe for now.
     if (status === 'cancelled' && order.payment) {
       await prisma.payment.update({
@@ -129,13 +126,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
     } catch (err) {
       // console.log('Updating order status', params.id, body.status)
-;
     }
 
     const tUpdateEnd = performance.now();
 
     const tTotal = performance.now() - tStart;
-    console.log(`[PERF] Status update for ${id}: Total=${tTotal.toFixed(2)}ms, Auth=${(tAuthEnd-tAuthStart).toFixed(2)}ms, Prep=${(tPrepEnd-tPrepStart).toFixed(2)}ms, Fetch=${(tFetchEnd-tFetchStart).toFixed(2)}ms, Update=${(tUpdateEnd-tUpdateStart).toFixed(2)}ms`);
+    console.log(
+      `[PERF] Status update for ${id}: Total=${tTotal.toFixed(2)}ms, Auth=${(tAuthEnd - tAuthStart).toFixed(2)}ms, Prep=${(tPrepEnd - tPrepStart).toFixed(2)}ms, Fetch=${(tFetchEnd - tFetchStart).toFixed(2)}ms, Update=${(tUpdateEnd - tUpdateStart).toFixed(2)}ms`
+    );
 
     return NextResponse.json({
       success: true,

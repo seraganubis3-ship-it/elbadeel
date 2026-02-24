@@ -12,10 +12,10 @@ function walkDir(dir, callback) {
 const patternsToRemove = [
   /\/\/ eslint-disable-next-line no-console\r?\n?/g,
   /\/\* eslint-disable no-console \*\/\r?\n?/g,
-  /\/\* eslint-disable @next\/next\/no-img-element \*\/\r?\n?/g
+  /\/\* eslint-disable @next\/next\/no-img-element \*\/\r?\n?/g,
 ];
 
-walkDir(path.join(__dirname, 'src'), function(filePath) {
+walkDir(path.join(__dirname, 'src'), function (filePath) {
   if (filePath.endsWith('.ts') || filePath.endsWith('.tsx') || filePath.endsWith('.js')) {
     let content = fs.readFileSync(filePath, 'utf8');
     let newContent = content;

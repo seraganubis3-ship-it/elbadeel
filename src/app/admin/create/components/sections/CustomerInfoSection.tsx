@@ -221,7 +221,10 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
           {/* National ID Input (Takes 5/12 space) */}
           <div className='lg:col-span-5 relative group/nid'>
             <div className='absolute -top-2.5 right-4 bg-white px-2 text-[10px] font-black text-slate-400 z-10'>
-              الرقم القومي {(isDeathCert || isMarriageDivorce) && <span className='text-emerald-500 font-bold'>(اختياري)</span>}
+              الرقم القومي{' '}
+              {(isDeathCert || isMarriageDivorce) && (
+                <span className='text-emerald-500 font-bold'>(اختياري)</span>
+              )}
             </div>
             <input
               type='text'
@@ -281,10 +284,16 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                 💡
               </div>
               <div className='flex-1 min-w-0'>
-                <div className='text-amber-900 font-extrabold text-sm mb-1'>رقم الهاتف مسجَّل مسبقاً</div>
+                <div className='text-amber-900 font-extrabold text-sm mb-1'>
+                  رقم الهاتف مسجَّل مسبقاً
+                </div>
                 <div className='text-amber-800 font-bold text-xs leading-relaxed'>
-                  هذا الرقم مرتبط بحساب <span className='bg-amber-100 px-1.5 py-0.5 rounded text-amber-950 underline decoration-amber-500/50 underline-offset-2'>&quot;{phoneConflict.name}&quot;</span>. 
-                  يمكنك استخدامه لهذا الطلب، وسيتم تسجيل الطلب بالاسم الجديد الذي تدخلـه دون تعديل اسم صاحب الحساب الأصلي.
+                  هذا الرقم مرتبط بحساب{' '}
+                  <span className='bg-amber-100 px-1.5 py-0.5 rounded text-amber-950 underline decoration-amber-500/50 underline-offset-2'>
+                    &quot;{phoneConflict.name}&quot;
+                  </span>
+                  . يمكنك استخدامه لهذا الطلب، وسيتم تسجيل الطلب بالاسم الجديد الذي تدخلـه دون تعديل
+                  اسم صاحب الحساب الأصلي.
                 </div>
                 <div className='mt-2 flex gap-2'>
                   <button
@@ -363,7 +372,11 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
           <div className='md:col-span-8 space-y-1'>
             <label className='text-sm font-black text-black block mr-1 flex items-center justify-between'>
               <span>تاريخ الميلاد</span>
-              {(isDeathCert || isMarriageDivorce) && <span className='text-[10px] text-emerald-500 font-bold'>(اختياري لهذه الخدمة)</span>}
+              {(isDeathCert || isMarriageDivorce) && (
+                <span className='text-[10px] text-emerald-500 font-bold'>
+                  (اختياري لهذه الخدمة)
+                </span>
+              )}
             </label>
             <input
               type='text'
@@ -492,14 +505,14 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
             </div>
 
             <div className='md:col-span-1 space-y-1'>
-              <MandatoryLabel 
-                label='الصفة' 
+              <MandatoryLabel
+                label='الصفة'
                 show={
-                  formData.serviceName.includes('كمبيوتر') || 
-                  formData.serviceName.includes('مميكن') || 
-                  formData.serviceName.includes('تصديق') || 
+                  formData.serviceName.includes('كمبيوتر') ||
+                  formData.serviceName.includes('مميكن') ||
+                  formData.serviceName.includes('تصديق') ||
                   formData.serviceName.includes('بيان زواج و طلاق')
-                } 
+                }
               />
               <input
                 type='text'

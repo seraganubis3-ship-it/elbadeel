@@ -223,7 +223,6 @@ export default function DelegatesPage() {
                 </div>
 
                 <div className='grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-100'>
-                 
                   {delegate.idCardFront && (
                     <Image
                       src={delegate.idCardFront}
@@ -235,7 +234,7 @@ export default function DelegatesPage() {
                       unoptimized
                     />
                   )}
-                 
+
                   {delegate.idCardBack && (
                     <Image
                       src={delegate.idCardBack}
@@ -247,7 +246,7 @@ export default function DelegatesPage() {
                       unoptimized
                     />
                   )}
-                 
+
                   {delegate.unionCardFront && (
                     <Image
                       src={delegate.unionCardFront}
@@ -259,7 +258,7 @@ export default function DelegatesPage() {
                       unoptimized
                     />
                   )}
-                 
+
                   {delegate.unionCardBack && (
                     <Image
                       src={delegate.unionCardBack}

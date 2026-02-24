@@ -73,7 +73,6 @@ export default function WhatsAppPage() {
   const [editBody, setEditBody] = useState('');
   const [editCategory, setEditCategory] = useState<'AUTOMATIC' | 'MANUAL'>('AUTOMATIC');
 
-
   /* ─── WhatsApp Connection ─── */
   const fetchQR = useCallback(async () => {
     try {
@@ -155,7 +154,11 @@ export default function WhatsAppPage() {
   }, [fetchTemplates]);
 
   const handleAdd = async () => {
-    if (!newTitle.trim() || !newBody.trim() || (newCategory === 'AUTOMATIC' && !newTrigger.trim())) {
+    if (
+      !newTitle.trim() ||
+      !newBody.trim() ||
+      (newCategory === 'AUTOMATIC' && !newTrigger.trim())
+    ) {
       toast.error('أكمل جميع الحقول المطلوبة');
       return;
     }
@@ -164,11 +167,11 @@ export default function WhatsAppPage() {
       const res = await fetch('/api/admin/whatsapp/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          title: newTitle, 
+        body: JSON.stringify({
+          title: newTitle,
           trigger: newCategory === 'MANUAL' ? null : newTrigger,
           body: newBody,
-          category: newCategory
+          category: newCategory,
         }),
       });
       const data = await res.json();
@@ -213,17 +216,27 @@ export default function WhatsAppPage() {
     const res = await fetch(`/api/admin/whatsapp/templates/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        title: editTitle, 
+      body: JSON.stringify({
+        title: editTitle,
         trigger: editCategory === 'MANUAL' ? null : editTrigger,
         body: editBody,
-        category: editCategory
+        category: editCategory,
       }),
     });
     const data = await res.json();
     if (data.success) {
       setTemplates(prev =>
-        prev.map(t => (t.id === id ? { ...t, title: editTitle, trigger: editCategory === 'MANUAL' ? null : editTrigger, body: editBody, category: editCategory } : t))
+        prev.map(t =>
+          t.id === id
+            ? {
+                ...t,
+                title: editTitle,
+                trigger: editCategory === 'MANUAL' ? null : editTrigger,
+                body: editBody,
+                category: editCategory,
+              }
+            : t
+        )
       );
       setEditingId(null);
       toast.success('تم التحديث');
@@ -240,7 +253,9 @@ export default function WhatsAppPage() {
             <Image src='/icons/whatsapp.png' width={40} height={40} alt='WhatsApp' />
             إدارة WhatsApp
           </h1>
-          <p className='text-gray-500 mt-1 text-sm'>ربط WhatsApp وإدارة الرسائل التلقائية والجاهزة</p>
+          <p className='text-gray-500 mt-1 text-sm'>
+            ربط WhatsApp وإدارة الرسائل التلقائية والجاهزة
+          </p>
         </div>
         <button
           onClick={() => {
@@ -395,10 +410,10 @@ export default function WhatsAppPage() {
       </div>
 
       {/* ─── Shared Components for Sections ─── */}
-      <TemplateSection 
-        title="إعدادات الرسائل التلقائية" 
-        subtitle="رسائل يتم إرسالها تلقائياً عند حدوث أحداث معينة"
-        category="AUTOMATIC"
+      <TemplateSection
+        title='إعدادات الرسائل التلقائية'
+        subtitle='رسائل يتم إرسالها تلقائياً عند حدوث أحداث معينة'
+        category='AUTOMATIC'
         templates={templates.filter(t => t.category === 'AUTOMATIC' || !t.category)}
         loading={templatesLoading}
         onAdd={() => {
@@ -423,10 +438,10 @@ export default function WhatsAppPage() {
         startEdit={startEdit}
       />
 
-      <TemplateSection 
-        title="إعدادات الرسائل الجاهزة" 
-        subtitle="رسائل تظهر كاختصارات سريعة عند المراسلة اليدوية"
-        category="MANUAL"
+      <TemplateSection
+        title='إعدادات الرسائل الجاهزة'
+        subtitle='رسائل تظهر كاختصارات سريعة عند المراسلة اليدوية'
+        category='MANUAL'
         templates={templates.filter(t => t.category === 'MANUAL')}
         loading={templatesLoading}
         onAdd={() => {
@@ -457,11 +472,14 @@ export default function WhatsAppPage() {
           <div className='bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200'>
             <div className='bg-green-600 px-6 py-4 flex items-center justify-between text-white'>
               <h3 className='font-bold'>إضافة قالب رسالة جديد</h3>
-              <button onClick={() => setShowAddForm(false)} className='hover:bg-white/20 p-1 rounded-lg'>
+              <button
+                onClick={() => setShowAddForm(false)}
+                className='hover:bg-white/20 p-1 rounded-lg'
+              >
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className='p-6 space-y-4 font-sans'>
               <div className='grid grid-cols-2 gap-4'>
                 <div className='col-span-2 md:col-span-1'>
@@ -489,7 +507,9 @@ export default function WhatsAppPage() {
 
               {newCategory === 'AUTOMATIC' && (
                 <div>
-                  <label className='text-xs font-bold text-gray-500 block mb-1'>الحدث المشغّل (Trigger)</label>
+                  <label className='text-xs font-bold text-gray-500 block mb-1'>
+                    الحدث المشغّل (Trigger)
+                  </label>
                   <select
                     value={newTrigger}
                     onChange={e => setNewTrigger(e.target.value)}
@@ -497,7 +517,9 @@ export default function WhatsAppPage() {
                   >
                     <option value=''>-- اختر الحدث --</option>
                     {AVAILABLE_TRIGGERS.map(trig => (
-                      <option key={trig.id} value={trig.id}>{trig.name}</option>
+                      <option key={trig.id} value={trig.id}>
+                        {trig.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -565,10 +587,27 @@ interface TemplateSectionProps {
 }
 
 function TemplateSection({
-  title, subtitle, templates, loading, onAdd,
-  expandedId, setExpandedId, editingId, setEditingId,
-  editTitle, setEditTitle, editTrigger, setEditTrigger, editBody, setEditBody,
-  editCategory, setEditCategory, saveEdit, handleDelete, handleCopy, startEdit
+  title,
+  subtitle,
+  templates,
+  loading,
+  onAdd,
+  expandedId,
+  setExpandedId,
+  editingId,
+  setEditingId,
+  editTitle,
+  setEditTitle,
+  editTrigger,
+  setEditTrigger,
+  editBody,
+  setEditBody,
+  editCategory,
+  setEditCategory,
+  saveEdit,
+  handleDelete,
+  handleCopy,
+  startEdit,
 }: TemplateSectionProps) {
   return (
     <div className='bg-white rounded-2xl shadow-sm border overflow-hidden'>
@@ -609,7 +648,9 @@ function TemplateSection({
                 <div className='p-5 bg-blue-50/50 space-y-4 animate-in slide-in-from-top-2 duration-300'>
                   <div className='grid grid-cols-2 gap-3'>
                     <div className='col-span-2 md:col-span-1'>
-                      <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>تصنيف الرسالة</label>
+                      <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>
+                        تصنيف الرسالة
+                      </label>
                       <select
                         value={editCategory}
                         onChange={e => setEditCategory(e.target.value as any)}
@@ -620,7 +661,9 @@ function TemplateSection({
                       </select>
                     </div>
                     <div className='col-span-2 md:col-span-1'>
-                      <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>العنوان</label>
+                      <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>
+                        العنوان
+                      </label>
                       <input
                         type='text'
                         value={editTitle}
@@ -631,7 +674,9 @@ function TemplateSection({
                   </div>
                   {editCategory === 'AUTOMATIC' && (
                     <div>
-                      <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>الحدث المشغّل</label>
+                      <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>
+                        الحدث المشغّل
+                      </label>
                       <select
                         value={editTrigger}
                         onChange={e => setEditTrigger(e.target.value)}
@@ -639,13 +684,17 @@ function TemplateSection({
                       >
                         <option value=''>-- اختر الحدث --</option>
                         {AVAILABLE_TRIGGERS.map(trig => (
-                          <option key={trig.id} value={trig.id}>{trig.name}</option>
+                          <option key={trig.id} value={trig.id}>
+                            {trig.name}
+                          </option>
                         ))}
                       </select>
                     </div>
                   )}
                   <div>
-                    <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>المحتوى</label>
+                    <label className='text-[10px] font-bold text-blue-500 uppercase block mb-1'>
+                      المحتوى
+                    </label>
                     <textarea
                       value={editBody}
                       onChange={e => setEditBody(e.target.value)}
@@ -654,10 +703,16 @@ function TemplateSection({
                     />
                   </div>
                   <div className='flex gap-2 justify-end'>
-                    <button onClick={() => setEditingId(null)} className='px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-xl'>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className='px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-xl'
+                    >
                       إلغاء
                     </button>
-                    <button onClick={() => saveEdit(t.id)} className='px-6 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200'>
+                    <button
+                      onClick={() => saveEdit(t.id)}
+                      className='px-6 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200'
+                    >
                       حفظ التغييرات
                     </button>
                   </div>
@@ -666,34 +721,43 @@ function TemplateSection({
                 <div className='px-6 py-4'>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-4 flex-1 min-w-0'>
-                      <button 
-                         onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
-                         className='flex items-center gap-3 text-right flex-1 min-w-0'
+                      <button
+                        onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                        className='flex items-center gap-3 text-right flex-1 min-w-0'
                       >
-                         {t.category === 'AUTOMATIC' ? (
-                           <div className='bg-green-100 text-green-700 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase shrink-0'>
-                             Auto: {t.trigger || 'NONE'}
-                           </div>
-                         ) : (
-                           <div className='bg-purple-100 text-purple-700 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase shrink-0'>
-                             Manual
-                           </div>
-                         )}
-                         <span className='font-bold text-gray-700 text-sm truncate'>{t.title}</span>
+                        {t.category === 'AUTOMATIC' ? (
+                          <div className='bg-green-100 text-green-700 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase shrink-0'>
+                            Auto: {t.trigger || 'NONE'}
+                          </div>
+                        ) : (
+                          <div className='bg-purple-100 text-purple-700 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase shrink-0'>
+                            Manual
+                          </div>
+                        )}
+                        <span className='font-bold text-gray-700 text-sm truncate'>{t.title}</span>
                       </button>
                     </div>
-                    
+
                     <div className='flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                      <button onClick={() => handleCopy(t.body)} className='p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl'>
+                      <button
+                        onClick={() => handleCopy(t.body)}
+                        className='p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl'
+                      >
                         <Copy size={16} />
                       </button>
-                      <button onClick={() => startEdit(t)} className='p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl'>
+                      <button
+                        onClick={() => startEdit(t)}
+                        className='p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl'
+                      >
                         <Pencil size={16} />
                       </button>
-                      <button onClick={() => handleDelete(t.id)} className='p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl'>
+                      <button
+                        onClick={() => handleDelete(t.id)}
+                        className='p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl'
+                      >
                         <Trash2 size={16} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                         className='p-2 text-gray-400 hover:bg-gray-100 rounded-xl'
                       >
@@ -701,7 +765,7 @@ function TemplateSection({
                       </button>
                     </div>
                   </div>
-                  
+
                   {expandedId === t.id && (
                     <div className='mt-4 bg-gray-50 rounded-2xl p-4 border border-gray-100 animate-in slide-in-from-top-1 duration-200'>
                       <pre className='text-xs text-gray-600 whitespace-pre-wrap leading-relaxed italic'>

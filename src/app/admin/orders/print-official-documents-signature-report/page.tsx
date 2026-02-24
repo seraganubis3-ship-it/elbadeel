@@ -332,8 +332,8 @@ export default function PrintOfficialDocumentsSignatureReport() {
           text-align: center; /* Center to avoid touching any borders */
           padding: 0 5px !important; /* Safe padding on both sides */
           font-size: 8px !important;
-          font-weight: normal; 
-          color: #4b5563; 
+          font-weight: normal;
+          color: #4b5563;
         }
         .col-name {
           width: 30%;
@@ -462,13 +462,13 @@ export default function PrintOfficialDocumentsSignatureReport() {
             <tr>
               <td colSpan={7} className='border-0 p-0 text-right'>
                 <div className='logo-container'>
-                  <Image 
-                    src='/images/report-header.png' 
-                    alt='Header' 
-                    width={800} 
-                    height={150} 
-                    priority 
-                    className='logo-img' 
+                  <Image
+                    src='/images/report-header.png'
+                    alt='Header'
+                    width={800}
+                    height={150}
+                    priority
+                    className='logo-img'
                   />
                 </div>
 
@@ -532,13 +532,13 @@ export default function PrintOfficialDocumentsSignatureReport() {
                   <div className='flex items-center justify-center p-2'>
                     {(delegate?.idCardImage || delegate?.unionCard) && (
                       <Image
-                      src={delegate.idCardImage || delegate.unionCard}
-                      alt='ID Card'
-                      width={300}
-                      height={180}
-                      className='delegate-card-img'
-                      unoptimized // External image or unknown source size, bypass optimization for print fidelity
-                    />
+                        src={delegate.idCardImage || delegate.unionCard}
+                        alt='ID Card'
+                        width={300}
+                        height={180}
+                        className='delegate-card-img'
+                        unoptimized // External image or unknown source size, bypass optimization for print fidelity
+                      />
                     )}
                   </div>
 

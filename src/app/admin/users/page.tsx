@@ -192,7 +192,6 @@ export default function AdminUsersPage() {
     fetchUsers(true, val, undefined);
   };
 
-
   const changeRole = async (id: string, newRoleValue: string) => {
     let roleToSave = 'USER';
     let adminRoleIdToSave = '';
@@ -218,7 +217,6 @@ export default function AdminUsersPage() {
       showMessage('حدث خطأ في تحديث دور المستخدم', false);
     }
   };
-
 
   const deleteUser = async (id: string) => {
     if (confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
@@ -279,7 +277,6 @@ export default function AdminUsersPage() {
       if (editForm.newPassword) {
         form.append('password', editForm.newPassword);
       }
-
 
       const res = await fetch(`/api/admin/users?id=${selectedUser.id}`, {
         method: 'PUT',
@@ -395,7 +392,6 @@ export default function AdminUsersPage() {
               </div>
             </div>
           </div>
-
 
           <div className='bg-white rounded-xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 hover:scale-105'>
             <div className='flex items-center justify-between'>

@@ -68,7 +68,6 @@ export default function MobileNavigation() {
     },
   ];
 
-
   const MobileSidebar = () => (
     <>
       {/* Backdrop */}
