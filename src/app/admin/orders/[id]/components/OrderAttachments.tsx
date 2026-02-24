@@ -20,11 +20,11 @@ export default function OrderAttachments({
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   return (
-    <div className='bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 p-8'>
-      <div className='flex items-center justify-between mb-8 pb-4 border-b border-slate-50'>
-        <div className='flex items-center gap-4'>
-          <div className='w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center'>
-            <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+    <div className='bg-white rounded-xl sm:rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 p-4 sm:p-8'>
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 pb-4 border-b border-slate-50 gap-4'>
+        <div className='flex items-center gap-3 sm:gap-4'>
+          <div className='w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 text-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0'>
+            <svg className='w-5 h-5 sm:w-6 sm:h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path
                 strokeLinecap='round'
                 strokeLinejoin='round'
@@ -34,49 +34,49 @@ export default function OrderAttachments({
             </svg>
           </div>
           <div>
-            <h2 className='text-2xl font-black text-slate-800 tracking-tight'>
+            <h2 className='text-lg sm:text-2xl font-black text-slate-800 tracking-tight'>
               المستندات والمرفقات
             </h2>
-            <p className='text-slate-500 font-bold text-lg'>الأصول والمرفقات الرقمية</p>
+            <p className='text-slate-500 font-bold text-xs sm:text-lg'>الأصول والمرفقات الرقمية</p>
           </div>
         </div>
 
         <button
           onClick={() => setShowUploadModal(true)}
-          className='flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-2xl hover:bg-purple-700 transition-all font-black shadow-lg shadow-purple-100'
+          className='flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-purple-600 text-white rounded-xl sm:rounded-2xl hover:bg-purple-700 transition-all font-black shadow-lg shadow-purple-100 text-sm sm:text-base'
         >
-          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+          <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
           </svg>
           إضافة مستند
         </button>
       </div>
 
-      <div className='space-y-8'>
+      <div className='space-y-6 sm:space-y-8'>
         {order.originalDocuments && (
-          <div className='group p-6 bg-slate-50/50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300'>
-            <div className='flex items-center gap-2 mb-3'>
+          <div className='group p-4 sm:p-6 bg-slate-50/50 rounded-2xl sm:rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300'>
+            <div className='flex items-center gap-2 mb-2 sm:mb-3'>
               <span className='w-2 h-2 bg-indigo-500 rounded-full'></span>
-              <h3 className='font-black text-slate-800 text-lg uppercase tracking-wider'>
+              <h3 className='font-black text-slate-800 text-sm sm:text-lg uppercase tracking-wider'>
                 أصل المستندات المرفقة
               </h3>
             </div>
-            <p className='text-xl font-bold text-slate-700 leading-relaxed pr-4'>
+            <p className='text-base sm:text-xl font-bold text-slate-700 leading-relaxed pr-2 sm:pr-4'>
               {order.originalDocuments}
             </p>
           </div>
         )}
 
-        <div className='group p-6 bg-slate-50/50 rounded-3xl border border-slate-100 hover:bg-white transition-all duration-300'>
+        <div className='group p-4 sm:p-6 bg-slate-50/50 rounded-2xl sm:rounded-3xl border border-slate-100 hover:bg-white transition-all duration-300'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
               <span className='w-2 h-2 bg-slate-400 rounded-full'></span>
-              <h3 className='font-black text-slate-800 text-lg uppercase tracking-wider'>
+              <h3 className='font-black text-slate-800 text-sm sm:text-lg uppercase tracking-wider'>
                 حالة المرفقات
               </h3>
             </div>
             <span
-              className={`px-6 py-2 rounded-xl text-lg font-black ${
+              className={`px-4 sm:px-6 py-1 sm:py-2 rounded-lg sm:rounded-xl text-sm sm:text-lg font-black ${
                 order.hasAttachments
                   ? 'bg-emerald-100 text-emerald-800'
                   : 'bg-slate-200 text-slate-600'
@@ -99,26 +99,26 @@ export default function OrderAttachments({
                 <div className='space-y-4'>
                   <div className='flex items-center gap-2 mb-2'>
                     <span className='w-2 h-2 bg-purple-500 rounded-full'></span>
-                    <h3 className='font-black text-slate-800 text-lg uppercase tracking-wider'>
+                    <h3 className='font-black text-slate-800 text-sm sm:text-lg uppercase tracking-wider'>
                       المستندات المرفقة
                     </h3>
                   </div>
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
                     {docs.map((doc: string, index: number) => (
                       <div
                         key={index}
-                        className='flex items-center justify-between p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-purple-200 transition-colors group/att'
+                        className='flex items-center justify-between p-4 sm:p-5 bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-sm hover:border-purple-200 transition-colors group/att'
                       >
-                        <span className='text-xl font-black text-slate-900 tracking-tight'>
+                        <span className='text-base sm:text-xl font-black text-slate-900 tracking-tight truncate'>
                           {doc}
                         </span>
                         <button
                           onClick={() => onRemoveAttached(index)}
-                          className='w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all opacity-0 group-hover/att:opacity-100'
+                          className='w-8 h-8 sm:w-10 sm:h-10 bg-slate-50 text-slate-400 rounded-lg sm:rounded-xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all opacity-100 sm:opacity-0 group-hover/att:opacity-100 shrink-0'
                           title='حذف المرفق'
                         >
                           <svg
-                            className='w-5 h-5'
+                            className='w-4 h-4 sm:w-5 sm:h-5'
                             fill='none'
                             stroke='currentColor'
                             viewBox='0 0 24 24'
@@ -144,10 +144,10 @@ export default function OrderAttachments({
         {/* New B2 Uploaded Documents (Document table) */}
         {((order.documents && order.documents.length > 0) ||
           (order.orderDocuments && order.orderDocuments.length > 0)) && (
-          <div className='mt-8 pt-8 border-t border-slate-100'>
-            <div className='flex items-center gap-3 mb-6'>
-              <div className='w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center'>
-                <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+          <div className='mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-100'>
+            <div className='flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6'>
+              <div className='w-8 h-8 sm:w-10 sm:h-10 bg-indigo-50 text-indigo-600 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0'>
+                <svg className='w-5 h-5 sm:w-6 sm:h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                   <path
                     strokeLinecap='round'
                     strokeLinejoin='round'
@@ -156,9 +156,9 @@ export default function OrderAttachments({
                   />
                 </svg>
               </div>
-              <h3 className='text-xl font-black text-slate-800'>المستندات المرفوعة رقمياً</h3>
+              <h3 className='text-lg sm:text-xl font-black text-slate-800'>المستندات المرفوعة رقمياً</h3>
             </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'>
               {[...(order.documents || []), ...(order.orderDocuments || [])].map(doc => {
                 const isImage = doc.fileType?.startsWith('image/');
                 const isOrderDoc = 'documentType' in doc;
@@ -166,16 +166,16 @@ export default function OrderAttachments({
                 return (
                   <div
                     key={doc.id}
-                    className='group/doc border border-slate-200 rounded-3xl p-5 bg-white hover:border-indigo-200 hover:shadow-xl hover:shadow-slate-200 transition-all duration-300 relative'
+                    className='group/doc border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 bg-white hover:border-indigo-200 hover:shadow-xl hover:shadow-slate-200 transition-all duration-300 relative'
                   >
                     {/* Delete Button */}
                     <button
                       onClick={() => onDelete(doc.id)}
-                      className='absolute top-3 left-3 w-10 h-10 bg-white/90 text-red-500 rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover/doc:opacity-100 transition-all hover:bg-red-500 hover:text-white z-10'
+                      className='absolute top-2 sm:top-3 left-2 sm:left-3 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 text-red-500 rounded-full flex items-center justify-center shadow-lg opacity-100 sm:opacity-0 group-hover/doc:opacity-100 transition-all hover:bg-red-500 hover:text-white z-10'
                       title='حذف المستند'
                     >
                       <svg
-                        className='w-5 h-5'
+                        className='w-4 h-4 sm:w-5 sm:h-5'
                         fill='none'
                         stroke='currentColor'
                         viewBox='0 0 24 24'
@@ -190,32 +190,32 @@ export default function OrderAttachments({
                     </button>
 
                     {isImage ? (
-                      <div className='mb-4 overflow-hidden rounded-2xl border border-slate-100'>
+                      <div className='mb-3 sm:mb-4 overflow-hidden rounded-xl sm:rounded-2xl border border-slate-100'>
                         <Image
                           src={doc.filePath}
                           alt={doc.fileName}
                           width={400}
                           height={224}
                           unoptimized
-                          className='w-full h-56 object-cover group-hover/doc:scale-105 transition-transform duration-700'
+                          className='w-full h-40 sm:h-56 object-cover group-hover/doc:scale-105 transition-transform duration-700'
                         />
                       </div>
                     ) : (
-                      <div className='mb-4 h-56 bg-slate-50 flex items-center justify-center rounded-2xl border border-dashed border-slate-200'>
-                        <span className='text-6xl'>📄</span>
+                      <div className='mb-3 sm:mb-4 h-40 sm:h-56 bg-slate-50 flex items-center justify-center rounded-xl sm:rounded-2xl border border-dashed border-slate-200'>
+                        <span className='text-4xl sm:text-6xl'>📄</span>
                       </div>
                     )}
-                    <div className='flex items-center justify-between'>
-                      <div className='flex-1 pr-2'>
+                    <div className='flex items-center justify-between gap-2'>
+                      <div className='flex-1 pr-1 sm:pr-2 min-w-0'>
                         <p
-                          className='font-black text-slate-900 text-lg truncate'
+                          className='font-black text-slate-900 text-base sm:text-lg truncate'
                           title={doc.fileName}
                         >
                           {doc.fileName}
                         </p>
-                        <p className='text-sm text-slate-400 font-bold'>
+                        <p className='text-xs text-slate-400 font-bold truncate'>
                           {isOrderDoc && (
-                            <span className='bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg text-[10px] ml-2'>
+                            <span className='bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-lg text-[8px] sm:text-[10px] ml-1 sm:ml-2'>
                               طلب
                             </span>
                           )}
@@ -226,7 +226,7 @@ export default function OrderAttachments({
                       <Link
                         href={doc.filePath}
                         target='_blank'
-                        className='px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all'
+                        className='px-4 sm:px-6 py-2 sm:py-2.5 bg-indigo-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-black shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all shrink-0'
                       >
                         {isImage ? 'عرض' : 'تحميل'}
                       </Link>

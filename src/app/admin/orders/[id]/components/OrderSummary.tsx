@@ -184,12 +184,12 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
   const totalCents = order.totalCents;
 
   return (
-    <div className='bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 overflow-hidden'>
-      <div className='bg-slate-50/50 px-8 py-6 border-b border-slate-100'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-4'>
-            <div className='w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center'>
-              <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+    <div className='bg-white rounded-[1.5rem] sm:rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 overflow-hidden'>
+      <div className='bg-slate-50/50 px-4 sm:px-8 py-4 sm:py-6 border-b border-slate-100'>
+        <div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
+          <div className='flex items-center gap-3 sm:gap-4 w-full sm:w-auto'>
+            <div className='w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 text-indigo-600 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0'>
+              <svg className='w-5 h-5 sm:w-6 sm:h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -199,8 +199,8 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
               </svg>
             </div>
             <div>
-              <h2 className='text-2xl font-black text-slate-800 tracking-tight'>ملخص التكاليف</h2>
-              <p className='text-slate-500 font-bold text-lg'>التفاصيل المالية والرسوم</p>
+              <h2 className='text-lg sm:text-2xl font-black text-slate-800 tracking-tight'>ملخص التكاليف</h2>
+              <p className='text-slate-500 font-bold text-sm sm:text-lg'>التفاصيل المالية والرسوم</p>
             </div>
           </div>
           {onToggleEdit && (
@@ -210,7 +210,7 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                 onToggleEdit();
               }}
               disabled={updating}
-              className={`px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${
+              className={`w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm sm:text-base ${
                 isEditing
                   ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                   : 'bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 hover:scale-105'
@@ -218,14 +218,14 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
             >
               {isEditing ? (
                 <>
-                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
                   </svg>
                   إغلاق التعديل
                 </>
               ) : (
                 <>
-                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z' />
                   </svg>
                   تعديل الأسعار
@@ -236,53 +236,53 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
         </div>
       </div>
 
-      <div className='p-8 space-y-8'>
+      <div className='p-4 sm:p-8 space-y-6 sm:space-y-8'>
         {/* Service Price */}
         <div className='flex justify-between items-center'>
-          <span className='text-slate-500 font-bold text-xl'>سعر الخدمة الأساسي</span>
-          <span className='text-slate-900 font-black text-2xl tracking-tight'>
+          <span className='text-slate-500 font-bold text-lg sm:text-xl'>سعر الخدمة الأساسي</span>
+          <span className='text-slate-900 font-black text-xl sm:text-2xl tracking-tight'>
             {order.variant?.priceCents
               ? ((order.variant.priceCents * (order.quantity || 1)) / 100).toFixed(2)
               : '0.00'}{' '}
-            <span className='text-base text-slate-400 font-bold mr-1'>جنيه</span>
+            <span className='text-xs sm:text-base text-slate-400 font-bold mr-1'>جنيه</span>
           </span>
         </div>
 
         {/* Photography Fee */}
         {photographyFee > 0 && (
           <div className='flex justify-between items-center'>
-            <span className='text-slate-500 font-bold text-xl'>رسوم التصوير</span>
-            <span className='text-slate-900 font-black text-2xl tracking-tight'>
+            <span className='text-slate-500 font-bold text-lg sm:text-xl'>رسوم التصوير</span>
+            <span className='text-slate-900 font-black text-xl sm:text-2xl tracking-tight'>
               +{photographyFee.toFixed(2)}{' '}
-              <span className='text-base text-slate-400 font-bold mr-1'>جنيه</span>
+              <span className='text-xs sm:text-base text-slate-400 font-bold mr-1'>جنيه</span>
             </span>
           </div>
         )}
 
         {/* Delivery Fee */}
         {(isEditing || (order.deliveryFee > 0)) && (
-          <div className={`p-4 rounded-2xl border transition-all relative ${isEditing ? 'bg-indigo-50/30 border-indigo-100' : 'border-transparent'}`}>
-            <div className='flex justify-between items-center'>
+          <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all relative ${isEditing ? 'bg-indigo-50/30 border-indigo-100' : 'border-transparent'}`}>
+            <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2'>
               <div className='flex items-center gap-2'>
-                <span className='text-slate-500 font-bold text-xl'>مصاريف الشحن والتوصيل</span>
+                <span className='text-slate-500 font-bold text-base sm:text-xl font-arabic'>مصاريف الشحن والتوصيل</span>
                 {isEditing && !editingField && (
                   <button
                     onClick={() => handleStartEdit('deliveryFee', ((order.deliveryFee || 0) / 100).toString())}
-                    className='text-indigo-600 bg-indigo-100/50 hover:bg-indigo-200 px-3 py-1 rounded-lg text-sm font-bold transition-all'
+                    className='text-indigo-600 bg-indigo-100/50 hover:bg-indigo-200 px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg text-xs sm:text-sm font-bold transition-all'
                   >
-                    تعديل ✎
+                    ✎
                   </button>
                 )}
               </div>
               
               {editingField === 'deliveryFee' ? (
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-2 w-full sm:w-auto'>
                   <input
                     type='number'
                     autoFocus
                     value={tempValue}
                     onChange={e => setTempValue(e.target.value)}
-                    className='w-32 bg-white border-2 border-indigo-200 rounded-xl px-4 py-2 text-xl font-bold text-slate-900 text-center focus:ring-2 focus:ring-indigo-500'
+                    className='flex-1 sm:w-32 bg-white border-2 border-indigo-200 rounded-xl px-4 py-2 text-lg sm:text-xl font-bold text-slate-900 text-center focus:ring-2 focus:ring-indigo-500'
                     placeholder='0'
                   />
                   <button
@@ -290,20 +290,13 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
                     disabled={updating}
                     className='bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-xl transition-all'
                   >
-                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' /></svg>
-                  </button>
-                  <button
-                    onClick={() => setEditingField(null)}
-                    disabled={updating}
-                    className='bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-xl transition-all'
-                  >
-                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' /></svg>
+                    <svg className='w-5 h-5 sm:w-6 sm:h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' /></svg>
                   </button>
                 </div>
               ) : (
-                <span className='text-slate-900 font-black text-2xl tracking-tight'>
+                <span className='text-slate-900 font-black text-xl sm:text-2xl tracking-tight'>
                   +{(order.deliveryFee / 100).toFixed(2)}{' '}
-                  <span className='text-base text-slate-400 font-bold mr-1'>جنيه</span>
+                  <span className='text-xs sm:text-base text-slate-400 font-bold mr-1'>جنيه</span>
                 </span>
               )}
             </div>
@@ -665,19 +658,19 @@ export default function OrderSummary({ order, isEditing, onToggleEdit, onSave, u
         )}
 
         {/* Total Divider */}
-        <div className='pt-8 border-t border-slate-100 mt-8'>
-          <div className='flex justify-between items-center'>
-            <div>
-              <p className='text-sm font-black text-slate-400 uppercase tracking-widest mb-2 px-1'>
+        <div className='pt-6 sm:pt-8 border-t border-slate-100 mt-6 sm:mt-8'>
+          <div className='flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-right'>
+            <div className='w-full sm:w-auto'>
+              <p className='text-[10px] sm:text-sm font-black text-slate-400 uppercase tracking-widest mb-1 sm:mb-2 px-1'>
                 الإجمالي النهائي
               </p>
-              <h3 className='text-3xl font-black text-slate-900 tracking-tight'>المبلغ المطلوب</h3>
+              <h3 className='text-xl sm:text-3xl font-black text-slate-900 tracking-tight'>المبلغ المطلوب</h3>
             </div>
-            <div className='text-right'>
-              <div className='text-6xl font-black text-slate-950 tracking-tighter'>
+            <div className='w-full sm:w-auto'>
+              <div className='text-4xl sm:text-6xl font-black text-slate-950 tracking-tighter leading-none mb-1 sm:mb-2'>
                 {(isEditing ? calculateNewTotal() : order.totalCents) / 100}
               </div>
-              <div className='text-base text-slate-500 font-black uppercase tracking-widest'>
+              <div className='text-xs sm:text-base text-slate-500 font-black uppercase tracking-widest'>
                 جنيه مصري
               </div>
             </div>

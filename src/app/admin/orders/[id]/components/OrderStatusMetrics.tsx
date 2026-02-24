@@ -22,15 +22,15 @@ export default function OrderStatusMetrics({ order, onUpdateReason, updating }: 
   };
 
   return (
-    <div className='bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8'>
+    <div className='bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-8'>
       {/* Service Info Banner */}
-      <div className='mb-8 p-6 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-3xl shadow-lg shadow-blue-200/50 text-white relative overflow-hidden group'>
+      <div className='mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-[2rem] sm:rounded-3xl shadow-lg shadow-blue-200/50 text-white relative overflow-hidden group'>
         <div className='absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700'></div>
-        <div className='relative flex flex-col md:flex-row md:items-center justify-between gap-6'>
-          <div className='flex items-center gap-5'>
-            <div className='w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30'>
+        <div className='relative flex flex-col items-start gap-6 sm:gap-4 md:flex-row md:items-center justify-between'>
+          <div className='flex items-center gap-4 sm:gap-5 min-w-0'>
+            <div className='w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shrink-0'>
               <svg
-                className='w-8 h-8 text-white'
+                className='w-6 h-6 sm:w-8 sm:h-8 text-white'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -43,23 +43,23 @@ export default function OrderStatusMetrics({ order, onUpdateReason, updating }: 
                 />
               </svg>
             </div>
-            <div>
-              <h1 className='text-3xl font-black tracking-tight'>
+            <div className='min-w-0'>
+              <h1 className='text-xl sm:text-3xl font-black tracking-tight truncate'>
                 {order.service?.name || 'خدمة غير معروفة'}
               </h1>
-              <p className='text-blue-100 font-bold mt-1 text-lg'>
+              <p className='text-blue-100 font-bold mt-1 text-sm sm:text-lg'>
                 {order.variant?.name || 'نوع غير محدد'}
               </p>
             </div>
           </div>
-          <div className='flex flex-col items-end gap-2'>
+          <div className='flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-2 border-t border-white/10 md:border-t-0 pt-4 md:pt-0'>
             <div
-              className={`px-4 py-1.5 rounded-full text-sm font-black shadow-inner whitespace-nowrap ${status.color.replace('bg-', 'bg-white ').replace('text-', 'text-')}`}
+              className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-black shadow-inner whitespace-nowrap ${status.color.replace('bg-', 'bg-white ').replace('text-', 'text-')}`}
             >
               {status.text}
             </div>
             {order.estimatedCompletionDate && (
-              <p className='text-xs text-blue-50 font-medium'>
+              <p className='text-[10px] sm:text-xs text-blue-50 font-black opacity-90'>
                 التسليم المتوقع:{' '}
                 {new Date(order.estimatedCompletionDate).toLocaleDateString('ar-EG')}
               </p>

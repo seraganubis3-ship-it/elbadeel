@@ -89,12 +89,12 @@ export default function OrderFollowUpDetails({
   ];
 
   return (
-    <div className='group relative overflow-hidden bg-white rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 p-8 transition-all duration-300'>
-      <div className='relative flex items-center justify-between mb-10'>
-        <div className='flex items-center'>
-          <div className='w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200/50'>
+    <div className='group relative overflow-hidden bg-white rounded-[1.5rem] sm:rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-slate-100 p-4 sm:p-8 transition-all duration-300'>
+      <div className='relative flex flex-col sm:flex-row items-center justify-between mb-8 sm:mb-10 gap-6'>
+        <div className='flex items-center w-full sm:w-auto'>
+          <div className='w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200/50 shrink-0'>
             <svg
-              className='w-7 h-7 text-white'
+              className='w-6 h-6 sm:w-7 sm:h-7 text-white'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'
@@ -107,39 +107,39 @@ export default function OrderFollowUpDetails({
               />
             </svg>
           </div>
-          <div className='mr-5'>
-            <h2 className='text-3xl font-black text-slate-800 tracking-tight'>التصنيف والمتابعة</h2>
-            <p className='text-slate-500 font-bold text-lg'>
+          <div className='mr-4 sm:mr-5'>
+            <h2 className='text-xl sm:text-3xl font-black text-slate-800 tracking-tight'>التصنيف والمتابعة</h2>
+            <p className='text-slate-500 font-bold text-xs sm:text-lg'>
               توصيف العميل ونوع العلاقة والبيانات الإضافية
             </p>
           </div>
         </div>
 
-        <div className='flex gap-2'>
+        <div className='flex gap-2 w-full sm:w-auto'>
           {isEditing ? (
             <>
               <button
                 onClick={onToggleEdit}
                 disabled={updating}
-                className='px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-all font-bold text-base'
+                className='flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-all font-bold text-sm sm:text-base'
               >
                 إلغاء
               </button>
               <button
                 onClick={handleSave}
                 disabled={updating}
-                className='px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all font-bold text-base shadow-lg shadow-indigo-200 flex items-center gap-2'
+                className='flex-[2] sm:flex-none px-6 sm:px-8 py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all font-bold text-sm sm:text-base shadow-lg shadow-indigo-200 flex items-center justify-center gap-2'
               >
                 {updating && (
-                  <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
+                  <div className='w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin'></div>
                 )}
-                حفظ التغييرات
+                حفظ
               </button>
             </>
           ) : (
             <button
               onClick={onToggleEdit}
-              className='px-6 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-all font-bold text-base border border-indigo-100'
+              className='w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-all font-bold text-sm sm:text-base border border-indigo-100'
             >
               تعديل التصنيف
             </button>
@@ -147,13 +147,13 @@ export default function OrderFollowUpDetails({
         </div>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8'>
         {fields.map(item => (
           <div
             key={item.key}
-            className='p-6 bg-slate-50/50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300'
+            className='p-4 sm:p-6 bg-slate-50/50 rounded-2xl sm:rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300'
           >
-            <p className='text-base font-bold text-slate-400 mb-3 uppercase tracking-wider'>
+            <p className='text-xs sm:text-base font-bold text-slate-400 mb-2 sm:mb-3 uppercase tracking-wider'>
               {item.label}
             </p>
             {isEditing ? (
@@ -161,7 +161,7 @@ export default function OrderFollowUpDetails({
                 <select
                   value={(formData as any)[item.key]}
                   onChange={e => setFormData({ ...formData, [item.key]: e.target.value })}
-                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500'
+                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-2 sm:py-3 text-base sm:text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500'
                 >
                   <option value=''>غير محدد</option>
                   {item.options?.map(opt => (
@@ -176,11 +176,11 @@ export default function OrderFollowUpDetails({
                   value={(formData as any)[item.key]}
                   onChange={e => setFormData({ ...formData, [item.key]: e.target.value })}
                   placeholder={(item as any).placeholder}
-                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500'
+                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-2 sm:py-3 text-base sm:text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500'
                 />
               )
             ) : (
-              <p className='text-2xl font-black text-slate-900 tracking-tight'>
+              <p className='text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate'>
                 {item.value || '----'}
               </p>
             )}

@@ -22,12 +22,12 @@ export default function OrderPaymentDetails({
   const remainingAmount = (order.totalCents - (order.payment?.amount || 0)) / 100;
 
   return (
-    <div className='bg-white rounded-2xl border border-slate-200 overflow-hidden'>
-      <div className='bg-slate-50 px-6 py-4 border-b border-slate-200'>
+    <div className='bg-white rounded-xl sm:rounded-2xl border border-slate-200 overflow-hidden'>
+      <div className='bg-slate-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200'>
         <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-2'>
-            <div className='w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center'>
-              <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+          <div className='flex items-center gap-2 sm:gap-3'>
+            <div className='w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 text-emerald-600 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0'>
+              <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -36,14 +36,14 @@ export default function OrderPaymentDetails({
                 />
               </svg>
             </div>
-            <h2 className='text-xl font-bold text-slate-800'>تفاصيل الدفع التحصيل</h2>
+            <h2 className='text-lg sm:text-xl font-bold text-slate-800'>تفاصيل الدفع والتحصيل</h2>
           </div>
           <button
             onClick={() => setShowPaymentForm(!showPaymentForm)}
-            className='p-2 hover:bg-slate-200 rounded-xl transition-colors text-slate-400 hover:text-emerald-600 border border-slate-100'
+            className='p-1.5 sm:p-2 hover:bg-slate-200 rounded-lg sm:rounded-xl transition-colors text-slate-400 hover:text-emerald-600 border border-slate-100'
             title='تعديل بيانات الدفع'
           >
-            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <svg className='w-4 h-4 sm:w-5 sm:h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path
                 strokeLinecap='round'
                 strokeLinejoin='round'
@@ -55,29 +55,29 @@ export default function OrderPaymentDetails({
         </div>
       </div>
 
-      <div className='p-6'>
-        <div className='grid grid-cols-3 gap-6 mb-8'>
-          <div className='bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center'>
-            <p className='text-sm font-bold text-slate-400 uppercase mb-2'>المطلوب</p>
-            <p className='text-xl font-black text-slate-800'>
+      <div className='p-4 sm:p-6'>
+        <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
+          <div className='bg-slate-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 text-center'>
+            <p className='text-[10px] sm:text-sm font-bold text-slate-400 uppercase mb-1 sm:mb-2'>المطلوب</p>
+            <p className='text-lg sm:text-xl font-black text-slate-800 tracking-tight'>
               {(order.totalCents / 100).toFixed(2)}
             </p>
           </div>
-          <div className='bg-emerald-50 p-4 rounded-2xl border border-emerald-100 text-center'>
-            <p className='text-sm font-bold text-emerald-400 uppercase mb-2'>المدفوع</p>
-            <p className='text-xl font-black text-emerald-700'>
+          <div className='bg-emerald-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-emerald-100 text-center'>
+            <p className='text-[10px] sm:text-sm font-bold text-emerald-400 uppercase mb-1 sm:mb-2'>المدفوع</p>
+            <p className='text-lg sm:text-xl font-black text-emerald-700 tracking-tight'>
               {order.payment ? (order.payment.amount / 100).toFixed(2) : '0.00'}
             </p>
           </div>
-          <div className='bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center'>
-            <p className='text-sm font-bold text-orange-400 uppercase mb-2'>المتبقي</p>
-            <p className='text-xl font-black text-orange-700'>{remainingAmount.toFixed(2)}</p>
+          <div className='bg-orange-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-orange-100 text-center'>
+            <p className='text-[10px] sm:text-sm font-bold text-orange-400 uppercase mb-1 sm:mb-2'>المتبقي</p>
+            <p className='text-lg sm:text-xl font-black text-orange-700 tracking-tight'>{remainingAmount.toFixed(2)}</p>
           </div>
         </div>
 
         {order.payment ? (
-          <div className='space-y-4 pt-6 border-t border-slate-100'>
-            <div className='flex justify-between items-center text-lg'>
+          <div className='space-y-3 sm:space-y-4 pt-4 sm:pt-6 border-t border-slate-100'>
+            <div className='flex justify-between items-center text-sm sm:text-lg'>
               <span className='text-slate-500 font-bold'>طريقة الدفع</span>
               <span className='font-black text-slate-800'>
                 {order.payment.method === 'CASH'
@@ -89,10 +89,10 @@ export default function OrderPaymentDetails({
                       : order.payment.method}
               </span>
             </div>
-            <div className='flex justify-between items-center text-lg'>
+            <div className='flex justify-between items-center text-sm sm:text-lg'>
               <span className='text-slate-500 font-bold'>حالة العملية</span>
               <span
-                className={`px-4 py-1 rounded-xl font-black ${
+                className={`px-3 sm:px-4 py-0.5 sm:py-1 rounded-lg sm:rounded-xl font-black text-xs sm:text-sm ${
                   order.payment.status === 'CONFIRMED'
                     ? 'bg-emerald-100 text-emerald-700'
                     : 'bg-orange-100 text-orange-700'
@@ -102,14 +102,14 @@ export default function OrderPaymentDetails({
               </span>
             </div>
             {order.payment.senderPhone && (
-              <div className='flex justify-between items-center text-lg'>
+              <div className='flex justify-between items-center text-sm sm:text-lg'>
                 <span className='text-slate-500 font-bold'>رقم المحول</span>
                 <span className='font-black text-slate-800 tracking-tight'>
                   {order.payment.senderPhone}
                 </span>
               </div>
             )}
-            <div className='flex justify-between items-center text-lg'>
+            <div className='flex justify-between items-center text-sm sm:text-lg'>
               <span className='text-slate-500 font-bold'>تاريخ العملية</span>
               <span className='font-black text-slate-800'>
                 {new Date(order.payment.createdAt).toLocaleDateString('ar-EG')}
@@ -117,21 +117,21 @@ export default function OrderPaymentDetails({
             </div>
           </div>
         ) : (
-          <div className='text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200'>
-            <p className='text-lg text-slate-400 font-bold italic'>لا توجد بيانات دفع مسجلة</p>
+          <div className='text-center py-4 sm:py-6 bg-slate-50/50 rounded-xl sm:rounded-2xl border border-dashed border-slate-200'>
+            <p className='text-base sm:text-lg text-slate-400 font-bold italic'>لا توجد بيانات دفع مسجلة</p>
           </div>
         )}
 
         {showPaymentForm && (
-          <div className='mt-8 p-6 bg-slate-50/50 border border-slate-200 rounded-2xl space-y-6'>
-            <h3 className='text-lg font-black text-slate-800 border-b border-slate-200 pb-3 mb-4 flex items-center gap-2'>
+          <div className='mt-6 sm:mt-8 p-4 sm:p-6 bg-slate-50/50 border border-slate-200 rounded-xl sm:rounded-2xl space-y-4 sm:space-y-6'>
+            <h3 className='text-base sm:text-lg font-black text-slate-800 border-b border-slate-200 pb-2 sm:pb-3 mb-2 sm:mb-4 flex items-center gap-2'>
               <span className='w-2 h-2 bg-emerald-500 rounded-full'></span>
               تعديل بيانات الدفع
             </h3>
 
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
               <div>
-                <label className='block text-sm font-bold text-slate-400 uppercase mb-2'>
+                <label className='block text-xs sm:text-sm font-bold text-slate-400 uppercase mb-1 sm:mb-2'>
                   المبلغ المدفوع
                 </label>
                 <input
@@ -140,12 +140,12 @@ export default function OrderPaymentDetails({
                   onChange={e =>
                     setPaymentData({ ...paymentData, amount: parseFloat(e.target.value) || 0 })
                   }
-                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500'
+                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-2 sm:py-3 text-base sm:text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500'
                 />
               </div>
 
               <div>
-                <label className='block text-sm font-bold text-slate-400 uppercase mb-2'>
+                <label className='block text-xs sm:text-sm font-bold text-slate-400 uppercase mb-1 sm:mb-2'>
                   الخصم (ج.م)
                 </label>
                 <input
@@ -154,18 +154,18 @@ export default function OrderPaymentDetails({
                   onChange={e =>
                     setPaymentData({ ...paymentData, discount: parseFloat(e.target.value) || 0 })
                   }
-                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg font-black text-emerald-600 outline-none focus:ring-2 focus:ring-emerald-500'
+                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-2 sm:py-3 text-base sm:text-lg font-black text-emerald-600 outline-none focus:ring-2 focus:ring-emerald-500'
                 />
               </div>
 
-              <div>
-                <label className='block text-sm font-bold text-slate-400 uppercase mb-2'>
+              <div className='sm:col-span-2 md:col-span-1'>
+                <label className='block text-xs sm:text-sm font-bold text-slate-400 uppercase mb-1 sm:mb-2'>
                   طريقة الدفع
                 </label>
                 <select
                   value={paymentData.method}
                   onChange={e => setPaymentData({ ...paymentData, method: e.target.value })}
-                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500'
+                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-2 sm:py-3 text-base sm:text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500'
                 >
                   <option value='CASH'>كاش</option>
                   <option value='INSTAPAY'>إنستا باي</option>
@@ -175,18 +175,18 @@ export default function OrderPaymentDetails({
               </div>
             </div>
 
-            <div className='flex justify-end gap-3 pt-4'>
+            <div className='flex justify-end gap-2 sm:gap-3 pt-2 sm:pt-4'>
               <button
                 onClick={() => setShowPaymentForm(false)}
-                className='px-6 py-3 text-base font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-colors'
+                className='flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-colors'
               >
                 إلغاء
               </button>
               <button
                 onClick={onUpdatePayment}
-                className='px-8 py-3 text-base font-black bg-slate-900 text-white hover:bg-black rounded-xl transition-all shadow-lg shadow-slate-200'
+                className='flex-[2] sm:flex-none px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-black bg-slate-900 text-white hover:bg-black rounded-xl transition-all shadow-lg shadow-slate-200'
               >
-                تحديث البيانات
+                تحديث
               </button>
             </div>
           </div>

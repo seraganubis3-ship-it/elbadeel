@@ -332,19 +332,19 @@ export default function OrderDetailsPage() {
 
         {/* Payment Alert Modal */}
         {showPaymentAlert && order && (
-          <div className='fixed inset-0 z-[3000] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
-            <div className='bg-white rounded-3xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200 overflow-hidden'>
-              <div className='p-8 border-b bg-amber-50 relative'>
-                <div className='absolute top-4 right-4 text-4xl opacity-20'>⚠️</div>
-                <h3 className='text-2xl font-black text-amber-900 mb-1'>مبالغ مستحقة!</h3>
-                <p className='text-amber-700 font-bold text-sm'>لا يمكن التسليم بدون سداد الرصيد</p>
+          <div className='fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6'>
+            <div className='bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-300 overflow-hidden'>
+              <div className='p-6 sm:p-8 border-b border-amber-100 bg-amber-50 relative'>
+                <div className='absolute top-4 right-4 text-3xl sm:text-4xl opacity-20'>⚠️</div>
+                <h3 className='text-xl sm:text-2xl font-black text-amber-900 mb-1'>مبالغ مستحقة!</h3>
+                <p className='text-amber-700 font-bold text-xs sm:text-sm'>لا يمكن التسليم بدون سداد الرصيد</p>
               </div>
 
-              <div className='p-8'>
-                <div className='bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-100 italic'>
-                  <p className='text-slate-700 font-bold'>
+              <div className='p-6 sm:p-8'>
+                <div className='bg-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-6 border border-slate-100 italic'>
+                  <p className='text-slate-700 font-bold text-sm sm:text-base'>
                     لا يزال هناك{' '}
-                    <span className='text-amber-600 text-xl mx-1'>
+                    <span className='text-amber-600 text-lg sm:text-2xl mx-1 font-black'>
                       {((order.remainingAmount || 0) / 100).toFixed(2)} ج.م
                     </span>{' '}
                     مستحقة على هذا الطلب.
@@ -352,37 +352,38 @@ export default function OrderDetailsPage() {
                 </div>
 
                 <div className='space-y-4'>
-                  <label className='block text-sm font-black text-slate-700'>
+                  <label className='block text-xs sm:text-sm font-black text-slate-400 uppercase tracking-widest'>
                     اختر طريقة الدفع للسداد الآن:
                   </label>
                   <select
                     id='quickPayMethod'
-                    className='w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500 transition-all'
+                    className='w-full bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl px-4 py-3 sm:py-4 text-base sm:text-xl font-black text-slate-800 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none cursor-pointer'
                     defaultValue='CASH'
                   >
-                    <option value='CASH'>💵 كاش</option>
+                    <option value='CASH'>💵 كاش نقدداً</option>
                     <option value='INSTAPAY'>🏦 إنستا باي</option>
                     <option value='WALLET'>📱 محفظة إلكترونية</option>
                   </select>
                 </div>
               </div>
 
-              <div className='p-8 border-t bg-slate-50 flex flex-col gap-3'>
+              <div className='p-6 sm:p-8 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-3'>
                 <button
                   onClick={async () => {
                     const method = (document.getElementById('quickPayMethod') as HTMLSelectElement)
                       .value;
                     await quickPayAndDeliver(method);
                   }}
-                  className='w-full justify-center rounded-2xl bg-emerald-600 px-6 py-4 text-lg font-black text-white shadow-xl shadow-emerald-100 hover:bg-emerald-500 transition-all active:scale-[0.98] flex items-center gap-2'
+                  className='w-full justify-center rounded-xl sm:rounded-2xl bg-emerald-600 px-6 py-3.5 sm:py-5 text-base sm:text-xl font-black text-white shadow-xl shadow-emerald-100 hover:bg-emerald-500 transition-all active:scale-[0.98] flex items-center gap-3'
                 >
-                  ✅ تسجيل الدفع والتسليم
+                  <span className='w-5 h-5 sm:w-6 sm:h-6 bg-white/20 rounded-full flex items-center justify-center'>✓</span>
+                  تسجيل الدفع والتسليم
                 </button>
                 <button
                   onClick={() => setShowPaymentAlert(false)}
-                  className='w-full justify-center rounded-2xl bg-white px-6 py-4 text-lg font-black text-red-600 shadow-sm ring-1 ring-inset ring-red-100 hover:bg-red-50 transition-all flex items-center gap-2'
+                  className='w-full justify-center rounded-xl sm:rounded-2xl bg-white px-6 py-3.5 sm:py-5 text-base sm:text-lg font-black text-rose-500 shadow-sm border border-rose-100 hover:bg-rose-50 transition-all active:scale-[0.98]'
                 >
-                  ✖️ إلغاء
+                  إلغاء العملية
                 </button>
               </div>
             </div>

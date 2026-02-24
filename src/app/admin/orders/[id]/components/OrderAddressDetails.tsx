@@ -42,9 +42,9 @@ export default function OrderAddressDetails({
 
   return (
     <div className='bg-white'>
-      <div className='flex items-center justify-between mb-8 pb-4 border-b border-slate-50'>
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 pb-4 border-b border-slate-50 gap-4'>
         <div className='flex items-center gap-3'>
-          <div className='w-10 h-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center'>
+          <div className='w-10 h-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center shrink-0'>
             <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path
                 strokeLinecap='round'
@@ -61,8 +61,8 @@ export default function OrderAddressDetails({
             </svg>
           </div>
           <div>
-            <h2 className='text-xl font-bold text-slate-800'>العنوان التفصيلي</h2>
-            <p className='text-slate-500 text-sm font-medium'>
+            <h2 className='text-lg sm:text-xl font-bold text-slate-800'>العنوان التفصيلي</h2>
+            <p className='text-slate-500 text-xs sm:text-sm font-medium'>
               مكان الإقامة والبيانات الجغرافية للتسليم
             </p>
           </div>
@@ -70,7 +70,7 @@ export default function OrderAddressDetails({
 
         <button
           onClick={onToggleEdit}
-          className={`px-4 py-2 rounded-xl transition-all font-bold text-sm ${
+          className={`w-full sm:w-auto px-4 py-2 rounded-xl transition-all font-bold text-sm ${
             isEditing
               ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
               : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'
@@ -81,10 +81,10 @@ export default function OrderAddressDetails({
       </div>
 
       {!isEditing ? (
-        <div className='p-8 bg-slate-50/50 border border-slate-100 rounded-2xl'>
-          <div className='flex items-start gap-4'>
-            <div className='mt-2 text-slate-400'>
-              <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+        <div className='p-4 sm:p-8 bg-slate-50/50 border border-slate-100 rounded-2xl'>
+          <div className='flex items-start gap-3 sm:gap-4'>
+            <div className='mt-1 sm:mt-2 text-slate-400 shrink-0'>
+              <svg className='w-5 h-5 sm:w-6 sm:h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -93,8 +93,8 @@ export default function OrderAddressDetails({
                 />
               </svg>
             </div>
-            <div className='flex-1'>
-              <p className='text-3xl font-black text-slate-900 leading-relaxed tracking-tight'>
+            <div className='flex-1 min-w-0'>
+              <p className='text-lg sm:text-3xl font-black text-slate-900 leading-relaxed tracking-tight break-words'>
                 {[
                   order.governorate,
                   order.city,
@@ -108,14 +108,14 @@ export default function OrderAddressDetails({
                   .join(' • ')}
               </p>
               {!order.governorate && !order.city && !order.street && (
-                <p className='text-slate-400 italic text-lg'>لا توجد بيانات عنوان مسجلة</p>
+                <p className='text-slate-400 italic text-base sm:text-lg'>لا توجد بيانات عنوان مسجلة</p>
               )}
             </div>
           </div>
         </div>
       ) : (
         <>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
             {[
               { label: 'المحافظة', value: order.governorate, key: 'governorate' },
               { label: 'المدينة', value: order.city, key: 'city' },
@@ -127,16 +127,16 @@ export default function OrderAddressDetails({
             ].map(item => (
               <div
                 key={item.key}
-                className='group/field p-4 bg-slate-50/30 rounded-2xl border border-slate-100'
+                className='group/field p-3 sm:p-4 bg-slate-50/30 rounded-xl sm:rounded-2xl border border-slate-100'
               >
-                <p className='text-base font-bold text-slate-400 uppercase tracking-wider mb-2'>
+                <p className='text-xs sm:text-base font-bold text-slate-400 uppercase tracking-wider mb-1 sm:mb-2'>
                   {item.label}
                 </p>
                 <input
                   type='text'
                   value={(formData as any)[item.key]}
                   onChange={e => setFormData({ ...formData, [item.key]: e.target.value })}
-                  className='w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-lg font-bold text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500'
+                  className='w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base sm:text-lg font-bold text-slate-800 outline-none focus:ring-2 focus:ring-cyan-500'
                 />
               </div>
             ))}
