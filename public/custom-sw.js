@@ -87,8 +87,21 @@ self.addEventListener('push', event => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// 4. Offline Support Logic
+// 4. Cache Size Limiting Logic
 const DYNAMIC_CACHE = 'dynamic-cache-v1';
+const MAX_DYNAMIC_ITEMS = 50; // Limit dynamic items to save space/data
+const MAX_STATIC_ITEMS = 100;
+
+async function limitCacheSize(cacheName, maxItems) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxItems) {
+    // Delete the oldest items
+    for (let i = 0; i < keys.length - maxItems; i++) {
+      await cache.delete(keys[i]);
+    }
+  }
+}
 
 self.addEventListener('fetch', event => {
   const { request } = event;
@@ -99,10 +112,13 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          const clonedResponse = response.clone();
-          caches.open(DYNAMIC_CACHE).then(cache => {
-            cache.put(request, clonedResponse);
-          });
+          if (response.status === 200) {
+            const clonedResponse = response.clone();
+            caches.open(DYNAMIC_CACHE).then(cache => {
+              cache.put(request, clonedResponse);
+              limitCacheSize(DYNAMIC_CACHE, MAX_DYNAMIC_ITEMS);
+            });
+          }
           return response;
         })
         .catch(() => caches.match(request))
@@ -142,15 +158,23 @@ self.addEventListener('fetch', event => {
     request.headers.get('RSC') ||
     request.headers.get('Next-Router-State-Tree');
 
-  if (isDataFetch || url.pathname.startsWith('/admin')) {
+  // Skip caching huge API responses or POST requests (except if specifically handled)
+  const isPost = request.method === 'POST';
+
+  if ((isDataFetch || url.pathname.startsWith('/admin')) && !isPost) {
     event.respondWith(
       fetch(request)
         .then(response => {
           if (response.status === 200) {
             const clonedResponse = response.clone();
-            caches.open(DYNAMIC_CACHE).then(cache => {
-              cache.put(request, clonedResponse);
-            });
+            // Only cache if it's not too large (e.g. > 2MB)
+            const contentLength = response.headers.get('content-length');
+            if (!contentLength || parseInt(contentLength) < 2000000) {
+              caches.open(DYNAMIC_CACHE).then(cache => {
+                cache.put(request, clonedResponse);
+                limitCacheSize(DYNAMIC_CACHE, MAX_DYNAMIC_ITEMS);
+              });
+            }
           }
           return response;
         })
@@ -159,18 +183,13 @@ self.addEventListener('fetch', event => {
           const cachedResponse = await caches.match(request);
           if (cachedResponse) return cachedResponse;
 
-          // Ultra-strong fallback:
-          // If we are offline and have no cached data for an admin route,
-          // return a successful but empty response to keep the UI alive.
+          // Ultra-strong fallback for admin
           if (request.headers.get('Accept')?.includes('application/json') || isDataFetch) {
             return new Response(JSON.stringify({ offline: true, data: [], results: [] }), {
               status: 200,
               headers: { 'Content-Type': 'application/json' },
             });
           }
-
-          // If it's a JS/CSS chunk that failed and isn't cached (rare if prefetched)
-          // we can't do much but let it fail or return an empty script.
         })
     );
     return;
@@ -191,16 +210,24 @@ self.addEventListener('fetch', event => {
           fetch(request)
             .then(networkResponse => {
               if (networkResponse.status === 200) {
-                const clonedResponse = networkResponse.clone();
-                caches.open(DYNAMIC_CACHE).then(cache => {
-                  cache.put(request, clonedResponse);
-                });
+                // Avoid caching very large images dynamically
+                const isImage =
+                  request.destination === 'image' || url.pathname.match(/\.(png|jpg|jpeg|webp)$/);
+                const contentLength = networkResponse.headers.get('content-length');
+
+                if (!isImage || !contentLength || parseInt(contentLength) < 1000000) {
+                  const clonedResponse = networkResponse.clone();
+                  caches.open(DYNAMIC_CACHE).then(cache => {
+                    cache.put(request, clonedResponse);
+                    limitCacheSize(DYNAMIC_CACHE, MAX_STATIC_ITEMS);
+                  });
+                }
               }
               return networkResponse;
             })
             .catch(() => {
               // Fallback for images if needed
-              return caches.match('/favicon.ico');
+              if (request.destination === 'image') return caches.match('/favicon.ico');
             })
         );
       })
