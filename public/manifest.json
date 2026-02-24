@@ -9,6 +9,11 @@
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "categories": ["government", "business", "productivity"],
+  "lang": "ar",
+  "dir": "rtl",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -33,9 +38,21 @@
     },
     {
       "src": "/screenshot-mobile.png",
-      "sizes": "1280x720",
+      "sizes": "390x844",
       "type": "image/png",
       "label": "Home Dashboard Mobile"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "طلب جديد",
+      "url": "/checkout",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "orientation": "portrait",
