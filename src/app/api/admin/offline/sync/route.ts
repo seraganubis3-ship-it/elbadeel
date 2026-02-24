@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     for (const offlineOrder of orders) {
       try {
         // 1. Check if this offlineId already exists to prevent duplicates
-        const existing = await prisma.order.findUnique({
+        const existing = await prisma.order.findFirst({
           where: { offlineId: offlineOrder.offlineId },
         });
 
