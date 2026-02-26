@@ -64,6 +64,7 @@ export default function OrderDetailsPage() {
     quickPayAndDeliver,
     uploadDocument,
     deleteDocument,
+    removeFormSerial,
     removeAttachedDocument,
   } = useOrderDetail(orderId);
 
@@ -158,6 +159,7 @@ export default function OrderDetailsPage() {
                   formSerialNumber={formSerialNumber}
                   setFormSerialNumber={setFormSerialNumber}
                   onAddFormSerial={addFormSerial}
+                  onRemoveFormSerial={removeFormSerial}
                   checkingSerial={checkingSerial}
                   updating={updating}
                   serialError={serialError}

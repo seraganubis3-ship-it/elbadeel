@@ -630,6 +630,7 @@ export default function AdminOrdersPage() {
         else if (serviceName.includes('وفاة')) source = 'وفاة';
         else if (serviceName.includes('زواج')) source = 'زواج';
         else if (serviceName.includes('طلاق')) source = 'طلاق';
+        else if (serviceName.includes('الوفاة ')) source = 'وفاة';
         else if (serviceName.includes('قيد')) {
           if (serviceName.includes('عائلي')) source = 'قيد عائلي';
           else if (serviceName.includes('فردي')) source = 'قيد فردي';
@@ -838,6 +839,7 @@ export default function AdminOrdersPage() {
         if (serviceName.includes('ميلاد')) source = 'ميلاد';
         else if (serviceName.includes('زواج')) source = 'زواج';
         else if (serviceName.includes('طلاق')) source = 'طلاق';
+        else if (serviceName.includes('الوفاة ')) source = 'وفاة';
         else if (serviceName.includes('قيد فردي')) source = 'قيد فردي';
         else if (serviceName.includes('قيد عائلي')) source = 'قيد عائلي';
 
@@ -1378,9 +1380,6 @@ export default function AdminOrdersPage() {
           </div>
         </div>
       )}
-
-      {/* Toast Container */}
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </>
   );
 }

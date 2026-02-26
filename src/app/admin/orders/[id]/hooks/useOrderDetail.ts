@@ -253,6 +253,38 @@ export function useOrderDetail(orderId: string) {
     }
   };
 
+  const removeFormSerial = async (serialId: string) => {
+    if (!confirm('هل أنت متأكد من إزالة رقم الاستمارة؟ سيتم تحرير الرقم ليصبح متاحاً مرة أخرى.'))
+      return;
+
+    setUpdating(true);
+
+    try {
+      const response = await fetch(
+        `/api/admin/orders/${orderId}/remove-form-serial?serialId=${serialId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        await fetchOrderDetails();
+        showSuccess(
+          'تمت الإزالة بنجاح! 🗑️',
+          'تم إزالة رقم الاستمارة وتحريره ليصبح متاحاً مرة أخرى'
+        );
+      } else {
+        showError('فشل الإزالة', data.error || 'حدث خطأ أثناء إزالة رقم الاستمارة');
+      }
+    } catch (error) {
+      showError('خطأ في الاتصال', 'حدث خطأ أثناء إزالة رقم الاستمارة');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const updateOrder = async (force = false) => {
     if (!order) return;
 
@@ -680,6 +712,7 @@ export function useOrderDetail(orderId: string) {
 
     // Handlers
     addFormSerial,
+    removeFormSerial,
     updateOrder,
     updatePayment,
     sendWhatsApp,

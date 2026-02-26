@@ -449,8 +449,6 @@ export default function CreateOrderPage() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
-
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 }

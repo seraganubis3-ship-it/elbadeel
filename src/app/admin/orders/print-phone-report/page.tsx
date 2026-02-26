@@ -69,7 +69,7 @@ export default function PrintPhoneReportPage() {
 
         /* Premium Ornate Frame */
         .premium-frame {
-          position: fixed;
+          position: absolute;
           top: 3mm;
           bottom: 3mm;
           left: 3mm;

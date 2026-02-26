@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useToast, ToastContainer } from '@/components/Toast';
+import { useToast } from '@/components/Toast';
 import StepIndicator from '@/components/order/StepIndicator';
 import VariantSelection from '@/components/order/VariantSelection';
 import PersonalDataForm from '@/components/order/PersonalDataForm';
@@ -680,8 +680,6 @@ export default function OrderForm({
 
   return (
     <div className='relative'>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
-
       {/* Decorative Top Bar */}
       <div className='absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 rounded-t-[2rem]' />
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useToast, ToastContainer } from '@/components/Toast';
+import { useToast } from '@/components/Toast';
 
 export default function CreateAdminPage() {
   const router = useRouter();
@@ -485,7 +485,6 @@ export default function CreateAdminPage() {
       </div>
 
       {/* Toast Notifications */}
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 }

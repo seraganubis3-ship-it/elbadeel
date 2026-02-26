@@ -96,14 +96,19 @@ export default function PrintOfficialDocumentsSignatureReport() {
             font-size: 18px !important;
           }
           .greeting {
-            font-size: 20px !important;
+            font-size: 32px !important;
           }
           .declaration-text {
-            font-size: 16px !important;
+            font-size: 18px !important;
+            font-weight: 900 !important;
           }
           .data-table th {
             font-size: 14px !important;
-            padding: 3px !important;
+            padding: 2px !important;
+          }
+          .data-table th.col-index {
+            text-align: right;
+            padding-right: 4px !important;
           }
           .col-id {
             font-size: 16px !important;
@@ -112,7 +117,7 @@ export default function PrintOfficialDocumentsSignatureReport() {
             font-family: monospace !important;
           }
           .signature-cell {
-            height: 50px !important;
+            height: 25px !important;
           }
           tfoot {
             display: table-footer-group;
@@ -133,10 +138,10 @@ export default function PrintOfficialDocumentsSignatureReport() {
         /* Premium Ornate Frame */
         .premium-frame {
           position: fixed;
-          top: 3mm;
-          bottom: 3mm;
-          left: 3mm;
-          right: 3mm;
+          top: 0mm;
+          bottom: 0mm;
+          left: 0mm;
+          right: 0mm;
           border: 2px solid #000;
           pointer-events: none;
           z-index: 9999;
@@ -145,38 +150,38 @@ export default function PrintOfficialDocumentsSignatureReport() {
         .premium-frame::after {
           content: '';
           position: absolute;
-          top: 1.2mm;
-          bottom: 1.2mm;
-          left: 1.2mm;
-          right: 1.2mm;
+          top: 0mm;
+          bottom: 0mm;
+          left: 0mm;
+          right: 0mm;
           border: 1px dashed #000;
           opacity: 0.5;
         }
 
         .corner {
           position: absolute;
-          width: 60px;
-          height: 60px;
+          width: 50px;
+          height: 50px;
           z-index: 10000;
         }
 
         .corner-tl {
-          top: -2px;
-          left: -2px;
+          top: -1px;
+          left: -1px;
         }
         .corner-tr {
-          top: -2px;
-          right: -2px;
+          top: -1px;
+          right: -1px;
           transform: scaleX(-1);
         }
         .corner-bl {
-          bottom: -2px;
-          left: -2px;
+          bottom: -1px;
+          left: -1px;
           transform: scaleY(-1);
         }
         .corner-br {
-          bottom: -2px;
-          right: -2px;
+          bottom: -1px;
+          right: -1px;
           transform: scale(-1);
         }
 
@@ -186,12 +191,10 @@ export default function PrintOfficialDocumentsSignatureReport() {
           fill: #000;
         }
 
-        .report-wrapper {
-          position: relative;
-          width: 100%;
+        .report-content {
           padding: 10mm;
-          margin: 0;
-          box-sizing: border-box;
+          position: relative;
+          z-index: 10;
         }
 
         .report-header {
@@ -203,10 +206,10 @@ export default function PrintOfficialDocumentsSignatureReport() {
         }
 
         .logo-container {
-          position: absolute;
-          top: -80px;
+          position: fixed;
+          top: -50px;
           right: -20px;
-          width: 380px;
+          width: 320px;
           z-index: 100;
         }
 
@@ -252,7 +255,7 @@ export default function PrintOfficialDocumentsSignatureReport() {
         }
 
         .greeting {
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 900;
           text-align: center;
           font-style: italic;
@@ -265,9 +268,11 @@ export default function PrintOfficialDocumentsSignatureReport() {
         }
 
         .declaration-text {
-          font-size: 14px;
+          font-size: 18px !important;
+          font-weight: 900 !important;
           line-height: 1.4;
           text-align: justify;
+        }
           font-weight: 800;
           color: #000;
         }
@@ -285,33 +290,41 @@ export default function PrintOfficialDocumentsSignatureReport() {
           font-size: 13px;
           margin-bottom: 10px;
           page-break-inside: auto;
-          border-top: none; /* Ensure no top table border */
+          border-top: none;
         }
         .data-table th {
           background-color: #f3f4f6;
-          border-bottom: 2px solid #000; /* Strong line below header */
-          border-left: 1px solid #1f2937; /* Vertical separator */
-          padding: 4px;
+          border-bottom: 2px solid #000;
+          border-left: 1px solid #1f2937;
+          padding: 2px;
           text-align: center;
           font-weight: 900;
           font-size: 14px;
         }
+        .data-table th.col-index {
+          text-align: right;
+          padding-right: 4px !important;
+        }
         .data-table th:last-child {
-          border-left: none; /* No separator after last column */
+          border-left: none;
         }
         .data-table td {
-          border-left: 1px solid #1f2937; /* Vertical separator */
-          padding: 4px 4px !important;
+          border-left: 1px solid #1f2937;
+          padding: 2px 3px !important;
           vertical-align: middle;
-          line-height: 1.2;
+          line-height: 0.9;
           font-weight: 900;
-          font-size: 16px !important;
+          font-size: 14px !important;
+        }
+        .data-table td.col-index {
+          text-align: right;
+          padding-right: 4px !important;
         }
         .data-table td:last-child {
-          border-left: none; /* No separator after last column */
+          border-left: none;
         }
         .data-table tr {
-          border-bottom: 1px solid #ddd; /* Faint line between rows for readability */
+          border-bottom: 1px solid #000;
         }
         .data-table tfoot td {
           border: none !important;
@@ -329,58 +342,67 @@ export default function PrintOfficialDocumentsSignatureReport() {
         .col-index {
           width: 25px;
           min-width: 25px;
-          text-align: center; /* Center to avoid touching any borders */
-          padding: 0 5px !important; /* Safe padding on both sides */
-          font-size: 8px !important;
-          font-weight: normal;
-          color: #4b5563;
+          text-align: center;
+          padding: 0 5px !important;
+          font-size: 12px !important;
+          font-weight: 900;
+          color: #000;
         }
         .col-name {
-          width: 30%;
-          min-width: 160px;
+          width: 28%;
+          min-width: 150px;
           text-align: right;
-          font-weight: bold;
-          font-size: 8px !important; /* Decreased font size for Name */
+          font-weight: 900;
+          font-size: 15px !important;
           white-space: normal;
         }
         .col-id {
-          width: 17%;
+          width: 20%;
           min-width: 100px;
           text-align: center;
           font-family: monospace;
+          font-size: 16px !important;
+          font-weight: 900;
+          letter-spacing: 1px;
         }
         .col-source {
-          width: 12%;
-          min-width: 70px;
+          width: 10%;
+          min-width: 60px;
           text-align: center;
-          font-size: 11px !important;
+          font-size: 15px !important;
         }
         .col-qty {
           width: 5%;
-          min-width: 40px;
+          min-width: 30px;
           text-align: center;
-          font-size: 11px !important;
-          padding: 0 !important; /* Forces perfect centering by removing left/right padding offsets */
+          font-size: 15px !important;
         }
         .col-role {
-          width: 15%;
-          min-width: 80px;
+          width: 12%;
+          min-width: 70px;
           text-align: center;
-          font-size: 11px !important;
+          font-size: 15px !important;
         }
         .col-signature {
-          width: 18%;
+          width: 22%;
           min-width: 90px;
           text-align: center;
         }
 
         .signature-cell {
-          height: 18px;
-          min-height: 18px;
+          height: 20px;
+          min-height: 20px;
         }
 
         .nowrap {
           white-space: nowrap;
+        }
+        
+        .no-print { display: none !important; }
+        
+        @page {
+          size: A4;
+          margin: 0;
         }
 
         .delegate-card-container {
@@ -392,8 +414,8 @@ export default function PrintOfficialDocumentsSignatureReport() {
 
         .delegate-card-frame {
           background: #fff;
-          width: 300px;
-          height: 180px;
+          width: 250px;
+          height: 150px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -404,9 +426,14 @@ export default function PrintOfficialDocumentsSignatureReport() {
           max-height: 100%;
           object-fit: contain;
         }
+
+        /* Header Section */
+        .relative.h-28.mb-2 {
+          border-bottom: 2px solid #000;
+        }
       `}</style>
 
-      <div className='report-wrapper'>
+      <div className='report-content'>
         {/* Premium Frame */}
         <div className='premium-frame'>
           <div className='corner corner-tl'>
@@ -449,55 +476,58 @@ export default function PrintOfficialDocumentsSignatureReport() {
 
         <table className='data-table'>
           <colgroup>
-            <col style={{ width: '4%' }} /> {/* Serial */}
-            <col style={{ width: '34%' }} /> {/* Name (Increased significantly) */}
-            <col style={{ width: '25%' }} /> {/* ID (14 digits) */}
-            <col style={{ width: '9%' }} /> {/* Source (Decreased) */}
-            <col style={{ width: '5%' }} /> {/* Qty */}
-            <col style={{ width: '6%' }} /> {/* Role (Decreased) */}
-            <col style={{ width: '17%' }} /> {/* Signature (Decreased) */}
+            <col style={{ width: '3%' }} />
+            <col style={{ width: '28%' }} />
+            <col style={{ width: '20%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '5%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '22%' }} />
           </colgroup>
           <thead>
             {/* Full Header Row - Repeats on every page */}
             <tr>
               <td colSpan={7} className='border-0 p-0 text-right'>
-                <div className='logo-container'>
-                  <Image
-                    src='/images/report-header.png'
-                    alt='Header'
-                    width={800}
-                    height={150}
-                    priority
-                    className='logo-img'
-                  />
+                {/* Header Section */}
+                <div className='relative h-16 mb-0.5 flex items-center justify-center'>
+                  <div className='flex flex-col items-center flex-1 pt-0'>
+                    <h2 className='text-xl font-black bg-white text-black px-4 py-1 border-2 border-black rounded-xl shadow-sm'>
+                      كشف توقيعات المستخرجات
+                    </h2>
+                    <div className='mt-1 bg-gray-100 rounded-lg px-4 py-0.5 border border-gray-300 font-bold text-sm'>
+                      {reportDate}
+                    </div>
+                  </div>
+
+                  <div className='logo-container'>
+                    <Image
+                      src='/images/report-header.png'
+                      alt='Header'
+                      width={400}
+                      height={150}
+                      className='logo-img h-auto w-auto object-contain'
+                      priority
+                    />
+                  </div>
                 </div>
 
-                <div className='header-titles'>
-                  <h1 className='report-title'>كشف توقيعات المستخرجات</h1>
-                  <div className='date-badge'>{reportDate}</div>
-                </div>
-
-                <section className='recipient-section'>
-                  <h2 className='recipient-title'>
-                    السيد العميد / مدير مصلحة الأحوال المدنية بالجيزة
-                  </h2>
-                  <p className='greeting'>تحية طيبة وبعد ،،،</p>
-                </section>
-
-                <section className='declaration-box'>
-                  <p className='declaration-text'>
+                {/* Info Section */}
+                <div className='mb-0 space-y-1'>
+                  <div className='flex justify-between items-center'>
+                    <h3 className='text-base font-black underline decoration-2 underline-offset-4'>
+                      السيد العميد / مدير مصلحة الأحوال المدنية
+                    </h3>
+                  </div>
+                  <p className='text-center text-lg font-bold'>تحية طيبة وبعد</p>
+                  <p className='text-justify font-bold bg-gray-50 p-2 rounded-lg border border-gray-200 declaration-text'>
                     أقر أنا /{' '}
-                    <span className='delegate-highlight'>
-                      {delegate?.name || '................................'}
-                    </span>{' '}
-                    مندوب البديل للخدمات الحكومية بأنه تم تفويضي من قبل أصحاب الشأن المدون اسمائهم
-                    في الكشف وتم أخذ اقرار من صاحب الشأن أمامي وإذا ظهر عكس ذلك أكون مسئول مسئولية
-                    كاملة وهذا اقرار مني بذلك /{' '}
-                    <span className='delegate-highlight'>
-                      {delegate?.name || '................................'}
-                    </span>
+                    <span className='text-blue-900 mx-0.5'>{delegate?.name || '..........'}</span>{' '}
+                    مندوب البديل للخدمات الحكومية بانه تم تفويضي من قبل أصحاب الشأن لاستخراج
+                    المصدرات المدون أسمائهم في الكشف وتم أخذ إقرار من صاحب الشأن أمامي وإذا ظهر عكس
+                    ذلك أكون مسئول مسئولية كاملة وهذا اقرار مني بذلك /{' '}
+                    <span className='text-blue-900 mx-0.5'>{delegate?.name || '..........'}</span>
                   </p>
-                </section>
+                </div>
               </td>
             </tr>
             {/* Column Headers Row */}
@@ -538,6 +568,7 @@ export default function PrintOfficialDocumentsSignatureReport() {
                         height={180}
                         className='delegate-card-img'
                         unoptimized // External image or unknown source size, bypass optimization for print fidelity
+                        priority
                       />
                     )}
                   </div>

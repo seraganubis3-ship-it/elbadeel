@@ -94,14 +94,19 @@ export default function PrintIdCardSignaturesReport() {
             font-size: 18px !important;
           }
           .greeting {
-            font-size: 20px !important;
+            font-size: 32px !important;
           }
           .declaration-text {
-            font-size: 16px !important;
+            font-size: 18px !important;
+            font-weight: 900 !important;
           }
           .data-table th {
             font-size: 14px !important;
-            padding: 3px !important;
+            padding: 2px !important;
+          }
+          .data-table th.col-index {
+            text-align: right;
+            padding-right: 4px !important;
           }
 
           .col-id {
@@ -111,7 +116,7 @@ export default function PrintIdCardSignaturesReport() {
             font-family: monospace !important;
           }
           .signature-cell {
-            height: 50px !important;
+            height: 25px !important;
           }
           tfoot {
             display: table-footer-group;
@@ -132,10 +137,10 @@ export default function PrintIdCardSignaturesReport() {
         /* Premium Ornate Frame */
         .premium-frame {
           position: fixed;
-          top: 3mm;
-          bottom: 3mm;
-          left: 3mm;
-          right: 3mm;
+          top: 0mm;
+          bottom: 0mm;
+          left: 0mm;
+          right: 0mm;
           border: 2px solid #000;
           pointer-events: none;
           z-index: 9999;
@@ -144,38 +149,38 @@ export default function PrintIdCardSignaturesReport() {
         .premium-frame::after {
           content: '';
           position: absolute;
-          top: 1.2mm;
-          bottom: 1.2mm;
-          left: 1.2mm;
-          right: 1.2mm;
+          top: 0mm;
+          bottom: 0mm;
+          left: 0mm;
+          right: 0mm;
           border: 1px dashed #000;
           opacity: 0.5;
         }
 
         .corner {
           position: absolute;
-          width: 60px;
-          height: 60px;
+          width: 50px;
+          height: 50px;
           z-index: 10000;
         }
 
         .corner-tl {
-          top: -2px;
-          left: -2px;
+          top: -1px;
+          left: -1px;
         }
         .corner-tr {
-          top: -2px;
-          right: -2px;
+          top: -1px;
+          right: -1px;
           transform: scaleX(-1);
         }
         .corner-bl {
-          bottom: -2px;
-          left: -2px;
+          bottom: -1px;
+          left: -1px;
           transform: scaleY(-1);
         }
         .corner-br {
-          bottom: -2px;
-          right: -2px;
+          bottom: -1px;
+          right: -1px;
           transform: scale(-1);
         }
 
@@ -185,12 +190,10 @@ export default function PrintIdCardSignaturesReport() {
           fill: #000;
         }
 
-        .report-wrapper {
-          position: relative;
-          width: 100%;
+        .report-content {
           padding: 10mm;
-          margin: 0;
-          box-sizing: border-box;
+          position: relative;
+          z-index: 10;
         }
 
         .report-header {
@@ -202,10 +205,10 @@ export default function PrintIdCardSignaturesReport() {
         }
 
         .logo-container {
-          position: absolute;
-          top: -80px;
+          position: fixed;
+          top: -50px;
           right: -20px;
-          width: 380px;
+          width: 320px;
           z-index: 100;
         }
 
@@ -251,7 +254,7 @@ export default function PrintIdCardSignaturesReport() {
         }
 
         .greeting {
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 900;
           text-align: center;
           font-style: italic;
@@ -264,9 +267,11 @@ export default function PrintIdCardSignaturesReport() {
         }
 
         .declaration-text {
-          font-size: 14px;
+          font-size: 18px !important;
+          font-weight: 900 !important;
           line-height: 1.4;
           text-align: justify;
+        }
           font-weight: 800;
           color: #000;
         }
@@ -290,27 +295,29 @@ export default function PrintIdCardSignaturesReport() {
           background-color: #f3f4f6;
           border-bottom: 2px solid #000; /* Strong line below header */
           border-left: 1px solid #1f2937; /* Vertical separator */
-          padding: 4px;
+          padding: 2px;
           text-align: center;
           font-weight: 900;
           font-size: 14px;
-        }
-        .data-table th:last-child {
-          border-left: none; /* No separator after last column */
-        }
+        } 
+        .data-table th.col-index {
+          text-align: right;
+          padding-right: 4px !important;
+        } 
         .data-table td {
-          border-left: 1px solid #1f2937; /* Vertical separator */
-          padding: 4px 4px !important;
+          border-left: 1px solid #1f2937;
+          padding: 2px 3px !important;
           vertical-align: middle;
-          line-height: 1.2;
+          line-height: 0.9;
           font-weight: 900;
-          font-size: 16px !important;
+          font-size: 14px !important;
         }
-        .data-table td:last-child {
-          border-left: none; /* No separator after last column */
+        .data-table td.col-index {
+          text-align: right;
+          padding-right: 4px !important;
         }
         .data-table tr {
-          border-bottom: 1px solid #ddd; /* Faint line between rows for readability */
+          border-bottom: 1px solid #000;
         }
         .data-table tfoot td {
           border: none !important;
@@ -330,16 +337,16 @@ export default function PrintIdCardSignaturesReport() {
           min-width: 25px;
           text-align: center; /* Center to avoid touching any borders */
           padding: 0 5px !important; /* Safe padding on both sides */
-          font-size: 8px !important;
-          font-weight: normal;
-          color: #4b5563;
+          font-size: 12px !important;
+          font-weight: 900;
+          color: #000;
         }
         .col-name {
           width: 45%;
           min-width: 230px;
           text-align: right;
-          font-weight: bold;
-          font-size: 11px !important; /* Smaller font for long names */
+          font-weight: 900;
+          font-size: 15px !important;
           white-space: normal; /* Allow wrapping if absolutely needed */
         }
         .col-id {
@@ -347,15 +354,15 @@ export default function PrintIdCardSignaturesReport() {
           min-width: 120px;
           text-align: center;
           font-family: monospace;
-          font-size: 11px !important; /* Smaller font for IDs */
+          font-size: 16px !important; /* Smaller font for IDs */
           font-weight: 900;
-          letter-spacing: 0px;
+          letter-spacing: 1px;
         }
         .col-type {
           width: 12%;
           min-width: 50px;
           text-align: center;
-          font-size: 11px !important;
+          font-size: 15px !important;
         }
         .col-signature {
           width: 18%;
@@ -364,8 +371,8 @@ export default function PrintIdCardSignaturesReport() {
         }
 
         .signature-cell {
-          height: 18px;
-          min-height: 18px;
+          height: 20px;
+          min-height: 20px;
         }
 
         .nowrap {
@@ -381,8 +388,8 @@ export default function PrintIdCardSignaturesReport() {
 
         .delegate-card-frame {
           background: #fff;
-          width: 300px;
-          height: 180px;
+          width: 250px;
+          height: 150px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -395,7 +402,7 @@ export default function PrintIdCardSignaturesReport() {
         }
       `}</style>
 
-      <div className='report-wrapper'>
+      <div className='report-content'>
         {/* Premium Frame */}
         <div className='premium-frame'>
           <div className='corner corner-tl'>
@@ -438,59 +445,62 @@ export default function PrintIdCardSignaturesReport() {
 
         <table className='data-table'>
           <colgroup>
-            <col style={{ width: '4%' }} />
-            <col style={{ width: '44%' }} />
-            <col style={{ width: '25%' }} />
-            <col style={{ width: '9%' }} />
-            <col style={{ width: '18%' }} />
+            <col style={{ width: '3%' }} />
+            <col style={{ width: '27%' }} />
+            <col style={{ width: '24%' }} />
+            <col style={{ width: '11%' }} />
+            <col style={{ width: '35%' }} />
           </colgroup>
           <thead>
             {/* Full Header Row - Repeats on every page */}
             <tr>
               <td colSpan={5} className='border-0 p-0 text-right'>
-                <div className='logo-container'>
-                  <Image
-                    src='/images/report-header.png'
-                    alt='Header'
-                    width={800}
-                    height={150}
-                    priority
-                    className='logo-img'
-                  />
+                {/* Header Section */}
+                <div className='relative h-16 mb-0.5 flex items-center justify-center'>
+                  <div className='flex flex-col items-center flex-1 pt-0'>
+                    <h2 className='text-xl font-black bg-white text-black px-4 py-1 border-2 border-black rounded-xl shadow-sm'>
+                      كشف توقيعات البطاقة
+                    </h2>
+                    <div className='mt-1 bg-gray-100 rounded-lg px-4 py-0.5 border border-gray-300 font-bold text-sm'>
+                      {reportDate}
+                    </div>
+                  </div>
+
+                  <div className='logo-container'>
+                    <Image
+                      src='/images/report-header.png'
+                      alt='Header'
+                      width={400}
+                      height={150}
+                      className='logo-img h-auto w-auto object-contain'
+                      priority
+                    />
+                  </div>
                 </div>
 
-                <div className='header-titles'>
-                  <h1 className='report-title'>كشف توقيعات البطاقة</h1>
-                  <div className='date-badge'>{reportDate}</div>
-                </div>
-
-                <section className='recipient-section'>
-                  <h2 className='recipient-title'>
-                    السيد العميد / مدير مصلحة الأحوال المدنية بالجيزة
-                  </h2>
-                  <p className='greeting'>تحية طيبة وبعد ،،،</p>
-                </section>
-
-                <section className='declaration-box'>
-                  <p className='declaration-text'>
+                {/* Info Section */}
+                <div className='mb-0 space-y-1'>
+                  <div className='flex justify-between items-center'>
+                    <h3 className='text-base font-black underline decoration-2 underline-offset-4'>
+                      السيد العميد / مدير مصلحة الأحوال المدنية
+                    </h3>
+                  </div>
+                  <p className='text-center text-lg font-bold'>تحية طيبة وبعد</p>
+                  <p className='text-justify font-bold bg-gray-50 p-2 rounded-lg border border-gray-200 declaration-text'>
                     أقر أنا /{' '}
-                    <span className='delegate-highlight'>
-                      {delegate?.name || '................................'}
-                    </span>{' '}
-                    مندوب البديل للخدمات الحكومية بأنه تم تفويضي من قبل أصحاب الشأن المدون اسمائهم
-                    في الكشف لاستخراج واستلام بطاقات الرقم القومي واذ ظهر عكس ذلك أكون مسئول مسئولية
-                    كاملة وهذا اقرار مني بذلك /{' '}
-                    <span className='delegate-highlight'>
-                      {delegate?.name || '................................'}
-                    </span>
+                    <span className='text-blue-900 mx-0.5'>{delegate?.name || '..........'}</span>{' '}
+                    مندوب البديل للخدمات الحكومية بانه تم تفويضي من قبل أصحاب الشأن لاستخراج
+                    المصدرات المدون أسمائهم في الكشف وتم أخذ إقرار من صاحب الشأن أمامي وإذا ظهر عكس
+                    ذلك أكون مسئول مسئولية كاملة وهذا اقرار مني بذلك /{' '}
+                    <span className='text-blue-900 mx-0.5'>{delegate?.name || '..........'}</span>
                   </p>
-                </section>
+                </div>
               </td>
             </tr>
             {/* Column Headers Row */}
             <tr>
               <th className='col-index'>م</th>
-              <th className='col-name'>الاسم</th>
+              <th className='col-name text-right px-4'>الاسم</th>
               <th className='col-id'>الرقم القومي</th>
               <th className='col-type'>نوع</th>
               <th className='col-signature'>توقيع صاحب الشأن</th>
@@ -521,6 +531,7 @@ export default function PrintIdCardSignaturesReport() {
                         height={180}
                         className='delegate-card-img'
                         unoptimized // External image or unknown source size, bypass optimization for print fidelity
+                        priority
                       />
                     )}
                   </div>

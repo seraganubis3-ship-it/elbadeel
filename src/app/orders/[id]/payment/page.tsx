@@ -291,7 +291,6 @@ export default function PaymentPage() {
           </div>
         </div>
       </div>
-      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 }

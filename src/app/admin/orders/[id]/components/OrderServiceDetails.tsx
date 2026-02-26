@@ -15,6 +15,7 @@ interface OrderServiceDetailsProps {
   isEditing: boolean;
   onToggleEdit: () => void;
   onSave: (fields: Partial<Order>) => void;
+  onRemoveFormSerial?: (serialId: string) => void;
 }
 
 export default function OrderServiceDetails({
@@ -28,6 +29,7 @@ export default function OrderServiceDetails({
   isEditing,
   onToggleEdit,
   onSave,
+  onRemoveFormSerial,
 }: OrderServiceDetailsProps) {
   const [formData, setFormData] = useState({
     serviceDetails: order.serviceDetails || '',
@@ -330,7 +332,7 @@ export default function OrderServiceDetails({
 
           <div className='space-y-4'>
             {order.formSerials && order.formSerials.length > 0 ? (
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 font-sans'>
                 {order.formSerials.map(formSerial => (
                   <div
                     key={formSerial.id}
@@ -344,34 +346,63 @@ export default function OrderServiceDetails({
                         {formSerial.serialNumber}
                       </p>
                     </div>
+                    {onRemoveFormSerial && (
+                      <button
+                        onClick={() => onRemoveFormSerial(formSerial.id)}
+                        className='p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors'
+                        title='إزالة رقم الاستمارة'
+                      >
+                        <svg
+                          className='w-5 h-5'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                          />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className='p-4 sm:p-6 bg-slate-50/50 border border-dashed border-slate-300 rounded-xl sm:rounded-2xl'>
-                <div className='flex flex-col sm:flex-row gap-3 max-w-md'>
-                  <input
-                    type='text'
-                    value={formSerialNumber}
-                    onChange={e => setFormSerialNumber(e.target.value)}
-                    className='w-full sm:flex-1 px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-base sm:text-lg font-black'
-                    placeholder='رقم الاستمارة...'
-                  />
-                  <button
-                    onClick={onAddFormSerial}
-                    disabled={!formSerialNumber.trim() || checkingSerial || updating}
-                    className='w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-all text-sm sm:text-base font-bold disabled:opacity-50'
-                  >
-                    {checkingSerial ? '...' : 'إضافة'}
-                  </button>
-                </div>
-                {serialError && (
-                  <p className='mt-2 text-red-500 text-xs sm:text-sm font-bold pr-1 sm:pr-2'>
-                    {serialError}
-                  </p>
-                )}
+            ) : null}
+
+            <div className='p-4 sm:p-6 bg-slate-50/50 border border-dashed border-slate-300 rounded-xl sm:rounded-2xl'>
+              <div className='flex flex-col sm:flex-row gap-3 max-w-md'>
+                <input
+                  type='text'
+                  value={formSerialNumber}
+                  onChange={e => setFormSerialNumber(e.target.value)}
+                  className='w-full sm:flex-1 px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-base sm:text-lg font-black'
+                  placeholder={
+                    (order.formSerials?.length ?? 0) > 0
+                      ? 'تغيير رقم الاستمارة...'
+                      : 'رقم الاستمارة...'
+                  }
+                />
+                <button
+                  onClick={onAddFormSerial}
+                  disabled={!formSerialNumber.trim() || checkingSerial || updating}
+                  className='w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-all text-sm sm:text-base font-bold disabled:opacity-50'
+                >
+                  {checkingSerial
+                    ? '...'
+                    : (order.formSerials?.length ?? 0) > 0
+                      ? 'تحديث'
+                      : 'إضافة'}
+                </button>
               </div>
-            )}
+              {serialError && (
+                <p className='mt-2 text-red-500 text-xs sm:text-sm font-bold pr-1 sm:pr-2'>
+                  {serialError}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}
