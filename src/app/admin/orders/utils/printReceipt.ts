@@ -32,6 +32,8 @@ export const printReceipt = (order: Order) => {
 
   if (!printWindow) return;
 
+  const displayOrderId = order.id?.startsWith('OFF-') ? '' : order.id;
+
   const width = 800;
   const height = 600;
   const left = (window.screen.width - width) / 2;
@@ -257,7 +259,7 @@ export const printReceipt = (order: Order) => {
     <html dir="rtl" lang="ar">
     <head>
       <meta charset="UTF-8">
-      <title>إيصال استلام - ${order.id}</title>
+      <title>إيصال استلام - ${displayOrderId}</title>
       <style>${printStyles}</style>
     </head>
     <body onload="window.print()">
@@ -300,7 +302,7 @@ export const printReceipt = (order: Order) => {
             <div class='flex items-center justify-between px-4'>
               <div class='text-[10px] font-black'>نسخة العميل أصل</div>
               <div class='border-2 border-black text-black px-3 py-0.5 font-black tracking-widest text-xs'>
-                ${order.id}
+                ${displayOrderId || '&nbsp;'}
               </div>
               <div class='text-[10px] font-black'>إيصال خدمة حكومية</div>
             </div>

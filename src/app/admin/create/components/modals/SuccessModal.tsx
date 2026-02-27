@@ -1,5 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { offlineManager } from '@/lib/offline-manager';
+import { printReceipt } from '../../../orders/utils/printReceipt';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -41,10 +43,35 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
 
         <div className='grid grid-cols-2 gap-4 w-full'>
           <button
-            onClick={() => {
-              if (orderId) {
+            onClick={async () => {
+              if (!orderId) return;
+
+              if (!orderId.startsWith('OFF-')) {
                 router.push(`/admin/orders/${orderId}`);
+                return;
               }
+
+              const pendingOrders = await offlineManager.getPendingOrders();
+              const offlineOrder = pendingOrders.find(o => o.offlineId === orderId);
+              if (!offlineOrder) return;
+
+              const services = await offlineManager.getServices();
+              const service = services.find(s => s.id === offlineOrder.serviceId);
+              const variant = service?.variants?.find((v: any) => v.id === offlineOrder.variantId);
+
+              const createdAt =
+                offlineOrder.workDate || offlineOrder.createdAt || new Date().toISOString();
+
+              printReceipt({
+                ...offlineOrder,
+                id: offlineOrder.offlineId,
+                createdAt,
+                service: { name: service?.name || '—', slug: service?.slug || '' },
+                variant: variant
+                  ? { name: variant.name || '—', priceCents: variant.priceCents || 0 }
+                  : null,
+                deliveryDuration: variant?.etaDays ? `${variant.etaDays} يوم` : null,
+              });
             }}
             className='flex items-center justify-center gap-2 w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-emerald-200 active:scale-95'
           >

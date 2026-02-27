@@ -50,6 +50,40 @@ export function useOrderDetail(orderId: string) {
   const [showPaymentAlert, setShowPaymentAlert] = useState(false);
 
   const fetchOrderDetails = useCallback(async () => {
+    const adaptOfflineOrder = async (offlineOrder: any) => {
+      const services = await offlineManager.getServices();
+      const service = services.find(s => s.id === offlineOrder.serviceId);
+      const variant = service?.variants?.find((v: any) => v.id === offlineOrder.variantId);
+
+      const createdAt = offlineOrder.workDate || offlineOrder.createdAt || new Date().toISOString();
+
+      return {
+        ...offlineOrder,
+        id: offlineOrder.offlineId,
+        status: offlineOrder.status || 'PROCESSING',
+        createdAt: createdAt.toString(),
+        service: {
+          id: offlineOrder.serviceId,
+          name: service?.name || '—',
+          slug: service?.slug || '',
+        },
+        variant: {
+          id: offlineOrder.variantId,
+          name: variant?.name || '—',
+          priceCents: variant?.priceCents || 0,
+          etaDays: variant?.etaDays || 0,
+        },
+        user: {
+          id:
+            offlineOrder.userId ||
+            `OFFLINE-${String(offlineOrder.customerPhone || '').replace(/\D/g, '') || offlineOrder.offlineId}`,
+          name: offlineOrder.customerName || '',
+          email: offlineOrder.customerEmail || '',
+          phone: offlineOrder.customerPhone || '',
+        },
+      } as any;
+    };
+
     try {
       // If it's explicitly an offline ID, try local first
       if (orderId.startsWith('OFF-')) {
@@ -57,15 +91,7 @@ export function useOrderDetail(orderId: string) {
         const offlineOrder = pendingOrders.find(o => o.offlineId === orderId);
         if (offlineOrder) {
           // Adapt offline order to expected Order type
-          setOrder({
-            ...offlineOrder,
-            id: offlineOrder.offlineId,
-            status: offlineOrder.status || 'PROCESSING',
-            createdAt: offlineOrder.createdAt.toString(),
-            service: { name: 'طلب أوفلاين', id: offlineOrder.serviceId },
-            variant: { name: '---', id: offlineOrder.variantId },
-            user: { name: offlineOrder.customerName, phone: offlineOrder.customerPhone },
-          } as any);
+          setOrder(await adaptOfflineOrder(offlineOrder));
           setLoading(false);
           return;
         }
@@ -99,15 +125,7 @@ export function useOrderDetail(orderId: string) {
         const pendingOrders = await offlineManager.getPendingOrders();
         const offlineOrder = pendingOrders.find(o => o.offlineId === orderId || o.id === orderId);
         if (offlineOrder) {
-          setOrder({
-            ...offlineOrder,
-            id: offlineOrder.offlineId,
-            status: offlineOrder.status || 'PROCESSING',
-            createdAt: offlineOrder.createdAt.toString(),
-            service: { name: 'طلب أوفلاين', id: offlineOrder.serviceId },
-            variant: { name: '---', id: offlineOrder.variantId },
-            user: { name: offlineOrder.customerName, phone: offlineOrder.customerPhone },
-          } as any);
+          setOrder(await adaptOfflineOrder(offlineOrder));
         } else {
           const cachedOrder = await offlineManager.getCachedOrder(orderId);
           if (cachedOrder) {
@@ -122,15 +140,7 @@ export function useOrderDetail(orderId: string) {
       const pendingOrders = await offlineManager.getPendingOrders();
       const offlineOrder = pendingOrders.find(o => o.offlineId === orderId);
       if (offlineOrder) {
-        setOrder({
-          ...offlineOrder,
-          id: offlineOrder.offlineId,
-          status: offlineOrder.status || 'PROCESSING',
-          createdAt: offlineOrder.createdAt.toString(),
-          service: { name: 'طلب أوفلاين', id: offlineOrder.serviceId },
-          variant: { name: '---', id: offlineOrder.variantId },
-          user: { name: offlineOrder.customerName, phone: offlineOrder.customerPhone },
-        } as any);
+        setOrder(await adaptOfflineOrder(offlineOrder));
       } else {
         const cachedOrder = await offlineManager.getCachedOrder(orderId);
         if (cachedOrder) {
