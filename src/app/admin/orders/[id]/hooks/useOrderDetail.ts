@@ -62,6 +62,13 @@ export function useOrderDetail(orderId: string) {
         id: offlineOrder.offlineId,
         status: offlineOrder.status || 'PROCESSING',
         createdAt: createdAt.toString(),
+        createdByAdmin: session?.user?.name
+          ? {
+              id: session.user.id,
+              name: session.user.name,
+              email: session.user.email || '',
+            }
+          : null,
         service: {
           id: offlineOrder.serviceId,
           name: service?.name || '—',
@@ -150,7 +157,7 @@ export function useOrderDetail(orderId: string) {
     } finally {
       setLoading(false);
     }
-  }, [orderId, router]);
+  }, [orderId, router, session?.user?.email, session?.user?.id, session?.user?.name]);
 
   useEffect(() => {
     if (orderId) {

@@ -33,6 +33,20 @@ export const printReceipt = (order: Order) => {
   if (!printWindow) return;
 
   const displayOrderId = order.id?.startsWith('OFF-') ? '' : order.id;
+  const parseDate = (value: string | Date | null | undefined): Date | null => {
+    if (!value) return null;
+    if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+    if (typeof value === 'string') {
+      if (value.includes('/')) {
+        const [day, month, year] = value.split('/');
+        const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+        return isNaN(parsed.getTime()) ? null : parsed;
+      }
+      const parsed = new Date(value);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+    return null;
+  };
 
   const width = 800;
   const height = 600;
@@ -338,7 +352,7 @@ export const printReceipt = (order: Order) => {
                   التاريخ
                 </div>
                 <div class='col-span-4 p-1.5 font-bold'>
-                  ${new Date(order.createdAt).toLocaleDateString('ar-EG')}
+                  ${parseDate(order.createdAt)?.toLocaleDateString('ar-EG') || '—'}
                 </div>
               </div>
               ${
@@ -349,7 +363,7 @@ export const printReceipt = (order: Order) => {
                     ميعاد التصوير
                   </div>
                   <div class='col-span-10 p-1.5 font-black text-lg'>
-                    ${new Date(order.photographyDate).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    ${parseDate(order.photographyDate)?.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) || '—'}
                   </div>
                 </div>
               `

@@ -2,6 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { offlineManager } from '@/lib/offline-manager';
 import { printReceipt } from '../../../orders/utils/printReceipt';
+import { useSession } from 'next-auth/react';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   onReset,
 }) => {
   const router = useRouter();
+  const { data: session } = useSession();
 
   if (!isOpen) return null;
 
@@ -71,6 +73,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
                   ? { name: variant.name || '—', priceCents: variant.priceCents || 0 }
                   : null,
                 deliveryDuration: variant?.etaDays ? `${variant.etaDays} يوم` : null,
+                createdByAdmin: session?.user?.name ? { name: session.user.name } : null,
               });
             }}
             className='flex items-center justify-center gap-2 w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-emerald-200 active:scale-95'

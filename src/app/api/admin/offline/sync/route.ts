@@ -71,8 +71,36 @@ export async function POST(request: NextRequest) {
 
         // 3. Create the Order
         const orderId = await generateUniqueOrderNumber();
-        const parsedCreatedAt = new Date(offlineOrder.createdAt);
-        const createdAt = isNaN(parsedCreatedAt.getTime()) ? new Date() : parsedCreatedAt;
+        const parseWorkDate = (value: unknown): Date | null => {
+          if (!value) return null;
+          if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+          if (typeof value === 'string') {
+            if (value.includes('/')) {
+              const [day, month, year] = value.split('/');
+              const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+              return isNaN(parsed.getTime()) ? null : parsed;
+            }
+            const parsed = new Date(value);
+            return isNaN(parsed.getTime()) ? null : parsed;
+          }
+          return null;
+        };
+
+        const timeSourceRaw = new Date(offlineOrder.createdAt);
+        const timeSource = isNaN(timeSourceRaw.getTime()) ? new Date() : timeSourceRaw;
+        const baseDate =
+          parseWorkDate(offlineOrder.workDate) ?? parseWorkDate(offlineOrder.createdAt);
+
+        const createdAt = baseDate
+          ? new Date(
+              baseDate.getFullYear(),
+              baseDate.getMonth(),
+              baseDate.getDate(),
+              timeSource.getHours(),
+              timeSource.getMinutes(),
+              timeSource.getSeconds()
+            )
+          : timeSource;
 
         // Sanitize data for Prisma
         const sanitizeDate = (dateStr: any) => {

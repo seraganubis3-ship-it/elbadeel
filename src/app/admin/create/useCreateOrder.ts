@@ -1073,7 +1073,7 @@ export function useCreateOrder() {
           await offlineManager.saveOfflineOrder({
             ...orderData,
             offlineId,
-            createdAt: orderData.workDate, // Map workDate to createdAt for the store
+            createdAt: new Date().toISOString(),
           });
 
           // Index customer for immediate offline search
