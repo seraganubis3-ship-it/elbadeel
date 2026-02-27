@@ -42,6 +42,7 @@ export const OfflineSyncTrigger = () => {
 
   useEffect(() => {
     checkForPendingOrders();
+    handleSync();
     prefetchLookups();
 
     // Listen for online event

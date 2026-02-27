@@ -8,6 +8,7 @@ import { signOut } from 'next-auth/react';
 import AdminWorkDateWrapper from '@/components/AdminWorkDateWrapper';
 import { hasPermission } from '@/lib/permissions';
 import { OfflineSyncTrigger } from '@/components/OfflineSyncTrigger';
+import { OfflineSyncAction } from '@/components/OfflineSyncAction';
 
 export const dynamic = 'force-dynamic';
 
@@ -523,6 +524,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             )}
             {(hasPermission(session.user as any, 'CREATE_ORDER') ||
+              hasPermission(session.user as any, 'MANAGE_ORDERS')) && (
+              <OfflineSyncAction
+                className='hidden sm:flex items-center gap-2 px-4 py-2 bg-white/15 text-white text-sm font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed'
+                iconClassName='w-5 h-5'
+                label='مزامنة'
+              />
+            )}
+            {(hasPermission(session.user as any, 'CREATE_ORDER') ||
               hasPermission(session.user as any, 'MANAGE_ORDERS')) &&
               workDate && (
                 <button
@@ -744,6 +753,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 إجراءات سريعة
               </h3>
               <div className='space-y-2'>
+                {(hasPermission(session.user as any, 'CREATE_ORDER') ||
+                  hasPermission(session.user as any, 'MANAGE_ORDERS')) && (
+                  <OfflineSyncAction
+                    className='group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-emerald-100 hover:bg-white/15 hover:text-white w-full'
+                    iconClassName='w-5 h-5'
+                    label='مزامنة الأوفلاين'
+                  />
+                )}
                 <Link
                   href='/admin/orders?delivery=today'
                   onClick={closeMobileMenu}
