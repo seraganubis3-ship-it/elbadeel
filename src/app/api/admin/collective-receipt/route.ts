@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
     // Format orders for receipt
     const formattedOrders = orders.map(order => {
       // Get delivery duration from variant etaDays (same logic as regular receipt)
-      let deliveryDuration = null;
+      let deliveryDuration: string | null = null;
       if (order.variant?.etaDays) {
         deliveryDuration = `${order.variant.etaDays} يوم`;
       } else {

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 type Service = { id: string; name: string; slug: string; variants: { id: string; name: string }[] };
 type FormType = { id: string; name: string; description?: string | null; active: boolean };
@@ -94,12 +95,18 @@ export default function InventoryPage() {
     const load = async () => {
       try {
         setLoading(true);
-        const [svcRes, ftRes] = await Promise.all([
-          fetch('/api/admin/services', { cache: 'no-store', credentials: 'include' }),
-          fetch('/api/admin/forms/types', { cache: 'no-store', credentials: 'include' }),
+        const [svc, ft] = await Promise.all([
+          fetchJsonWithCache<any>(
+            '/api/admin/services',
+            { cache: 'no-store', credentials: 'include' },
+            { fallback: { success: true, services: [] } }
+          ),
+          fetchJsonWithCache<any>(
+            '/api/admin/forms/types',
+            { cache: 'no-store', credentials: 'include' },
+            { fallback: { success: true, formTypes: [] } }
+          ),
         ]);
-        const svc = await svcRes.json().catch(() => ({}));
-        const ft = await ftRes.json().catch(() => ({}));
         if (svc.success) setServices(svc.services);
         if (ft.success && Array.isArray(ft.formTypes)) {
           setFormTypes(ft.formTypes);
@@ -117,12 +124,18 @@ export default function InventoryPage() {
       if (!selectedFormTypeId) return;
       setSerialsLoading(true);
       try {
-        const [linksRes, serialsRes] = await Promise.all([
-          fetch(`/api/admin/forms/types/${selectedFormTypeId}/links`, { credentials: 'include' }),
-          fetch(`/api/admin/forms/types/${selectedFormTypeId}/serials`, { credentials: 'include' }),
+        const [links, sers] = await Promise.all([
+          fetchJsonWithCache<any>(
+            `/api/admin/forms/types/${selectedFormTypeId}/links`,
+            { credentials: 'include' },
+            { fallback: { success: true, variantIds: [] } }
+          ),
+          fetchJsonWithCache<any>(
+            `/api/admin/forms/types/${selectedFormTypeId}/serials`,
+            { credentials: 'include' },
+            { fallback: { success: true, serials: [] } }
+          ),
         ]);
-        const links = await linksRes.json().catch(() => ({}));
-        const sers = await serialsRes.json().catch(() => ({}));
         if (links.success && Array.isArray(links.variantIds)) setLinkedVariantIds(links.variantIds);
         if (sers.success && Array.isArray(sers.serials)) setSerials(sers.serials);
       } finally {

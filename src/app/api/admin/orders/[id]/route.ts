@@ -194,23 +194,21 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 }
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await requireAdminOrStaff();
+    await requireAdminOrStaff();
 
     const { id } = params;
     const data = await request.json();
 
     // Remove relations from data to prevent prisma errors if they were passed
-    const {
-      service,
-      variant,
-      user,
-      payment,
-      orderDocuments,
-      formSerials,
-      createdByAdmin,
-      profession, // Remove unknown field
-      ...updateData
-    } = data;
+    const updateData = { ...data };
+    delete updateData.service;
+    delete updateData.variant;
+    delete updateData.user;
+    delete updateData.payment;
+    delete updateData.orderDocuments;
+    delete updateData.formSerials;
+    delete updateData.createdByAdmin;
+    delete updateData.profession;
 
     // Helper to safely parse dates
     const safeParseDate = (dateStr: string | null | undefined): Date | undefined | null => {

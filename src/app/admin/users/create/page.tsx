@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 export default function CreateAdminPage() {
   const router = useRouter();
@@ -28,11 +29,8 @@ export default function CreateAdminPage() {
 
   const fetchAdminRoles = async () => {
     try {
-      const res = await fetch('/api/admin/roles');
-      if (res.ok) {
-        const data = await res.json();
-        setAdminRoles(data || []);
-      }
+      const data = await fetchJsonWithCache<any[]>('/api/admin/roles', undefined, { fallback: [] });
+      setAdminRoles(data || []);
     } catch (err) {
       console.error('Failed to fetch admin roles', err);
     }

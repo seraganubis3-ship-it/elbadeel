@@ -35,13 +35,12 @@ interface UserSession {
   lastAccess: number;
 }
 
-// Global definition for TypeScript
-declare global {
-  var sessionStore: Map<string, UserSession> | undefined;
-}
+const globalForSessionStore = globalThis as typeof globalThis & {
+  sessionStore?: Map<string, UserSession>;
+};
 
-const sessionStore = global.sessionStore || new Map<string, UserSession>();
-if (process.env.NODE_ENV !== 'production') global.sessionStore = sessionStore;
+const sessionStore = globalForSessionStore.sessionStore ?? new Map<string, UserSession>();
+if (process.env.NODE_ENV !== 'production') globalForSessionStore.sessionStore = sessionStore;
 
 // ============================================================================
 // 3. 🧠 CONTEXT & DATA LAYER
@@ -277,7 +276,7 @@ DYNAMIC FORM FIELDS:
     // Format: "User: msg" / "AI: msg"
     return session.history
       .slice(-CONFIG.MAX_HISTORY)
-      .map(line => {
+      .map((line: string) => {
         return line.startsWith('U')
           ? `Customer: ${line.substring(5)}`
           : `Ahmed: ${line.substring(4)}`;

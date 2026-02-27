@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useToast, ToastContainer } from '@/components/Toast';
+import { useToast } from '@/components/Toast';
 
 export default function PaymentPage() {
-  const { toasts, removeToast, showSuccess, showError } = useToast();
+  const { showSuccess, showError } = useToast();
   const params = useParams();
   const router = useRouter();
   const orderId = params.id as string;
@@ -20,21 +20,7 @@ export default function PaymentPage() {
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchOrder();
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [orderId]); // previewUrl cleanup in return, but orderId dependency is for fetch
-
-  // Separate cleanup effect if needed, or just rely on component unmount
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     try {
       const res = await fetch(`/api/orders/${orderId}`);
       if (res.ok) {
@@ -42,11 +28,22 @@ export default function PaymentPage() {
         setOrder(data.order);
       }
     } catch (error) {
-      // console.error(error);
+      //
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
+
+  // Separate cleanup effect if needed, or just rely on component unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

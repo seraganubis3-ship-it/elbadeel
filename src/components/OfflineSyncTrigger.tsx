@@ -1,19 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { offlineManager } from '@/lib/offline-manager';
 import { useToast } from '@/components/Toast';
 
 export const OfflineSyncTrigger = () => {
   const [pendingCount, setPendingCount] = useState(0);
-  const { showSuccess, showError, showWarning } = useToast();
+  const { showSuccess } = useToast();
 
-  const checkForPendingOrders = async () => {
+  const checkForPendingOrders = useCallback(async () => {
     const pending = await offlineManager.getPendingOrders();
     setPendingCount(pending.length);
-  };
+  }, []);
 
-  const handleSync = async () => {
+  const handleSync = useCallback(async () => {
     if (navigator.onLine) {
       const result = await offlineManager.syncOrders();
       if (result.success && result.results?.length > 0) {
@@ -26,28 +26,46 @@ export const OfflineSyncTrigger = () => {
         // Silent fail or minimal warning if it was an auto-sync
       }
     }
-  };
+  }, [checkForPendingOrders, showSuccess]);
+
+  const prefetchLookups = useCallback(async () => {
+    if (!navigator.onLine) return;
+    try {
+      const res = await fetch('/api/admin/offline/prefetch');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.success && data?.data) {
+        await offlineManager.savePrefetchedData(data.data);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     checkForPendingOrders();
+    prefetchLookups();
 
     // Listen for online event
-    window.addEventListener('online', handleSync);
+    const handleOnline = () => {
+      handleSync();
+      prefetchLookups();
+    };
+    window.addEventListener('online', handleOnline);
 
     // Check periodically (every 5 minutes)
     const interval = setInterval(
       () => {
         checkForPendingOrders();
         handleSync();
+        prefetchLookups();
       },
       5 * 60 * 1000
     );
 
     return () => {
-      window.removeEventListener('online', handleSync);
+      window.removeEventListener('online', handleOnline);
       clearInterval(interval);
     };
-  }, []);
+  }, [checkForPendingOrders, handleSync, prefetchLookups]);
 
   if (pendingCount === 0) return null;
 

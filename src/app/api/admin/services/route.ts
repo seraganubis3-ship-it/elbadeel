@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let imagePath = null;
+    let imagePath: string | null = null;
 
     // Handle image upload with B2
     if (image && image.size > 0) {

@@ -89,7 +89,7 @@ export async function checkRedisConnection(): Promise<boolean> {
 
 // Graceful shutdown
 export async function closeRedisConnections() {
-  const promises = [];
+  const promises: Array<Promise<unknown>> = [];
 
   if (queueConnection) {
     promises.push(queueConnection.quit().catch(() => {}));

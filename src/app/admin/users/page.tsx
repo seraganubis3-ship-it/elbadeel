@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface UserRow {
   id: string;
@@ -84,14 +85,23 @@ export default function AdminUsersPage() {
         params.set('page', String(targetPage));
         params.set('pageSize', String(pageSize));
 
-        const res = await fetch(`/api/admin/users?${params.toString()}`);
-        if (res.ok) {
-          const data = await res.json();
-          setRows(data.rows);
-          setPage(data.page);
-          setTotalPages(data.totalPages);
-          if (data.stats) setStats(data.stats);
-        }
+        const data = await fetchJsonWithCache<{
+          rows: UserRow[];
+          page: number;
+          totalPages: number;
+          stats?: UserStats;
+        }>(`/api/admin/users?${params.toString()}`, undefined, {
+          fallback: {
+            rows: [],
+            page: 1,
+            totalPages: 1,
+            stats: { total: 0, admins: 0, staff: 0, users: 0, viewers: 0 },
+          },
+        });
+        setRows(data.rows);
+        setPage(data.page);
+        setTotalPages(data.totalPages);
+        if (data.stats) setStats(data.stats);
       } finally {
         setLoading(false);
       }
@@ -101,21 +111,16 @@ export default function AdminUsersPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/users/stats');
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data);
-      } else {
-        // إذا فشل الـ API، احسب الإحصائيات من البيانات الموجودة
-        const calculatedStats = {
+      const data = await fetchJsonWithCache<UserStats>('/api/admin/users/stats', undefined, {
+        fallback: {
           total: rows.length,
           admins: rows.filter(u => u.role === 'ADMIN' || u.adminRole !== null).length,
           staff: rows.filter(u => u.role === 'STAFF').length,
           users: rows.filter(u => u.role === 'USER').length,
           viewers: rows.filter(u => u.role === 'VIEWER').length,
-        };
-        setStats(calculatedStats);
-      }
+        },
+      });
+      setStats(data);
     } catch (error) {
       //
       // // في حالة الخطأ، احسب الإحصائيات من البيانات الموجودة
@@ -133,11 +138,10 @@ export default function AdminUsersPage() {
 
   const fetchAdminRoles = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/roles');
-      if (res.ok) {
-        const data = await res.json();
-        setAdminRoles(data);
-      }
+      const data = await fetchJsonWithCache<any[]>('/api/admin/roles', undefined, {
+        fallback: [],
+      });
+      setAdminRoles(data);
     } catch (error) {
       console.error('Failed to fetch admin roles', error);
     }

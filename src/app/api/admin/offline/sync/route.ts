@@ -5,6 +5,13 @@ import { generateUniqueOrderNumber } from '@/lib/orderNumbering';
 import { logger } from '@/lib/logger';
 import bcrypt from 'bcryptjs';
 
+interface OfflineSyncResult {
+  offlineId: string;
+  status: 'synced' | 'created' | 'error';
+  id?: string;
+  error?: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await requireAdminOrStaff();
@@ -16,17 +23,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 });
     }
 
-    const results = [];
+    const results: OfflineSyncResult[] = [];
 
     for (const offlineOrder of orders) {
+      const offlineId = String(offlineOrder?.offlineId ?? '');
       try {
         // 1. Check if this offlineId already exists to prevent duplicates
         const existing = await prisma.order.findFirst({
-          where: { offlineId: offlineOrder.offlineId },
+          where: { offlineId },
         });
 
         if (existing) {
-          results.push({ offlineId: offlineOrder.offlineId, status: 'synced', id: existing.id });
+          results.push({ offlineId, status: 'synced', id: existing.id });
           continue;
         }
 
@@ -138,7 +146,7 @@ export async function POST(request: NextRequest) {
           destination: offlineOrder.destination || '',
           title: offlineOrder.title || '',
           hasAttachments: !!offlineOrder.hasAttachments,
-          offlineId: offlineOrder.offlineId,
+          offlineId,
           // Sanitize Dates
           birthDate: sanitizeDate(offlineOrder.birthDate),
           photographyDate: sanitizeDate(offlineOrder.photographyDate),
@@ -170,10 +178,10 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        results.push({ offlineId: offlineOrder.offlineId, status: 'created', id: newOrder.id });
+        results.push({ offlineId, status: 'created', id: newOrder.id });
       } catch (err) {
-        logger.error(`Sync error for order ${offlineOrder.offlineId}`, err);
-        results.push({ offlineId: offlineOrder.offlineId, status: 'error', error: String(err) });
+        logger.error(`Sync error for order ${offlineId}`, err);
+        results.push({ offlineId, status: 'error', error: String(err) });
       }
     }
 

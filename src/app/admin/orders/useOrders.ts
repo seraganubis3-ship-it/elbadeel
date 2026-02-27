@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Order, OrderFilters, Service, Category, Admin, getStatusText } from './types';
+import { offlineManager } from '@/lib/offline-manager';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface UseOrdersReturn {
   // Data
@@ -223,6 +225,7 @@ export function useOrders(
         params.set('page', String(currentPage));
         params.set('limit', String(ordersPerPage));
 
+        const queryKey = params.toString();
         const response = await fetch(
           `/api/admin/orders${params.toString() ? `?${params.toString()}` : ''}`,
           {
@@ -232,6 +235,13 @@ export function useOrders(
         if (response.ok) {
           const data = await response.json();
           setOrders(data.orders || []);
+          offlineManager.upsertOrders(data.orders || []).catch(() => {});
+          offlineManager
+            .saveOrderQuery(
+              queryKey,
+              (data.orders || []).map((o: any) => o.id)
+            )
+            .catch(() => {});
           if (data.pagination) {
             setTotalPages(data.pagination.totalPages || 1);
             setTotalOrders(data.pagination.total || 0);
@@ -240,7 +250,51 @@ export function useOrders(
           }
         }
       } catch (error) {
-        // console.error('Error fetching orders:', error);
+        try {
+          const params = new URLSearchParams();
+          if (searchTerm) params.set('search', searchTerm);
+          if (userIdFilter) params.set('userId', userIdFilter);
+          if (employeeId) params.set('createdByAdminId', employeeId);
+          if (categoryId) params.set('categoryId', categoryId);
+          if (statusFilter !== 'all') params.set('status', statusFilter);
+          if (deliveryFilter !== 'all') params.set('deliveryType', deliveryFilter);
+
+          if (dateFrom && dateTo) {
+            params.set('from', dateFrom);
+            params.set('to', dateTo);
+          }
+          if (selectedServiceIds.length > 0) {
+            selectedServiceIds.forEach(id => params.append('serviceIds', id));
+          }
+          if (orderSourceFilter === 'office') {
+            params.set('createdByAdmin', 'true');
+          } else if (orderSourceFilter === 'online') {
+            params.set('createdByAdmin', 'false');
+          }
+
+          if (photographyDate) {
+            params.set('photographyDate', photographyDate);
+          }
+
+          params.set('sortBy', sortBy);
+          params.set('page', String(currentPage));
+          params.set('limit', String(ordersPerPage));
+
+          const queryKey = params.toString();
+          const cachedQuery = await offlineManager.getOrderQuery(queryKey);
+          if (cachedQuery?.orderIds?.length) {
+            const cachedOrders = await offlineManager.getCachedOrders();
+            const cachedMap = new Map(cachedOrders.map((o: any) => [o.id, o]));
+            const ordered = cachedQuery.orderIds.map(id => cachedMap.get(id)).filter(Boolean);
+            setOrders(ordered as any);
+          } else {
+            const cachedOrders = await offlineManager.getCachedOrders();
+            if (cachedOrders.length > 0) {
+              setOrders(cachedOrders as any);
+              setTotalPages(1);
+            }
+          }
+        } catch {}
       } finally {
         setLoading(false);
         setIsRefetching(false);
@@ -349,11 +403,12 @@ export function useOrders(
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/admin/services');
-        if (res.ok) {
-          const data = await res.json();
-          setServices((data.services || []).map((s: any) => ({ id: s.id, name: s.name })));
-        }
+        const data = await fetchJsonWithCache<{ services?: any[] }>(
+          '/api/admin/services',
+          undefined,
+          { fallback: { services: [] } }
+        );
+        setServices((data.services || []).map((s: any) => ({ id: s.id, name: s.name })));
       } catch {}
     })();
   }, []);
@@ -362,11 +417,12 @@ export function useOrders(
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/admin/categories');
-        if (res.ok) {
-          const data = await res.json();
-          setCategories((data.categories || []).map((c: any) => ({ id: c.id, name: c.name })));
-        }
+        const data = await fetchJsonWithCache<{ categories?: any[] }>(
+          '/api/admin/categories',
+          undefined,
+          { fallback: { categories: [] } }
+        );
+        setCategories((data.categories || []).map((c: any) => ({ id: c.id, name: c.name })));
       } catch {}
     })();
   }, []);
@@ -375,16 +431,17 @@ export function useOrders(
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/admin/users?role=MANAGEMENT&pageSize=100');
-        if (res.ok) {
-          const data = await res.json();
-          setAdmins(
-            (data.rows || []).map((u: any) => ({
-              id: u.id,
-              name: u.name || u.email || 'مشرف',
-            }))
-          );
-        }
+        const data = await fetchJsonWithCache<{ rows?: any[] }>(
+          '/api/admin/users?role=MANAGEMENT&pageSize=100',
+          undefined,
+          { fallback: { rows: [] } }
+        );
+        setAdmins(
+          (data.rows || []).map((u: any) => ({
+            id: u.id,
+            name: u.name || u.email || 'مشرف',
+          }))
+        );
       } catch {}
     })();
   }, []);
@@ -414,8 +471,6 @@ export function useOrders(
   };
 
   // Order selection
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = filteredOrders; // Since it's already sliced by server-side pagination
 
   const toggleOrderSelection = (orderId: string) => {

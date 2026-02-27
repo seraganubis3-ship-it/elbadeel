@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/Toast';
 import Image from 'next/image';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface Delegate {
   id: string;
@@ -40,8 +41,13 @@ export default function DelegatesPage() {
 
   const fetchDelegates = async () => {
     try {
-      const res = await fetch('/api/admin/delegates');
-      const data = await res.json();
+      const data = await fetchJsonWithCache<{ delegates?: Delegate[] }>(
+        '/api/admin/delegates',
+        undefined,
+        {
+          fallback: { delegates: [] },
+        }
+      );
       if (data.delegates) {
         setDelegates(data.delegates);
       }

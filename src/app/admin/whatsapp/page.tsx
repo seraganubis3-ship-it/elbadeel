@@ -16,10 +16,10 @@ import {
   ChevronDown,
   ChevronUp,
   Pencil,
-  Check,
   X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface WhatsAppStatus {
   status: 'connected' | 'disconnected' | 'qr_ready' | 'loading';
@@ -141,8 +141,11 @@ export default function WhatsAppPage() {
   /* ─── Templates CRUD ─── */
   const fetchTemplates = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/whatsapp/templates');
-      const data = await res.json();
+      const data = await fetchJsonWithCache<{ success: boolean; templates: Template[] }>(
+        '/api/admin/whatsapp/templates',
+        undefined,
+        { fallback: { success: true, templates: [] } }
+      );
       if (data.success) setTemplates(data.templates);
     } finally {
       setTemplatesLoading(false);

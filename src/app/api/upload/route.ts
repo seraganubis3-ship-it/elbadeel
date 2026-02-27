@@ -6,6 +6,15 @@ import { generatePresignedUrl } from '@/lib/presignedUrl';
 
 export const dynamic = 'force-dynamic';
 
+interface UploadedFileInfo {
+  originalName: string;
+  filename: string;
+  filePath: string;
+  key: string;
+  fileSize: number;
+  fileType: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
@@ -31,7 +40,7 @@ export async function POST(request: NextRequest) {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
 
-    const uploadedFiles = [];
+    const uploadedFiles: UploadedFileInfo[] = [];
 
     for (const file of files) {
       if (file.size > maxSize) {

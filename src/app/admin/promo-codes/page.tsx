@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PromoCodeForm from './form';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 export default function PromoCodesPage() {
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
@@ -13,8 +14,11 @@ export default function PromoCodesPage() {
   const fetchPromoCodes = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/admin/promo-codes');
-      const data = await res.json();
+      const data = await fetchJsonWithCache<{ success: boolean; promoCodes: any[] }>(
+        '/api/admin/promo-codes',
+        undefined,
+        { fallback: { success: true, promoCodes: [] } }
+      );
       if (data.success) {
         setPromoCodes(data.promoCodes);
       }

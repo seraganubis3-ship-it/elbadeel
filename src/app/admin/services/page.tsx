@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 import { FinesModal } from './components/FinesModal';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface Service {
   id: string;
@@ -60,8 +61,11 @@ export default function ServicesPage() {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch('/api/admin/services');
-      const data = await response.json();
+      const data = await fetchJsonWithCache<{ success: boolean; services: Service[] }>(
+        '/api/admin/services',
+        undefined,
+        { fallback: { success: true, services: [] } }
+      );
       if (data.success) {
         const srvs = data.services;
         setServices(srvs);

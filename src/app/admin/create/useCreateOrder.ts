@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { hasPermission } from '@/lib/permissions';
 import { useSession } from 'next-auth/react';
 import { parseNationalId } from '@/lib/nationalIdParser';
@@ -189,7 +189,7 @@ export function useCreateOrder() {
         const offlineFines = await offlineManager.getFines();
         if (offlineServices.length > 0) setServices(offlineServices);
         if (offlineFines.length > 0) setFinesList(offlineFines);
-        showWarning(
+        showWarningRef.current(
           'أنت تعمل الآن في وضع الأوفلاين',
           'فشل الاتصال بالخادم، تم تحميل البيانات من الذاكرة المحلية.'
         );
@@ -215,9 +215,7 @@ export function useCreateOrder() {
   // Search customer
   const searchCustomer = useCallback(
     (name: string) => {
-      if (customer && customer.name !== name) {
-        setCustomer(null);
-      }
+      setCustomer(prev => (prev && prev.name !== name ? null : prev));
       if (abortController) abortController.abort();
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
@@ -227,6 +225,27 @@ export function useCreateOrder() {
           setAbortController(controller);
           setSearching(true);
           try {
+            if (typeof window !== 'undefined' && !navigator.onLine) {
+              const localResults = await offlineManager.searchCustomers(name);
+              if (localResults.length > 0) {
+                setSearchResults(localResults);
+                setSuggestedUser(localResults[0]);
+                setShowSearchDropdown(true);
+                const bestMatch = localResults[0].name;
+                if (bestMatch.toLowerCase().startsWith(name.toLowerCase())) {
+                  setSuggestion(bestMatch);
+                } else {
+                  setSuggestion('');
+                }
+              } else {
+                setSearchResults([]);
+                setSuggestedUser(null);
+                setShowSearchDropdown(false);
+                setSuggestion('');
+              }
+              return;
+            }
+
             const params = new URLSearchParams();
             if (name) params.append('name', name);
             const response = await fetch(`/api/admin/users/search?${params.toString()}`, {
@@ -1116,7 +1135,6 @@ export function useCreateOrder() {
       selectedFines,
       manualServices,
       formSerialNumber,
-      phoneConflict,
       calculateTotal,
       getCurrentWorkDate,
       serialValid,

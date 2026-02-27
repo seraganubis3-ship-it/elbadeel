@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { Order, getStatusText } from '../types';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 const MySwal = withReactContent(Swal);
 
@@ -43,10 +44,11 @@ export function LastOrderAlert({ searchTerm, customerId }: LastOrderAlertProps) 
         params.set('limit', '1');
         params.set('sortBy', 'createdAt_desc');
 
-        const response = await fetch(`/api/admin/orders?${params.toString()}`);
-        if (!response.ok) return;
-
-        const data = await response.json();
+        const data = await fetchJsonWithCache<{ orders?: Order[] }>(
+          `/api/admin/orders?${params.toString()}`,
+          undefined,
+          { fallback: { orders: [] } }
+        );
         const orders: Order[] = data.orders || [];
 
         if (orders.length > 0) {

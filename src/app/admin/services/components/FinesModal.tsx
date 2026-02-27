@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface Fine {
   id: string;
@@ -31,8 +32,11 @@ export function FinesModal({ isOpen, onClose }: FinesModalProps) {
   const fetchFines = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/fines');
-      const data = await response.json();
+      const data = await fetchJsonWithCache<{ success: boolean; fines: Fine[] }>(
+        '/api/admin/fines',
+        undefined,
+        { fallback: { success: true, fines: [] } }
+      );
       if (data.success) {
         setFines(data.fines);
         // Initialize edit states

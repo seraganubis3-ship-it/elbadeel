@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface Category {
   id: string;
@@ -47,8 +48,11 @@ export default function CreateServicePage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/admin/categories');
-      const data = await response.json();
+      const data = await fetchJsonWithCache<{ success: boolean; categories: Category[] }>(
+        '/api/admin/categories',
+        undefined,
+        { fallback: { success: true, categories: [] } }
+      );
       if (data.success) {
         setCategories(data.categories);
       }

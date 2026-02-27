@@ -6,6 +6,7 @@ import ServiceFieldsManager from './components/ServiceFieldsManager';
 import ServiceDocumentsManager from './components/ServiceDocumentsManager';
 import { Category, ServiceVariant, ServiceDocument, ServiceField } from './types';
 import Image from 'next/image';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 export default function EditServicePage() {
   const router = useRouter();
@@ -32,13 +33,18 @@ export default function EditServicePage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [categoriesRes, serviceRes] = await Promise.all([
-        fetch('/api/admin/categories'),
-        fetch(`/api/admin/services/${serviceId}`),
+      const [categoriesData, serviceData] = await Promise.all([
+        fetchJsonWithCache<{ success: boolean; categories: Category[] }>(
+          '/api/admin/categories',
+          undefined,
+          {
+            fallback: { success: true, categories: [] },
+          }
+        ),
+        fetchJsonWithCache<any>(`/api/admin/services/${serviceId}`, undefined, {
+          fallback: { success: false },
+        }),
       ]);
-
-      const categoriesData = await categoriesRes.json();
-      const serviceData = await serviceRes.json();
 
       if (categoriesData.success) {
         setCategories(categoriesData.categories);

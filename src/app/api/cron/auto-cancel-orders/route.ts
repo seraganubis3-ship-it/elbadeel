@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+interface CancelledOrderInfo {
+  id: string;
+  customerName: string;
+  totalAmount: string;
+  createdAt: Date;
+  cancelledAt: Date;
+}
+
 export async function GET(request: NextRequest) {
   try {
     // التحقق من API key (اختياري للأمان)
@@ -27,7 +35,7 @@ export async function GET(request: NextRequest) {
     });
 
     let cancelledCount = 0;
-    const cancelledOrders = [];
+    const cancelledOrders: CancelledOrderInfo[] = [];
 
     for (const order of pendingOrders) {
       // التحقق من عدم وجود دفع مكتمل

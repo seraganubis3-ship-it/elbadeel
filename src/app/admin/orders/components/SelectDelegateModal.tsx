@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface Delegate {
   id: string;
@@ -63,8 +64,11 @@ export function SelectDelegateModal({
   const fetchDelegates = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/delegates?active=true');
-      const data = await res.json();
+      const data = await fetchJsonWithCache<{ delegates?: Delegate[] }>(
+        '/api/admin/delegates?active=true',
+        undefined,
+        { fallback: { delegates: [] } }
+      );
       if (data.delegates) {
         setDelegates(data.delegates);
       }

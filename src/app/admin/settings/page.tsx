@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface Settings {
   siteName: string;
@@ -23,48 +24,47 @@ interface Settings {
   logoUrl: string;
 }
 
+const DEFAULT_SETTINGS: Settings = {
+  siteName: '',
+  siteDescription: '',
+  contactEmail: '',
+  contactPhone: '',
+  additionalPhone: '',
+  whatsappPhone: '',
+  secondaryWhatsappPhone: '',
+  address: '',
+  defaultDeliveryFee: 0,
+  paymentNumbers: '',
+  complaintsPhone: '',
+  facebookUrl: '',
+  instagramUrl: '',
+  tiktokUrl: '',
+  twitterUrl: '',
+  linkedinUrl: '',
+  logoUrl: '',
+};
+
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState<Settings>({
-    siteName: '',
-    siteDescription: '',
-    contactEmail: '',
-    contactPhone: '',
-    additionalPhone: '',
-    whatsappPhone: '',
-    secondaryWhatsappPhone: '',
-    address: '',
-    defaultDeliveryFee: 0,
-    paymentNumbers: '',
-    complaintsPhone: '',
-    facebookUrl: '',
-    instagramUrl: '',
-    tiktokUrl: '',
-    twitterUrl: '',
-    linkedinUrl: '',
-    logoUrl: '',
-  });
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/settings');
-      if (res.ok) {
-        const data = await res.json();
-        setSettings(data);
-      } else {
-        toast.error('فشل في جلب الإعدادات');
-      }
+      const data = await fetchJsonWithCache<Settings>('/api/admin/settings', undefined, {
+        fallback: DEFAULT_SETTINGS,
+      });
+      setSettings(data);
     } catch (error) {
       toast.error('خطأ في الاتصال');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

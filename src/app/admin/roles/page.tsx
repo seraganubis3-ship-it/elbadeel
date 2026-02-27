@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/Toast';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 const AVAILABLE_PERMISSIONS = [
   { id: 'VIEW_DASHBOARD', label: 'الوصول للوحة التحكم' },
@@ -35,19 +36,18 @@ export default function RolesManagementPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/users/stats');
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data);
-      }
+      const data = await fetchJsonWithCache<any>('/api/admin/users/stats', undefined, {
+        fallback: null,
+      });
+      setStats(data);
     } catch {}
   }, []);
 
   const fetchRoles = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/roles');
-      if (!res.ok) throw new Error('فشل جلب الرتب');
-      const data = await res.json();
+      const data = await fetchJsonWithCache<any[]>('/api/admin/roles', undefined, {
+        fallback: [],
+      });
       setRoles(data);
     } catch (err: any) {
       showError('خطأ', err.message);

@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, requireAdminOrStaff, getWorkDate } from '@/lib/auth';
+import { requireAdminOrStaff, getWorkDate } from '@/lib/auth';
 import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { generateUniqueOrderNumber } from '@/lib/orderNumbering';
 import { logger } from '@/lib/logger';
 import { ORDER_STATUS } from '@/constants/orderStatuses';
-import {
-  checkWhatsAppStatus,
-  sendWhatsAppMessage,
-  NotificationTemplates,
-  sendWhatsAppByTrigger,
-} from '@/lib/whatsapp';
+import { checkWhatsAppStatus, sendWhatsAppByTrigger } from '@/lib/whatsapp';
 import bcrypt from 'bcryptjs';
+import type { Prisma, User } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 // [FORCE_RELOAD] Updated Prisma client integration
@@ -64,7 +60,7 @@ interface OrderResponse {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireAdminOrStaff();
+    await requireAdminOrStaff();
 
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId') || undefined;
@@ -430,17 +426,17 @@ export async function POST(request: NextRequest) {
     const normalizedPhone = normalizePhone(customerPhone);
 
     let userId: string | null = null;
-    let existingUser = null;
+    let existingUser: User | null = null;
 
-    const orConditions = [];
+    const orConditions: Prisma.UserWhereInput[] = [];
     if (customerEmail && customerEmail.trim() !== '') {
-      orConditions.push({ email: { equals: customerEmail, mode: 'insensitive' as const } });
+      orConditions.push({ email: { equals: customerEmail, mode: 'insensitive' } });
     }
     if (normalizedPhone) {
       orConditions.push({ phone: normalizedPhone });
     }
     if (idNumber) {
-      orConditions.push({ idNumber: { equals: idNumber, mode: 'insensitive' as const } });
+      orConditions.push({ idNumber: { equals: idNumber, mode: 'insensitive' } });
     }
 
     if (orConditions.length > 0) {
@@ -508,7 +504,7 @@ export async function POST(request: NextRequest) {
       isNewUserCreated = true;
     } else {
       const u = existingUser;
-      const updates: any = {};
+      const updates: Record<string, unknown> = {};
       const assignIfMissing = (key: string, value?: any) => {
         const current = (u as any)[key];
         const isEmpty = current === null || current === undefined || current === '';
@@ -545,7 +541,7 @@ export async function POST(request: NextRequest) {
       assignIfMissing('wifeMotherName', wifeMotherName);
 
       if (Object.keys(updates).length > 0) {
-        await (prisma.user as any).update({ where: { id: u.id }, data: updates });
+        await prisma.user.update({ where: { id: u.id }, data: updates as Prisma.UserUpdateInput });
       }
       userId = u.id;
     }

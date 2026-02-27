@@ -21,7 +21,7 @@ const profileUpdateSchema = z.object({
   gender: z.enum(['male', 'female']).optional(),
 });
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authConfig);
 

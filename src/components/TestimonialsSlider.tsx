@@ -79,10 +79,11 @@ export default function TestimonialsSlider() {
 
   // Get current testimonial and next 2 for display
   const getVisibleTestimonials = () => {
-    const result = [];
+    const result: Testimonial[] = [];
     for (let i = 0; i < 3; i++) {
       const index = (currentIndex + i) % testimonials.length;
-      result.push(testimonials[index]);
+      const testimonial = testimonials[index];
+      if (testimonial) result.push(testimonial);
     }
     return result;
   };

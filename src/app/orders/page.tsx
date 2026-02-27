@@ -73,7 +73,7 @@ function OrdersContent() {
     setSearchTerm(q);
     setStatusFilter(status);
     setSortBy(sort);
-  }, []);
+  }, [searchParams]);
 
   const fetchOrders = async () => {
     try {

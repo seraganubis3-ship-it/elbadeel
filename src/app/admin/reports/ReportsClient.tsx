@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import RechartsChart, { SeriesPoint as ChartSeriesPoint } from './RechartsChart';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 type PeriodKey = '7d' | '30d' | '90d' | 'this-month' | 'last-month' | 'all';
 
@@ -33,6 +34,7 @@ export default function ReportsClient({ initialPeriod }: { initialPeriod: Period
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const statsRef = useRef<Stats | null>(null);
 
   const periods: { key: PeriodKey; label: string }[] = useMemo(
     () => [
@@ -53,24 +55,30 @@ export default function ReportsClient({ initialPeriod }: { initialPeriod: Period
 
   const deltaColor = (v: number) => (v >= 0 ? 'text-green-600' : 'text-red-600');
 
-  const fetchStats = async (p: PeriodKey) => {
+  useEffect(() => {
+    statsRef.current = stats;
+  }, [stats]);
+
+  const fetchStats = useCallback(async (p: PeriodKey) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/reports?period=${p}`, { cache: 'no-store' });
-      if (!res.ok) throw new Error('فشل في جلب البيانات');
-      const data = await res.json();
+      const data = await fetchJsonWithCache<Stats>(
+        `/api/admin/reports?period=${p}`,
+        { cache: 'no-store' },
+        statsRef.current ? { fallback: statsRef.current } : undefined
+      );
       setStats(data);
     } catch (e: any) {
       setError(e?.message || 'خطأ غير متوقع');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStats(period);
-  }, [period]);
+  }, [period, fetchStats]);
 
   const formatEGP = (cents: number) =>
     new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(cents / 100);

@@ -1,7 +1,9 @@
 import { openDB, IDBPDatabase } from 'idb';
 
 const DB_NAME = 'albadel-offline';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
+const ORDERS_DB_NAME = 'albadel-offline-orders';
+const ORDERS_DB_VERSION = 1;
 
 export interface OfflineOrder {
   offlineId: string;
@@ -18,6 +20,7 @@ export interface OfflineOrder {
 
 class OfflineManager {
   private dbInstance: Promise<IDBPDatabase> | null = null;
+  private ordersDbInstance: Promise<IDBPDatabase> | null = null;
 
   private get db(): Promise<IDBPDatabase> {
     if (typeof window === 'undefined') {
@@ -48,6 +51,25 @@ class OfflineManager {
       });
     }
     return this.dbInstance;
+  }
+
+  private get ordersDb(): Promise<IDBPDatabase> {
+    if (typeof window === 'undefined') {
+      throw new Error('OfflineManager: indexedDB is only available in the browser.');
+    }
+    if (!this.ordersDbInstance) {
+      this.ordersDbInstance = openDB(ORDERS_DB_NAME, ORDERS_DB_VERSION, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains('orders')) {
+            db.createObjectStore('orders', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('order_queries')) {
+            db.createObjectStore('order_queries', { keyPath: 'key' });
+          }
+        },
+      });
+    }
+    return this.ordersDbInstance;
   }
 
   // --- Lookups ---
@@ -104,6 +126,50 @@ class OfflineManager {
       id: customer.id || `TEMP-${customer.phone?.replace(/\D/g, '') || Date.now()}`,
     };
     return db.put('customers', customerToSave);
+  }
+
+  // --- Orders Cache ---
+
+  async upsertOrder(order: any) {
+    const db = await this.ordersDb;
+    if (!order?.id) return;
+    return db.put('orders', order);
+  }
+
+  async upsertOrders(orders: any[]) {
+    if (!Array.isArray(orders) || orders.length === 0) return;
+    const db = await this.ordersDb;
+    const tx = db.transaction(['orders'], 'readwrite');
+    for (const order of orders) {
+      if (order?.id) await tx.objectStore('orders').put(order);
+    }
+    await tx.done;
+  }
+
+  async getCachedOrder(id: string) {
+    const db = await this.ordersDb;
+    return db.get('orders', id);
+  }
+
+  async getCachedOrders() {
+    const db = await this.ordersDb;
+    return db.getAll('orders');
+  }
+
+  async saveOrderQuery(key: string, orderIds: string[]) {
+    const db = await this.ordersDb;
+    return db.put('order_queries', {
+      key,
+      orderIds,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  async getOrderQuery(key: string): Promise<{ orderIds: string[]; updatedAt: string } | null> {
+    const db = await this.ordersDb;
+    const record = await db.get('order_queries', key);
+    if (!record) return null;
+    return { orderIds: record.orderIds || [], updatedAt: record.updatedAt };
   }
 
   // --- Orders ---

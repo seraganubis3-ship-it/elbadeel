@@ -1,12 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 
-declare global {
-  var prisma: PrismaClient | undefined;
-}
-
 // Optimized Prisma client with connection pooling
+const globalForPrisma = globalThis as typeof globalThis & { prisma?: PrismaClient };
+
 export const prisma =
-  globalThis.prisma ||
+  globalForPrisma.prisma ??
   new PrismaClient({
     // Only log errors in production, queries only in development
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
@@ -14,7 +12,7 @@ export const prisma =
 
 // Reuse connection in development
 if (process.env.NODE_ENV !== 'production') {
-  globalThis.prisma = prisma;
+  globalForPrisma.prisma = prisma;
 }
 
 // Graceful shutdown is handled by Next.js/Vercel

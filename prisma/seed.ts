@@ -380,7 +380,7 @@ async function main() {
 }
 
 main()
-  .catch(_e => {
+  .catch(() => {
     process.exit(1);
   })
   .finally(async () => {

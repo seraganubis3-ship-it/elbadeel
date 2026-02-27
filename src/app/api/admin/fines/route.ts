@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth';
+import type { Fine } from '@prisma/client';
 
 export async function GET() {
   try {
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
 
     // Seed mode for initial migration
     if (body.seed && Array.isArray(body.fines)) {
-      const createdFines = [];
+      const createdFines: Fine[] = [];
       for (const fine of body.fines) {
         // Upsert based on name + category or just create if empty DB
         const existing = await prisma.fine.findFirst({

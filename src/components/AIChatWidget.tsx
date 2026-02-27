@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -78,12 +79,12 @@ export default function AIChatWidget() {
     return renderedLines;
   };
 
-  const parseLinksAndBold = (text: string) => {
+  const parseLinksAndBold = (text: string): ReactNode => {
     // First, process links: [Label](url)
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    const parts = [];
+    const parts: ReactNode[] = [];
     let lastIndex = 0;
-    let match;
+    let match: RegExpExecArray | null;
 
     while ((match = linkRegex.exec(text)) !== null) {
       if (match.index > lastIndex) {
@@ -107,12 +108,12 @@ export default function AIChatWidget() {
     return parts.length > 0 ? parts : parseBold(text);
   };
 
-  const parseBold = (text: string) => {
+  const parseBold = (text: string): ReactNode => {
     // Regex for **bold** (non-greedy, captures anything inside including special chars)
     const boldRegex = /\*\*(.*?)\*\*/g;
-    const parts = [];
+    const parts: ReactNode[] = [];
     let lastIndex = 0;
-    let match;
+    let match: RegExpExecArray | null;
 
     while ((match = boldRegex.exec(text)) !== null) {
       if (match.index > lastIndex) {

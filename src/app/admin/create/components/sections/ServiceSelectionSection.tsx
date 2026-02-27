@@ -157,7 +157,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
 
   // Calculate delivery date based on work days (Fri/Sat off)
   const calculateWorkDays = (days: number) => {
-    let date = new Date();
+    const date = new Date();
     let added = 0;
     while (added < days) {
       date.setDate(date.getDate() + 1);

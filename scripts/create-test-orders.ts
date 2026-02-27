@@ -53,7 +53,7 @@ async function main() {
     return;
   }
 
-  const createdOrders = [];
+  const createdOrders: string[] = [];
 
   for (let i = 0; i < 15; i++) {
     const service = services[Math.floor(Math.random() * services.length)];

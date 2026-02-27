@@ -17,6 +17,11 @@ const eslintConfig = [
       '.next/**',
       'out/**',
       'build/**',
+      'public/**',
+      'scripts/**',
+      'prisma/**/*.js',
+      '*.js',
+      '*.cjs',
       'next-env.d.ts',
       'src/generated/**',
       'src/generated/prisma/**',
@@ -30,6 +35,19 @@ const eslintConfig = [
       '@typescript-eslint/no-this-alias': 'off',
       'react/no-unescaped-entities': 'off',
       'react-hooks/exhaustive-deps': 'warn',
+
+      // 👇 أهم تعديل
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+
+      'no-var': 'error',
+      'prefer-const': 'warn',
     },
   },
 ];

@@ -16,12 +16,10 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import {
   TrendingUp,
-  TrendingDown,
   DollarSign,
   Users,
   ShoppingCart,
@@ -32,9 +30,9 @@ import {
   BarChart3,
   ArrowUp,
   ArrowDown,
-  Calendar,
 } from 'lucide-react';
 import Button from '@/components/Button';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface AnalyticsData {
   summary: {
@@ -130,19 +128,20 @@ export default function AnalyticsPage() {
     async (days: number = dateRange) => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/admin/analytics?days=${days}`);
-        if (response.ok) {
-          const analyticsData = await response.json();
-          setData(analyticsData);
-          setLastUpdate(new Date());
-        }
+        const analyticsData = await fetchJsonWithCache<AnalyticsData>(
+          `/api/admin/analytics?days=${days}`,
+          undefined,
+          data ? { fallback: data } : undefined
+        );
+        setData(analyticsData);
+        setLastUpdate(new Date());
       } catch (error) {
         console.error('Failed to fetch analytics:', error);
       } finally {
         setLoading(false);
       }
     },
-    [dateRange]
+    [dateRange, data]
   );
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { checkWhatsAppStatus, sendWhatsAppByTrigger } from '@/lib/whatsapp';
+import { logger } from '@/lib/logger';
 
 const statusUpdateSchema = z.object({
   status: z.string(),
@@ -131,9 +132,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const tUpdateEnd = performance.now();
 
     const tTotal = performance.now() - tStart;
-    console.log(
-      `[PERF] Status update for ${id}: Total=${tTotal.toFixed(2)}ms, Auth=${(tAuthEnd - tAuthStart).toFixed(2)}ms, Prep=${(tPrepEnd - tPrepStart).toFixed(2)}ms, Fetch=${(tFetchEnd - tFetchStart).toFixed(2)}ms, Update=${(tUpdateEnd - tUpdateStart).toFixed(2)}ms`
-    );
+    logger.debug('Order status update perf', {
+      id,
+      totalMs: Number(tTotal.toFixed(2)),
+      authMs: Number((tAuthEnd - tAuthStart).toFixed(2)),
+      prepMs: Number((tPrepEnd - tPrepStart).toFixed(2)),
+      fetchMs: Number((tFetchEnd - tFetchStart).toFixed(2)),
+      updateMs: Number((tUpdateEnd - tUpdateStart).toFixed(2)),
+    });
 
     return NextResponse.json({
       success: true,
@@ -142,7 +148,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     });
   } catch (error) {
     const tError = performance.now() - tStart;
-    console.error(`[PERF] Status update ERROR for ${id} after ${tError.toFixed(2)}ms:`, error);
+    logger.error('Order status update error', error, {
+      id,
+      totalMs: Number(tError.toFixed(2)),
+    });
     return NextResponse.json({ error: 'حدث خطأ أثناء تحديث حالة الطلب' }, { status: 500 });
   }
 }

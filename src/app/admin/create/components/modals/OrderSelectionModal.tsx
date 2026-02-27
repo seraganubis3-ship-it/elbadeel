@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Customer } from '../../types';
+import { fetchJsonWithCache } from '@/lib/offline-api';
 
 interface OrderSelectionModalProps {
   isOpen: boolean;
@@ -36,17 +37,13 @@ export const OrderSelectionModal: React.FC<OrderSelectionModalProps> = ({
       // However, the user asked for "search for customer -> show services".
       // Use the collective-receipt API to fetch ALL orders for this customer (no date param)
       const cleanCustomerId = encodeURIComponent(customer!.id.trim());
-      const res = await fetch(`/api/admin/collective-receipt?customerId=${cleanCustomerId}`);
-
-      if (res.ok) {
-        const data = await res.json();
-        // The API returns { orders: [...] }
-        setOrders(data.orders);
-        // Default select all
-        setSelectedOrders(new Set(data.orders.map((o: any) => o.id)));
-      } else {
-        setError('فشل في جلب الطلبات');
-      }
+      const data = await fetchJsonWithCache<{ orders: OrderSummary[] }>(
+        `/api/admin/collective-receipt?customerId=${cleanCustomerId}`,
+        undefined,
+        { fallback: { orders: [] } }
+      );
+      setOrders(data.orders);
+      setSelectedOrders(new Set(data.orders.map((o: any) => o.id)));
     } catch (err) {
       setError('حدث خطأ أثناء الاتصال');
     } finally {

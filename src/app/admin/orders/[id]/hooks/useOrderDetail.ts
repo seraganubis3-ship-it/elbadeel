@@ -77,6 +77,7 @@ export function useOrderDetail(orderId: string) {
         setOrder(data.order);
         setNewStatus(data.order.status);
         setNewAdminNotes(data.order.adminNotes || '');
+        offlineManager.upsertOrder(data.order).catch(() => {});
 
         if (data.order.payment) {
           setPaymentData({
@@ -108,7 +109,12 @@ export function useOrderDetail(orderId: string) {
             user: { name: offlineOrder.customerName, phone: offlineOrder.customerPhone },
           } as any);
         } else {
-          setTimeout(() => router.push('/admin/orders'), 2000);
+          const cachedOrder = await offlineManager.getCachedOrder(orderId);
+          if (cachedOrder) {
+            setOrder(cachedOrder as any);
+          } else {
+            setTimeout(() => router.push('/admin/orders'), 2000);
+          }
         }
       }
     } catch {
@@ -125,6 +131,11 @@ export function useOrderDetail(orderId: string) {
           variant: { name: '---', id: offlineOrder.variantId },
           user: { name: offlineOrder.customerName, phone: offlineOrder.customerPhone },
         } as any);
+      } else {
+        const cachedOrder = await offlineManager.getCachedOrder(orderId);
+        if (cachedOrder) {
+          setOrder(cachedOrder as any);
+        }
       }
     } finally {
       setLoading(false);
@@ -204,8 +215,9 @@ export function useOrderDetail(orderId: string) {
       }
 
       const data = await response.json();
-      setOrder(prev =>
-        prev
+      let nextOrder: Order | null = null;
+      setOrder(prev => {
+        nextOrder = prev
           ? {
               ...prev,
               ...data.order,
@@ -215,8 +227,12 @@ export function useOrderDetail(orderId: string) {
                   ? { ...prev.user, ...data.order.user }
                   : prev.user,
             }
-          : data.order
-      );
+          : data.order;
+        return nextOrder;
+      });
+      if (nextOrder) {
+        offlineManager.upsertOrder(nextOrder).catch(() => {});
+      }
 
       showSuccess('تم التحديث بنجاح! ✅', 'تم حفظ التغييرات بنجاح');
       if (section) toggleEditing(section);
