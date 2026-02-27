@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
         motherName: true,
         nationality: true,
         wifeName: true,
+        gender: true,
         createdAt: true,
       },
       // Limit results for better performance

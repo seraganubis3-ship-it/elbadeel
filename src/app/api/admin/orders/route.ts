@@ -704,7 +704,7 @@ export async function POST(request: NextRequest) {
         service: { select: { name: true, slug: true } },
         variant: { select: { name: true, priceCents: true, etaDays: true } },
         createdByAdmin: { select: { id: true, name: true, email: true } },
-        user: { select: { id: true, name: true, email: true, phone: true } },
+        user: { select: { id: true, name: true, email: true, phone: true, gender: true } },
       },
     });
 

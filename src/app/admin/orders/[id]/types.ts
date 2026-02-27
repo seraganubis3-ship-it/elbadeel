@@ -102,6 +102,11 @@ export interface Order {
     name: string;
     email: string;
     phone: string;
+    gender?: string;
+    fatherName?: string;
+    motherName?: string;
+    wifeName?: string;
+    nationality?: string;
   };
 
   payment?: OrderPayment;

@@ -149,20 +149,77 @@ export function useOrderDetail(orderId: string) {
 
     setUpdating(true);
     try {
+      const userId = order.user?.id;
+      const userData: Record<string, unknown> = {};
+
+      if (fields.customerName !== undefined) userData.name = fields.customerName;
+      if (fields.customerPhone !== undefined) userData.phone = fields.customerPhone;
+      if (fields.customerEmail !== undefined) userData.email = fields.customerEmail;
+      if (fields.additionalPhone !== undefined) userData.additionalPhone = fields.additionalPhone;
+      if (fields.idNumber !== undefined) userData.idNumber = fields.idNumber;
+      if (fields.birthDate !== undefined) userData.birthDate = fields.birthDate;
+      if (fields.gender !== undefined) userData.gender = fields.gender;
+      if (fields.fatherName !== undefined) userData.fatherName = fields.fatherName;
+      if (fields.motherName !== undefined) userData.motherName = fields.motherName;
+      if (fields.wifeName !== undefined) userData.wifeName = fields.wifeName;
+      if (fields.nationality !== undefined) userData.nationality = fields.nationality;
+      if (fields.address !== undefined) userData.address = fields.address;
+      if (fields.governorate !== undefined) userData.governorate = fields.governorate;
+      if (fields.city !== undefined) userData.city = fields.city;
+      if (fields.district !== undefined) userData.district = fields.district;
+      if (fields.street !== undefined) userData.street = fields.street;
+      if (fields.buildingNumber !== undefined) userData.buildingNumber = fields.buildingNumber;
+      if (fields.apartmentNumber !== undefined) userData.apartmentNumber = fields.apartmentNumber;
+      if (fields.landmark !== undefined) userData.landmark = fields.landmark;
+
+      let updatedUser: Record<string, unknown> | null = null;
+      if (userId && Object.keys(userData).length > 0) {
+        const userResponse = await fetch(`/api/admin/users/${userId}/update`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData),
+        });
+
+        if (!userResponse.ok) {
+          showError('فشل تحديث بيانات العميل', 'تعذر حفظ بيانات العميل، حاول مرة أخرى');
+          return;
+        }
+
+        const userJson = await userResponse.json();
+        if (userJson?.user) {
+          updatedUser = userJson.user;
+          await offlineManager.upsertCustomer(userJson.user);
+        }
+      }
+
       const response = await fetch(`/api/admin/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fields),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setOrder(prev => (prev ? { ...prev, ...data.order } : data.order));
-        showSuccess('تم التحديث بنجاح! ✅', 'تم حفظ التغييرات بنجاح');
-        if (section) toggleEditing(section);
-      } else {
+      if (!response.ok) {
         showError('فشل التحديث', 'حدث خطأ أثناء حفظ التغييرات');
+        return;
       }
+
+      const data = await response.json();
+      setOrder(prev =>
+        prev
+          ? {
+              ...prev,
+              ...data.order,
+              user: updatedUser
+                ? { ...prev.user, ...(data.order.user ?? {}), ...updatedUser }
+                : data.order.user
+                  ? { ...prev.user, ...data.order.user }
+                  : prev.user,
+            }
+          : data.order
+      );
+
+      showSuccess('تم التحديث بنجاح! ✅', 'تم حفظ التغييرات بنجاح');
+      if (section) toggleEditing(section);
     } catch (error) {
       showError('خطأ في الاتصال', 'حدث خطأ غير متوقع');
     } finally {

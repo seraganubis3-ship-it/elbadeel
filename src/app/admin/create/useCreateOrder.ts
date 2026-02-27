@@ -227,18 +227,6 @@ export function useCreateOrder() {
           setAbortController(controller);
           setSearching(true);
           try {
-            // Local Search first (for better responsiveness and offline support)
-            const localResults = await offlineManager.searchCustomers(name);
-            if (localResults.length > 0) {
-              setSearchResults(localResults);
-              setSuggestedUser(localResults[0]);
-              setShowSearchDropdown(true);
-              const bestMatch = localResults[0].name;
-              if (bestMatch.toLowerCase().startsWith(name.toLowerCase())) {
-                setSuggestion(bestMatch);
-              }
-            }
-
             const params = new URLSearchParams();
             if (name) params.append('name', name);
             const response = await fetch(`/api/admin/users/search?${params.toString()}`, {
@@ -251,6 +239,11 @@ export function useCreateOrder() {
                 setSuggestedUser(data.users[0]);
                 setShowSearchDropdown(true);
 
+                // Update local cache with fresh data
+                for (const user of data.users) {
+                  await offlineManager.upsertCustomer(user);
+                }
+
                 // Calculate Ghost Text Suggestion
                 const bestMatch = data.users[0].name;
                 if (bestMatch.toLowerCase().startsWith(name.toLowerCase())) {
@@ -258,11 +251,49 @@ export function useCreateOrder() {
                 } else {
                   setSuggestion('');
                 }
+              } else {
+                // If server returns no results, try local search as fallback
+                const localResults = await offlineManager.searchCustomers(name);
+                if (localResults.length > 0) {
+                  setSearchResults(localResults);
+                  setSuggestedUser(localResults[0]);
+                  setShowSearchDropdown(true);
+                  const bestMatch = localResults[0].name;
+                  if (bestMatch.toLowerCase().startsWith(name.toLowerCase())) {
+                    setSuggestion(bestMatch);
+                  }
+                } else {
+                  setSearchResults([]);
+                  setSuggestedUser(null);
+                  setShowSearchDropdown(false);
+                }
+              }
+            } else {
+              // If server request fails, use local results
+              const localResults = await offlineManager.searchCustomers(name);
+              if (localResults.length > 0) {
+                setSearchResults(localResults);
+                setSuggestedUser(localResults[0]);
+                setShowSearchDropdown(true);
+                const bestMatch = localResults[0].name;
+                if (bestMatch.toLowerCase().startsWith(name.toLowerCase())) {
+                  setSuggestion(bestMatch);
+                }
               }
             }
           } catch (error) {
             if (error instanceof Error && error.name !== 'AbortError') {
-              // Handle search error silently
+              // On error, try local search as fallback
+              const localResults = await offlineManager.searchCustomers(name);
+              if (localResults.length > 0) {
+                setSearchResults(localResults);
+                setSuggestedUser(localResults[0]);
+                setShowSearchDropdown(true);
+                const bestMatch = localResults[0].name;
+                if (bestMatch.toLowerCase().startsWith(name.toLowerCase())) {
+                  setSuggestion(bestMatch);
+                }
+              }
             }
           } finally {
             setSearching(false);
@@ -1028,9 +1059,16 @@ export function useCreateOrder() {
 
           // Index customer for immediate offline search
           await offlineManager.upsertCustomer({
+            id: customer?.id,
             name: orderData.customerName,
             phone: orderData.customerPhone,
+            email: orderData.customerEmail,
             idNumber: orderData.idNumber,
+            gender: orderData.gender,
+            birthDate: orderData.birthDate,
+            fatherName: orderData.fatherName,
+            motherName: orderData.motherName,
+            wifeName: orderData.wifeName,
           });
 
           setCreatedOrderId(offlineId);

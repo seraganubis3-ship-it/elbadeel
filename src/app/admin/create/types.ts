@@ -67,7 +67,8 @@ export interface Customer {
   fatherName?: string;
   idNumber?: string;
   motherName?: string;
-
+  nationality?: string;
+  gender?: string;
   wifeName?: string;
 }
 

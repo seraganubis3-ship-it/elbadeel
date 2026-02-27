@@ -109,7 +109,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                         الرقم القومي
                       </span>
                       <span className='font-bold text-slate-700 text-sm'>
-                        {formData.customerIdNumber || customer?.idNumber || '---'}
+                        {formData.idNumber || customer?.idNumber || '---'}
                       </span>
                     </div>
                     <div className='bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-sm'>

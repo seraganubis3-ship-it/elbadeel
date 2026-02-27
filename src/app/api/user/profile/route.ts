@@ -18,6 +18,7 @@ const profileUpdateSchema = z.object({
   nationality: z.string().optional(),
   idNumber: z.string().optional(),
   address: z.string().optional(),
+  gender: z.enum(['male', 'female']).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -43,6 +44,7 @@ export async function GET(request: NextRequest) {
         nationality: true,
         idNumber: true,
         address: true,
+        gender: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -97,6 +99,7 @@ export async function PUT(request: NextRequest) {
       nationality: data.nationality || null,
       idNumber: data.idNumber || null,
       address: data.address || null,
+      gender: data.gender || null,
     };
 
     // تحويل تاريخ الميلاد إذا كان موجوداً
@@ -121,6 +124,7 @@ export async function PUT(request: NextRequest) {
         nationality: true,
         idNumber: true,
         address: true,
+        gender: true,
         updatedAt: true,
       },
     });

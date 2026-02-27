@@ -28,6 +28,11 @@ export default function OrderCustomerDetails({
     profession: string;
     customerFollowUp: string;
     title: string;
+    gender: string;
+    fatherName: string;
+    motherName: string;
+    wifeName: string;
+    nationality: string;
   }>({
     customerName: order.customerName || '',
     idNumber: order.idNumber || '',
@@ -37,6 +42,11 @@ export default function OrderCustomerDetails({
     profession: order.profession || '',
     customerFollowUp: order.customerFollowUp || '',
     title: order.title || '',
+    gender: order.gender || order.user?.gender || '',
+    fatherName: order.fatherName || order.user?.fatherName || '',
+    motherName: order.motherName || order.user?.motherName || '',
+    wifeName: order.wifeName || order.user?.wifeName || '',
+    nationality: order.nationality || order.user?.nationality || '',
   });
 
   const handleSave = () => {
@@ -81,6 +91,17 @@ export default function OrderCustomerDetails({
         {[
           { label: 'الاسم الكامل', value: order.customerName, key: 'customerName', type: 'text' },
           { label: 'الصفة', value: order.title, key: 'title', type: 'text' },
+          {
+            label: 'الجنس',
+            value:
+              (order.gender || order.user?.gender) === 'male'
+                ? 'ذكر'
+                : (order.gender || order.user?.gender) === 'female'
+                  ? 'أنثى'
+                  : '----',
+            key: 'gender',
+            type: 'select',
+          },
           { label: 'الرقم القومي', value: order.idNumber, key: 'idNumber', type: 'text' },
           {
             label: 'تاريخ الميلاد',
@@ -99,6 +120,30 @@ export default function OrderCustomerDetails({
           },
           { label: 'المهنة', value: order.profession, key: 'profession', type: 'text' },
           { label: 'التابع', value: order.customerFollowUp, key: 'customerFollowUp', type: 'text' },
+          {
+            label: 'اسم الأب',
+            value: order.fatherName || order.user?.fatherName || '----',
+            key: 'fatherName',
+            type: 'text',
+          },
+          {
+            label: 'اسم الأم',
+            value: order.motherName || order.user?.motherName || '----',
+            key: 'motherName',
+            type: 'text',
+          },
+          {
+            label: 'اسم الزوجة',
+            value: order.wifeName || order.user?.wifeName || '----',
+            key: 'wifeName',
+            type: 'text',
+          },
+          {
+            label: 'الجنسية',
+            value: order.nationality || order.user?.nationality || '----',
+            key: 'nationality',
+            type: 'text',
+          },
         ].map(item => (
           <div
             key={item.key}
@@ -108,12 +153,24 @@ export default function OrderCustomerDetails({
               {item.label}
             </p>
             {isEditing ? (
-              <input
-                type={item.type}
-                value={(formData as any)[item.key]}
-                onChange={e => setFormData({ ...formData, [item.key]: e.target.value })}
-                className='w-full bg-white border border-slate-200 rounded-xl px-4 py-2 sm:py-3 text-base sm:text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500'
-              />
+              item.key === 'gender' ? (
+                <select
+                  value={(formData as any)[item.key]}
+                  onChange={e => setFormData({ ...formData, [item.key]: e.target.value })}
+                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-2 sm:py-3 text-base sm:text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500'
+                >
+                  <option value=''>اختر الجنس</option>
+                  <option value='male'>ذكر</option>
+                  <option value='female'>أنثى</option>
+                </select>
+              ) : (
+                <input
+                  type={item.type}
+                  value={(formData as any)[item.key]}
+                  onChange={e => setFormData({ ...formData, [item.key]: e.target.value })}
+                  className='w-full bg-white border border-slate-200 rounded-xl px-4 py-2 sm:py-3 text-base sm:text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500'
+                />
+              )
             ) : (
               <p className='text-lg sm:text-2xl font-black text-slate-900 tracking-tight group-hover/field:text-indigo-600 transition-colors truncate'>
                 {item.value || '----'}
