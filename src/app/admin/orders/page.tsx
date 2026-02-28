@@ -926,23 +926,39 @@ export default function AdminOrdersPage() {
       return;
     }
 
-    // Require Work Order number for National ID orders when settling
-    if (newStatus === 'settlement' && order && isNationalIdOrder(order)) {
-      setPendingWorkOrder({ type: 'single', orderId, newStatus });
-      setShowWorkOrderModal(true);
-      return;
+    // Require Work Order number for National ID orders when settling OR supply (if missing)
+    if (order && isNationalIdOrder(order)) {
+      if (newStatus === 'settlement') {
+        setPendingWorkOrder({ type: 'single', orderId, newStatus });
+        setShowWorkOrderModal(true);
+        return;
+      }
+      // Check for supply status - must have work order number
+      if (newStatus === 'supply' && !order.workOrderNumber) {
+        setPendingWorkOrder({ type: 'single', orderId, newStatus });
+        setShowWorkOrderModal(true);
+        return;
+      }
     }
 
     await updateOrderStatus(orderId, newStatus);
   };
 
   const handleApplyBulkStatus = async () => {
-    if (bulkStatus === 'settlement') {
-      const hasNationalID = currentOrders
-        .filter(o => selectedOrders.includes(o.id))
-        .some(isNationalIdOrder);
+    if (bulkStatus === 'settlement' || bulkStatus === 'supply') {
+      const selectedOrderObjects = currentOrders.filter(o => selectedOrders.includes(o.id));
 
-      if (hasNationalID) {
+      let shouldTrigger = false;
+
+      if (bulkStatus === 'settlement') {
+        // Always trigger for settlement if any national ID order is selected
+        shouldTrigger = selectedOrderObjects.some(isNationalIdOrder);
+      } else if (bulkStatus === 'supply') {
+        // Trigger for supply ONLY if any national ID order is missing work order number
+        shouldTrigger = selectedOrderObjects.some(o => isNationalIdOrder(o) && !o.workOrderNumber);
+      }
+
+      if (shouldTrigger) {
         setPendingWorkOrder({ type: 'bulk' });
         setShowWorkOrderModal(true);
         return;
