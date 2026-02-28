@@ -115,7 +115,7 @@ export default function CreateOrderPage() {
   const removeFile = handleRemoveAttachment;
   const toggleFine = handleFineToggle;
 
-  const [activeTab, setActiveTab] = useState('customer');
+  const [activeTab, setActiveTab] = useState('service');
 
   if (loading) return <LoadingState />;
 
@@ -171,8 +171,8 @@ export default function CreateOrderPage() {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           tabs={[
-            { id: 'customer', label: '1. بيانات العميل', icon: '👤' },
-            { id: 'service', label: '2. تفاصيل الخدمة', icon: '⚡' },
+            { id: 'service', label: '1. تفاصيل الخدمة', icon: '⚡' },
+            { id: 'customer', label: '2. بيانات العميل', icon: '👤' },
             { id: 'details', label: '3. تفاصيل الطلب والمرفقات', icon: '📄' },
             { id: 'financials', label: '4. الحسابات والدفع', icon: '💰' },
             { id: 'review', label: '5. المراجعة والتأكيد', icon: '✅' },
@@ -182,7 +182,52 @@ export default function CreateOrderPage() {
         <form onSubmit={handleSubmit}>
           {/* Tab Content Container */}
           <div className='bg-white/50 backdrop-blur-sm rounded-3xl p-1'>
-            {/* Tab 1: Customer Info */}
+            {/* Tab 1: Service Selection */}
+            {activeTab === 'service' && (
+              <div className='space-y-4 animate-fadeIn'>
+                <ServiceSelectionSection
+                  formData={formData}
+                  setFormData={setFormData}
+                  selectedService={selectedService}
+                  serviceSearchTerm={serviceSearchTerm}
+                  setServiceSearchTerm={setServiceSearchTerm}
+                  showServiceDropdown={showServiceDropdown}
+                  setShowServiceDropdown={setShowServiceDropdown}
+                  filteredServices={filteredServices}
+                  selectService={selectService}
+                  selectedVariant={selectedVariant}
+                  handleVariantChange={handleVariantChange}
+                  formSerialNumber={formSerialNumber}
+                  serialValid={serialValid}
+                  validateSerialLive={validateSerialLive}
+                />
+
+                <div className='flex justify-end pt-4 gap-3'>
+                  <button
+                    type='button'
+                    onClick={() => setActiveTab('customer')}
+                    className='px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all font-bold flex items-center gap-2'
+                  >
+                    <span>التالي: بيانات العميل</span>
+                    <svg
+                      className='w-5 h-5 rotate-180'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M9 5l7 7-7 7'
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2: Customer Info */}
             {activeTab === 'customer' && (
               <div className='space-y-4 animate-fadeIn'>
                 <CustomerInfoSection
@@ -217,55 +262,10 @@ export default function CreateOrderPage() {
                   selectedService={selectedService}
                 />
 
-                <div className='flex justify-end pt-4 gap-3'>
-                  <button
-                    type='button'
-                    onClick={() => setActiveTab('service')}
-                    className='px-8 py-3 bg-cyan-600 text-white rounded-xl shadow-lg hover:bg-cyan-700 transition-all font-bold flex items-center gap-2'
-                  >
-                    <span>التالي: تفاصيل الخدمة</span>
-                    <svg
-                      className='w-5 h-5 rotate-180'
-                      fill='none'
-                      stroke='currentColor'
-                      viewBox='0 0 24 24'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M9 5l7 7-7 7'
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 2: Service Selection */}
-            {activeTab === 'service' && (
-              <div className='space-y-4 animate-fadeIn'>
-                <ServiceSelectionSection
-                  formData={formData}
-                  setFormData={setFormData}
-                  selectedService={selectedService}
-                  serviceSearchTerm={serviceSearchTerm}
-                  setServiceSearchTerm={setServiceSearchTerm}
-                  showServiceDropdown={showServiceDropdown}
-                  setShowServiceDropdown={setShowServiceDropdown}
-                  filteredServices={filteredServices}
-                  selectService={selectService}
-                  selectedVariant={selectedVariant}
-                  handleVariantChange={handleVariantChange}
-                  formSerialNumber={formSerialNumber}
-                  serialValid={serialValid}
-                  validateSerialLive={validateSerialLive}
-                />
-
                 <div className='flex justify-between pt-4 gap-3'>
                   <button
                     type='button'
-                    onClick={() => setActiveTab('customer')}
+                    onClick={() => setActiveTab('service')}
                     className='px-6 py-3 bg-white text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all font-medium'
                   >
                     السابق
@@ -273,7 +273,7 @@ export default function CreateOrderPage() {
                   <button
                     type='button'
                     onClick={() => setActiveTab('details')}
-                    className='px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all font-bold flex items-center gap-2'
+                    className='px-8 py-3 bg-cyan-600 text-white rounded-xl shadow-lg hover:bg-cyan-700 transition-all font-bold flex items-center gap-2'
                   >
                     <span>التالي: تفاصيل الطلب</span>
                     <svg

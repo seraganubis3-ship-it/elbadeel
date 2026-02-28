@@ -882,6 +882,16 @@ export function useCreateOrder() {
         return;
       }
 
+      if (formData.customerPhone.length !== 11) {
+        showWarning('رقم الهاتف غير صحيح', 'يجب أن يتكون رقم الهاتف من 11 رقم');
+        return;
+      }
+
+      if (formData.idNumber && formData.idNumber.length !== 14) {
+        showWarning('الرقم القومي غير صحيح', 'يجب أن يتكون الرقم القومي من 14 رقم');
+        return;
+      }
+
       // ⚠️ Note: Phone conflict (existing account) is now handled gracefully in the API
       // by linking the order to the existing account without overwriting the User name.
       // So we no longer block submission here.

@@ -90,6 +90,23 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 11);
+    setFormData(prev => ({ ...prev, customerPhone: value }));
+  };
+
+  const onNationalIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 14);
+    // Update ID number in form data
+    setFormData(prev => ({
+      ...prev,
+      idNumber: value,
+    }));
+
+    // Call parent handler for processing
+    handleNationalIdChange(value);
+  };
+
   const calculateAge = (val: string) => {
     if (!val || val.length < 10) return;
     // Handle DD/MM/YYYY
@@ -112,8 +129,12 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
 
   const MandatoryLabel = ({ label, show }: { label: string; show?: boolean | undefined }) => (
     <label className='text-sm font-black text-black block mr-1 flex items-center justify-between'>
-      <span>{label}</span>
-      {show && <span className='text-[9px] text-rose-500 font-black'>إلزامي لهذة الخدمة</span>}
+      <span className={show ? 'text-rose-600' : ''}>{label}</span>
+      {show && (
+        <span className='text-[10px] text-rose-500 font-black bg-rose-50 px-2 py-0.5 rounded-full'>
+          إلزامي لهذة الخدمة
+        </span>
+      )}
     </label>
   );
 
@@ -253,11 +274,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
             <input
               type='text'
               value={formData.idNumber}
-              onChange={e => {
-                const val = e.target.value.replace(/\D/g, '').slice(0, 14);
-                setFormData(prev => ({ ...prev, idNumber: val }));
-                if (val.length === 14) handleNationalIdChange(val);
-              }}
+              onChange={onNationalIdChange}
               maxLength={14}
               className={`w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 rounded-2xl focus:bg-white transition-all font-bold text-slate-700 text-lg lg:text-base tracking-widest font-mono text-center ${
                 formData.idNumber.length === 14
@@ -281,10 +298,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
             <input
               type='tel'
               value={formData.customerPhone}
-              onChange={e => {
-                const val = e.target.value.replace(/\D/g, '').slice(0, 11);
-                setFormData(prev => ({ ...prev, customerPhone: val }));
-              }}
+              onChange={handlePhoneChange}
               dir='ltr'
               maxLength={11}
               className={`w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 rounded-2xl focus:bg-white transition-all font-black text-slate-700 text-right text-lg lg:text-base group-hover/input:bg-slate-50 ${
@@ -535,7 +549,9 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                   formData.serviceName.includes('كمبيوتر') ||
                   formData.serviceName.includes('مميكن') ||
                   formData.serviceName.includes('تصديق') ||
-                  formData.serviceName.includes('بيان زواج و طلاق')
+                  formData.serviceName.includes('بيان زواج و طلاق') ||
+                  selectedService?.name?.includes('وثيقة') ||
+                  selectedService?.name?.includes('قيد')
                 }
               />
               <input
