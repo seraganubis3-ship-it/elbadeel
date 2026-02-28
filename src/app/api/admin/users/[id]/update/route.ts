@@ -7,24 +7,24 @@ import { z } from 'zod';
 
 const userUpdateSchema = z.object({
   name: z.string().min(1, 'الاسم مطلوب').max(100, 'الاسم طويل جداً').optional(),
-  phone: z.string().optional(),
-  email: z.string().email('البريد الإلكتروني غير صحيح').optional(),
-  wifeName: z.string().optional(),
-  fatherName: z.string().optional(),
-  motherName: z.string().optional(),
-  birthDate: z.string().optional(),
-  nationality: z.string().optional(),
-  idNumber: z.string().optional(),
-  address: z.string().optional(),
-  governorate: z.string().optional(),
-  city: z.string().optional(),
-  district: z.string().optional(),
-  street: z.string().optional(),
-  buildingNumber: z.string().optional(),
-  apartmentNumber: z.string().optional(),
-  landmark: z.string().optional(),
-  additionalPhone: z.string().optional(),
-  gender: z.enum(['male', 'female']).optional(),
+  phone: z.string().optional().nullable(),
+  email: z.string().email('البريد الإلكتروني غير صحيح').optional().nullable(),
+  wifeName: z.string().optional().nullable(),
+  fatherName: z.string().optional().nullable(),
+  motherName: z.string().optional().nullable(),
+  birthDate: z.string().optional().nullable(),
+  nationality: z.string().optional().nullable(),
+  idNumber: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  governorate: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  district: z.string().optional().nullable(),
+  street: z.string().optional().nullable(),
+  buildingNumber: z.string().optional().nullable(),
+  apartmentNumber: z.string().optional().nullable(),
+  landmark: z.string().optional().nullable(),
+  additionalPhone: z.string().optional().nullable(),
+  gender: z.enum(['male', 'female']).optional().nullable(),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -39,6 +39,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const validationResult = userUpdateSchema.safeParse(body);
     if (!validationResult.success) {
+      logger.warn('User update validation failed:', {
+        errors: validationResult.error.issues,
+        body,
+      });
       return NextResponse.json(
         {
           success: false,
