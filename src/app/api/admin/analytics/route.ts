@@ -190,11 +190,11 @@ export async function GET(request: NextRequest) {
         })
         .then(orders => {
           const dailyMap = new Map<string, { orders: number; revenue: number }>();
-          
+
           orders.forEach(order => {
             const dateKey = order.createdAt.toISOString().split('T')[0] as string;
             const stats = dailyMap.get(dateKey);
-            
+
             if (stats !== undefined) {
               stats.orders += 1;
               if (order.status !== 'CANCELLED') {
@@ -207,7 +207,7 @@ export async function GET(request: NextRequest) {
               });
             }
           });
-          
+
           const sortedDates = Array.from(dailyMap.keys()).sort();
           return sortedDates.map(date => {
             const stats = dailyMap.get(date);

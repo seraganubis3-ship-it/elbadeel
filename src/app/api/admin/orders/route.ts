@@ -206,7 +206,7 @@ export async function GET(request: NextRequest) {
       paidAmount: order.payment?.amount || 0,
       remainingAmount: order.totalCents - (order.payment?.amount || 0),
     })) as OrderResponseType[];
-    
+
     // Cache the result
     const response = {
       success: true,
@@ -220,10 +220,10 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     };
-    
+
     // Store in cache
     queryCache.set(cacheKey, response, 60000); // Cache for 1 minute
-    
+
     return NextResponse.json(response);
   } catch (error) {
     logger.error('Admin Orders GET API Error', error);
@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
     if (!adminUserId) {
       logger.warn('Admin ID missing from session', { user: session.user });
     }
-    
+
     // Invalidate cache when creating new orders
     queryCache.clear('orders');
     const body = await request.json();
@@ -326,7 +326,7 @@ export async function POST(request: NextRequest) {
 
     const formSerialNumber = body.formSerialNumber as string | undefined;
     let formTypeId: string | undefined;
-    
+
     if (formSerialNumber) {
       const link = await (prisma as any).formTypeVariant.findFirst({
         where: { serviceVariantId: variantId },
@@ -338,23 +338,23 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      
+
       // Check and reserve the serial in a transaction to prevent race conditions
       const availableSerial = await (prisma as any).formSerial.findFirst({
-        where: { 
-          formTypeId: link.formTypeId, 
-          serialNumber: formSerialNumber, 
-          consumed: false 
+        where: {
+          formTypeId: link.formTypeId,
+          serialNumber: formSerialNumber,
+          consumed: false,
         },
       });
-      
+
       if (!availableSerial) {
         return NextResponse.json(
           { success: false, error: 'رقم الاستمارة غير موجود أو تم استخدامه' },
           { status: 400 }
         );
       }
-      
+
       // Immediately mark as consumed to prevent race conditions
       await (prisma as any).formSerial.update({
         where: {
@@ -369,7 +369,7 @@ export async function POST(request: NextRequest) {
           consumedByAdminId: adminUserId,
         },
       });
-      
+
       formTypeId = link.formTypeId;
     }
 

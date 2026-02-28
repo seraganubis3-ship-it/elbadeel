@@ -14,10 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     const auth = verifyCronRequest(request);
     if (!auth.isValid) {
-      return NextResponse.json(
-        { error: auth.error || 'غير مصرح' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: auth.error || 'غير مصرح' }, { status: 401 });
     }
 
     // البحث عن الطلبات التي لم يتم دفعها خلال 30 دقيقة

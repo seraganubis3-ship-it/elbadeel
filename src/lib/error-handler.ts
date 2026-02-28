@@ -75,7 +75,9 @@ export function handleApiError(error: unknown): NextResponse {
         success: false,
         error: error.message,
         code: error.code,
-        ...(process.env.NODE_ENV === 'development' && error.details ? { details: error.details } : {}),
+        ...(process.env.NODE_ENV === 'development' && error.details
+          ? { details: error.details }
+          : {}),
       },
       { status: error.statusCode }
     );
@@ -92,7 +94,9 @@ export function handleApiError(error: unknown): NextResponse {
             success: false,
             error: 'هذا البيان موجود بالفعل',
             code: 'DUPLICATE_ENTRY',
-            ...(process.env.NODE_ENV === 'development' && { field: prismaError.meta?.target?.join(', ') }),
+            ...(process.env.NODE_ENV === 'development' && {
+              field: prismaError.meta?.target?.join(', '),
+            }),
           },
           { status: 409 }
         );
@@ -137,7 +141,9 @@ export function handleApiError(error: unknown): NextResponse {
       success: false,
       error: errorMessage,
       code: 'INTERNAL_ERROR',
-      ...(process.env.NODE_ENV === 'development' ? { stack: error instanceof Error ? error.stack : undefined } : {}),
+      ...(process.env.NODE_ENV === 'development'
+        ? { stack: error instanceof Error ? error.stack : undefined }
+        : {}),
     },
     { status: 500 }
   );
@@ -178,14 +184,14 @@ export function createErrorResponse(
     success: false,
     error: message,
   };
-  
+
   if (code !== undefined) {
     response.code = code;
   }
-  
+
   if (process.env.NODE_ENV === 'development' && details) {
     response.details = details;
   }
-  
+
   return NextResponse.json(response, { status: statusCode });
 }

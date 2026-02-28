@@ -12,7 +12,7 @@ class QueryCache {
       data,
       timestamp: Date.now(),
     });
-    
+
     // Auto-remove after TTL
     setTimeout(() => {
       this.cache.delete(key);
@@ -21,17 +21,17 @@ class QueryCache {
 
   get<T>(key: string, maxAge: number = this.defaultTTL): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
-    
+
     const age = Date.now() - entry.timestamp;
     if (age > maxAge) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return entry.data as T;
   }
 
@@ -40,7 +40,7 @@ class QueryCache {
       this.cache.clear();
       return;
     }
-    
+
     const regex = new RegExp(pattern);
     for (const key of this.cache.keys()) {
       if (regex.test(key)) {
