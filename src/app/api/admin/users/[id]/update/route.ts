@@ -5,26 +5,31 @@ import { logger } from '@/lib/logger';
 import { hasPermission } from '@/lib/permissions';
 import { z } from 'zod';
 
+const emptyToNull = (val: unknown) => (val === '' ? null : val);
+
 const userUpdateSchema = z.object({
   name: z.string().min(1, 'الاسم مطلوب').max(100, 'الاسم طويل جداً').optional(),
-  phone: z.string().optional().nullable(),
-  email: z.string().email('البريد الإلكتروني غير صحيح').optional().nullable(),
-  wifeName: z.string().optional().nullable(),
-  fatherName: z.string().optional().nullable(),
-  motherName: z.string().optional().nullable(),
-  birthDate: z.string().optional().nullable(),
-  nationality: z.string().optional().nullable(),
-  idNumber: z.string().optional().nullable(),
-  address: z.string().optional().nullable(),
-  governorate: z.string().optional().nullable(),
-  city: z.string().optional().nullable(),
-  district: z.string().optional().nullable(),
-  street: z.string().optional().nullable(),
-  buildingNumber: z.string().optional().nullable(),
-  apartmentNumber: z.string().optional().nullable(),
-  landmark: z.string().optional().nullable(),
-  additionalPhone: z.string().optional().nullable(),
-  gender: z.enum(['male', 'female']).optional().nullable(),
+  phone: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  email: z.preprocess(
+    emptyToNull,
+    z.string().email('البريد الإلكتروني غير صحيح').optional().nullable()
+  ),
+  wifeName: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  fatherName: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  motherName: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  birthDate: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  nationality: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  idNumber: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  address: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  governorate: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  city: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  district: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  street: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  buildingNumber: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  apartmentNumber: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  landmark: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  additionalPhone: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  gender: z.preprocess(emptyToNull, z.enum(['male', 'female']).optional().nullable()),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {

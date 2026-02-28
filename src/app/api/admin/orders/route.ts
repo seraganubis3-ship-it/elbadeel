@@ -24,6 +24,37 @@ export async function GET(request: NextRequest) {
     const to = searchParams.get('to');
     const photographyDate = searchParams.get('photographyDate');
     const serviceIds = searchParams.getAll('serviceIds');
+
+    const parseDateFilter = (dateStr: string | null): Date | undefined => {
+      if (!dateStr) return undefined;
+      const parts = dateStr.split('/');
+      if (parts.length !== 3) return undefined;
+      const dayStr = parts[0];
+      const monthStr = parts[1];
+      const yearStr = parts[2];
+
+      if (!dayStr || !monthStr || !yearStr) return undefined;
+
+      const day = parseInt(dayStr, 10);
+      const month = parseInt(monthStr, 10) - 1;
+      const year = parseInt(yearStr, 10);
+
+      const date = new Date(year, month, day);
+      if (
+        isNaN(date.getTime()) ||
+        date.getDate() !== day ||
+        date.getMonth() !== month ||
+        date.getFullYear() !== year
+      ) {
+        return undefined;
+      }
+      return date;
+    };
+
+    const fromDate = parseDateFilter(from);
+    const toDate = parseDateFilter(to);
+    const photoDate = parseDateFilter(photographyDate);
+
     const categoryId = searchParams.get('categoryId');
     const status = searchParams.get('status');
     const deliveryType = searchParams.get('deliveryType');
@@ -80,19 +111,19 @@ export async function GET(request: NextRequest) {
     const whereClause: any = {
       ...(userId ? { userId } : {}),
       ...(createdByAdminId ? { createdByAdminId } : {}),
-      ...(from && to
+      ...(fromDate && toDate
         ? {
             createdAt: {
-              gte: new Date(from.split('/').reverse().join('-') + 'T00:00:00.000+02:00'),
-              lte: new Date(to.split('/').reverse().join('-') + 'T23:59:59.999+02:00'),
+              gte: new Date(fromDate.setHours(0, 0, 0, 0)),
+              lte: new Date(toDate.setHours(23, 59, 59, 999)),
             },
           }
         : {}),
-      ...(photographyDate
+      ...(photoDate
         ? {
             photographyDate: {
-              gte: new Date(photographyDate.split('/').reverse().join('-') + 'T00:00:00.000+02:00'),
-              lte: new Date(photographyDate.split('/').reverse().join('-') + 'T23:59:59.999+02:00'),
+              gte: new Date(new Date(photoDate).setHours(0, 0, 0, 0)),
+              lte: new Date(new Date(photoDate).setHours(23, 59, 59, 999)),
             },
           }
         : {}),
