@@ -68,6 +68,7 @@ export function PrintClient({ workOrderNumber, orders }: Props) {
                   م
                 </th>
                 <th className='border border-gray-600 px-2 py-1 font-black'>اسم العميل</th>
+                <th className='border border-gray-600 px-2 py-1 font-black'>تاريخ التصوير</th>
                 <th className='border border-gray-600 px-2 py-1 font-black'>النوع/ملاحظات</th>
                 <th className='border border-gray-600 px-2 py-1 font-black'>حالة الطلب</th>
               </tr>
@@ -80,6 +81,11 @@ export function PrintClient({ workOrderNumber, orders }: Props) {
                   </td>
                   <td className='border border-gray-600 px-2 py-1 font-bold text-right'>
                     {order.customerName}
+                  </td>
+                  <td className='border border-gray-600 px-2 py-1 font-bold text-center' dir='ltr'>
+                    {order.photographyDate
+                      ? new Date(order.photographyDate).toLocaleDateString('en-GB')
+                      : '-'}
                   </td>
                   <td className='border border-gray-600 px-2 py-1 font-bold text-sm'>
                     {order.variant?.name || '-'}

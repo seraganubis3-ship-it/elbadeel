@@ -10,6 +10,7 @@ interface Order {
   customerName: string;
   customerPhone: string;
   status: string;
+  photographyDate?: Date | string | null;
   service: {
     name: string;
   };
@@ -180,6 +181,9 @@ export function WorkOrderDetailsClient({
                       العميل
                     </th>
                     <th className='px-6 py-3 text-xs font-bold uppercase tracking-wider text-gray-500'>
+                      تاريخ التصوير
+                    </th>
+                    <th className='px-6 py-3 text-xs font-bold uppercase tracking-wider text-gray-500'>
                       التفاصيل
                     </th>
                     <th className='px-6 py-3 text-xs font-bold uppercase tracking-wider text-gray-500'>
@@ -201,6 +205,11 @@ export function WorkOrderDetailsClient({
                         <div className='text-xs text-gray-500 font-mono' dir='ltr'>
                           {order.customerPhone}
                         </div>
+                      </td>
+                      <td className='px-6 py-3 text-sm text-gray-600 font-mono' dir='ltr'>
+                        {order.photographyDate
+                          ? new Date(order.photographyDate).toLocaleDateString('en-GB')
+                          : '-'}
                       </td>
                       <td className='px-6 py-3 text-sm text-gray-600'>
                         {order.variant && (
