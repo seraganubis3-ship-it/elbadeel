@@ -151,7 +151,7 @@ export function useOrders(
   const [selectedOrdersData, setSelectedOrdersData] = useState<Order[]>([]); // New state for persistence
   const [bulkStatus, setBulkStatus] = useState('');
 
-  // Compute hasFilter
+  // Compute hasFilter - should be TRUE when filters are 'all' to fetch ALL orders
   const hasFilter = Boolean(
     (dateFrom && dateTo) ||
       photographyDate ||
@@ -161,8 +161,12 @@ export function useOrders(
       categoryId ||
       selectedServiceIds.length > 0 ||
       deliveryTodayFilter ||
-      orderSourceFilter // Should always fetch if we have a source defined (even "all")
+      orderSourceFilter !== 'all' || // When orderSource is 'all', don't fetch
+      statusFilter !== 'all' // When status is 'all', don't fetch
   );
+
+  // Override: always fetch when ALL filters are 'all' and no other filters
+  const shouldFetch = !hasFilter && statusFilter === 'all' && orderSourceFilter === 'all';
 
   // Parse date helper
   const parseDate = (dateString: string): Date | null => {
@@ -188,7 +192,7 @@ export function useOrders(
         if (!isBackground) setLoading(true);
         else setIsRefetching(true);
 
-        if (!hasFilter) {
+        if (!hasFilter && !shouldFetch) {
           setOrders([]);
           setTotalPages(1);
           setLoading(false);
@@ -302,6 +306,7 @@ export function useOrders(
     },
     [
       hasFilter,
+      shouldFetch,
       userIdFilter,
       employeeId,
       categoryId,
