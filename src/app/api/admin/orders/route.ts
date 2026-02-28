@@ -120,6 +120,10 @@ export async function GET(request: NextRequest) {
       ...(serviceIds.length > 0 ? { serviceId: { in: serviceIds } } : {}),
       ...(categoryId ? { service: { categoryId } } : {}),
       ...(status && status !== 'all' ? { status } : {}),
+      // Exclude delivered orders from general views (when status is 'all', empty, or not specified and no search term)
+      ...((!status || status === 'all' || status === '') && !search
+        ? { status: { not: 'delivered' } }
+        : {}),
       ...(deliveryType && deliveryType !== 'all' ? { deliveryType } : {}),
       ...(createdByAdmin === 'true' && !createdByAdminId
         ? { createdByAdminId: { not: null } }
