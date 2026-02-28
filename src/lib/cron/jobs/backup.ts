@@ -1,18 +1,32 @@
 // Database backup background job
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { uploadToBackblaze } from '@/lib/s3';
+import { uploadLocalFileToBackblaze } from '@/lib/s3';
 
-const execAsync = promisify(exec);
+const waitForChildProcess = (child: ReturnType<typeof spawn>) =>
+  new Promise<void>((resolve, reject) => {
+    let stderr = '';
+
+    if (child.stderr) {
+      child.stderr.on('data', chunk => {
+        stderr += chunk.toString();
+      });
+    }
+
+    child.on('error', reject);
+    child.on('close', code => {
+      if (code === 0) resolve();
+      else reject(new Error(stderr || `Process exited with code ${code}`));
+    });
+  });
 
 /**
  * Perform database backup and upload to B2
  */
 export async function performDatabaseBackup() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupFileName = `backup-${timestamp}.sql`;
+  const backupFileName = `backup-${timestamp}.dump`;
   const backupPath = path.join(process.cwd(), 'backups', backupFileName);
 
   try {
@@ -25,20 +39,14 @@ export async function performDatabaseBackup() {
       throw new Error('DATABASE_URL not found in environment');
     }
 
-    // Parse database URL
-    const dbUrl = new URL(databaseUrl);
-    const dbName = dbUrl.pathname.slice(1);
-    const dbHost = dbUrl.hostname;
-    const dbPort = dbUrl.port || '5432';
-    const dbUser = dbUrl.username;
-    const dbPassword = dbUrl.password;
-
-    // Create pg_dump command
-    const command = `PGPASSWORD="${dbPassword}" pg_dump -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F c -f "${backupPath}"`;
-
     // eslint-disable-next-line no-console
     console.log('💾 Creating database backup...');
-    await execAsync(command);
+
+    const child = spawn('pg_dump', [databaseUrl, '-F', 'c', '-f', backupPath], {
+      env: process.env,
+      windowsHide: true,
+    });
+    await waitForChildProcess(child);
 
     // Get file stats
     const stats = await fs.stat(backupPath);
@@ -47,15 +55,9 @@ export async function performDatabaseBackup() {
       `✅ Backup created: ${backupFileName} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`
     );
 
-    // Upload to Backblaze B2
     // eslint-disable-next-line no-console
     console.log('☁️ Uploading backup to B2...');
-    const fileBuffer = await fs.readFile(backupPath);
-    const file = new File([new Uint8Array(fileBuffer)], backupFileName, {
-      type: 'application/octet-stream',
-    });
-
-    const fileKey = await uploadToBackblaze(file, 'backups');
+    const fileKey = await uploadLocalFileToBackblaze(backupPath, 'backups');
     // eslint-disable-next-line no-console
     console.log(`✅ Backup uploaded to B2: ${fileKey}`);
 
@@ -86,7 +88,7 @@ async function cleanupOldBackups() {
     const files = await fs.readdir(backupsDir);
 
     for (const file of files) {
-      if (!file.endsWith('.sql')) continue;
+      if (!file.endsWith('.dump')) continue;
 
       const filePath = path.join(backupsDir, file);
       const stats = await fs.stat(filePath);

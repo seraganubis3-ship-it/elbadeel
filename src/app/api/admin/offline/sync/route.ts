@@ -3,6 +3,7 @@ import { requireAdminOrStaff } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateUniqueOrderNumber } from '@/lib/orderNumbering';
 import { logger } from '@/lib/logger';
+import { checkWhatsAppStatus, sendWhatsAppByTrigger } from '@/lib/whatsapp';
 import bcrypt from 'bcryptjs';
 
 interface OfflineSyncResult {
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest) {
 
         // 2. Handle User Creation/Mapping (Similar to main POST)
         let userId = offlineOrder.userId;
+        let isNewUserCreated = false;
         const normalizedPhone = offlineOrder.customerPhone.replace(/\D/g, '');
 
         if (!userId) {
@@ -66,6 +68,7 @@ export async function POST(request: NextRequest) {
               },
             });
             userId = newUser.id;
+            isNewUserCreated = true;
           }
         }
 
@@ -204,6 +207,34 @@ export async function POST(request: NextRequest) {
               createdAt: sanitizedData.createdAt,
             },
           });
+        }
+
+        // 📱 إرسال واتساب بعد المزامنة (نفس منطق إنشاء الطلب أونلاين)
+        try {
+          const whatsappStatus = await checkWhatsAppStatus();
+          if (whatsappStatus.status === 'connected' && offlineOrder.customerPhone) {
+            const fullOrder = await prisma.order.findUnique({
+              where: { id: newOrder.id },
+              include: {
+                service: { select: { name: true } },
+                variant: { select: { name: true } },
+                user: { select: { phone: true, email: true } },
+                payment: { select: { amount: true, status: true } },
+              },
+            });
+
+            if (fullOrder) {
+              if (isNewUserCreated) {
+                await sendWhatsAppByTrigger('NEW_CUSTOMER', fullOrder);
+              }
+              await sendWhatsAppByTrigger('NEW_ORDER_ADMIN', fullOrder);
+            }
+          }
+        } catch (whatsappError) {
+          logger.error(
+            `WhatsApp trigger error in offline sync for order ${offlineId}`,
+            whatsappError
+          );
         }
 
         results.push({ offlineId, status: 'created', id: newOrder.id });

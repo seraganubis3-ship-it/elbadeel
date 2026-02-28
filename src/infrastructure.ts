@@ -16,8 +16,11 @@ export async function initializeInfrastructure() {
     // Redis is disabled - skip queue and cache features
     log.info('ℹ️ Redis is disabled - queue and cache features will not be available');
 
-    // Note: Workers and cron jobs require Redis, so they are disabled
-    // If you need these features, enable Redis in .env
+    if (process.env.ENABLE_CRON_JOBS === 'true') {
+      const { initializeCronJobs } = await import('./lib/cron/scheduler');
+      initializeCronJobs();
+      log.info('🕐 Cron jobs initialized');
+    }
 
     log.info('✅ Infrastructure initialized successfully (Redis-free mode)');
   } catch (error) {
@@ -35,6 +38,11 @@ export async function shutdownInfrastructure() {
   try {
     // Redis is disabled, no cleanup needed
     log.info('ℹ️ Redis-free mode - no queue/cache cleanup needed');
+
+    if (process.env.ENABLE_CRON_JOBS === 'true') {
+      const { stopCronJobs } = await import('./lib/cron/scheduler');
+      stopCronJobs();
+    }
 
     log.info('✅ Infrastructure shutdown complete');
   } catch (error) {

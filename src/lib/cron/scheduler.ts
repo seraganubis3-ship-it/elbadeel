@@ -34,24 +34,40 @@ export function initializeCronJobs() {
   );
   activeCronJobs.set('cleanup', cleanupJob);
 
-  // Database backup - Daily at 3 AM (commented out - requires backup job)
-  // const backupJob = cron.schedule(
-  //   '0 3 * * *',
-  //   async () => {
-  //     console.log('💾 Running database backup job...');
-  //     try {
-  //       await performDatabaseBackup();
-  //       console.log('✅ Database backup completed');
-  //     } catch (error) {
-  //       console.error('❌ Database backup failed:', error);
-  //     }
-  //   },
-  //   {
-  //     scheduled: true,
-  //     timezone: 'Africa/Cairo',
-  //   }
-  // );
-  // activeCronJobs.set('backup', backupJob);
+  if (process.env.ENABLE_DB_BACKUP_CRON === 'true') {
+    const cronExpression = process.env.DB_BACKUP_CRON || '0 3 * * *';
+    const backupJob = cron.schedule(
+      cronExpression,
+      async () => {
+        // eslint-disable-next-line no-console
+        console.log('💾 Running database backup job...');
+        try {
+          const { prisma } = await import('@/lib/prisma');
+          const lock = await prisma.$queryRaw<
+            { locked: boolean }[]
+          >`SELECT pg_try_advisory_lock(94823012) AS locked`;
+          if (!lock?.[0]?.locked) return;
+
+          try {
+            const { performDatabaseBackup } = await import('./jobs/backup');
+            await performDatabaseBackup();
+            // eslint-disable-next-line no-console
+            console.log('✅ Database backup completed');
+          } finally {
+            await prisma.$queryRaw`SELECT pg_advisory_unlock(94823012)`;
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('❌ Database backup failed:', error);
+        }
+      },
+      {
+        scheduled: true,
+        timezone: 'Africa/Cairo',
+      }
+    );
+    activeCronJobs.set('backup', backupJob);
+  }
 
   // Daily reports - DISABLED (now using analytics dashboard)
   // Keeping the logic available for manual triggers
@@ -133,9 +149,11 @@ export async function triggerJob(jobName: string) {
     case 'cleanup':
       await cleanupOldFiles();
       break;
-    // case 'backup':
-    //   await performDatabaseBackup();
-    //   break;
+    case 'backup': {
+      const { performDatabaseBackup } = await import('./jobs/backup');
+      await performDatabaseBackup();
+      break;
+    }
     // case 'reports':
     //   await generateDailyReports();
     //   break;
