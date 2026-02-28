@@ -1,25 +1,15 @@
 'use client';
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { ToastContainer } from '@/components/Toast';
-import {
-  PREDEFINED_FINES,
-  calculateActualFineAmounts,
-  calculateFineExpenses,
-} from '@/constants/fines';
 import { useCreateOrder } from './useCreateOrder';
 import {
   LoadingState,
-  QuickNavigation,
   AddressModal,
   AttachmentModal,
   CustomerInfoSection,
   DocumentsSection,
   PaymentSection,
   ReviewSection,
-  ActionsSection,
   SuccessModal,
   Tabs,
 } from './components';
@@ -27,19 +17,9 @@ import { ServiceSelectionSection } from './components/sections/ServiceSelectionS
 
 export default function CreateOrderPage() {
   const {
-    session,
-    router,
-    toasts,
-    removeToast,
-    showSuccess,
-    showError,
-    showWarning,
-    services,
     filteredServices,
     selectedService,
-    setSelectedService, // Maybe not returned? Check hook. It is.
     selectedVariant,
-    setSelectedVariant,
     serviceSearchTerm,
     showServiceDropdown,
     setServiceSearchTerm,
@@ -69,17 +49,12 @@ export default function CreateOrderPage() {
     showAddressModal,
     setShowAddressModal,
     uploadedFiles,
-    attachmentName,
-    attachmentFile,
-    setAttachmentName,
-    setAttachmentFile,
     handleSaveAttachment,
     handleRemoveAttachment,
     formSerialNumber,
     serialValid,
     validateSerialLive,
     selectedFines,
-    setSelectedFines,
     showServicesDropdown,
     showFinesDropdown,
     finesSearchTerm,
@@ -91,7 +66,6 @@ export default function CreateOrderPage() {
     setServicesSearchTerm,
     handleFineToggle,
     handleManualServiceChange,
-    removeManualService,
     formData,
     setFormData,
     handleNationalIdChange,
@@ -112,7 +86,6 @@ export default function CreateOrderPage() {
   } = useCreateOrder();
 
   // Aliases for compatibility with existing JSX
-  const removeFile = handleRemoveAttachment;
   const toggleFine = handleFineToggle;
 
   const [activeTab, setActiveTab] = useState('service');
@@ -241,7 +214,6 @@ export default function CreateOrderPage() {
                   setShowSearchDropdown={setShowSearchDropdown}
                   searchCustomer={searchCustomer}
                   selectCustomer={selectCustomer}
-                  handleUpdateCustomerName={handleUpdateCustomerName}
                   handleNationalIdChange={handleNationalIdChange}
                   phoneConflict={phoneConflict}
                   clearCustomer={clearCustomer}

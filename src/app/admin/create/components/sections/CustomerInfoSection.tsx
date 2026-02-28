@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Customer, FormData, Service, ServiceVariant } from '../../types';
+import { Customer, FormData, Service } from '../../types';
 import { LastOrderAlert } from '../../../orders/components/LastOrderAlert';
 
 interface CustomerInfoSectionProps {
@@ -20,22 +20,21 @@ interface CustomerInfoSectionProps {
   setShowSearchDropdown: (show: boolean) => void;
   searchCustomer: (term: string) => void;
   selectCustomer: (customer: Customer) => void;
-  handleUpdateCustomerName: () => void;
   handleNationalIdChange: (id: string) => void;
 
   // Dependent Search
-  // Dependent Search
-  searchingDependent: boolean;
-  suggestedDependent: { id: string; name: string } | null;
+  // Unused props but kept for interface compatibility if needed later
+  searchingDependent?: boolean;
+  suggestedDependent?: { id: string; name: string } | null;
   dependentSearchResults: { id: string; name: string }[];
   showDependentDropdown: boolean;
   setShowDependentDropdown: (show: boolean) => void;
   searchDependent: (term: string) => void;
   selectDependent: (dependent: { id: string; name: string }) => void;
-  saveNewDependent: (name: string) => void;
+  saveNewDependent?: (name: string) => void;
 
   // Modal Triggers
-  showAddressModal: boolean;
+  showAddressModal?: boolean;
   setShowAddressModal: (show: boolean) => void;
 
   // Suggestion
@@ -45,6 +44,7 @@ interface CustomerInfoSectionProps {
   handleKeyDown?: (e: React.KeyboardEvent) => void;
   phoneConflict?: Customer | null;
   clearCustomer: () => void;
+  // handleUpdateCustomerName?: () => void;
 }
 
 export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
@@ -58,22 +58,21 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
   setShowSearchDropdown,
   searchCustomer,
   selectCustomer,
-  handleUpdateCustomerName,
   handleNationalIdChange,
 
   // Dependent Props
-  searchingDependent,
-  suggestedDependent,
+  // searchingDependent,
+  // suggestedDependent,
   dependentSearchResults,
   showDependentDropdown,
   setShowDependentDropdown,
   searchDependent,
   selectDependent,
-  saveNewDependent,
+  // saveNewDependent,
 
-  showAddressModal,
+  // showAddressModal,
   setShowAddressModal,
-  suggestion,
+  // suggestion,
   dependentSuggestion,
 
   handleKeyDown,
@@ -89,6 +88,19 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
   const isMotherNameRequired = isBirthCert && formData.idNumber.length < 14;
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowSearchDropdown(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownRef, setShowSearchDropdown]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 11);
@@ -127,16 +139,35 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
     }
   };
 
-  const MandatoryLabel = ({ label, show }: { label: string; show?: boolean | undefined }) => (
+  const MandatoryLabel = ({
+    label,
+    show,
+    fieldValue,
+  }: {
+    label: string;
+    show?: boolean | undefined;
+    fieldValue?: string | undefined;
+  }) => (
     <label className='text-sm font-black text-black block mr-1 flex items-center justify-between'>
-      <span className={show ? 'text-rose-600' : ''}>{label}</span>
-      {show && (
-        <span className='text-[10px] text-rose-500 font-black bg-rose-50 px-2 py-0.5 rounded-full'>
+      <span className={show && !fieldValue ? 'text-rose-600' : ''}>{label}</span>
+      {show && !fieldValue && (
+        <span className='text-[10px] text-rose-500 font-black bg-rose-50 px-2 py-0.5 rounded-full animate-pulse'>
           إلزامي لهذة الخدمة
         </span>
       )}
     </label>
   );
+
+  const getFieldClassName = (isRequired: boolean, value: string | undefined) => {
+    const baseClass =
+      'w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 rounded-2xl focus:bg-white transition-all font-bold text-slate-700 lg:text-base';
+
+    if (isRequired && !value) {
+      return `${baseClass} border-rose-300 bg-rose-50/10 focus:border-rose-500 placeholder:text-rose-300 placeholder:text-rose-300/50`;
+    }
+
+    return `${baseClass} border-slate-100 focus:border-emerald-500`;
+  };
 
   return (
     <div className='bg-white/60 backdrop-blur-md rounded-[2rem] border border-white/50 shadow-sm overflow-hidden relative group transition-all duration-300 hover:shadow-md'>
@@ -294,18 +325,17 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
         {/* Main Inputs Grid - Adjusted Gap/Text for lg */}
         <div className='grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-3 items-end'>
           <div className='md:col-span-3 space-y-1 group/input relative'>
-            <MandatoryLabel label='رقم الهاتف' />
+            <MandatoryLabel label='رقم الهاتف' show={true} fieldValue={formData.customerPhone} />
             <input
               type='tel'
               value={formData.customerPhone}
               onChange={handlePhoneChange}
               dir='ltr'
               maxLength={11}
-              className={`w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 rounded-2xl focus:bg-white transition-all font-black text-slate-700 text-right text-lg lg:text-base group-hover/input:bg-slate-50 ${
-                formData.customerPhone.length === 11
-                  ? 'border-emerald-400 bg-emerald-50/30'
-                  : 'border-slate-100 focus:border-emerald-500'
-              }`}
+              className={
+                getFieldClassName(true, formData.customerPhone) +
+                ' text-right group-hover/input:bg-slate-50'
+              }
               placeholder='01xxxxxxxx'
             />
             <div
@@ -366,20 +396,21 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
           </div>
 
           <div className='md:col-span-4 space-y-1'>
-            <label className='text-sm font-black text-black block mr-1 flex items-center gap-2'>
-              الأم
-              {!isMotherNameRequired && (
-                <span className='text-[10px] text-slate-400 font-normal'>(اختياري)</span>
-              )}
-              {isMotherNameRequired && (
-                <span className='text-[9px] text-rose-500 font-black'>إلزامي (بدون رقم قومي)</span>
-              )}
-            </label>
+            <MandatoryLabel
+              label='الأم'
+              show={isMotherNameRequired}
+              fieldValue={formData.motherName}
+            />
+            {!isMotherNameRequired && (
+              <span className='text-[10px] text-slate-400 font-normal absolute -top-4 left-0'>
+                (اختياري)
+              </span>
+            )}
             <input
               type='text'
               value={formData.motherName}
               onChange={e => setFormData(prev => ({ ...prev, motherName: e.target.value }))}
-              className='w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+              className={getFieldClassName(!!isMotherNameRequired, formData.motherName)}
               placeholder='اسم الأم بالكامل'
             />
           </div>
@@ -553,12 +584,21 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                   selectedService?.name?.includes('وثيقة') ||
                   selectedService?.name?.includes('قيد')
                 }
+                fieldValue={formData.title}
               />
               <input
                 type='text'
                 value={formData.title || ''}
                 onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                className='w-full px-5 py-4 lg:px-4 lg:py-3 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+                className={getFieldClassName(
+                  formData.serviceName.includes('كمبيوتر') ||
+                    formData.serviceName.includes('مميكن') ||
+                    formData.serviceName.includes('تصديق') ||
+                    formData.serviceName.includes('بيان زواج و طلاق') ||
+                    !!selectedService?.name?.includes('وثيقة') ||
+                    !!selectedService?.name?.includes('قيد'),
+                  formData.title
+                )}
                 placeholder='اكتب الصفة...'
               />
             </div>
@@ -578,18 +618,26 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
 
             {/* Restored Fields */}
             <div className='space-y-1'>
-              <MandatoryLabel label='اسم الزوج/الزوجة' show={isMarriageDivorce} />
+              <MandatoryLabel
+                label='اسم الزوج/الزوجة'
+                show={isMarriageDivorce}
+                fieldValue={formData.wifeName}
+              />
               <input
                 type='text'
                 value={formData.wifeName}
                 onChange={e => setFormData(prev => ({ ...prev, wifeName: e.target.value }))}
-                className='w-full px-5 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+                className={getFieldClassName(!!isMarriageDivorce, formData.wifeName)}
                 placeholder='الاسم الرباعي'
               />
             </div>
 
             <div className='space-y-1'>
-              <MandatoryLabel label='تاريخ الوفاة' show={isDeathCert} />
+              <MandatoryLabel
+                label='تاريخ الوفاة'
+                show={isDeathCert}
+                fieldValue={formData.deathDate}
+              />
               <input
                 type='text'
                 value={formData.deathDate}
@@ -600,7 +648,10 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                   else if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
                   setFormData(prev => ({ ...prev, deathDate: v }));
                 }}
-                className='w-full px-5 py-4 bg-slate-50/50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all font-bold text-slate-700 lg:text-base text-center tracking-widest'
+                className={
+                  getFieldClassName(!!isDeathCert, formData.deathDate) +
+                  ' text-center tracking-widest'
+                }
                 placeholder='DD / MM / YYYY'
               />
             </div>
@@ -608,12 +659,16 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
             {/* اسم المتوفي - يظهر فقط لشهادة الوفاة */}
             {isDeathCert && (
               <div className='space-y-1'>
-                <MandatoryLabel label='اسم المتوفي' show={isDeathCert} />
+                <MandatoryLabel
+                  label='اسم المتوفي'
+                  show={isDeathCert}
+                  fieldValue={formData.deceasedName}
+                />
                 <input
                   type='text'
                   value={formData.deceasedName}
                   onChange={e => setFormData(prev => ({ ...prev, deceasedName: e.target.value }))}
-                  className='w-full px-5 py-4 bg-rose-50/50 border-2 border-rose-200/60 rounded-2xl focus:border-rose-400 focus:bg-white transition-all font-bold text-slate-700 lg:text-base'
+                  className={getFieldClassName(!!isDeathCert, formData.deceasedName)}
                   placeholder='الاسم الرباعي للمتوفي'
                 />
               </div>
