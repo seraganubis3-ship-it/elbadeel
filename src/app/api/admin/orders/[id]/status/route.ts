@@ -83,10 +83,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       updateData.completedAt = workDate;
     }
 
-    if (status === 'settlement' && order.variant?.etaDays) {
-      const estimatedCompletion = new Date(workDate);
-      estimatedCompletion.setDate(estimatedCompletion.getDate() + order.variant.etaDays);
-      updateData.estimatedCompletionDate = estimatedCompletion;
+    if (status === 'settlement') {
+      updateData.photographyDate = new Date();
+
+      if (order.variant?.etaDays) {
+        const estimatedCompletion = new Date(); // Use current date for estimation base
+        estimatedCompletion.setDate(estimatedCompletion.getDate() + order.variant.etaDays);
+        updateData.estimatedCompletionDate = estimatedCompletion;
+      }
     }
 
     // handle payment update as a separate promise but we'll wait for it if necessary
