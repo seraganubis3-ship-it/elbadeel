@@ -190,7 +190,7 @@ export function OrdersFilters({
       </div>
 
       {/* Main Search Bar */}
-      <div className='relative mb-6 sm:mb-8 relative z-10'>
+      <div className='relative mb-6 sm:mb-8 relative z-50'>
         <OrderSearchInput value={searchTerm} onChange={onSearchChange} />
       </div>
 
