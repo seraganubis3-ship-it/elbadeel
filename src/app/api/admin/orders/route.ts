@@ -212,6 +212,7 @@ export async function GET(request: NextRequest) {
         wifeName: (order as any).wifeName,
         destination: (order as any).destination,
         title: (order as any).title,
+        workOrderNumber: (order as any).workOrderNumber,
         paidAmount: order.payment?.amount || 0,
         remainingAmount: order.totalCents - (order.payment?.amount || 0),
       }));

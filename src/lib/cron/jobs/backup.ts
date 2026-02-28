@@ -42,10 +42,31 @@ export async function performDatabaseBackup() {
     // eslint-disable-next-line no-console
     console.log('💾 Creating database backup...');
 
-    const child = spawn('pg_dump', [databaseUrl, '-F', 'c', '-f', backupPath], {
-      env: process.env,
-      windowsHide: true,
-    });
+    const dbUrl = new URL(databaseUrl);
+    const dbName = dbUrl.pathname.slice(1);
+    const dbPort = dbUrl.port || '5432';
+    const dbUser = decodeURIComponent(dbUrl.username);
+    const dbPassword = decodeURIComponent(dbUrl.password);
+    const sslmode = dbUrl.searchParams.get('sslmode') || undefined;
+    const allowDirectNeon = process.env.NEON_BACKUP_USE_DIRECT !== 'false';
+    const dbHost =
+      allowDirectNeon && dbUrl.hostname.includes('-pooler')
+        ? dbUrl.hostname.replace('-pooler', '')
+        : dbUrl.hostname;
+    const pgDumpPath = process.env.PG_DUMP_PATH || 'pg_dump';
+
+    const child = spawn(
+      pgDumpPath,
+      ['-h', dbHost, '-p', dbPort, '-U', dbUser, '-d', dbName, '-F', 'c', '-f', backupPath],
+      {
+        env: {
+          ...process.env,
+          PGPASSWORD: dbPassword,
+          ...(sslmode ? { PGSSLMODE: sslmode } : {}),
+        },
+        windowsHide: true,
+      }
+    );
     await waitForChildProcess(child);
 
     // Get file stats
@@ -71,7 +92,7 @@ export async function performDatabaseBackup() {
     };
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Backup job error:', error);
+    console.error('Backup job error:', error instanceof Error ? error.message : String(error));
     throw error;
   }
 }

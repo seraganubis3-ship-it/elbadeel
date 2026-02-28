@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Service, Category, Admin, STATUS_CONFIG } from '../types';
+import { OrderSearchInput } from './OrderSearchInput';
 
 interface OrdersFiltersProps {
   // Filter values
@@ -77,13 +78,6 @@ export function OrdersFilters({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Debounce search term
-  const [localSearch, setLocalSearch] = useState(searchTerm);
-
-  useEffect(() => {
-    setLocalSearch(searchTerm);
-  }, [searchTerm]);
 
   // Format date input with slashes (DD/MM/YYYY)
   const formatDateInput = (value: string) => {
@@ -196,51 +190,8 @@ export function OrdersFilters({
       </div>
 
       {/* Main Search Bar */}
-      <div className='relative flex flex-col md:flex-row gap-3 mb-6 sm:mb-8 relative z-10'>
-        <div className='relative flex-1 group'>
-          <div className='absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none'>
-            <svg
-              className='w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-focus-within:text-blue-500 transition-colors'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-              />
-            </svg>
-          </div>
-          <input
-            type='text'
-            value={localSearch}
-            onChange={e => setLocalSearch(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && onSearchChange(localSearch)}
-            placeholder='ابحث بالاسم، الهاتف، الرقم...'
-            className='w-full pr-11 pl-4 py-3 sm:py-4 bg-slate-50 hover:bg-slate-100 focus:bg-white border-2 border-slate-200 hover:border-slate-300 focus:border-blue-500 rounded-xl sm:rounded-2xl transition-all text-sm sm:text-base text-slate-900 placeholder-slate-400 font-medium shadow-sm focus:shadow-md outline-none'
-          />
-        </div>
-        <button
-          onClick={() => onSearchChange(localSearch)}
-          className='px-6 sm:px-10 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl sm:rounded-2xl transition-all font-black text-base sm:text-lg shadow-lg shadow-blue-500/30 hover:shadow-blue-600/40 active:scale-95 flex items-center justify-center gap-2 md:w-auto w-full'
-        >
-          <span>بحث</span>
-          <svg
-            className='w-4 h-4 sm:w-5 sm:h-5'
-            fill='none'
-            viewBox='0 0 24 24'
-            stroke='currentColor'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-            />
-          </svg>
-        </button>
+      <div className='relative mb-6 sm:mb-8 relative z-10'>
+        <OrderSearchInput value={searchTerm} onChange={onSearchChange} />
       </div>
 
       {/* Filters Grid */}

@@ -61,6 +61,7 @@ export interface Order {
   servicesDetails?: string;
   destination?: string;
   title?: string;
+  workOrderNumber?: string;
   user: {
     id: string;
     name: string;
