@@ -102,13 +102,15 @@ export function ServiceCard({
       <Link
         href={`/service/${service.slug}`}
         className='group relative block rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 h-full min-h-[340px] border border-gray-100/50 bg-white'
+        aria-label={`طلب خدمة ${service.name}`}
+        role='button'
       >
         {/* Background Image Logic */}
         {isValidImage(service.icon) ? (
           <>
             <Image
               src={service.icon!}
-              alt={service.name}
+              alt={`صورة توضيحية لخدمة ${service.name}`}
               fill
               className='object-cover group-hover:scale-110 transition-transform duration-1000 ease-out'
             />

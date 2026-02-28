@@ -2,61 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrStaff, getWorkDate } from '@/lib/auth';
 import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
+import { queryCache, generateCacheKey } from '@/lib/cache/query-cache';
 import { generateUniqueOrderNumber } from '@/lib/orderNumbering';
 import { logger } from '@/lib/logger';
 import { ORDER_STATUS } from '@/constants/orderStatuses';
 import { checkWhatsAppStatus, sendWhatsAppByTrigger } from '@/lib/whatsapp';
 import bcrypt from 'bcryptjs';
 import type { Prisma, User } from '@prisma/client';
+import type { OrderResponse as OrderResponseType } from '@/types/api';
 
 export const dynamic = 'force-dynamic';
-// [FORCE_RELOAD] Updated Prisma client integration
-
-interface OrderResponse {
-  id: string;
-  service: { name: string; slug: string } | null;
-  variant: { name: string; priceCents: number; etaDays: number } | null;
-  status: string;
-  totalCents: number;
-  deliveryType: string | null;
-  deliveryFee: number;
-  createdAt: Date;
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string | null;
-  address: string | null;
-  notes: string | null;
-  adminNotes: string | null;
-  user: { id: string; name: string | null; email: string | null; phone: string | null } | null;
-  createdByAdmin: { id: string; name: string | null; email: string | null } | null;
-  payment: {
-    id: string;
-    amount: number;
-    method: string;
-    status: string;
-    senderPhone: string | null;
-  } | null;
-  documentsCount: number;
-  birthDate: Date | null;
-  motherName: string | null;
-  idNumber: string | null;
-  quantity: number;
-  customerFollowUp: string | null;
-  selectedFines: string | null;
-  finesDetails: string | null;
-  servicesDetails: string | null;
-  serviceDetails: string | null;
-  policeStation: string | null;
-  photographyDate: Date | null;
-  pickupLocation: string | null;
-  marriageDate: Date | null;
-  divorceDate: Date | null;
-  deathDate: Date | null;
-  wifeMotherName: string | null;
-  wifeName: string | null;
-  destination: string | null;
-  title: string | null;
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,7 +22,7 @@ export async function GET(request: NextRequest) {
     const createdByAdminId = searchParams.get('createdByAdminId') || undefined;
     const from = searchParams.get('from');
     const to = searchParams.get('to');
-    const photographyDate = searchParams.get('photographyDate'); // Add this
+    const photographyDate = searchParams.get('photographyDate');
     const serviceIds = searchParams.getAll('serviceIds');
     const categoryId = searchParams.get('categoryId');
     const status = searchParams.get('status');
@@ -75,6 +30,30 @@ export async function GET(request: NextRequest) {
     const createdByAdmin = searchParams.get('createdByAdmin');
     const search = searchParams.get('search');
     const sortBy = searchParams.get('sortBy') || 'id_desc';
+
+    // Generate cache key for this query
+    const cacheKey = generateCacheKey('orders', {
+      userId,
+      createdByAdminId,
+      from,
+      to,
+      photographyDate,
+      serviceIds,
+      categoryId,
+      status,
+      deliveryType,
+      createdByAdmin,
+      search,
+      sortBy,
+      page: searchParams.get('page') || '1',
+      limit: searchParams.get('limit') || '50',
+    });
+
+    // Try to get from cache
+    const cached = queryCache.get(cacheKey, 60000); // 1 minute cache for orders
+    if (cached) {
+      return NextResponse.json(cached);
+    }
 
     const page = parseInt(searchParams.get('page') || '1');
     const limitParam = searchParams.get('limit');
@@ -176,62 +155,60 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    let mappedOrders: OrderResponse[] = [];
-    try {
-      mappedOrders = orders.map(order => ({
-        id: order.id,
-        service: order.service,
-        variant: order.variant,
-        status: order.status,
-        totalCents: order.totalCents,
-        deliveryType: order.deliveryType,
-        deliveryFee: order.deliveryFee,
-        createdAt: order.createdAt,
-        customerName: order.customerName,
-        customerPhone: order.customerPhone,
-        customerEmail: order.customerEmail,
-        address: order.address,
-        notes: order.notes,
-        adminNotes: order.adminNotes,
-        user: order.user,
-        createdByAdmin: order.createdByAdmin,
-        payment: order.payment,
-        documentsCount: order._count?.orderDocuments || 0,
-        birthDate: order.birthDate,
-        motherName: order.motherName,
-        idNumber: order.idNumber,
-        quantity: order.quantity,
-        customerFollowUp: order.customerFollowUp,
-        selectedFines: order.selectedFines,
-        finesDetails: order.finesDetails,
-        servicesDetails: order.servicesDetails,
-        serviceDetails: order.serviceDetails,
-        policeStation: order.policeStation,
-        photographyDate: order.photographyDate,
-        pickupLocation: order.pickupLocation,
-        marriageDate: (order as any).marriageDate,
-        divorceDate: (order as any).divorceDate,
-        deathDate: (order as any).deathDate,
-        wifeMotherName: (order as any).wifeMotherName,
-        wifeName: (order as any).wifeName,
-        destination: (order as any).destination,
-        title: (order as any).title,
-        workOrderNumber: (order as any).workOrderNumber,
-        paidAmount: order.payment?.amount || 0,
-        remainingAmount: order.totalCents - (order.payment?.amount || 0),
-      }));
-    } catch (mapError) {
-      logger.error('Error mapping orders in GET API', mapError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'حدث خطأ أثناء معالجة بيانات الطلبات',
-        },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
+    const mappedOrders = orders.map(order => ({
+      id: order.id,
+      service: order.service || { name: '', slug: '' },
+      variant: order.variant || { name: '', priceCents: 0, etaDays: 0 },
+      status: order.status,
+      totalCents: order.totalCents,
+      deliveryType: order.deliveryType || '',
+      deliveryFee: order.deliveryFee,
+      createdAt: order.createdAt,
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      additionalPhone: order.additionalPhone,
+      customerEmail: order.customerEmail,
+      address: order.address || '',
+      governorate: order.governorate || '',
+      city: order.city || '',
+      district: order.district || '',
+      street: order.street || '',
+      buildingNumber: order.buildingNumber || '',
+      apartmentNumber: order.apartmentNumber || '',
+      landmark: order.landmark || '',
+      notes: order.notes || '',
+      adminNotes: order.adminNotes || '',
+      user: order.user || { id: '', name: '', email: '', phone: '' },
+      createdByAdmin: order.createdByAdmin || { id: '', name: '', email: '' },
+      payment: order.payment,
+      _count: { orderDocuments: order._count?.orderDocuments || 0 },
+      updatedAt: order.updatedAt,
+      otherFees: order.otherFees,
+      discount: order.discount,
+      discountAmount: order.discountAmount,
+      promoCodeId: order.promoCodeId,
+      totalPrice: order.totalPrice,
+      fatherName: order.fatherName || '',
+      nationality: order.nationality || '',
+      gender: order.gender,
+      attachedDocuments: order.attachedDocuments,
+      hasAttachments: order.hasAttachments,
+      originalDocuments: order.originalDocuments || '',
+      serviceDetails: order.serviceDetails || '',
+      marriageDate: order.marriageDate,
+      divorceDate: order.divorceDate,
+      wifeMotherName: order.wifeMotherName,
+      wifeName: order.wifeName,
+      deceasedName: order.deceasedName,
+      destination: order.destination,
+      title: order.title,
+      workOrderNumber: order.workOrderNumber,
+      paidAmount: order.payment?.amount || 0,
+      remainingAmount: order.totalCents - (order.payment?.amount || 0),
+    })) as OrderResponseType[];
+    
+    // Cache the result
+    const response = {
       success: true,
       orders: mappedOrders,
       pagination: {
@@ -242,7 +219,12 @@ export async function GET(request: NextRequest) {
         completedCount,
         totalPages: Math.ceil(total / limit),
       },
-    });
+    };
+    
+    // Store in cache
+    queryCache.set(cacheKey, response, 60000); // Cache for 1 minute
+    
+    return NextResponse.json(response);
   } catch (error) {
     logger.error('Admin Orders GET API Error', error);
     return NextResponse.json(
@@ -264,6 +246,9 @@ export async function POST(request: NextRequest) {
     if (!adminUserId) {
       logger.warn('Admin ID missing from session', { user: session.user });
     }
+    
+    // Invalidate cache when creating new orders
+    queryCache.clear('orders');
     const body = await request.json();
     const {
       serviceId,
@@ -340,6 +325,8 @@ export async function POST(request: NextRequest) {
     }
 
     const formSerialNumber = body.formSerialNumber as string | undefined;
+    let formTypeId: string | undefined;
+    
     if (formSerialNumber) {
       const link = await (prisma as any).formTypeVariant.findFirst({
         where: { serviceVariantId: variantId },
@@ -351,15 +338,39 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+      
+      // Check and reserve the serial in a transaction to prevent race conditions
       const availableSerial = await (prisma as any).formSerial.findFirst({
-        where: { formTypeId: link.formTypeId, serialNumber: formSerialNumber, consumed: false },
+        where: { 
+          formTypeId: link.formTypeId, 
+          serialNumber: formSerialNumber, 
+          consumed: false 
+        },
       });
+      
       if (!availableSerial) {
         return NextResponse.json(
           { success: false, error: 'رقم الاستمارة غير موجود أو تم استخدامه' },
           { status: 400 }
         );
       }
+      
+      // Immediately mark as consumed to prevent race conditions
+      await (prisma as any).formSerial.update({
+        where: {
+          formTypeId_serialNumber: {
+            formTypeId: link.formTypeId,
+            serialNumber: formSerialNumber,
+          },
+        },
+        data: {
+          consumed: true,
+          consumedAt: new Date(),
+          consumedByAdminId: adminUserId,
+        },
+      });
+      
+      formTypeId = link.formTypeId;
     }
 
     if (!serviceId || !variantId || !customerName || !customerPhone) {
@@ -466,7 +477,7 @@ export async function POST(request: NextRequest) {
     if (!existingUser) {
       // Hash phone number as password for new users
       const password = normalizedPhone || customerPhone;
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, 14);
 
       const created = await prisma.user.create({
         data: {
@@ -709,27 +720,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (formSerialNumber) {
-      const link = await (prisma as any).formTypeVariant.findFirst({
-        where: { serviceVariantId: variantId },
-        select: { formTypeId: true },
+    // Update form serial with actual order ID after order creation
+    if (formSerialNumber && formTypeId) {
+      await (prisma as any).formSerial.update({
+        where: {
+          formTypeId_serialNumber: {
+            formTypeId: formTypeId,
+            serialNumber: formSerialNumber,
+          },
+        },
+        data: {
+          orderId: order.id,
+        },
       });
-      if (link) {
-        await (prisma as any).formSerial.update({
-          where: {
-            formTypeId_serialNumber: {
-              formTypeId: link.formTypeId,
-              serialNumber: formSerialNumber,
-            },
-          },
-          data: {
-            orderId: order.id,
-            consumed: true,
-            consumedAt: new Date(),
-            consumedByAdminId: adminUserId,
-          },
-        });
-      }
     }
 
     if (attachedDocuments && Array.isArray(attachedDocuments)) {

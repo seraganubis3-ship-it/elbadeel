@@ -434,7 +434,7 @@ export async function POST(request: NextRequest) {
         }
       }
     } catch (err) {
-      console.error('WhatsApp trigger error:', err);
+      logger.error('WhatsApp trigger error', err);
     }
 
     return NextResponse.json({

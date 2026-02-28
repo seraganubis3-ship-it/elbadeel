@@ -69,7 +69,6 @@ export default function CreateOrderPage() {
     formData,
     setFormData,
     handleNationalIdChange,
-    handleUpdateCustomerName,
     requiredDocuments,
     calculateTotal,
     suggestion,

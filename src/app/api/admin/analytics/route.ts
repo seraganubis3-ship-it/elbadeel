@@ -176,23 +176,48 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // Daily stats for selected range
-      prisma.$queryRaw<Array<{ date: Date; orders: bigint; revenue: number }>>`
-        SELECT 
-          DATE("createdAt") as date,
-          COUNT(*)::int as orders,
-          SUM(CASE WHEN status != 'CANCELLED' THEN "totalPrice" ELSE 0 END)::float as revenue
-        FROM "Order"
-        WHERE "createdAt" >= ${rangeStartDate}
-        GROUP BY DATE("createdAt")
-        ORDER BY date ASC
-      `.then(results =>
-        results.map(r => ({
-          date: r.date.toISOString().split('T')[0],
-          orders: Number(r.orders),
-          revenue: r.revenue || 0,
-        }))
-      ),
+      // Daily stats for selected range - Using Prisma ORM instead of raw SQL for security
+      prisma.order
+        .findMany({
+          where: {
+            createdAt: { gte: rangeStartDate },
+          },
+          select: {
+            createdAt: true,
+            totalPrice: true,
+            status: true,
+          },
+        })
+        .then(orders => {
+          const dailyMap = new Map<string, { orders: number; revenue: number }>();
+          
+          orders.forEach(order => {
+            const dateKey = order.createdAt.toISOString().split('T')[0] as string;
+            const stats = dailyMap.get(dateKey);
+            
+            if (stats !== undefined) {
+              stats.orders += 1;
+              if (order.status !== 'CANCELLED') {
+                stats.revenue += order.totalPrice;
+              }
+            } else {
+              dailyMap.set(dateKey as string, {
+                orders: 1,
+                revenue: order.status !== 'CANCELLED' ? order.totalPrice : 0,
+              });
+            }
+          });
+          
+          const sortedDates = Array.from(dailyMap.keys()).sort();
+          return sortedDates.map(date => {
+            const stats = dailyMap.get(date);
+            return {
+              date,
+              orders: stats?.orders ?? 0,
+              revenue: stats?.revenue ?? 0,
+            };
+          });
+        }),
 
       // Customer statistics (Top 20, within date range)
       prisma.order

@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
           if (existingUser) {
             userId = existingUser.id;
           } else {
-            const hashedPassword = await bcrypt.hash(normalizedPhone, 10);
+            const hashedPassword = await bcrypt.hash(normalizedPhone, 14);
             const newUser = await prisma.user.create({
               data: {
                 name: offlineOrder.customerName,

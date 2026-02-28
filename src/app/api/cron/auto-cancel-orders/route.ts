@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifyCronRequest } from '@/lib/cron-auth';
 
 interface CancelledOrderInfo {
   id: string;
@@ -11,14 +12,16 @@ interface CancelledOrderInfo {
 
 export async function GET(request: NextRequest) {
   try {
-    // التحقق من API key (اختياري للأمان)
-    const apiKey = request.headers.get('x-api-key');
-    if (apiKey !== process.env.CRON_API_KEY) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    const auth = verifyCronRequest(request);
+    if (!auth.isValid) {
+      return NextResponse.json(
+        { error: auth.error || 'غير مصرح' },
+        { status: 401 }
+      );
     }
 
     // البحث عن الطلبات التي لم يتم دفعها خلال 30 دقيقة
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const thirtyMinutesAgo = new Date(Date.now() - 600 * 60 * 1000);
 
     const pendingOrders = await prisma.order.findMany({
       where: {
