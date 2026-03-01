@@ -6,6 +6,11 @@ import { hasPermission } from '@/lib/permissions';
 import { z } from 'zod';
 
 const emptyToNull = (val: unknown) => (val === '' ? null : val);
+const genderTransform = (val: unknown) => {
+  if (val === '') return null;
+  if (typeof val === 'string') return val.toLowerCase();
+  return val;
+};
 
 const userUpdateSchema = z.object({
   name: z.string().min(1, 'الاسم مطلوب').max(100, 'الاسم طويل جداً').optional(),
@@ -29,7 +34,7 @@ const userUpdateSchema = z.object({
   apartmentNumber: z.preprocess(emptyToNull, z.string().optional().nullable()),
   landmark: z.preprocess(emptyToNull, z.string().optional().nullable()),
   additionalPhone: z.preprocess(emptyToNull, z.string().optional().nullable()),
-  gender: z.preprocess(emptyToNull, z.enum(['male', 'female']).optional().nullable()),
+  gender: z.preprocess(genderTransform, z.enum(['male', 'female']).optional().nullable()),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
