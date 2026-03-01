@@ -326,62 +326,18 @@ export function useOrders(
 
   // Filter and sort orders
   const filterAndSortOrders = useCallback(() => {
-    let filtered = orders;
+    // The server already filters and sorts the data based on our params.
+    // We should rely on server data primarily.
+    // However, for offline support or instant updates without refetch, client-side filtering might be useful.
+    // But applying strict filters here on ALREADY filtered server data causes issues,
+    // especially with the new "Status Change Date" logic where createdAt might be outside the date range.
 
-    // Filter by status
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(order => order.status === statusFilter);
-    }
+    // So we will just pass the orders through, maybe sort them if needed for immediate UI feedback on local changes.
+    // But usually server sort is best.
 
-    // Filter by delivery type
-    if (deliveryFilter !== 'all') {
-      filtered = filtered.filter(order => order.deliveryType === deliveryFilter);
-    }
-
-    // Filter by date range
-    if (dateFrom) {
-      const fromDate = parseDate(dateFrom);
-      if (fromDate) {
-        filtered = filtered.filter(order => new Date(order.createdAt) >= fromDate);
-      }
-    }
-    if (dateTo) {
-      const toDate = parseDate(dateTo);
-      if (toDate) {
-        toDate.setHours(23, 59, 59, 999);
-        filtered = filtered.filter(order => new Date(order.createdAt) <= toDate);
-      }
-    }
-
-    // Filter by delivery today
-    if (deliveryTodayFilter) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      filtered = filtered.filter(order => {
-        const expectedDeliveryDate = new Date(order.createdAt);
-        expectedDeliveryDate.setDate(
-          expectedDeliveryDate.getDate() + (order.variant?.etaDays || 0)
-        );
-        return expectedDeliveryDate >= today && expectedDeliveryDate < tomorrow;
-      });
-    }
-
-    // Sort by selection
-    if (sortBy === 'id_desc') {
-      filtered.sort((a, b) => b.id.localeCompare(a.id));
-    } else if (sortBy === 'id_asc') {
-      filtered.sort((a, b) => a.id.localeCompare(b.id));
-    } else if (sortBy === 'createdAt_desc') {
-      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    } else if (sortBy === 'createdAt_asc') {
-      filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    }
-
-    setFilteredOrders(filtered);
-  }, [orders, statusFilter, deliveryFilter, dateFrom, dateTo, deliveryTodayFilter, sortBy]);
+    // Let's just set filtered orders to orders directly, assuming server did its job.
+    setFilteredOrders(orders);
+  }, [orders]);
 
   // Reset pagination when filters change
   useEffect(() => {
