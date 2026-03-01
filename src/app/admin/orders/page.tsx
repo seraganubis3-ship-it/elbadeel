@@ -229,9 +229,9 @@ export default function AdminOrdersPage() {
         motherName: order.motherName || '',
         wifeName: order.wifeName || '',
         wifeMotherName: order.wifeMotherName || '',
-        birthDate: order.birthDate ? new Date(order.birthDate).toLocaleDateString('ar-EG') : '',
+        birthDate: order.birthDate ? new Date(order.birthDate).toLocaleDateString('en-GB') : '',
         marriageDate: order.marriageDate
-          ? new Date(order.marriageDate).toLocaleDateString('ar-EG')
+          ? new Date(order.marriageDate).toLocaleDateString('en-GB')
           : '',
         policeStation: order.policeStation || '',
         pickupLocation: order.pickupLocation || '',
