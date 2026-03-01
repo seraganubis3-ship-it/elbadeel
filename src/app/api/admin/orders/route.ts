@@ -13,6 +13,51 @@ import type { OrderResponse as OrderResponseType } from '@/types/api';
 
 export const dynamic = 'force-dynamic';
 
+interface OrderResponse {
+  id: string;
+  service: { name: string; slug: string } | null;
+  variant: { name: string; priceCents: number; etaDays: number } | null;
+  status: string;
+  totalCents: number;
+  deliveryType: string | null;
+  deliveryFee: number;
+  createdAt: Date;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string | null;
+  address: string | null;
+  notes: string | null;
+  adminNotes: string | null;
+  user: { id: string; name: string | null; email: string | null; phone: string | null } | null;
+  createdByAdmin: { id: string; name: string | null; email: string | null } | null;
+  payment: {
+    id: string;
+    amount: number;
+    method: string;
+    status: string;
+    senderPhone: string | null;
+  } | null;
+  documentsCount: number;
+  birthDate: Date | null;
+  motherName: string | null;
+  idNumber: string | null;
+  quantity: number;
+  customerFollowUp: string | null;
+  selectedFines: string | null;
+  finesDetails: string | null;
+  servicesDetails: string | null;
+  serviceDetails: string | null;
+  policeStation: string | null;
+  photographyDate: Date | null;
+  pickupLocation: string | null;
+  marriageDate: Date | null;
+  divorceDate: Date | null;
+  deathDate: Date | null;
+  wifeMotherName: string | null;
+  wifeName: string | null;
+  destination: string | null;
+  title: string | null;
+}
 export async function GET(request: NextRequest) {
   try {
     await requireAdminOrStaff();

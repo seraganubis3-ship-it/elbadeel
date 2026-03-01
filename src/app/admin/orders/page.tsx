@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useToast, ToastContainer } from '@/components/Toast';
+import { useToast } from '@/components/Toast';
 import { useOrders } from './useOrders';
 import { Order } from './types';
 import {
@@ -26,7 +26,7 @@ export default function AdminOrdersPage() {
   const isAdmin = session?.user?.role === 'ADMIN';
 
   // Toast notifications
-  const { toasts, removeToast, showSuccess, showError } = useToast();
+  const { showSuccess, showError } = useToast();
 
   // Custom hook for all order logic
   const {
@@ -51,8 +51,6 @@ export default function AdminOrdersPage() {
     setEmployeeId,
     setPhotographyDate,
     toggleService,
-    setSortBy,
-    sortBy,
     currentPage,
     totalPages,
     totalOrders,
