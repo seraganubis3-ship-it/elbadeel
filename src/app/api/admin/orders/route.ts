@@ -228,7 +228,7 @@ export async function GET(request: NextRequest) {
           service: { select: { name: true, slug: true } },
           variant: { select: { name: true, priceCents: true, etaDays: true } },
           createdByAdmin: { select: { id: true, name: true, email: true } },
-          user: { select: { id: true, name: true, email: true, phone: true } },
+          user: { select: { id: true, name: true, email: true, phone: true, birthDate: true } },
           payment: {
             select: { id: true, amount: true, method: true, status: true, senderPhone: true },
           },
@@ -291,7 +291,7 @@ export async function GET(request: NextRequest) {
       gender: order.gender,
       idNumber: order.idNumber || '',
       motherName: order.motherName || '',
-      birthDate: order.birthDate, // Add birthDate here
+      birthDate: order.birthDate || order.user?.birthDate,
       quantity: order.quantity || 1,
       policeStation: order.policeStation || '',
       pickupLocation: order.pickupLocation || '',
@@ -302,6 +302,10 @@ export async function GET(request: NextRequest) {
       hasAttachments: order.hasAttachments,
       originalDocuments: order.originalDocuments || '',
       serviceDetails: order.serviceDetails || '',
+      photographyLocation: order.photographyLocation,
+      photographyDate: order.photographyDate,
+      servicesDetails: order.servicesDetails || '',
+      deathDate: order.deathDate,
       marriageDate: order.marriageDate,
       divorceDate: order.divorceDate,
       wifeMotherName: order.wifeMotherName,
