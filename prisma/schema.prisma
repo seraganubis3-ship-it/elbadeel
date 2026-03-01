@@ -285,6 +285,7 @@ model Order {
   promoCode      PromoCode? @relation(fields: [promoCodeId], references: [id])
   discountAmount Int        @default(0)
   offlineId      String?    @unique
+  statusHistory  OrderStatusHistory[]
 
   @@index([userId])
   @@index([serviceId])
@@ -299,6 +300,20 @@ model Order {
   @@index([customerPhone])
   @@index([workOrderNumber])
   @@index([promoCodeId])
+}
+
+model OrderStatusHistory {
+  id        String   @id @default(cuid())
+  orderId   String
+  status    String
+  changedAt DateTime @default(now())
+  changedBy String?
+
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([status])
+  @@index([changedAt])
 }
 
 model Payment {

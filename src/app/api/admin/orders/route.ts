@@ -62,6 +62,34 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const sortBy = searchParams.get('sortBy') || 'id_desc';
 
+    // Logic for Date Filtering based on Status
+    let dateFilterClause = {};
+    let statusHistoryOrderIds: string[] | null = null;
+
+    if (status && status !== 'all' && fromDate && toDate) {
+      // If status is selected, filter by when the order changed to this status
+      const historyRecords = await prisma.orderStatusHistory.findMany({
+        where: {
+          status: status,
+          changedAt: {
+            gte: new Date(new Date(fromDate).setHours(0, 0, 0, 0)),
+            lte: new Date(new Date(toDate).setHours(23, 59, 59, 999)),
+          },
+        },
+        select: { orderId: true },
+        distinct: ['orderId'],
+      });
+      statusHistoryOrderIds = historyRecords.map(r => r.orderId);
+    } else if (fromDate && toDate) {
+      // Default: filter by creation date
+      dateFilterClause = {
+        createdAt: {
+          gte: new Date(new Date(fromDate).setHours(0, 0, 0, 0)),
+          lte: new Date(new Date(toDate).setHours(23, 59, 59, 999)),
+        },
+      };
+    }
+
     // Generate cache key for this query
     const cacheKey = generateCacheKey('orders', {
       userId,
@@ -111,14 +139,8 @@ export async function GET(request: NextRequest) {
     const whereClause: any = {
       ...(userId ? { userId } : {}),
       ...(createdByAdminId ? { createdByAdminId } : {}),
-      ...(fromDate && toDate
-        ? {
-            createdAt: {
-              gte: new Date(fromDate.setHours(0, 0, 0, 0)),
-              lte: new Date(toDate.setHours(23, 59, 59, 999)),
-            },
-          }
-        : {}),
+      ...dateFilterClause,
+      ...(statusHistoryOrderIds !== null ? { id: { in: statusHistoryOrderIds } } : {}),
       ...(photoDate
         ? {
             photographyDate: {

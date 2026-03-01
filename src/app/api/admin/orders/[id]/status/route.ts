@@ -93,29 +93,44 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
     }
 
-    // handle payment update as a separate promise but we'll wait for it if necessary
-    // to keep it simple and safe for now.
-    if (status === 'cancelled' && order.payment) {
-      await prisma.payment.update({
-        where: { id: order.payment.id },
+    // Use transaction to ensure data consistency
+    const updatedOrder = await prisma.$transaction(async tx => {
+      // 1. Update Payment if cancelled
+      if (status === 'cancelled' && order.payment) {
+        await tx.payment.update({
+          where: { id: order.payment.id },
+          data: {
+            status: 'CANCELLED',
+            notes: order.payment.notes
+              ? `${order.payment.notes}\n\n[تم إلغاء الدفع من قبل الإدارة]`
+              : '[تم إلغاء الدفع من قبل الإدارة]',
+          },
+        });
+      }
+
+      // 2. Create Status History Log
+      // We log the change regardless of whether the status value is different,
+      // as it might involve note updates or re-confirmation of status.
+      await tx.orderStatusHistory.create({
         data: {
-          status: 'CANCELLED',
-          notes: order.payment.notes
-            ? `${order.payment.notes}\n\n[تم إلغاء الدفع من قبل الإدارة]`
-            : '[تم إلغاء الدفع من قبل الإدارة]',
+          orderId: id,
+          status: status,
+          changedBy: session.user.id,
+          changedAt: new Date(),
         },
       });
-    }
 
-    const updatedOrder = await prisma.order.update({
-      where: { id },
-      data: updateData,
-      include: {
-        service: { select: { name: true } },
-        variant: { select: { name: true } },
-        user: { select: { phone: true } },
-        payment: { select: { amount: true, status: true } },
-      },
+      // 3. Update Order
+      return await tx.order.update({
+        where: { id },
+        data: updateData,
+        include: {
+          service: { select: { name: true } },
+          variant: { select: { name: true } },
+          user: { select: { phone: true } },
+          payment: { select: { amount: true, status: true } },
+        },
+      });
     });
 
     // 📱 إرسال رسالة واتساب للعميل عند تغيير الحالة
