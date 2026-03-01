@@ -291,6 +291,7 @@ export async function GET(request: NextRequest) {
       gender: order.gender,
       idNumber: order.idNumber || '',
       motherName: order.motherName || '',
+      birthDate: order.birthDate, // Add birthDate here
       quantity: order.quantity || 1,
       policeStation: order.policeStation || '',
       pickupLocation: order.pickupLocation || '',
