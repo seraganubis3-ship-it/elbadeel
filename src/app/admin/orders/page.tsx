@@ -233,6 +233,9 @@ export default function AdminOrdersPage() {
         marriageDate: order.marriageDate
           ? new Date(order.marriageDate).toLocaleDateString('en-GB')
           : '',
+        divorceDate: order.divorceDate
+          ? new Date(order.divorceDate).toLocaleDateString('en-GB')
+          : '',
         policeStation: order.policeStation || '',
         pickupLocation: order.pickupLocation || '',
         quantity: order.quantity || 1,
@@ -348,22 +351,37 @@ export default function AdminOrdersPage() {
       });
     }
 
-    // 5. Marriage
+    // 5. Marriage/Divorce
     if (groupedOrders.MARRIAGE_CERT && groupedOrders.MARRIAGE_CERT.length > 0) {
-      sections.push({
-        title: 'قسيمة زواج',
-        data: groupedOrders.MARRIAGE_CERT,
-        columns: [
-          { key: 'customerName', label: 'اسم الزوج/الزوجة' },
-          { key: 'motherName', label: 'اسم الأم' },
-          { key: 'wifeName', label: 'الطرف الآخر' },
-          { key: 'wifeMotherName', label: 'أم الطرف الآخر' },
-          { key: 'marriageDate', label: 'تاريخ الزواج' },
-          { key: 'quantity', label: 'العدد', type: 'number' },
-        ],
-        defaultRowData: {
-          service: { name: 'وثيقة زواج', slug: 'marriage-certificate' },
-        },
+      const byService: Record<string, any[]> = {};
+      groupedOrders.MARRIAGE_CERT.forEach(o => {
+        const sName = o.service?.name || 'خدمة غير محددة';
+        if (!byService[sName]) byService[sName] = [];
+        byService[sName]!.push(o);
+      });
+
+      Object.entries(byService).forEach(([serviceName, groupOrders]) => {
+        const sLow = serviceName.toLowerCase();
+        const isDivorce = sLow.includes('طلق');
+
+        sections.push({
+          title: serviceName,
+          data: groupOrders,
+          columns: [
+            { key: 'customerName', label: 'اسم الزوج/الزوجة' },
+            { key: 'motherName', label: 'اسم الأم' },
+            { key: 'wifeName', label: 'الطرف الآخر' },
+            { key: 'wifeMotherName', label: 'أم الطرف الآخر' },
+            {
+              key: isDivorce ? 'divorceDate' : 'marriageDate',
+              label: isDivorce ? 'تاريخ الطلاق' : 'تاريخ الزواج',
+            },
+            { key: 'quantity', label: 'العدد', type: 'number' },
+          ],
+          defaultRowData: {
+            service: { name: serviceName, slug: 'marriage-certificate' },
+          },
+        });
       });
     }
 
@@ -405,12 +423,16 @@ export default function AdminOrdersPage() {
             { key: 'quantity', label: 'العدد', type: 'number' },
           ];
         } else if (isMarriage) {
+          const isDivorce = sLow.includes('طلق');
           columns = [
             { key: 'customerName', label: 'اسم الزوج/الزوجة' },
             { key: 'motherName', label: 'اسم الأم' },
             { key: 'wifeName', label: 'الطرف الآخر' },
             { key: 'wifeMotherName', label: 'أم الطرف الآخر' },
-            { key: 'marriageDate', label: 'تاريخ الزواج' },
+            {
+              key: isDivorce ? 'divorceDate' : 'marriageDate',
+              label: isDivorce ? 'تاريخ الطلاق' : 'تاريخ الزواج',
+            },
             { key: 'quantity', label: 'العدد', type: 'number' },
           ];
         }

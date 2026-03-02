@@ -576,14 +576,17 @@ export function printOrdersReport({
       let rows = '';
 
       if (isMariage) {
-        thead = `<tr><th width="5%">م</th><th width="20%">اسم الزوج / الزوجة</th><th width="14%">الوالدة</th><th width="20%">اسم الزوجة / الزوج</th><th width="14%">الوالدة</th><th width="14%">تاريخ الزواج</th><th width="8%">العدد</th><th width="5%">النوع</th></tr>`;
+        const isDivorce = sLow.includes('طلاق');
+        const dateLabel = isDivorce ? 'تاريخ الطلاق' : 'تاريخ الزواج';
+        thead = `<tr><th width="5%">م</th><th width="20%">اسم الزوج / الزوجة</th><th width="14%">الوالدة</th><th width="20%">اسم الزوجة / الزوج</th><th width="14%">الوالدة</th><th width="14%">${dateLabel}</th><th width="8%">العدد</th><th width="5%">النوع</th></tr>`;
         rows = groupOrders
           .map((order, idx) => {
             globalTotalQuantity += order.quantity || 1;
             const isSupply = order.status === 'supply';
             const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
             const vName = order.variant?.name || '';
-            const mDate = formatDate(order.marriageDate || order.birthDate);
+            const eventDate = (order as any).divorceDate || order.marriageDate || order.birthDate;
+            const mDate = formatDate(eventDate);
             return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: right; font-weight: bold;">${order.wifeName || '---'}</td><td style="text-align: right;">${order.wifeMotherName || '---'}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${mDate}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
           })
           .join('');
