@@ -3,9 +3,8 @@
 import { useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 
-const SESSION_TIMEOUT_MINUTES = 1;
-const LAST_ACTIVITY_KEY = 'pwa_last_activity';
-const IS_PWA_KEY = 'is_pwa_session';
+const SESSION_ID_KEY = 'pwa_session_id';
+const PREVIOUS_SESSION_ID_KEY = 'pwa_previous_session_id';
 
 export function usePWAAuth() {
   useEffect(() => {
@@ -17,6 +16,10 @@ export function usePWAAuth() {
       return isPWA;
     };
 
+    const generateSessionId = () => {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    };
+
     const handleSignOut = async () => {
       console.log('Signing out user...');
       try {
@@ -25,69 +28,54 @@ export function usePWAAuth() {
         window.location.href = '/login';
       } catch (error) {
         console.error('Sign out error:', error);
-        localStorage.removeItem(LAST_ACTIVITY_KEY);
-        localStorage.removeItem(IS_PWA_KEY);
+        localStorage.removeItem(SESSION_ID_KEY);
+        localStorage.removeItem(PREVIOUS_SESSION_ID_KEY);
         window.location.href = '/login';
       }
     };
 
-    const checkPWAClosed = () => {
-      const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
-      const now = Date.now();
-      console.log('Checking PWA activity:', { lastActivity, now });
+    const checkSession = () => {
+      const currentSessionId = sessionStorage.getItem(SESSION_ID_KEY);
+      const previousSessionId = localStorage.getItem(PREVIOUS_SESSION_ID_KEY);
 
-      if (lastActivity) {
-        const elapsedMinutes = (now - parseInt(lastActivity)) / (1000 * 60);
-        console.log('Elapsed minutes:', elapsedMinutes);
+      console.log('Checking session:', { currentSessionId, previousSessionId });
 
-        if (elapsedMinutes > SESSION_TIMEOUT_MINUTES) {
-          console.log('PWA was closed for more than timeout, signing out...');
-          handleSignOut();
-          return;
-        }
+      if (previousSessionId && (!currentSessionId || currentSessionId !== previousSessionId)) {
+        console.log('PWA was closed and reopened, signing out...');
+        handleSignOut();
+        return false;
       }
 
-      localStorage.setItem(LAST_ACTIVITY_KEY, now.toString());
-      console.log('Updated last activity to:', now);
+      return true;
     };
 
-    const handleVisibilityChange = () => {
-      console.log('Visibility changed:', document.visibilityState);
-      if (document.visibilityState === 'visible') {
-        console.log('App became visible, checking PWA status...');
-        checkPWAClosed();
-      }
-    };
-
-    const handleBeforeUnload = () => {
-      console.log('Before unload event - saving activity');
-      localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
-    };
-
-    const handlePageHide = () => {
-      console.log('Page hide event - saving activity');
-      localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+    const initializeSession = () => {
+      const sessionId = generateSessionId();
+      sessionStorage.setItem(SESSION_ID_KEY, sessionId);
+      localStorage.setItem(PREVIOUS_SESSION_ID_KEY, sessionId);
+      console.log('Session initialized:', sessionId);
     };
 
     if (isPWA()) {
       console.log('PWA detected, initializing auth check');
-      localStorage.setItem(IS_PWA_KEY, 'true');
 
-      setTimeout(() => {
-        checkPWAClosed();
-      }, 100);
+      if (checkSession()) {
+        initializeSession();
+      }
 
-      window.addEventListener('visibilitychange', handleVisibilityChange);
-      window.addEventListener('beforeunload', handleBeforeUnload);
-      window.addEventListener('pagehide', handlePageHide);
+      window.addEventListener('beforeunload', () => {
+        console.log('Before unload - clearing session storage');
+        sessionStorage.clear();
+      });
+
+      window.addEventListener('pagehide', () => {
+        console.log('Page hide - clearing session storage');
+        sessionStorage.clear();
+      });
     } else {
       console.log('Not running in PWA mode');
     }
 
-    return () => {
-      window.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handlePageHide);
-    };
+    return () => {};
   }, []);
 }
