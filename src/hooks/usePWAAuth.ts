@@ -1,48 +1,43 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 
 const SESSION_ID_KEY = 'pwa_session_id';
 const PREVIOUS_SESSION_ID_KEY = 'pwa_previous_session_id';
+const IS_SIGNING_OUT_KEY = 'pwa_is_signing_out';
 
 export function usePWAAuth() {
+  const isInitializedRef = useRef(false);
+
   useEffect(() => {
+    if (isInitializedRef.current) {
+      return;
+    }
+    isInitializedRef.current = true;
+
     const isPWA = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
       const isIOSStandalone = (window.navigator as any).standalone === true;
-      const isPWA = isStandalone || isIOSStandalone;
-      console.log('PWA Detection:', { isStandalone, isIOSStandalone, isPWA });
-      return isPWA;
+      return isStandalone || isIOSStandalone;
     };
 
     const generateSessionId = () => {
       return Date.now().toString(36) + Math.random().toString(36).substr(2);
     };
 
-    const handleSignOut = async () => {
-      console.log('Signing out user...');
-      try {
-        await signOut({ callbackUrl: '/login', redirect: false });
-        console.log('Sign out successful, redirecting...');
-        window.location.href = '/login';
-      } catch (error) {
-        console.error('Sign out error:', error);
-        localStorage.removeItem(SESSION_ID_KEY);
-        localStorage.removeItem(PREVIOUS_SESSION_ID_KEY);
-        window.location.href = '/login';
-      }
-    };
-
     const checkSession = () => {
       const currentSessionId = sessionStorage.getItem(SESSION_ID_KEY);
       const previousSessionId = localStorage.getItem(PREVIOUS_SESSION_ID_KEY);
+      const isSigningOut = sessionStorage.getItem(IS_SIGNING_OUT_KEY);
 
-      console.log('Checking session:', { currentSessionId, previousSessionId });
+      if (isSigningOut) {
+        return false;
+      }
 
       if (previousSessionId && (!currentSessionId || currentSessionId !== previousSessionId)) {
-        console.log('PWA was closed and reopened, signing out...');
-        handleSignOut();
+        sessionStorage.setItem(IS_SIGNING_OUT_KEY, 'true');
+        signOut({ callbackUrl: '/login' });
         return false;
       }
 
@@ -53,27 +48,24 @@ export function usePWAAuth() {
       const sessionId = generateSessionId();
       sessionStorage.setItem(SESSION_ID_KEY, sessionId);
       localStorage.setItem(PREVIOUS_SESSION_ID_KEY, sessionId);
-      console.log('Session initialized:', sessionId);
     };
 
     if (isPWA()) {
-      console.log('PWA detected, initializing auth check');
-
       if (checkSession()) {
         initializeSession();
       }
 
-      window.addEventListener('beforeunload', () => {
-        console.log('Before unload - clearing session storage');
+      const handleBeforeUnload = () => {
         sessionStorage.clear();
-      });
+      };
 
-      window.addEventListener('pagehide', () => {
-        console.log('Page hide - clearing session storage');
-        sessionStorage.clear();
-      });
-    } else {
-      console.log('Not running in PWA mode');
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      window.addEventListener('pagehide', handleBeforeUnload);
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        window.removeEventListener('pagehide', handleBeforeUnload);
+      };
     }
 
     return () => {};
