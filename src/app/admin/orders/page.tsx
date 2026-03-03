@@ -362,7 +362,8 @@ export default function AdminOrdersPage() {
 
       Object.entries(byService).forEach(([serviceName, groupOrders]) => {
         const sLow = serviceName.toLowerCase();
-        const isDivorce = sLow.includes('طلق');
+        const hasDivorceDate = groupOrders.some(o => o.divorceDate && o.divorceDate !== '');
+        const isDivorce = sLow.includes('طلق') || hasDivorceDate;
 
         sections.push({
           title: serviceName,
@@ -423,7 +424,8 @@ export default function AdminOrdersPage() {
             { key: 'quantity', label: 'العدد', type: 'number' },
           ];
         } else if (isMarriage) {
-          const isDivorce = sLow.includes('طلق');
+          const hasDivorceDate = groupOrders.some(o => o.divorceDate && o.divorceDate !== '');
+          const isDivorce = sLow.includes('طلق') || hasDivorceDate;
           columns = [
             { key: 'customerName', label: 'اسم الزوج/الزوجة' },
             { key: 'motherName', label: 'اسم الأم' },
