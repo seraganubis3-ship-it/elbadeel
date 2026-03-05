@@ -2,81 +2,16 @@ import Link from 'next/link';
 import { requireAuth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import InactivityWrapper from '@/components/InactivityWrapper';
 
-export default async function AdminPage() {
-  const session = await requireAuth();
-
-  // Check if user has admin privileges
-  if (!['ADMIN', 'STAFF', 'VIEWER'].includes(session.user.role as string)) {
-    redirect('/');
-  }
-
-  // Get today's date
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  // Fetch today's orders (from website only, not admin created)
-  const todayOrders = await prisma.order.findMany({
-    where: {
-      createdAt: {
-        gte: today,
-        lt: tomorrow,
-      },
-      createdByAdminId: null, // Only orders from website
-    },
-    include: {
-      service: true,
-      variant: true,
-      user: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-
-  // Native Postgres query to find orders due today safely without memory leaks
-  const dueTodayRows = await prisma.$queryRaw<Array<{ id: string }>>`
-    SELECT o.id 
-    FROM "Order" o
-    JOIN "ServiceVariant" sv ON o."variantId" = sv.id
-    WHERE o.status != 'completed'
-      AND o."createdAt" < NOW() - INTERVAL '1 day'
-      AND DATE(o."createdAt" + (sv."etaDays" || ' days')::INTERVAL) = CURRENT_DATE
-  `;
-
-  const deliveryDueToday =
-    dueTodayRows.length > 0
-      ? await prisma.order.findMany({
-          where: { id: { in: dueTodayRows.map(r => r.id) } },
-          include: {
-            service: true,
-            variant: true,
-            user: true,
-          },
-        })
-      : [];
-
-  // Get pending orders count
-  const pendingOrdersCount = await prisma.order.count({
-    where: {
-      status: {
-        in: ['pending', 'payment_pending', 'reviewing', 'processing'],
-      },
-    },
-  });
-
-  // Get total orders count
-  const totalOrdersCount = await prisma.order.count();
-
-  // Get completed orders count
-  const completedOrdersCount = await prisma.order.count({
-    where: {
-      status: 'completed',
-    },
-  });
-
+function AdminContent({
+  session,
+  todayOrders,
+  deliveryDueToday,
+  pendingOrdersCount,
+  totalOrdersCount,
+  completedOrdersCount,
+}: any) {
   return (
     <div
       className='min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'
@@ -274,7 +209,7 @@ export default async function AdminPage() {
             </div>
           ) : (
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
-              {todayOrders.slice(0, 6).map(order => (
+              {todayOrders.slice(0, 6).map((order: any) => (
                 <div
                   key={order.id}
                   className='bg-white rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300 border-l-4 border-blue-500'
@@ -433,7 +368,7 @@ export default async function AdminPage() {
             </div>
           ) : (
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
-              {deliveryDueToday.map(order => (
+              {deliveryDueToday.map((order: any) => (
                 <div
                   key={order.id}
                   className='bg-white rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300 border-l-4 border-red-500'
@@ -503,5 +438,86 @@ export default async function AdminPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default async function AdminPage() {
+  const session = await requireAuth();
+
+  if (!['ADMIN', 'STAFF', 'VIEWER'].includes(session.user.role as string)) {
+    redirect('/');
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const todayOrders = await prisma.order.findMany({
+    where: {
+      createdAt: {
+        gte: today,
+        lt: tomorrow,
+      },
+      createdByAdminId: null,
+    },
+    include: {
+      service: true,
+      variant: true,
+      user: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  const dueTodayRows = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT o.id 
+    FROM "Order" o
+    JOIN "ServiceVariant" sv ON o."variantId" = sv.id
+    WHERE o.status != 'completed'
+      AND o."createdAt" < NOW() - INTERVAL '1 day'
+      AND DATE(o."createdAt" + (sv."etaDays" || ' days')::INTERVAL) = CURRENT_DATE
+  `;
+
+  const deliveryDueToday =
+    dueTodayRows.length > 0
+      ? await prisma.order.findMany({
+          where: { id: { in: dueTodayRows.map(r => r.id) } },
+          include: {
+            service: true,
+            variant: true,
+            user: true,
+          },
+        })
+      : [];
+
+  const pendingOrdersCount = await prisma.order.count({
+    where: {
+      status: {
+        in: ['pending', 'payment_pending', 'reviewing', 'processing'],
+      },
+    },
+  });
+
+  const totalOrdersCount = await prisma.order.count();
+
+  const completedOrdersCount = await prisma.order.count({
+    where: {
+      status: 'completed',
+    },
+  });
+
+  return (
+    <InactivityWrapper>
+      <AdminContent
+        session={session}
+        todayOrders={todayOrders}
+        deliveryDueToday={deliveryDueToday}
+        pendingOrdersCount={pendingOrdersCount}
+        totalOrdersCount={totalOrdersCount}
+        completedOrdersCount={completedOrdersCount}
+      />
+    </InactivityWrapper>
   );
 }
