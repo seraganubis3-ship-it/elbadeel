@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { signOut } from 'next-auth/react';
 
 type InactivityDialogProps = {
   isOpen: boolean;
@@ -21,6 +20,7 @@ export default function InactivityDialog({
   const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
+    console.log('InactivityDialog isOpen:', isOpen);
     if (isOpen) {
       setPulse(true);
       const pulseInterval = setInterval(() => {

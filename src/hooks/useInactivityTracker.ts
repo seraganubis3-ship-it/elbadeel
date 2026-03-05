@@ -50,6 +50,7 @@ export function useInactivityTracker() {
               if (countdownTimerRef.current) {
                 clearInterval(countdownTimerRef.current);
               }
+              console.log('Auto logout triggered');
               window.location.href = '/login';
               return 0;
             }
