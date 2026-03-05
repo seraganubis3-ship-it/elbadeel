@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { signOut } from 'next-auth/react';
 
-interface InactivityDialogProps {
+type InactivityDialogProps = {
   isOpen: boolean;
   remainingSeconds: number;
   isWarning: boolean;
   onContinue: () => void;
   onLogout: () => void;
-}
+};
 
 export default function InactivityDialog({
   isOpen,
