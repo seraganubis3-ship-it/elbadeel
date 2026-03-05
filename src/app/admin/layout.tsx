@@ -9,6 +9,7 @@ import AdminWorkDateWrapper from '@/components/AdminWorkDateWrapper';
 import { hasPermission } from '@/lib/permissions';
 import { OfflineSyncTrigger } from '@/components/OfflineSyncTrigger';
 import { OfflineSyncAction } from '@/components/OfflineSyncAction';
+import InactivityWrapper from '@/components/InactivityWrapper';
 
 export const dynamic = 'force-dynamic';
 
@@ -908,7 +909,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Main Content */}
         <main className='flex-1 p-3 sm:p-4 md:p-6 lg:p-8 w-full'>
-          <AdminWorkDateWrapper>{children}</AdminWorkDateWrapper>
+          <InactivityWrapper>
+            <AdminWorkDateWrapper>{children}</AdminWorkDateWrapper>
+          </InactivityWrapper>
         </main>
 
         {/* Work Date Modal */}

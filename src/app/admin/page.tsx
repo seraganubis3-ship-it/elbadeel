@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { requireAuth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import InactivityWrapper from '@/components/InactivityWrapper';
 
 function AdminContent({
   session,
@@ -509,15 +508,13 @@ export default async function AdminPage() {
   });
 
   return (
-    <InactivityWrapper>
-      <AdminContent
-        session={session}
-        todayOrders={todayOrders}
-        deliveryDueToday={deliveryDueToday}
-        pendingOrdersCount={pendingOrdersCount}
-        totalOrdersCount={totalOrdersCount}
-        completedOrdersCount={completedOrdersCount}
-      />
-    </InactivityWrapper>
+    <AdminContent
+      session={session}
+      todayOrders={todayOrders}
+      deliveryDueToday={deliveryDueToday}
+      pendingOrdersCount={pendingOrdersCount}
+      totalOrdersCount={totalOrdersCount}
+      completedOrdersCount={completedOrdersCount}
+    />
   );
 }
