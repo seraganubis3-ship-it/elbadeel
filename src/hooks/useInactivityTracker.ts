@@ -1,18 +1,24 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
-const WARNING_TIME = 30 * 1000;
 
 export function useInactivityTracker() {
   const [isActive, setIsActive] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const resetOnActivityRef = useRef<(() => void) | null>(null);
+
   const handleContinue = useCallback(() => {
     setShowDialog(false);
-    resetTimer();
+    setRemainingSeconds(0);
+    if (resetOnActivityRef.current) {
+      resetOnActivityRef.current();
+    }
   }, []);
 
   const handleLogout = useCallback(() => {
@@ -20,32 +26,27 @@ export function useInactivityTracker() {
     window.location.href = '/login';
   }, []);
 
-  const resetTimer = useCallback(() => {
-    setIsActive(true);
-    setShowDialog(false);
-    setRemainingSeconds(0);
-  }, []);
-
   useEffect(() => {
-    let inactivityTimer: NodeJS.Timeout | null = null;
-    let warningTimer: NodeJS.Timeout | null = null;
-    let countdownTimer: NodeJS.Timeout | null = null;
-
     const resetInactivityTimer = () => {
-      if (inactivityTimer) clearTimeout(inactivityTimer);
-      if (warningTimer) clearTimeout(warningTimer);
-      if (countdownTimer) clearInterval(countdownTimer);
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+      if (countdownTimerRef.current) {
+        clearInterval(countdownTimerRef.current);
+      }
 
-      inactivityTimer = setTimeout(() => {
-        console.log('Inactivity timeout reached');
+      inactivityTimerRef.current = setTimeout(() => {
         setIsActive(false);
         setShowDialog(true);
         setRemainingSeconds(60);
 
-        countdownTimer = setInterval(() => {
+        countdownTimerRef.current = setInterval(() => {
           setRemainingSeconds(prev => {
             if (prev <= 1) {
-              if (countdownTimer) clearInterval(countdownTimer);
+              if (countdownTimerRef.current) {
+                clearInterval(countdownTimerRef.current);
+              }
+              window.location.href = '/login';
               return 0;
             }
             return prev - 1;
@@ -54,25 +55,26 @@ export function useInactivityTracker() {
       }, INACTIVITY_TIMEOUT);
     };
 
-    const resetOnActivity = () => {
-      resetInactivityTimer();
-    };
+    resetOnActivityRef.current = resetInactivityTimer;
 
     const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
 
     activityEvents.forEach(event => {
-      document.addEventListener(event, resetOnActivity);
+      document.addEventListener(event, resetInactivityTimer);
     });
 
     resetInactivityTimer();
 
     return () => {
-      if (inactivityTimer) clearTimeout(inactivityTimer);
-      if (warningTimer) clearTimeout(warningTimer);
-      if (countdownTimer) clearInterval(countdownTimer);
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+      if (countdownTimerRef.current) {
+        clearInterval(countdownTimerRef.current);
+      }
 
       activityEvents.forEach(event => {
-        document.removeEventListener(event, resetOnActivity);
+        document.removeEventListener(event, resetInactivityTimer);
       });
     };
   }, []);
