@@ -4,7 +4,8 @@ import InactivityDialog from '@/components/InactivityDialog';
 import { useInactivityTracker } from '@/hooks/useInactivityTracker';
 
 export default function InactivityWrapper({ children }: { children: React.ReactNode }) {
-  const { showDialog, remainingSeconds, handleContinue, handleLogout } = useInactivityTracker();
+  const { showDialog, remainingSeconds, isWarning, handleContinue, handleLogout } =
+    useInactivityTracker();
 
   return (
     <>
@@ -12,6 +13,7 @@ export default function InactivityWrapper({ children }: { children: React.ReactN
       <InactivityDialog
         isOpen={showDialog}
         remainingSeconds={remainingSeconds}
+        isWarning={isWarning}
         onContinue={handleContinue}
         onLogout={handleLogout}
       />

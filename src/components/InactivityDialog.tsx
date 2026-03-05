@@ -6,6 +6,7 @@ import { signOut } from 'next-auth/react';
 interface InactivityDialogProps {
   isOpen: boolean;
   remainingSeconds: number;
+  isWarning: boolean;
   onContinue: () => void;
   onLogout: () => void;
 }
@@ -13,29 +14,20 @@ interface InactivityDialogProps {
 export default function InactivityDialog({
   isOpen,
   remainingSeconds,
+  isWarning,
   onContinue,
   onLogout,
 }: InactivityDialogProps) {
-  const [timeLeft, setTimeLeft] = useState(remainingSeconds);
+  const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
-    setTimeLeft(remainingSeconds);
-  }, [remainingSeconds]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
+    if (isOpen) {
+      setPulse(true);
+      const pulseInterval = setInterval(() => {
+        setPulse(p => !p);
+      }, 1000);
+      return () => clearInterval(pulseInterval);
+    }
   }, [isOpen]);
 
   const formatTime = (seconds: number) => {
@@ -44,60 +36,112 @@ export default function InactivityDialog({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const getProgressColor = () => {
+    if (remainingSeconds > 40) return 'from-blue-500 to-cyan-500';
+    if (remainingSeconds > 20) return 'from-amber-500 to-orange-500';
+    return 'from-red-500 to-red-600';
+  };
+
+  const getProgressPercentage = () => {
+    return ((remainingSeconds / 60) * 100).toFixed(0);
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className='fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
-      <div className='bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-in fade-in zoom-in duration-300'>
+    <div className='fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300'>
+      <div className='bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full animate-in zoom-in duration-300'>
         <div className='text-center'>
-          <div className='mx-auto w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-6'>
-            <svg
-              className='w-8 h-8 text-amber-600'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M12 8v4l3 3m0 0l-3-3m3 3V8m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118z'
-              />
-            </svg>
+          <div
+            className={`mx-auto w-24 h-24 bg-gradient-to-br ${getProgressColor()} rounded-full flex items-center justify-center mb-6 shadow-lg ${pulse ? 'scale-110' : 'scale-100'} transition-all duration-300`}
+          >
+            <div className='text-white text-4xl font-bold'>{formatTime(remainingSeconds)}</div>
           </div>
 
-          <h2 className='text-2xl font-bold text-gray-900 mb-3'>تنبيه عدم النشاط</h2>
+          <div className='mb-6'>
+            <div className='w-full bg-gray-200 rounded-full h-3 overflow-hidden'>
+              <div
+                className={`h-full bg-gradient-to-r ${getProgressColor()} transition-all duration-1000 ease-linear`}
+                style={{ width: `${getProgressPercentage()}%` }}
+              />
+            </div>
+          </div>
 
-          <p className='text-gray-600 mb-2 text-lg'>
-            لم يُلاحظ أي نشاط على حسابك منذ{' '}
-            <span className='font-bold text-amber-600'>5 دقائق</span>
-          </p>
+          <h2 className='text-3xl font-bold text-gray-900 mb-3'>تنبيه عدم النشاط</h2>
 
-          <p className='text-gray-700 mb-6'>سيتم تسجيل الخروج تلقائياً خلال:</p>
+          <div className='space-y-2 mb-8'>
+            <p className='text-gray-600 text-lg'>
+              لم يُلاحظ أي نشاط على حسابك منذ{' '}
+              <span className='font-bold text-red-600'>5 دقائق</span>
+            </p>
 
-          <div className='text-4xl font-bold text-amber-600 mb-8 bg-amber-50 py-4 px-6 rounded-lg'>
-            {formatTime(timeLeft)}
+            {isWarning && remainingSeconds <= 10 && (
+              <p className='text-red-600 font-bold text-lg animate-pulse'>
+                ⚠️ سيتم تسجيل الخروج قريباً!
+              </p>
+            )}
+
+            <p className='text-gray-700'>للبقاء في الجلسة، يرجى الاستمرار في استخدام التطبيق</p>
           </div>
 
           <div className='flex flex-col gap-3'>
             <button
               onClick={onContinue}
-              className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg hover:shadow-blue-200'
+              className='w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-blue-200 text-lg flex items-center justify-center gap-2'
             >
+              <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M5 13l4 4L19 7'
+                />
+              </svg>
               استمر في الجلسة
             </button>
 
             <button
               onClick={onLogout}
-              className='w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg hover:shadow-red-200'
+              className='w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-red-200 text-lg flex items-center justify-center gap-2'
             >
+              <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M17 16l4-4m0 0l-4 4m4-4H3m2 4h6a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                />
+              </svg>
               تسجيل الخروج
             </button>
           </div>
 
-          <p className='text-sm text-gray-500 mt-4'>
-            سيتم تسجيل الخروج تلقائياً إذا لم تتم الاستجابة
-          </p>
+          <div className='mt-6 pt-4 border-t border-gray-200'>
+            <div className='flex items-center justify-center gap-6 text-sm text-gray-500'>
+              <div className='flex items-center gap-1'>
+                <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
+                  />
+                </svg>
+                <span>محمي</span>
+              </div>
+              <div className='flex items-center gap-1'>
+                <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
+                </svg>
+                <span>آمن</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

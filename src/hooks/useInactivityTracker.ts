@@ -3,11 +3,13 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
+const COUNTDOWN_SECONDS = 60;
 
 export function useInactivityTracker() {
   const [isActive, setIsActive] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [isWarning, setIsWarning] = useState(false);
 
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -16,6 +18,7 @@ export function useInactivityTracker() {
   const handleContinue = useCallback(() => {
     setShowDialog(false);
     setRemainingSeconds(0);
+    setIsWarning(false);
     if (resetOnActivityRef.current) {
       resetOnActivityRef.current();
     }
@@ -37,8 +40,9 @@ export function useInactivityTracker() {
 
       inactivityTimerRef.current = setTimeout(() => {
         setIsActive(false);
+        setIsWarning(true);
         setShowDialog(true);
-        setRemainingSeconds(60);
+        setRemainingSeconds(COUNTDOWN_SECONDS);
 
         countdownTimerRef.current = setInterval(() => {
           setRemainingSeconds(prev => {
@@ -83,6 +87,7 @@ export function useInactivityTracker() {
     isActive,
     showDialog,
     remainingSeconds,
+    isWarning,
     handleContinue,
     handleLogout,
   };
