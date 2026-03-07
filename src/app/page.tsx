@@ -29,6 +29,14 @@ export const metadata: Metadata = {
     url: 'https://albadel.com.eg',
     siteName: 'البديل للخدمات الحكومية',
     locale: 'ar_EG',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'البديل للخدمات الحكومية - منصة موثوقة لاستخراج الأوراق الرسمية',
+      },
+    ],
   },
   alternates: {
     canonical: 'https://albadel.com.eg',

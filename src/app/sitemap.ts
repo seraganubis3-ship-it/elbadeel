@@ -4,18 +4,28 @@ import { prisma } from '@/lib/prisma';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://albadel.com.eg';
 
-  // 1. Static Routes
-  const routes = ['', '/services', '/about', '/contact', '/faq', '/register', '/login'].map(
-    route => ({
-      url: `${baseUrl}${route}`,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: route === '' ? 1 : 0.8,
-    })
-  );
+  const staticRoutes: Array<{
+    path: string;
+    priority: number;
+    changeFrequency: 'daily' | 'monthly' | 'weekly' | 'always' | 'hourly' | 'yearly' | 'never';
+  }> = [
+    { path: '', priority: 1.0, changeFrequency: 'daily' },
+    { path: '/services', priority: 0.9, changeFrequency: 'daily' },
+    { path: '/about', priority: 0.8, changeFrequency: 'monthly' },
+    { path: '/contact', priority: 0.8, changeFrequency: 'monthly' },
+    { path: '/faq', priority: 0.7, changeFrequency: 'weekly' },
+    { path: '/register', priority: 0.6, changeFrequency: 'monthly' },
+    { path: '/login', priority: 0.6, changeFrequency: 'monthly' },
+  ];
+
+  const routes = staticRoutes.map(route => ({
+    url: `${baseUrl}${route.path}`,
+    lastModified: new Date(),
+    changeFrequency: route.changeFrequency,
+    priority: route.priority,
+  }));
 
   try {
-    // 2. Dynamic Service Routes
     const services = await prisma.service.findMany({
       where: { active: true },
       select: { slug: true, updatedAt: true },
@@ -30,8 +40,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [...routes, ...serviceUrls];
   } catch (error) {
-    // console.error('Error generating sitemap:', error);
-    // Fallback to just static routes if DB fails, so we still return valid XML
     return routes;
   }
 }
