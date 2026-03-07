@@ -20,7 +20,6 @@ export default function InactivityDialog({
   const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
-    console.log('InactivityDialog isOpen:', isOpen);
     if (isOpen) {
       setPulse(true);
       const pulseInterval = setInterval(() => {
