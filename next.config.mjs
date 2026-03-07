@@ -64,6 +64,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 's3.us-east-005.backblazeb2.com' },
       { protocol: 'https', hostname: 'f005.backblazeb2.com' },
     ],
+    dangerouslyAllowSVG: true,
+    unoptimized: false,
   },
   compress: true,
   swcMinify: true,

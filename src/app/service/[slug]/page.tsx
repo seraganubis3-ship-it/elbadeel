@@ -46,22 +46,24 @@ export async function generateMetadata(
     title,
     description,
     keywords,
+    alternates: {
+      canonical: `https://albadel.com.eg/service/${service.slug}`,
+    },
     openGraph: {
       title,
       description,
       type: 'article',
       siteName: 'البديل للخدمات الحكومية',
+      url: `https://albadel.com.eg/service/${service.slug}`,
+      locale: 'ar_EG',
       images: [
         {
-          url: '/og-image.jpg', // Use default if no specific image
+          url: '/og-image.jpg',
           width: 1200,
           height: 630,
           alt: service.name,
         },
       ],
-    },
-    alternates: {
-      canonical: `/service/${service.slug}`,
     },
   };
 }
@@ -140,6 +142,9 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
       className='min-h-screen w-full bg-[#F8FAFC] text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900'
       dir='rtl'
     >
+      <link rel='preconnect' href='https://albadel.com.eg' />
+      <link rel='preconnect' href='https://res.cloudinary.com' />
+
       <script
         type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -160,7 +165,9 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
               alt='خلفية الخدمات الحكومية'
               fill
               className='object-cover object-center'
-              priority
+              loading='lazy'
+              sizes='100vw'
+              quality={75}
             />
           </div>
         </div>
