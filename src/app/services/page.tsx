@@ -30,6 +30,14 @@ export const metadata: Metadata = {
     siteName: 'البديل للخدمات الحكومية',
     locale: 'ar_EG',
     type: 'website',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'البديل للخدمات الحكومية',
+      },
+    ],
   },
 };
 
@@ -71,6 +79,9 @@ export default async function ServicesPage() {
 
   return (
     <ServicesLayoutClient>
+      <link rel='preconnect' href='https://albadel.com.eg' />
+      <link rel='preconnect' href='https://res.cloudinary.com' />
+
       {/* Hero Section - Simplified */}
       <div className='relative w-full pt-28 pb-16 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900'>
         {/* Simple gradient overlay - no external patterns */}
@@ -80,7 +91,7 @@ export default async function ServicesPage() {
         <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center py-8 lg:py-12'>
             {/* Text Content */}
-            <div className='text-right order-2 lg:order-1'>
+            <div className='text-right order-2 lg:order-1 min-h-[200px]'>
               {/* Badge */}
               <div className='inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl mb-6'>
                 <span className='relative flex h-2 w-2'>
@@ -128,10 +139,12 @@ export default async function ServicesPage() {
                   <Image
                     src='/images/service.png'
                     alt='البديل - خدمات حكومية'
-                    width={512}
-                    height={384}
+                    width={490}
+                    height={327}
+                    sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 490px'
                     className='w-full max-w-[280px] sm:max-w-md rounded-xl'
                     priority
+                    quality={85}
                   />
 
                   {/* Floating Badge */}

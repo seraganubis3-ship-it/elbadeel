@@ -13,7 +13,6 @@ export default function ServicesLayoutClient({ children }: { children: ReactNode
           className='absolute bottom-[20%] left-[-10%] w-[30%] h-[30%] bg-blue-200/20 rounded-full blur-[100px] animate-float'
           style={{ animationDelay: '2s' }}
         ></div>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
       </div>
 
       {children}
