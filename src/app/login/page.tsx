@@ -4,33 +4,6 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'تسجيل الدخول - البديل للخدمات الحكومية',
-  description:
-    'سجل الدخول إلى حسابك في منصة البديل للخدمات الحكومية للوصول إلى جميع خدماتنا المتاحة.',
-  keywords: [
-    'تسجيل الدخول في البديل',
-    'دخول حساب',
-    'تسجيل دخول',
-    'تسجيل دخول المستخدم',
-    'منصة البديل',
-    'خدمات حكومية',
-  ],
-  alternates: {
-    canonical: 'https://albadel.com.eg/login',
-  },
-  openGraph: {
-    title: 'تسجيل الدخول - البديل للخدمات الحكومية',
-    description:
-      'سجل الدخول إلى حسابك في منصة البديل للخدمات الحكومية للوصول إلى جميع خدماتنا المتاحة.',
-    url: 'https://albadel.com.eg/login',
-    siteName: 'البديل للخدمات الحكومية',
-    locale: 'ar_EG',
-    type: 'website',
-  },
-};
 
 export default function LoginPage() {
   const router = useRouter();
