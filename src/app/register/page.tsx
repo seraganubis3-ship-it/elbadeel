@@ -3,6 +3,18 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Phone,
+  Lock,
+  User,
+  CheckCircle2,
+  ShieldCheck,
+  Sparkles,
+  ChevronLeft,
+} from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,12 +27,13 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   async function onSubmit(e: FormEvent) {
@@ -28,26 +41,30 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
+    if (formData.password !== formData.confirmPassword) {
+      setError('كلمتا المرور غير متطابقتين');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch('/api/register', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          password: formData.password,
+        }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'فشل التسجيل');
+        throw new Error(data.error || data.message || 'فشل التسجيل');
       }
 
-      if (data.success) {
-        router.push(
-          '/login?message=' + encodeURIComponent('تم التسجيل بنجاح! يمكنك الآن تسجيل الدخول')
-        );
-      } else {
-        setError(data.message || 'فشل التسجيل');
-      }
+      router.push('/login?message=' + encodeURIComponent('تم إنشاء الحساب بنجاح، يمكنك الآن تسجيل الدخول'));
     } catch (err: any) {
       setError(err.message || 'حدث خطأ ما. يرجى المحاولة مرة أخرى');
     } finally {
@@ -55,62 +72,96 @@ export default function RegisterPage() {
     }
   }
 
-  return (
-    <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12 px-4 sm:px-6'>
-      <div className='w-full max-w-md'>
-        <div className='bg-white rounded-2xl shadow-2xl p-8 sm:p-10'>
-          <div className='text-center mb-8'>
-            <h1 className='text-3xl font-bold text-gray-900 mb-2'>التسجيل</h1>
-            <p className='text-gray-600'>أنشئ حساباً جديداً للبدء في استخدام الخدمات</p>
-          </div>
+  const passwordChecks = [
+    { label: '6 أحرف أو أكثر', valid: formData.password.length >= 6 },
+    {
+      label: 'تأكيد كلمة المرور متطابق',
+      valid: !!formData.confirmPassword && formData.password === formData.confirmPassword,
+    },
+  ];
 
+  return (
+    <main className='relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 py-12'>
+      {/* Dynamic Animated Background */}
+      <div className='absolute inset-0 z-0 overflow-hidden fixed'>
+        <div className='absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-300/20 rounded-full blur-[100px] animate-pulse' />
+        <div className='absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-sky-300/20 rounded-full blur-[120px] animate-pulse' style={{ animationDelay: '2s' }} />
+        <div className='absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.02)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_100%)] opacity-70' />
+      </div>
+
+      <div className='relative z-10 w-full max-w-md px-4 sm:px-6'>
+        <div className='mb-8 text-center'>
+          <div className='mx-auto inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white shadow-xl shadow-emerald-500/10 mb-6 relative group overflow-hidden'>
+            <div className='absolute inset-0 rounded-2xl bg-gradient-to-tr from-emerald-500 to-sky-400 opacity-10 group-hover:opacity-20 transition-opacity duration-500' />
+            <Sparkles className='w-8 h-8 text-emerald-600 relative z-10' />
+          </div>
+          <h1 className='text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-3'>
+            إنشاء حساب جديد
+          </h1>
+          <p className='text-slate-500 font-medium'>
+            سجل الآن وابدأ في إنشاء ومتابعة طلباتك
+          </p>
+        </div>
+
+        <div className='bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/80 transition-all duration-300 hover:shadow-[0_16px_60px_-15px_rgba(0,0,0,0.1)]'>
           {error && (
-            <div
-              className='bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6'
-              role='alert'
-            >
-              <p className='font-medium'>{error}</p>
+            <div className='mb-6 rounded-2xl border border-rose-100 bg-rose-50/70 p-4 text-rose-700 animate-in fade-in slide-in-from-top-2'>
+              <p className='text-sm font-bold text-center'>{error}</p>
             </div>
           )}
 
-          <form onSubmit={onSubmit} className='space-y-6'>
-            <div>
-              <label htmlFor='name' className='block text-sm font-medium text-gray-700 mb-2'>
+          <form onSubmit={onSubmit} className='space-y-4 lg:space-y-5'>
+            <div className='space-y-1.5 lg:space-y-2'>
+              <label htmlFor='name' className='block text-sm font-bold text-slate-700 mr-2'>
                 الاسم الكامل
               </label>
-              <input
-                id='name'
-                name='name'
-                type='text'
-                required
-                value={formData.name}
-                onChange={handleChange}
-                className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                placeholder='أدخل اسمك الكامل'
-              />
+              <div className='relative group'>
+                <div className='absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors'>
+                  <User className='w-5 h-5' />
+                </div>
+                <input
+                  id='name'
+                  name='name'
+                  type='text'
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  className='block w-full h-14 pl-4 pr-12 rounded-2xl border border-slate-200/80 bg-white/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none font-bold'
+                  placeholder='الاسم الثلاثي أو الرباعي'
+                />
+              </div>
             </div>
 
-            <div>
-              <label htmlFor='phone' className='block text-sm font-medium text-gray-700 mb-2'>
+            <div className='space-y-1.5 lg:space-y-2'>
+              <label htmlFor='phone' className='block text-sm font-bold text-slate-700 mr-2'>
                 رقم الهاتف
               </label>
-              <input
-                id='phone'
-                name='phone'
-                type='tel'
-                required
-                value={formData.phone}
-                onChange={handleChange}
-                className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                placeholder='01xxxxxxxxx'
-              />
+              <div className='relative group'>
+                <div className='absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors'>
+                  <Phone className='w-5 h-5' />
+                </div>
+                <input
+                  id='phone'
+                  name='phone'
+                  type='tel'
+                  required
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className='block w-full h-14 pl-4 pr-12 rounded-2xl border border-slate-200/80 bg-white/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none font-bold'
+                  placeholder='01xxxxxxxxx'
+                  dir='ltr'
+                />
+              </div>
             </div>
 
-            <div>
-              <label htmlFor='password' className='block text-sm font-medium text-gray-700 mb-2'>
+            <div className='space-y-1.5 lg:space-y-2'>
+              <label htmlFor='password' className='block text-sm font-bold text-slate-700 mr-2'>
                 كلمة المرور
               </label>
-              <div className='relative'>
+              <div className='relative group'>
+                <div className='absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors'>
+                  <Lock className='w-5 h-5' />
+                </div>
                 <input
                   id='password'
                   name='password'
@@ -118,74 +169,100 @@ export default function RegisterPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                  placeholder='أدخل كلمة المرور'
+                  className='block w-full h-14 pl-12 pr-12 rounded-2xl border border-slate-200/80 bg-white/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none font-bold font-sans tracking-widest'
+                  placeholder='••••••••'
+                  dir='ltr'
                 />
                 <button
                   type='button'
                   onClick={() => setShowPassword(!showPassword)}
-                  className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
+                  className='absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 hover:text-emerald-600 transition-colors focus:outline-none'
                 >
-                  {showPassword ? '🙈' : '👁'}
+                  {showPassword ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
                 </button>
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor='confirmPassword'
-                className='block text-sm font-medium text-gray-700 mb-2'
-              >
+            <div className='space-y-1.5 lg:space-y-2'>
+              <label htmlFor='confirmPassword' className='block text-sm font-bold text-slate-700 mr-2'>
                 تأكيد كلمة المرور
               </label>
-              <input
-                id='confirmPassword'
-                name='confirmPassword'
-                type='password'
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                placeholder='أعد إدخال كلمة المرور'
-              />
+              <div className='relative group'>
+                <div className='absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors'>
+                  <ShieldCheck className='w-5 h-5' />
+                </div>
+                <input
+                  id='confirmPassword'
+                  name='confirmPassword'
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className='block w-full h-14 pl-12 pr-12 rounded-2xl border border-slate-200/80 bg-white/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none font-bold font-sans tracking-widest'
+                  placeholder='••••••••'
+                  dir='ltr'
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className='absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 hover:text-emerald-600 transition-colors focus:outline-none'
+                >
+                  {showConfirmPassword ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
+                </button>
+              </div>
+            </div>
+
+            <div className='mt-2 rounded-2xl bg-slate-100/50 p-3'>
+              <div className='space-y-2'>
+                {passwordChecks.map(check => (
+                  <div key={check.label} className='flex items-center gap-2 text-xs font-bold'>
+                    <CheckCircle2
+                      className={`w-4 h-4 transition-colors ${check.valid ? 'text-emerald-600' : 'text-slate-300'}`}
+                    />
+                    <span className={`transition-colors ${check.valid ? 'text-emerald-800' : 'text-slate-500'}`}>
+                      {check.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <button
               type='submit'
               disabled={loading}
-              className='w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+              className='relative w-full h-14 flex items-center justify-center gap-2 rounded-2xl bg-slate-900 text-white font-bold text-base overflow-hidden transition-all hover:bg-black hover:shadow-xl hover:shadow-slate-900/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed mt-4'
             >
-              {loading ? 'جاري التسجيل...' : 'تسجيل'}
+              {loading ? (
+                <div className='w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin' />
+              ) : (
+                <>
+                  <span>إنشاء الحساب</span>
+                  <ChevronLeft className='w-5 h-5 opacity-70' />
+                </>
+              )}
             </button>
           </form>
+        </div>
 
-          <div className='mt-6 text-center'>
-            <p className='text-gray-600'>
-              لديك حساب بالفعل؟{' '}
-              <Link href='/login' className='text-blue-600 hover:text-blue-700 font-medium'>
-                تسجيل الدخول
-              </Link>
-            </p>
-          </div>
-
-          <div className='mt-4 pt-4 border-t border-gray-200'>
+        <div className='mt-8 text-center'>
+          <p className='text-slate-500 font-medium'>
+            عضواً بالفعل؟{' '}
             <Link
-              href='/'
-              className='flex items-center justify-center text-gray-600 hover:text-gray-900'
+              href='/login'
+              className='font-bold text-emerald-600 hover:text-emerald-700 transition-colors relative after:absolute after:bottom-0 after:right-0 after:w-full after:h-0.5 after:bg-emerald-600/30 after:hover:bg-emerald-600/100 after:transition-colors'
             >
-              <svg className='w-4 h-4 ml-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M10 19l-7-7m0 0l7-7m-7 7v-4h-4v4m-4 0h14a2 2 0 002-2V8a2 2 0 00-2-2h-4m-4 0h-4'
-                />
-              </svg>
-              العودة للرئيسية
+              تسجيل الدخول
             </Link>
-          </div>
+          </p>
+        </div>
+        
+        <div className='mt-12 text-center pb-6'>
+            <Link href="/" className='inline-flex items-center justify-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors'>
+                <ArrowRight className='w-4 h-4' />
+                العودة للرئيسية
+            </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

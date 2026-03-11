@@ -165,7 +165,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
 طلب رقم: ${orderData.orderId}
 الخدمة: ${orderData.service}
 النوع: ${orderData.variant}
-العميل: ${orderData.customer}
+العميل: ${orderData.customer} ${order.customerFollowUp && order.customerFollowUp !== '' && order.customerFollowUp !== 'لا يوجد' ? `(تابع لـ ${order.customerFollowUp})` : ''}
 الهاتف: ${orderData.phone}
 البريد الإلكتروني: ${orderData.email}
  العنوان: ${orderData.address || 'غير محدد'}
@@ -555,7 +555,16 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   </svg>
                 </div>
                 <div>
-                  <div className='font-bold text-gray-900 text-sm'>مراسلة العميل</div>
+                  <div className='flex items-center gap-2'>
+                    <div className='font-bold text-gray-900 text-sm'>مراسلة العميل</div>
+                    {currentOrder.customerFollowUp &&
+                      currentOrder.customerFollowUp !== '' &&
+                      currentOrder.customerFollowUp !== 'لا يوجد' && (
+                        <span className='px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded whitespace-nowrap'>
+                          تابع لـ {currentOrder.customerFollowUp}
+                        </span>
+                      )}
+                  </div>
                   <div className='text-xs text-gray-400'>
                     {currentOrder.customerName} — {currentOrder.customerPhone}
                   </div>
@@ -1562,9 +1571,18 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                       </button>
                     </div>
                   ) : (
-                    <p className='text-lg font-bold text-slate-900'>
-                      {currentOrder.customerName || '-'}
-                    </p>
+                    <div className='flex items-center gap-2'>
+                      <p className='text-lg font-bold text-slate-900'>
+                        {currentOrder.customerName || '-'}
+                      </p>
+                      {currentOrder.customerFollowUp &&
+                        currentOrder.customerFollowUp !== '' &&
+                        currentOrder.customerFollowUp !== 'لا يوجد' && (
+                          <span className='px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded-md whitespace-nowrap'>
+                            تابع لـ {currentOrder.customerFollowUp}
+                          </span>
+                        )}
+                    </div>
                   )}
                 </div>
 

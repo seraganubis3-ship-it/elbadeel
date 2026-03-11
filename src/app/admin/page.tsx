@@ -474,7 +474,7 @@ export default async function AdminPage() {
     SELECT o.id 
     FROM "Order" o
     JOIN "ServiceVariant" sv ON o."variantId" = sv.id
-    WHERE o.status != 'completed'
+    WHERE o.status NOT IN ('completed', 'delivered', 'supply', 'returned', 'cancelled')
       AND o."createdAt" < NOW() - INTERVAL '1 day'
       AND DATE(o."createdAt" + (sv."etaDays" || ' days')::INTERVAL) = CURRENT_DATE
   `;

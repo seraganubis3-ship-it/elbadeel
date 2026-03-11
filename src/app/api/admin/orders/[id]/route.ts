@@ -117,6 +117,8 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
         gender: order.gender,
         policeStation: order.policeStation,
         pickupLocation: order.pickupLocation,
+        customerFollowUp: order.customerFollowUp,
+        profession: (order as any).profession,
         marriageDate: (order as any).marriageDate,
         divorceDate: (order as any).divorceDate,
         wifeMotherName: (order as any).wifeMotherName,

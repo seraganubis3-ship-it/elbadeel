@@ -515,7 +515,7 @@ export function printOrdersReport({
         const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important;' : ''}"`;
         const mono = 'text-align: center; font-family: monospace; font-size: 13px;';
 
-        const mDate = formatDate(order.marriageDate);
+        const mDate = formatDate(order.marriageDate); // Prefer the edited date
 
         return `
         <tr>
@@ -585,7 +585,10 @@ export function printOrdersReport({
             const isSupply = order.status === 'supply';
             const cellStyle = `style="text-align: center; ${isSupply ? 'background-color: #bfdbfe !important; -webkit-print-color-adjust: exact;' : ''}"`;
             const vName = order.variant?.name || '';
-            const eventDate = (order as any).divorceDate || order.marriageDate || order.birthDate;
+            const isDivorce =
+              sLow.includes('طلق') ||
+              ((order as any).divorceDate && (order as any).divorceDate !== '');
+            const eventDate = isDivorce ? (order as any).divorceDate : order.marriageDate;
             const mDate = formatDate(eventDate);
             return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: right; font-weight: bold;">${order.wifeName || '---'}</td><td style="text-align: right;">${order.wifeMotherName || '---'}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${mDate}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
           })

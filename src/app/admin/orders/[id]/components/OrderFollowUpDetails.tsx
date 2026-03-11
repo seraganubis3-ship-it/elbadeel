@@ -19,9 +19,9 @@ export default function OrderFollowUpDetails({
   updating,
 }: OrderFollowUpDetailsProps) {
   const [formData, setFormData] = useState({
-    customerType: order.customerType || '',
+    customerType: (order as any).customerType || '',
     customerFollowUp: order.customerFollowUp || '',
-    gracePeriod: order.gracePeriod || '',
+    gracePeriod: (order as any).gracePeriod || '',
     title: order.title || '',
     destination: order.destination || '',
   });
@@ -32,44 +32,15 @@ export default function OrderFollowUpDetails({
 
   const fields = [
     {
-      label: 'نوع العميل',
-      value:
-        order.customerType === 'INDIVIDUAL'
-          ? 'فرد'
-          : order.customerType === 'COMPANY'
-            ? 'شركة'
-            : order.customerType === 'GOVERNMENT'
-              ? 'حكومي'
-              : 'غير محدد',
-      key: 'customerType',
-      type: 'select',
-      options: [
-        { v: 'INDIVIDUAL', l: 'فرد' },
-        { v: 'COMPANY', l: 'شركة' },
-        { v: 'GOVERNMENT', l: 'حكومي' },
-      ],
-    },
-    {
-      label: 'طريقة المتابعة',
-      value:
-        order.customerFollowUp === 'DIRECT'
-          ? 'مباشر'
-          : order.customerFollowUp === 'AGENT'
-            ? 'وكيل'
-            : order.customerFollowUp === 'LAWYER'
-              ? 'محامي'
-              : 'غير محدد',
+      label: 'التابع',
+      value: order.customerFollowUp,
       key: 'customerFollowUp',
-      type: 'select',
-      options: [
-        { v: 'DIRECT', l: 'مباشر' },
-        { v: 'AGENT', l: 'وكيل' },
-        { v: 'LAWYER', l: 'محامي' },
-      ],
+      type: 'text',
+      placeholder: 'اسم التابع...',
     },
     {
       label: 'المهلة / فترة السماح',
-      value: order.gracePeriod,
+      value: (order as any).gracePeriod,
       key: 'gracePeriod',
       type: 'text',
     },
@@ -166,11 +137,9 @@ export default function OrderFollowUpDetails({
                   className='w-full bg-white border border-slate-200 rounded-xl px-4 py-2 sm:py-3 text-base sm:text-lg font-black text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500'
                 >
                   <option value=''>غير محدد</option>
-                  {item.options?.map(opt => (
-                    <option key={opt.v} value={opt.v}>
-                      {opt.l}
-                    </option>
-                  ))}
+                  <option value='INDIVIDUAL'>فرد</option>
+                  <option value='COMPANY'>شركة</option>
+                  <option value='GOVERNMENT'>حكومي</option>
                 </select>
               ) : (
                 <input

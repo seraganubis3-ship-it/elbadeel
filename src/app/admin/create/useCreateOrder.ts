@@ -406,12 +406,12 @@ export function useCreateOrder() {
       apartmentNumber: cust.apartmentNumber || '',
       landmark: cust.landmark || '',
       birthDate: formattedBirthDate,
-      idNumber: (cust as any).idNumber || '',
-      fatherName: (cust as any).fatherName || '',
-      motherName: (cust as any).motherName || '',
+      idNumber: cust.idNumber || '',
+      fatherName: cust.fatherName || '',
+      motherName: cust.motherName || '',
 
-      gender: (cust as any).gender || '',
-      wifeName: (cust as any).wifeName || '',
+      gender: cust.gender ? cust.gender.toUpperCase() : '',
+      wifeName: cust.wifeName || '',
       age:
         formattedBirthDate && formattedBirthDate.length === 10
           ? (() => {
