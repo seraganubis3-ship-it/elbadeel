@@ -52,6 +52,9 @@ export default function CreateOrderPage() {
     handleSaveAttachment,
     handleRemoveAttachment,
     formSerialNumber,
+    setFormSerialNumber,
+    formSerialProvider,
+    setFormSerialProvider,
     serialValid,
     validateSerialLive,
     selectedFines,
@@ -170,6 +173,8 @@ export default function CreateOrderPage() {
                   selectedVariant={selectedVariant}
                   handleVariantChange={handleVariantChange}
                   formSerialNumber={formSerialNumber}
+                  formSerialProvider={formSerialProvider}
+                  setFormSerialProvider={setFormSerialProvider}
                   serialValid={serialValid}
                   validateSerialLive={validateSerialLive}
                 />

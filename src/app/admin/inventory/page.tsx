@@ -32,6 +32,7 @@ export default function InventoryPage() {
   const [addingSerials, setAddingSerials] = useState(false);
   const [newSerialsText, setNewSerialsText] = useState('');
   const [search, setSearch] = useState('');
+  const [selectedProvider, setSelectedProvider] = useState<'AL_BADEL' | 'AL_WAFI'>('AL_BADEL');
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   const selectedFormType = useMemo(
@@ -120,8 +121,25 @@ export default function InventoryPage() {
   }, []);
 
   useEffect(() => {
+    // When selectedProvider changes, if the current selectedFormTypeId is NOT in displayedFormTypes,
+    // switch to the first one in displayedFormTypes
+    if (displayedFormTypes.length > 0) {
+      const isStillVisible = displayedFormTypes.find(ft => ft.id === selectedFormTypeId);
+      if (!isStillVisible) {
+        setSelectedFormTypeId(displayedFormTypes[0]!.id);
+      }
+    } else {
+      setSelectedFormTypeId('');
+    }
+  }, [selectedProvider, displayedFormTypes, selectedFormTypeId]);
+
+  useEffect(() => {
     const loadDetails = async () => {
-      if (!selectedFormTypeId) return;
+      if (!selectedFormTypeId) {
+        setSerials([]);
+        setLinkedVariantIds([]);
+        return;
+      }
       setSerialsLoading(true);
       try {
         const [links, sers] = await Promise.all([
@@ -131,7 +149,7 @@ export default function InventoryPage() {
             { fallback: { success: true, variantIds: [] } }
           ),
           fetchJsonWithCache<any>(
-            `/api/admin/forms/types/${selectedFormTypeId}/serials`,
+            `/api/admin/forms/types/${selectedFormTypeId}/serials?provider=${selectedProvider}`,
             { credentials: 'include' },
             { fallback: { success: true, serials: [] } }
           ),
@@ -143,7 +161,7 @@ export default function InventoryPage() {
       }
     };
     loadDetails();
-  }, [selectedFormTypeId]);
+  }, [selectedFormTypeId, selectedProvider]);
 
   const toggleVariant = (id: string) => {
     setLinkedVariantIds(prev => (prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]));
@@ -194,7 +212,7 @@ export default function InventoryPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ serials: list }),
+        body: JSON.stringify({ serials: list, provider: selectedProvider }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
@@ -286,6 +304,30 @@ export default function InventoryPage() {
           </Link>
         </div>
 
+        {/* Provider Selection Toggle */}
+        <div className='flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit'>
+          <button
+            onClick={() => setSelectedProvider('AL_BADEL')}
+            className={`px-8 py-3 rounded-xl font-black text-sm transition-all ${
+              selectedProvider === 'AL_BADEL'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            استمارات البديل
+          </button>
+          <button
+            onClick={() => setSelectedProvider('AL_WAFI')}
+            className={`px-8 py-3 rounded-xl font-black text-sm transition-all ${
+              selectedProvider === 'AL_WAFI'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            استمارات الوافي
+          </button>
+        </div>
+
         {/* Form Types Tabs */}
         <div className='flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide'>
           {displayedFormTypes.map(ft => {
@@ -337,7 +379,11 @@ export default function InventoryPage() {
               </div>
 
               <div className='space-y-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar'>
-                {displayedServices.length === 0 ? (
+                {!selectedFormTypeId ? (
+                  <div className='text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl'>
+                    <p className='text-slate-400 font-bold'>يرجى اختيار نوع استمارة أولاً للربط</p>
+                  </div>
+                ) : displayedServices.length === 0 ? (
                   <div className='text-center py-10 text-slate-400'>
                     لا توجد خدمات &quot;بطاقة رقم قومي&quot; متاحة
                   </div>
@@ -513,26 +559,39 @@ export default function InventoryPage() {
                                 : '-'}
                             </td>
                             <td className='px-6 py-4'>
-                              {!s.consumed && (
-                                <button
-                                  onClick={() => deleteSerial(s.id)}
-                                  className='text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors'
-                                  title='حذف'
+                              {s.consumed && s.orderId ? (
+                                <Link
+                                  href={`/admin/orders/${s.orderId}`}
+                                  className='text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100 transition-all hover:shadow-sm w-fit'
+                                  title='فتح تفاصيل الطلب'
                                 >
-                                  <svg
-                                    className='w-5 h-5'
-                                    fill='none'
-                                    viewBox='0 0 24 24'
-                                    stroke='currentColor'
-                                  >
-                                    <path
-                                      strokeLinecap='round'
-                                      strokeLinejoin='round'
-                                      strokeWidth={2}
-                                      d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
-                                    />
+                                  <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14' />
                                   </svg>
-                                </button>
+                                  <span>طلب: {s.orderId.substring(s.orderId.length - 8).toUpperCase()}</span>
+                                </Link>
+                              ) : (
+                                !s.consumed && (
+                                  <button
+                                    onClick={() => deleteSerial(s.id)}
+                                    className='text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors'
+                                    title='حذف'
+                                  >
+                                    <svg
+                                      className='w-5 h-5'
+                                      fill='none'
+                                      viewBox='0 0 24 24'
+                                      stroke='currentColor'
+                                    >
+                                      <path
+                                        strokeLinecap='round'
+                                        strokeLinejoin='round'
+                                        strokeWidth={2}
+                                        d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                                      />
+                                    </svg>
+                                  </button>
+                                )
                               )}
                             </td>
                           </tr>

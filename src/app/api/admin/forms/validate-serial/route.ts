@@ -11,6 +11,7 @@ export async function GET(_request: NextRequest) {
     const { searchParams } = new URL(_request.url);
     const variantId = searchParams.get('variantId') || '';
     const serial = (searchParams.get('serial') || '').trim();
+    const provider = searchParams.get('provider') || 'AL_BADEL';
 
     if (!variantId || !serial) {
       return NextResponse.json({ valid: false, message: 'البيانات غير مكتملة' }, { status: 400 });
@@ -26,12 +27,13 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ valid: false, message: 'لا يوجد نوع استمارة مرتبط بهذا النوع' });
     }
 
-    // Check if any linked form type has this serial available
+    // Check if any linked form type has this serial available for the given provider
     const formTypeIds = links.map(l => l.formTypeId);
     const available = await (prisma as any).formSerial.findFirst({
       where: {
         formTypeId: { in: formTypeIds },
         serialNumber: serial,
+        provider,
         consumed: false,
       },
       include: { formType: true },

@@ -214,6 +214,8 @@ export async function GET(request: NextRequest) {
               { customerName: { contains: search, mode: 'insensitive' } },
               { customerPhone: { contains: search } },
               { idNumber: { contains: search, mode: 'insensitive' } },
+              { workOrderNumber: { contains: search, mode: 'insensitive' } },
+              { formSerials: { some: { serialNumber: { contains: search, mode: 'insensitive' } } } },
               { user: { phone: { contains: search } } },
               { user: { name: { contains: search, mode: 'insensitive' } } },
             ],
@@ -436,6 +438,7 @@ export async function POST(request: NextRequest) {
     }
 
     const formSerialNumber = body.formSerialNumber as string | undefined;
+    const formSerialProvider = (body.formSerialProvider as string) || 'AL_BADEL';
     let formTypeId: string | undefined;
 
     if (formSerialNumber) {
@@ -455,6 +458,7 @@ export async function POST(request: NextRequest) {
         where: {
           formTypeId: link.formTypeId,
           serialNumber: formSerialNumber,
+          provider: formSerialProvider,
           consumed: false,
         },
       });
@@ -468,12 +472,7 @@ export async function POST(request: NextRequest) {
 
       // Immediately mark as consumed to prevent race conditions
       await (prisma as any).formSerial.update({
-        where: {
-          formTypeId_serialNumber: {
-            formTypeId: link.formTypeId,
-            serialNumber: formSerialNumber,
-          },
-        },
+        where: { id: availableSerial.id },
         data: {
           consumed: true,
           consumedAt: new Date(),
@@ -868,17 +867,16 @@ export async function POST(request: NextRequest) {
 
     // Update form serial with actual order ID after order creation
     if (formSerialNumber && formTypeId) {
-      await (prisma as any).formSerial.update({
-        where: {
-          formTypeId_serialNumber: {
-            formTypeId: formTypeId,
-            serialNumber: formSerialNumber,
-          },
-        },
-        data: {
-          orderId: order.id,
-        },
+      const serialRecord = await (prisma as any).formSerial.findFirst({
+        where: { formTypeId, serialNumber: formSerialNumber },
+        select: { id: true },
       });
+      if (serialRecord) {
+        await (prisma as any).formSerial.update({
+          where: { id: serialRecord.id },
+          data: { orderId: order.id },
+        });
+      }
     }
 
     if (attachedDocuments && Array.isArray(attachedDocuments)) {

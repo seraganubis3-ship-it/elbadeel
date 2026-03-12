@@ -78,6 +78,7 @@ export function useCreateOrder() {
 
   // Serial number
   const [formSerialNumber, setFormSerialNumber] = useState('');
+  const [formSerialProvider, setFormSerialProvider] = useState<'AL_BADEL' | 'AL_WAFI'>('AL_BADEL');
   const [serialValid, setSerialValid] = useState<null | { ok: boolean; msg: string }>(null);
   const serialValidateTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -134,7 +135,11 @@ export function useCreateOrder() {
       if (!value || !selectedVariant?.id) return;
       serialValidateTimeout.current = setTimeout(async () => {
         try {
-          const params = new URLSearchParams({ variantId: selectedVariant!.id, serial: value });
+          const params = new URLSearchParams({
+            variantId: selectedVariant!.id,
+            serial: value,
+            provider: formSerialProvider,
+          });
           const res = await fetch(`/api/admin/forms/validate-serial?${params.toString()}`, {
             credentials: 'include',
           });
@@ -149,7 +154,7 @@ export function useCreateOrder() {
         }
       }, 400);
     },
-    [selectedVariant]
+    [selectedVariant, formSerialProvider]
   );
 
   // Cleanup on unmount
@@ -1067,6 +1072,7 @@ export function useCreateOrder() {
               };
             }),
           formSerialNumber,
+          formSerialProvider,
           workDate: getCurrentWorkDate(),
         };
 
@@ -1223,6 +1229,9 @@ export function useCreateOrder() {
 
     // Serial
     formSerialNumber,
+    setFormSerialNumber,
+    formSerialProvider,
+    setFormSerialProvider,
     serialValid,
     validateSerialLive,
 

@@ -2,17 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrStaff } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireAdminOrStaff();
 
     const { id } = params;
+    const provider = request.nextUrl.searchParams.get('provider') || 'AL_BADEL';
+
     const serials = await (prisma as any).formSerial.findMany({
-      where: { formTypeId: id },
+      where: { formTypeId: id, provider },
       orderBy: [{ consumed: 'asc' }, { createdAt: 'desc' }],
       include: {
         addedByAdmin: { select: { id: true, name: true, email: true } },
         consumedByAdmin: { select: { id: true, name: true, email: true } },
+        order: { select: { id: true, customerName: true } },
       },
     });
     return NextResponse.json({ success: true, serials });
@@ -31,6 +34,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { id } = params;
     const body = await request.json();
     const serials: string[] = Array.isArray(body.serials) ? body.serials : [];
+    const provider: string = body.provider || 'AL_BADEL';
+
     if (serials.length === 0) {
       return NextResponse.json({ error: 'يجب إدخال أرقام واحدة على الأقل' }, { status: 400 });
     }
@@ -38,17 +43,19 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const data = serials.map(s => ({
       formTypeId: id,
       serialNumber: s,
+      provider,
       addedByAdminId: session.user.id,
     }));
     const created = await (prisma as any).formSerial.createMany({ data, skipDuplicates: true });
 
     // Return the actually created rows (best-effort reload)
     const createdRows = await (prisma as any).formSerial.findMany({
-      where: { formTypeId: id, serialNumber: { in: serials } },
+      where: { formTypeId: id, serialNumber: { in: serials }, provider },
       orderBy: { createdAt: 'desc' },
       include: {
         addedByAdmin: { select: { id: true, name: true, email: true } },
         consumedByAdmin: { select: { id: true, name: true, email: true } },
+        order: { select: { id: true, customerName: true } },
       },
     });
 

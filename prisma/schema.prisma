@@ -467,7 +467,7 @@ model FormType {
   updatedAt    DateTime          @updatedAt
   variantLinks FormTypeVariant[]
   serials      FormSerial[]
-
+ 
   @@index([active])
 }
 
@@ -488,6 +488,7 @@ model FormSerial {
   id                String    @id @default(cuid())
   formTypeId        String
   serialNumber      String
+  provider          String    @default("AL_BADEL")
   orderId           String?
   consumed          Boolean   @default(false)
   consumedAt        DateTime?
@@ -500,8 +501,9 @@ model FormSerial {
   addedByAdmin      User?     @relation("FormSerialAddedBy", fields: [addedByAdminId], references: [id])
   consumedByAdmin   User?     @relation("FormSerialConsumedBy", fields: [consumedByAdminId], references: [id])
 
-  @@unique([formTypeId, serialNumber])
+  @@unique([formTypeId, serialNumber, provider])
   @@index([formTypeId])
+  @@index([provider])
   @@index([orderId])
   @@index([consumed])
   @@index([addedByAdminId])

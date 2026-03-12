@@ -21,6 +21,8 @@ interface ServiceSelectionSectionProps {
 
   // Serial & Dates
   formSerialNumber: string;
+  formSerialProvider: 'AL_BADEL' | 'AL_WAFI';
+  setFormSerialProvider: (p: 'AL_BADEL' | 'AL_WAFI') => void;
   serialValid: { ok: boolean; msg: string } | null;
   validateSerialLive: (serial: string) => void;
 }
@@ -38,6 +40,8 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
   handleVariantChange,
   selectService,
   formSerialNumber,
+  formSerialProvider,
+  setFormSerialProvider,
   serialValid,
   validateSerialLive,
 }) => {
@@ -531,6 +535,72 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
             </div>
           )}
 
+          {/* Form Serial Number - Show Only for National ID - MOVED ABOVE بيانات إضافية */}
+          {isNationalId && (
+            <div className='space-y-3 animate-in slide-in-from-top-2 pt-4 border-t border-slate-200'>
+              {/* Provider Toggle */}
+              <div className='flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit'>
+                <button
+                  type='button'
+                  onClick={() => { setFormSerialProvider('AL_BADEL'); }}
+                  className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${
+                    formSerialProvider === 'AL_BADEL'
+                      ? 'bg-white text-emerald-600 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  البديل
+                </button>
+                <button
+                  type='button'
+                  onClick={() => { setFormSerialProvider('AL_WAFI'); }}
+                  className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${
+                    formSerialProvider === 'AL_WAFI'
+                      ? 'bg-white text-emerald-600 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  الوافي
+                </button>
+              </div>
+
+              {/* Form Serial */}
+              <div className='space-y-2'>
+                <label className='text-sm font-black text-black uppercase tracking-widest mr-1 flex items-center gap-2'>
+                  رقم الاستمارة
+                  {serialValid?.ok && (
+                    <span className='text-xs text-emerald-600 bg-emerald-50 px-2 rounded-full border border-emerald-200'>
+                      ✅ متاح
+                    </span>
+                  )}
+                  {serialValid?.ok === false && (
+                    <span className='text-xs text-rose-600 bg-rose-50 px-2 rounded-full border border-rose-200'>
+                      ❌ غير صالح
+                    </span>
+                  )}
+                </label>
+                <div className='relative'>
+                  <input
+                    type='text'
+                    value={formSerialNumber}
+                    onChange={e => validateSerialLive(e.target.value)}
+                    className={`w-full bg-white border-2 rounded-xl px-5 py-4 text-black font-black outline-none transition-all text-lg ${
+                      serialValid?.ok
+                        ? 'border-emerald-400 focus:ring-4 focus:ring-emerald-400/10'
+                        : serialValid?.ok === false
+                          ? 'border-rose-400 focus:ring-4 focus:ring-rose-400/10'
+                          : 'border-slate-200 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10'
+                    }`}
+                    placeholder='أدخل رقم الاستمارة المربوطة...'
+                  />
+                  <div className='absolute left-4 top-1/2 -translate-y-1/2 text-xl'>
+                    {serialValid?.ok ? '✅' : serialValid?.ok === false ? '❌' : '#️⃣'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Dynamic Service Fields (Questions) */}
           {selectedService?.fields && selectedService.fields.length > 0 && (
             <div className='space-y-4 pt-6 border-t border-slate-200 animate-in slide-in-from-top-2'>
@@ -608,46 +678,6 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                 className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none text-right text-sm min-h-[80px] resize-none'
                 placeholder='اكتب أي تفاصيل إضافية عن الخدمة...'
               />
-            </div>
-          )}
-
-          {/* Form Serial Number - Show Only for National ID */}
-          {isNationalId && (
-            <div className='space-y-3 animate-in slide-in-from-top-2 pt-2'>
-              {/* Form Serial */}
-              <div className='space-y-1'>
-                <label className='text-[10px] font-black text-black uppercase tracking-widest mr-1 flex items-center gap-2'>
-                  رقم الاستمارة
-                  {serialValid?.ok && (
-                    <span className='text-[9px] text-emerald-600 bg-emerald-50 px-1.5 rounded-full'>
-                      متاح
-                    </span>
-                  )}
-                  {serialValid?.ok === false && (
-                    <span className='text-[9px] text-rose-600 bg-rose-50 px-1.5 rounded-full'>
-                      غير صالح
-                    </span>
-                  )}
-                </label>
-                <div className='relative'>
-                  <input
-                    type='text'
-                    value={formSerialNumber}
-                    onChange={e => validateSerialLive(e.target.value)}
-                    className={`w-full bg-white border rounded-lg px-3 py-2 text-black font-black outline-none transition-all text-sm ${
-                      serialValid?.ok
-                        ? 'border-emerald-400 focus:ring-2 focus:ring-emerald-400/10'
-                        : serialValid?.ok === false
-                          ? 'border-rose-400 focus:ring-2 focus:ring-rose-400/10'
-                          : 'border-slate-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10'
-                    }`}
-                    placeholder='أدخل رقم الاستمارة المربوطة...'
-                  />
-                  <div className='absolute left-3 top-1/2 -translate-y-1/2 text-sm'>
-                    {serialValid?.ok ? '✅' : serialValid?.ok === false ? '❌' : '#️⃣'}
-                  </div>
-                </div>
-              </div>
             </div>
           )}
         </div>
