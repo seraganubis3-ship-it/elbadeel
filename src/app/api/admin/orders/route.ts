@@ -518,11 +518,22 @@ export async function POST(request: NextRequest) {
 
     // Validate Phone Number (Must be 11 digits)
     const phoneRegex = /^01[0125][0-9]{8}$/;
-    if (!phoneRegex.test(customerPhone)) {
+    if (!customerPhone || customerPhone.length !== 11 || !phoneRegex.test(customerPhone)) {
       return NextResponse.json(
         {
           success: false,
           error: 'رقم الهاتف غير صحيح. يجب أن يكون 11 رقم ويبدأ بـ 01',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate National ID (Must be 14 digits)
+    if (idNumber && idNumber.length !== 14) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'الرقم القومي يجب أن يكون 14 رقم بالضبط',
         },
         { status: 400 }
       );
@@ -570,6 +581,30 @@ export async function POST(request: NextRequest) {
       existingUser = await prisma.user.findFirst({
         where: { OR: orConditions },
       });
+    }
+
+    // Check for National ID Name mismatch
+    if (idNumber) {
+      const userWithSameId = await prisma.user.findFirst({
+        where: { idNumber: { equals: idNumber, mode: 'insensitive' } },
+        select: { id: true, name: true }
+      });
+
+      if (userWithSameId && userWithSameId.name && customerName) {
+        // Normalize names for comparison (simple trim and whitespace check)
+        const normalizedExistingName = userWithSameId.name.trim().replace(/\s+/g, ' ');
+        const normalizedInputName = customerName.trim().replace(/\s+/g, ' ');
+        
+        if (normalizedExistingName !== normalizedInputName) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: `الرقم القومي مسجل بالفعل باسم ( ${userWithSameId.name} ). لا يمكن تسجيله باسم مختلف.`,
+            },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     let isNewUserCreated = false;

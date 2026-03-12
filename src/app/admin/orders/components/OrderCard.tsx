@@ -115,7 +115,7 @@ export function OrderCard({
         {order.workOrderNumber && (
           <div className='mb-4'>
             <Link
-              href={`/admin/work-orders/${order.workOrderNumber}`}
+              href={`/admin/work-orders/${encodeURIComponent(order.workOrderNumber)}`}
               className='inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg text-sm font-bold transition-colors border border-amber-200'
             >
               <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
