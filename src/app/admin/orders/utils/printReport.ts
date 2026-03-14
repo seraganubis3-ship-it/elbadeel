@@ -9,6 +9,15 @@ interface PrintReportOptions {
 }
 
 /**
+ * Converts English digits to Arabic digits (٠١٢٣٤٥٦٧٨٩)
+ */
+function toArabicNumbers(str: string | number | undefined | null): string {
+  if (str === undefined || str === null) return '';
+  const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  return String(str).replace(/[0-9]/g, w => arabicDigits[parseInt(w)]!);
+}
+
+/**
  * Robust date formatter that handles:
  * 1. Native Date objects
  * 2. DD/MM/YYYY strings (manual parsing)
@@ -40,7 +49,8 @@ function formatDate(date: any): string {
   if (isNaN(d.getTime())) return '---';
   if (d.getFullYear() < 1900) return '---';
 
-  return d.toLocaleDateString('ar-EG');
+  const result = d.toLocaleDateString('ar-EG');
+  return toArabicNumbers(result);
 }
 
 export function printOrdersReport({
@@ -393,7 +403,7 @@ export function printOrdersReport({
 
           const idStyle =
             'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px;';
-          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
+          return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${toArabicNumbers(order.idNumber) || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
         })
         .join('');
       contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">بطاقات الرقم القومي - ${variantName}</div><div class="header-order-num-container"><span class="order-label">رقم امر شغل :</span><span class="order-line"></span></div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="32%">اسم العميل</th><th width="18%">رقم البطاقة القومي</th><th width="15%">غرامات</th><th width="30%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
@@ -436,7 +446,7 @@ export function printOrdersReport({
 
         const idStyle =
           'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 1px; opacity: 1;';
-        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${order.idNumber || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${idStyle}">${toArabicNumbers(order.idNumber) || '---'}</td><td style="text-align: center;">${(totalFines / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
       })
       .join('');
     contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">بطاقات الرقم القومي المترجمة</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="32%">اسم العميل</th><th width="18%">رقم البطاقة القومي</th><th width="15%">غرامات</th><th width="30%">تفاصيل الخدمة</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
@@ -455,7 +465,7 @@ export function printOrdersReport({
           'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
 
         const bDate = formatDate(order.birthDate);
-        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${order.idNumber || '---'}</td></tr>`;
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${toArabicNumbers(order.idNumber) || '---'}</td></tr>`;
       })
       .join('');
     contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">شهادات الميلاد</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="20%">اسم العميل</th><th width="15%">تاريخ الميلاد</th><th width="25%">اسم الوالدة</th><th width="10%">العدد</th><th width="20%">الرقم القومي</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
@@ -498,7 +508,7 @@ export function printOrdersReport({
         const mono =
           'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
         const station = stationMap[order.policeStation || ''] || order.policeStation || '---';
-        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${order.idNumber || '---'}</td><td style="text-align: center;">${station}</td><td style="text-align: right;">${order.pickupLocation || '---'}</td></tr>`;
+        return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="${mono}">${toArabicNumbers(order.idNumber) || '---'}</td><td style="text-align: center;">${station}</td><td style="text-align: right;">${order.pickupLocation || '---'}</td></tr>`;
       })
       .join('');
     contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">جوازات سفر</div></div><table class="data-table"><thead><tr><th width="5%">م</th><th width="30%">اسم العميل</th><th width="20%">الرقم القومي</th><th width="20%">قسم الشرطة</th><th width="25%">جوازات</th></tr></thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="3" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
@@ -616,7 +626,7 @@ export function printOrdersReport({
               'text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;';
             const bDate = formatDate(order.birthDate);
             const vName = order.variant?.name || '';
-            return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${order.idNumber || '---'}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
+            return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 13px;">${bDate}</td><td style="text-align: right;">${order.motherName || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="${mono}">${toArabicNumbers(order.idNumber) || '---'}</td><td style="text-align: center; font-size: 11px;">${vName}</td></tr>`;
           })
           .join('');
       } else {
@@ -642,7 +652,7 @@ export function printOrdersReport({
               (order as any).overrideDetails !== undefined
                 ? (order as any).overrideDetails
                 : order.serviceDetails || '---';
-            return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;">${order.idNumber || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
+            return `<tr><td ${cellStyle}>${idx + 1}</td><td style="text-align: right; font-weight: bold;">${formatCustomerName(order)}</td><td style="text-align: center; font-family: monospace; font-size: 16px; font-weight: 900;">${toArabicNumbers(order.idNumber) || '---'}</td><td style="text-align: center;">${order.quantity || 1}</td><td style="text-align: center; font-size: 11px;">${vName}</td><td style="text-align: center;">${fees > 0 ? fees.toLocaleString('ar-EG') + ' ج.م' : '---'}</td><td style="text-align: right; font-size: 11px;">${details}</td></tr>`;
           })
           .join('');
       }

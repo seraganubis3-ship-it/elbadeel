@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { signOut } from 'next-auth/react';
 
-const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 const COUNTDOWN_SECONDS = 60;
-const CHECK_INTERVAL = 2000; // Check every 2 seconds
+const CHECK_INTERVAL = 5000; // Check every 5 seconds
+const SYNC_KEY = 'last_app_activity_timestamp';
 
 export function useInactivityTracker() {
   const [isActive, setIsActive] = useState(true);
@@ -17,14 +18,33 @@ export function useInactivityTracker() {
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const updateActivityLocally = useCallback(() => {
+    const now = Date.now();
+    lastActivityTimeRef.current = now;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SYNC_KEY, now.toString());
+    }
+  }, []);
+
   const startInactivityCheck = useCallback(() => {
     if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
-    
+
     checkIntervalRef.current = setInterval(() => {
       const now = Date.now();
-      if (now - lastActivityTimeRef.current >= INACTIVITY_TIMEOUT) {
+
+      // Get the most recent activity across all tabs
+      let effectiveLastActivity = lastActivityTimeRef.current;
+      if (typeof window !== 'undefined') {
+        const remoteLastActivity = localStorage.getItem(SYNC_KEY);
+        if (remoteLastActivity) {
+          effectiveLastActivity = Math.max(effectiveLastActivity, parseInt(remoteLastActivity));
+          lastActivityTimeRef.current = effectiveLastActivity;
+        }
+      }
+
+      if (now - effectiveLastActivity >= INACTIVITY_TIMEOUT) {
         if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
-        
+
         setIsActive(false);
         setIsWarning(true);
         setShowDialog(true);
@@ -44,13 +64,22 @@ export function useInactivityTracker() {
     }, CHECK_INTERVAL);
   }, []);
 
-  const handleContinue = useCallback(() => {
+  const handleContinue = useCallback(async () => {
     setShowDialog(false);
     setRemainingSeconds(0);
     setIsWarning(false);
-    lastActivityTimeRef.current = Date.now();
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+
+    // Refresh session on server
+    try {
+      await fetch('/api/auth/session');
+    } catch (e) {
+      console.error('Failed to refresh session:', e);
+    }
+
+    updateActivityLocally();
     startInactivityCheck();
-  }, [startInactivityCheck]);
+  }, [startInactivityCheck, updateActivityLocally]);
 
   const handleLogout = useCallback(() => {
     setShowDialog(false);
@@ -61,15 +90,27 @@ export function useInactivityTracker() {
 
   useEffect(() => {
     const updateActivity = () => {
-      lastActivityTimeRef.current = Date.now();
+      updateActivityLocally();
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === SYNC_KEY && e.newValue) {
+        lastActivityTimeRef.current = parseInt(e.newValue);
+        // If we were showing the dialog, close it because someone else active
+        setShowDialog(false);
+        setIsWarning(false);
+        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+        startInactivityCheck();
+      }
     };
 
     const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
-    
-    // Use passive listener for better scroll performance
+
     activityEvents.forEach(event => {
       document.addEventListener(event, updateActivity, { passive: true });
     });
+
+    window.addEventListener('storage', handleStorageChange);
 
     startInactivityCheck();
 
@@ -80,8 +121,9 @@ export function useInactivityTracker() {
       activityEvents.forEach(event => {
         document.removeEventListener(event, updateActivity);
       });
+      window.removeEventListener('storage', handleStorageChange);
     };
-  }, [startInactivityCheck]);
+  }, [startInactivityCheck, updateActivityLocally]);
 
   return {
     isActive,

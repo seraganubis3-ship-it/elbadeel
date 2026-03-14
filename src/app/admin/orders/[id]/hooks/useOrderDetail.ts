@@ -22,6 +22,7 @@ export function useOrderDetail(orderId: string) {
 
   // Form Serial State
   const [formSerialNumber, setFormSerialNumber] = useState('');
+  const [formSerialProvider, setFormSerialProvider] = useState('AL_BADEL');
   const [checkingSerial, setCheckingSerial] = useState(false);
   const [serialError, setSerialError] = useState('');
 
@@ -287,6 +288,7 @@ export function useOrderDetail(orderId: string) {
           serialNumber: formSerialNumber,
           serviceId: order.service.id,
           variantId: order.variant.id,
+          provider: formSerialProvider,
         }),
       });
 
@@ -319,7 +321,10 @@ export function useOrderDetail(orderId: string) {
       const response = await fetch(`/api/admin/orders/${orderId}/add-form-serial`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ serialNumber: formSerialNumber }),
+        body: JSON.stringify({
+          serialNumber: formSerialNumber,
+          provider: formSerialProvider,
+        }),
       });
 
       const data = await response.json();
@@ -782,6 +787,8 @@ export function useOrderDetail(orderId: string) {
 
     formSerialNumber,
     setFormSerialNumber,
+    formSerialProvider,
+    setFormSerialProvider,
     checkingSerial,
     serialError,
     newStatus,

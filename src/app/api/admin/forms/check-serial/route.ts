@@ -9,7 +9,8 @@ export async function POST(_request: NextRequest) {
     // Check authentication and role
     const session = await requireAdminOrStaff();
 
-    const { serialNumber, serviceId, variantId } = await _request.json();
+    const { serialNumber, serviceId, variantId, provider } = await _request.json();
+    const serialProvider: string = provider || 'AL_BADEL';
 
     if (!serialNumber || !serviceId || !variantId) {
       return NextResponse.json(
@@ -31,11 +32,12 @@ export async function POST(_request: NextRequest) {
       });
     }
 
-    // Check if the serial number exists and is available
+    // Check if the serial number exists and is available FOR THE GIVEN PROVIDER
     const formSerial = await (prisma as any).formSerial.findFirst({
       where: {
         formTypeId: formTypeVariant.formTypeId,
         serialNumber: serialNumber,
+        provider: serialProvider,
         consumed: false,
       },
     });

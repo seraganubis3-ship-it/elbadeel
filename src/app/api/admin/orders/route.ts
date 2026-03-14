@@ -7,6 +7,7 @@ import { generateUniqueOrderNumber } from '@/lib/orderNumbering';
 import { logger } from '@/lib/logger';
 import { ORDER_STATUS } from '@/constants/orderStatuses';
 import { checkWhatsAppStatus, sendWhatsAppByTrigger } from '@/lib/whatsapp';
+import { calculateEstimatedDeliveryDate } from '@/lib/delivery-date';
 import bcrypt from 'bcryptjs';
 import type { Prisma, User } from '@prisma/client';
 import type { OrderResponse as OrderResponseType } from '@/types/api';
@@ -215,7 +216,9 @@ export async function GET(request: NextRequest) {
               { customerPhone: { contains: search } },
               { idNumber: { contains: search, mode: 'insensitive' } },
               { workOrderNumber: { contains: search, mode: 'insensitive' } },
-              { formSerials: { some: { serialNumber: { contains: search, mode: 'insensitive' } } } },
+              {
+                formSerials: { some: { serialNumber: { contains: search, mode: 'insensitive' } } },
+              },
               { user: { phone: { contains: search } } },
               { user: { name: { contains: search, mode: 'insensitive' } } },
             ],
@@ -470,17 +473,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Immediately mark as consumed to prevent race conditions
-      await (prisma as any).formSerial.update({
-        where: { id: availableSerial.id },
-        data: {
-          consumed: true,
-          consumedAt: new Date(),
-          consumedByAdminId: adminUserId,
-        },
-      });
-
       formTypeId = link.formTypeId;
+      // ✅ Serial will be consumed AFTER order creation succeeds (see below)
     }
 
     if (!serviceId || !variantId || !customerName || !customerPhone) {
@@ -586,14 +580,14 @@ export async function POST(request: NextRequest) {
     if (idNumber) {
       const userWithSameId = await prisma.user.findFirst({
         where: { idNumber: { equals: idNumber, mode: 'insensitive' } },
-        select: { id: true, name: true }
+        select: { id: true, name: true },
       });
 
       if (userWithSameId && userWithSameId.name && customerName) {
         // Normalize names for comparison (simple trim and whitespace check)
         const normalizedExistingName = userWithSameId.name.trim().replace(/\s+/g, ' ');
         const normalizedInputName = customerName.trim().replace(/\s+/g, ' ');
-        
+
         if (normalizedExistingName !== normalizedInputName) {
           return NextResponse.json(
             {
@@ -854,6 +848,7 @@ export async function POST(request: NextRequest) {
         deathDate: safeParseDate(deathDate),
         deceasedName: deceasedName || '',
         wifeMotherName: wifeMotherName || '',
+        estimatedCompletionDate: calculateEstimatedDeliveryDate(workDate, variant.etaDays),
         destination: destination || '',
         title: title || '',
       } as any,
@@ -865,16 +860,26 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update form serial with actual order ID after order creation
+    // Consume the serial AFTER the order was successfully created (atomic, prevents orphaned consumed serials)
     if (formSerialNumber && formTypeId) {
       const serialRecord = await (prisma as any).formSerial.findFirst({
-        where: { formTypeId, serialNumber: formSerialNumber },
+        where: {
+          formTypeId,
+          serialNumber: formSerialNumber,
+          provider: formSerialProvider, // ← filter by provider
+          consumed: false,
+        },
         select: { id: true },
       });
       if (serialRecord) {
         await (prisma as any).formSerial.update({
           where: { id: serialRecord.id },
-          data: { orderId: order.id },
+          data: {
+            consumed: true,
+            consumedAt: new Date(),
+            consumedByAdminId: adminUserId,
+            orderId: order.id,
+          },
         });
       }
     }
@@ -962,8 +967,9 @@ export async function POST(request: NextRequest) {
         id: order.id,
         service: (order as any).service,
         variant: (order as any).variant,
-        status: order.status,
-        totalCents: order.totalCents,
+        status: orderStatus,
+        totalCents: finalServiceDetails.length > 5000 ? finalTotalCents : finalTotalCents, // No-op, just to keep context
+        estimatedCompletionDate: calculateEstimatedDeliveryDate(workDate, variant.etaDays),
         deliveryType: order.deliveryType,
         deliveryFee: order.deliveryFee,
         createdAt: order.createdAt,

@@ -69,17 +69,12 @@ export default function InactivityDialog({
           <h2 className='text-3xl font-bold text-gray-900 mb-3'>تنبيه عدم النشاط</h2>
 
           <div className='space-y-2 mb-8'>
-            <p className='text-gray-600 text-lg'>
-              لم يُلاحظ أي نشاط على حسابك منذ{' '}
-              <span className='font-bold text-red-600'>5 دقائق</span>
-            </p>
-
+            لم يُلاحظ أي نشاط على حسابك منذ <span className='font-bold text-red-600'>10 دقائق</span>
             {isWarning && remainingSeconds <= 10 && (
               <p className='text-red-600 font-bold text-lg animate-pulse'>
                 ⚠️ سيتم تسجيل الخروج قريباً!
               </p>
             )}
-
             <p className='text-gray-700'>للبقاء في الجلسة، يرجى الاستمرار في استخدام التطبيق</p>
           </div>
 

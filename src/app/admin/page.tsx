@@ -411,9 +411,14 @@ function AdminContent({
                       </span>
                     </div>
                     <div className='flex justify-between text-xs sm:text-sm'>
-                      <span className='text-gray-600'>المدة المتوقعة:</span>
+                      <span className='text-gray-600'>موعد التسليم المتوقع:</span>
                       <span className='font-medium text-gray-900'>
-                        {order.variant?.etaDays || 'غير محدد'} يوم
+                        {order.estimatedCompletionDate
+                          ? new Date(order.estimatedCompletionDate).toLocaleDateString('ar-EG', {
+                              day: 'numeric',
+                              month: 'short',
+                            })
+                          : `${order.variant?.etaDays || '---'} يوم`}
                       </span>
                     </div>
                     <div className='flex justify-between text-xs sm:text-sm'>
@@ -470,14 +475,18 @@ export default async function AdminPage() {
     },
   });
 
-  const dueTodayRows = await prisma.$queryRaw<Array<{ id: string }>>`
-    SELECT o.id 
-    FROM "Order" o
-    JOIN "ServiceVariant" sv ON o."variantId" = sv.id
-    WHERE o.status NOT IN ('completed', 'delivered', 'supply', 'returned', 'cancelled')
-      AND o."createdAt" < NOW() - INTERVAL '1 day'
-      AND DATE(o."createdAt" + (sv."etaDays" || ' days')::INTERVAL) = CURRENT_DATE
-  `;
+  const dueTodayRows = await prisma.order.findMany({
+    where: {
+      status: {
+        notIn: ['completed', 'delivered' as any, 'supply' as any, 'returned', 'cancelled'],
+      },
+      estimatedCompletionDate: {
+        gte: today,
+        lt: tomorrow,
+      },
+    },
+    select: { id: true },
+  });
 
   const deliveryDueToday =
     dueTodayRows.length > 0

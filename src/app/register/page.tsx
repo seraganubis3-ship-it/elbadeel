@@ -64,7 +64,9 @@ export default function RegisterPage() {
         throw new Error(data.error || data.message || 'فشل التسجيل');
       }
 
-      router.push('/login?message=' + encodeURIComponent('تم إنشاء الحساب بنجاح، يمكنك الآن تسجيل الدخول'));
+      router.push(
+        '/login?message=' + encodeURIComponent('تم إنشاء الحساب بنجاح، يمكنك الآن تسجيل الدخول')
+      );
     } catch (err: any) {
       setError(err.message || 'حدث خطأ ما. يرجى المحاولة مرة أخرى');
     } finally {
@@ -85,7 +87,10 @@ export default function RegisterPage() {
       {/* Dynamic Animated Background */}
       <div className='absolute inset-0 z-0 overflow-hidden fixed'>
         <div className='absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-300/20 rounded-full blur-[100px] animate-pulse' />
-        <div className='absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-sky-300/20 rounded-full blur-[120px] animate-pulse' style={{ animationDelay: '2s' }} />
+        <div
+          className='absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-sky-300/20 rounded-full blur-[120px] animate-pulse'
+          style={{ animationDelay: '2s' }}
+        />
         <div className='absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.02)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_100%)] opacity-70' />
       </div>
 
@@ -98,9 +103,7 @@ export default function RegisterPage() {
           <h1 className='text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-3'>
             إنشاء حساب جديد
           </h1>
-          <p className='text-slate-500 font-medium'>
-            سجل الآن وابدأ في إنشاء ومتابعة طلباتك
-          </p>
+          <p className='text-slate-500 font-medium'>سجل الآن وابدأ في إنشاء ومتابعة طلباتك</p>
         </div>
 
         <div className='bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/80 transition-all duration-300 hover:shadow-[0_16px_60px_-15px_rgba(0,0,0,0.1)]'>
@@ -184,7 +187,10 @@ export default function RegisterPage() {
             </div>
 
             <div className='space-y-1.5 lg:space-y-2'>
-              <label htmlFor='confirmPassword' className='block text-sm font-bold text-slate-700 mr-2'>
+              <label
+                htmlFor='confirmPassword'
+                className='block text-sm font-bold text-slate-700 mr-2'
+              >
                 تأكيد كلمة المرور
               </label>
               <div className='relative group'>
@@ -207,7 +213,11 @@ export default function RegisterPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className='absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 hover:text-emerald-600 transition-colors focus:outline-none'
                 >
-                  {showConfirmPassword ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
+                  {showConfirmPassword ? (
+                    <EyeOff className='w-5 h-5' />
+                  ) : (
+                    <Eye className='w-5 h-5' />
+                  )}
                 </button>
               </div>
             </div>
@@ -219,7 +229,9 @@ export default function RegisterPage() {
                     <CheckCircle2
                       className={`w-4 h-4 transition-colors ${check.valid ? 'text-emerald-600' : 'text-slate-300'}`}
                     />
-                    <span className={`transition-colors ${check.valid ? 'text-emerald-800' : 'text-slate-500'}`}>
+                    <span
+                      className={`transition-colors ${check.valid ? 'text-emerald-800' : 'text-slate-500'}`}
+                    >
                       {check.label}
                     </span>
                   </div>
@@ -255,12 +267,15 @@ export default function RegisterPage() {
             </Link>
           </p>
         </div>
-        
+
         <div className='mt-12 text-center pb-6'>
-            <Link href="/" className='inline-flex items-center justify-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors'>
-                <ArrowRight className='w-4 h-4' />
-                العودة للرئيسية
-            </Link>
+          <Link
+            href='/'
+            className='inline-flex items-center justify-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors'
+          >
+            <ArrowRight className='w-4 h-4' />
+            العودة للرئيسية
+          </Link>
         </div>
       </div>
     </main>

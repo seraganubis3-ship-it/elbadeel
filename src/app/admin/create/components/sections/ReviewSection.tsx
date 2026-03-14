@@ -255,7 +255,8 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                           if (f?.id === 'service_001') {
                             return acc + calculateFineExpenses(selectedFines, finesList);
                           }
-                          return acc + (manualServices[id] || f?.amountCents || 0);
+                          // manualServices are stored in LE (pounds), need to convert to cents
+                          return acc + ((manualServices[id] || 0) * 100 || f?.amountCents || 0);
                         }, 0) / 100
                       )}
                     </span>

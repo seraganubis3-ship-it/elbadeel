@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCreateOrder } from './useCreateOrder';
 import {
@@ -91,6 +91,11 @@ export default function CreateOrderPage() {
   const toggleFine = handleFineToggle;
 
   const [activeTab, setActiveTab] = useState('service');
+
+  // Auto-scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
 
   if (loading) return <LoadingState />;
 
@@ -285,7 +290,7 @@ export default function CreateOrderPage() {
                 <div className='flex justify-between pt-4 gap-3'>
                   <button
                     type='button'
-                    onClick={() => setActiveTab('service')}
+                    onClick={() => setActiveTab('customer')}
                     className='px-6 py-3 bg-white text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all font-medium'
                   >
                     السابق
@@ -422,6 +427,7 @@ export default function CreateOrderPage() {
         onReset={() => {
           setShowSuccessModal(false);
           handleReset();
+          setActiveTab('service');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />

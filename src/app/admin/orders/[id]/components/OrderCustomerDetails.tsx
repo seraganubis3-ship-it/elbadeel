@@ -119,7 +119,12 @@ export default function OrderCustomerDetails({
             type: 'tel',
           },
           { label: 'المهنة', value: order.profession, key: 'profession', type: 'text' },
-          { label: 'التابع', value: (order as any).customerFollowUp, key: 'customerFollowUp', type: 'text' },
+          {
+            label: 'التابع',
+            value: (order as any).customerFollowUp,
+            key: 'customerFollowUp',
+            type: 'text',
+          },
           {
             label: 'اسم الأب',
             value: order.fatherName || order.user?.fatherName || '----',

@@ -8,6 +8,8 @@ interface OrderServiceDetailsProps {
   order: Order;
   formSerialNumber: string;
   setFormSerialNumber: (val: string) => void;
+  formSerialProvider: string;
+  setFormSerialProvider: (val: string) => void;
   onAddFormSerial: () => void;
   checkingSerial: boolean;
   updating: boolean;
@@ -22,6 +24,8 @@ export default function OrderServiceDetails({
   order,
   formSerialNumber,
   setFormSerialNumber,
+  formSerialProvider,
+  setFormSerialProvider,
   onAddFormSerial,
   checkingSerial,
   updating,
@@ -373,29 +377,47 @@ export default function OrderServiceDetails({
             ) : null}
 
             <div className='p-4 sm:p-6 bg-slate-50/50 border border-dashed border-slate-300 rounded-xl sm:rounded-2xl'>
-              <div className='flex flex-col sm:flex-row gap-3 max-w-md'>
-                <input
-                  type='text'
-                  value={formSerialNumber}
-                  onChange={e => setFormSerialNumber(e.target.value)}
-                  className='w-full sm:flex-1 px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-base sm:text-lg font-black'
-                  placeholder={
-                    (order.formSerials?.length ?? 0) > 0
-                      ? 'تغيير رقم الاستمارة...'
-                      : 'رقم الاستمارة...'
-                  }
-                />
-                <button
-                  onClick={onAddFormSerial}
-                  disabled={!formSerialNumber.trim() || checkingSerial || updating}
-                  className='w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-all text-sm sm:text-base font-bold disabled:opacity-50'
-                >
-                  {checkingSerial
-                    ? '...'
-                    : (order.formSerials?.length ?? 0) > 0
-                      ? 'تحديث'
-                      : 'إضافة'}
-                </button>
+              <div className='flex flex-col sm:flex-row gap-3'>
+                <div className='flex-1 flex flex-col gap-2'>
+                  <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                    المزود
+                  </label>
+                  <select
+                    value={formSerialProvider}
+                    onChange={e => setFormSerialProvider(e.target.value)}
+                    className='w-full px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold'
+                  >
+                    <option value='AL_BADEL'>البديل</option>
+                    <option value='AL_WAFI'>الوافي</option>
+                  </select>
+                </div>
+                <div className='flex-[2] flex flex-col gap-2'>
+                  <label className='text-[10px] font-black text-slate-400 uppercase tracking-widest px-1'>
+                    رقم الاستمارة
+                  </label>
+                  <div className='flex gap-2'>
+                    <input
+                      type='text'
+                      value={formSerialNumber}
+                      onChange={e => setFormSerialNumber(e.target.value)}
+                      className='flex-1 px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-base sm:text-lg font-black'
+                      placeholder={
+                        (order.formSerials?.length ?? 0) > 0 ? 'تغيير الرقم...' : 'الرقم...'
+                      }
+                    />
+                    <button
+                      onClick={onAddFormSerial}
+                      disabled={!formSerialNumber.trim() || checkingSerial || updating}
+                      className='px-6 py-2.5 sm:py-3 bg-slate-900 text-white rounded-xl hover:bg-black transition-all text-sm sm:text-base font-bold disabled:opacity-50 min-w-[100px]'
+                    >
+                      {checkingSerial
+                        ? '...'
+                        : (order.formSerials?.length ?? 0) > 0
+                          ? 'تحديث'
+                          : 'إضافة'}
+                    </button>
+                  </div>
+                </div>
               </div>
               {serialError && (
                 <p className='mt-2 text-red-500 text-xs sm:text-sm font-bold pr-1 sm:pr-2'>

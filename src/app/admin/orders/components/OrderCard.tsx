@@ -131,6 +131,19 @@ export function OrderCard({
           </div>
         )}
 
+        {/* Admin Notes in Card */}
+        {order.adminNotes && (
+          <div className='mb-4 p-3 bg-amber-50 border border-amber-100 rounded-xl'>
+            <div className='flex items-center gap-1.5 mb-1'>
+              <span className='text-xs'>📝</span>
+              <span className='text-[10px] font-black text-amber-600 uppercase tracking-widest'>
+                ملاحظات الإدارة:
+              </span>
+            </div>
+            <p className='text-sm font-bold text-slate-700 line-clamp-2'>{order.adminNotes}</p>
+          </div>
+        )}
+
         {/* Customer Info Grid */}
         <div className='grid grid-cols-1 gap-3 mb-4'>
           <div className='flex items-center gap-2'>

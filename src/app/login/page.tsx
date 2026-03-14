@@ -65,8 +65,14 @@ export default function LoginPage() {
       {/* Dynamic Animated Background */}
       <div className='absolute inset-0 z-0 overflow-hidden'>
         <div className='absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-300/20 rounded-full blur-[100px] animate-pulse' />
-        <div className='absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-300/20 rounded-full blur-[120px] animate-pulse' style={{ animationDelay: '2s' }} />
-        <div className='absolute top-[30%] left-[60%] w-[400px] h-[400px] bg-green-200/20 rounded-full blur-[80px] animate-pulse' style={{ animationDelay: '4s' }} />
+        <div
+          className='absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-300/20 rounded-full blur-[120px] animate-pulse'
+          style={{ animationDelay: '2s' }}
+        />
+        <div
+          className='absolute top-[30%] left-[60%] w-[400px] h-[400px] bg-green-200/20 rounded-full blur-[80px] animate-pulse'
+          style={{ animationDelay: '4s' }}
+        />
         <div className='absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.02)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_100%)] opacity-70' />
       </div>
 
@@ -79,9 +85,7 @@ export default function LoginPage() {
           <h1 className='text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-3'>
             مرحباً بعودتك
           </h1>
-          <p className='text-slate-500 font-medium'>
-            سجل دخولك لمتابعة طلباتك وإدارة حسابك
-          </p>
+          <p className='text-slate-500 font-medium'>سجل دخولك لمتابعة طلباتك وإدارة حسابك</p>
         </div>
 
         <div className='bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/80 transition-all duration-300 hover:shadow-[0_16px_60px_-15px_rgba(0,0,0,0.1)]'>
@@ -190,12 +194,15 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-        
+
         <div className='mt-12 text-center'>
-            <Link href="/" className='inline-flex items-center justify-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors'>
-                <ArrowRight className='w-4 h-4' />
-                العودة للرئيسية
-            </Link>
+          <Link
+            href='/'
+            className='inline-flex items-center justify-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors'
+          >
+            <ArrowRight className='w-4 h-4' />
+            العودة للرئيسية
+          </Link>
         </div>
       </div>
     </main>

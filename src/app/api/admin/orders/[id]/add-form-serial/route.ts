@@ -8,7 +8,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const session = await requireAdminOrStaff();
 
     const { id } = params;
-    const { serialNumber } = await request.json();
+    const body = await request.json();
+    const { serialNumber } = body;
+    const provider: string = body.provider || 'AL_BADEL';
 
     if (!serialNumber) {
       return NextResponse.json({ error: 'رقم الاستمارة مطلوب' }, { status: 400 });
@@ -55,11 +57,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       );
     }
 
-    // Check if the serial number exists and is available
+    // Check if the serial number exists and is available FOR THE GIVEN PROVIDER
     const formSerial = await (prisma as any).formSerial.findFirst({
       where: {
         formTypeId: formTypeVariant.formTypeId,
         serialNumber: serialNumber,
+        provider: provider, // ← must match provider
         consumed: false,
       },
     });
@@ -67,7 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     if (!formSerial) {
       return NextResponse.json(
         {
-          error: 'رقم الاستمارة غير موجود أو تم استخدامه',
+          error: `رقم الاستمارة غير موجود أو تم استخدامه (المزود: ${provider === 'AL_WAFI' ? 'الوافي' : 'البديل'})`,
         },
         { status: 400 }
       );
@@ -90,6 +93,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       formSerial: {
         id: formSerial.id,
         serialNumber: formSerial.serialNumber,
+        provider: formSerial.provider,
         formType: formTypeVariant.formType,
       },
     });

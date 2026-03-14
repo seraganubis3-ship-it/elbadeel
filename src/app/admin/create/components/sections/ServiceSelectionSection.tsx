@@ -542,7 +542,9 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
               <div className='flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit'>
                 <button
                   type='button'
-                  onClick={() => { setFormSerialProvider('AL_BADEL'); }}
+                  onClick={() => {
+                    setFormSerialProvider('AL_BADEL');
+                  }}
                   className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${
                     formSerialProvider === 'AL_BADEL'
                       ? 'bg-white text-emerald-600 shadow-sm'
@@ -553,7 +555,9 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                 </button>
                 <button
                   type='button'
-                  onClick={() => { setFormSerialProvider('AL_WAFI'); }}
+                  onClick={() => {
+                    setFormSerialProvider('AL_WAFI');
+                  }}
                   className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all ${
                     formSerialProvider === 'AL_WAFI'
                       ? 'bg-white text-emerald-600 shadow-sm'

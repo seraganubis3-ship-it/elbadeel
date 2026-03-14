@@ -12,6 +12,8 @@ import {
   calculateLostReportForServices,
   Fine,
 } from '@/constants/fines';
+import { calculateEstimatedDeliveryDate } from '@/lib/delivery-date';
+import { formatWorkDate } from '@/lib/workDateHelper';
 import { useToast } from '@/components/Toast';
 import { Service, ServiceVariant, Category, Customer, initialFormData } from './types';
 import { offlineManager } from '@/lib/offline-manager';
@@ -587,6 +589,14 @@ export function useCreateOrder() {
       if (!selectedService) return;
       const variant = selectedService.variants.find(v => v.id === variantId);
       setSelectedVariant(variant || null);
+
+      if (variant) {
+        const estimatedDate = calculateEstimatedDeliveryDate(new Date(), variant.etaDays);
+        setFormData(prev => ({
+          ...prev,
+          deliveryDate: formatWorkDate(estimatedDate),
+        }));
+      }
     },
     [selectedService]
   );
@@ -598,6 +608,12 @@ export function useCreateOrder() {
         let newSelectedFines;
         if (prev.includes(fineId)) {
           newSelectedFines = prev.filter(id => id !== fineId);
+          // Clear manual price if exists when deselecting
+          setManualServices(mPrev => {
+            const mNew = { ...mPrev };
+            delete mNew[fineId];
+            return mNew;
+          });
         } else {
           newSelectedFines = [...prev, fineId];
         }

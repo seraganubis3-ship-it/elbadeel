@@ -565,10 +565,22 @@ export default function InventoryPage() {
                                   className='text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100 transition-all hover:shadow-sm w-fit'
                                   title='فتح تفاصيل الطلب'
                                 >
-                                  <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14' />
+                                  <svg
+                                    className='w-4 h-4'
+                                    fill='none'
+                                    stroke='currentColor'
+                                    viewBox='0 0 24 24'
+                                  >
+                                    <path
+                                      strokeLinecap='round'
+                                      strokeLinejoin='round'
+                                      strokeWidth={2}
+                                      d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14'
+                                    />
                                   </svg>
-                                  <span>طلب: {s.orderId.substring(s.orderId.length - 8).toUpperCase()}</span>
+                                  <span>
+                                    طلب: {s.orderId.substring(s.orderId.length - 8).toUpperCase()}
+                                  </span>
                                 </Link>
                               ) : (
                                 !s.consumed && (
