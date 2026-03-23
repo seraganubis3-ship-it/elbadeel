@@ -121,29 +121,33 @@ export default function HomeClient({
               </span>
             </motion.div>
 
-            {/* Main Title */}
+            {/* Main Title with SEO hidden keywords */}
             <motion.h1
               variants={staggerItem}
               className='hero-title text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black mb-8'
             >
               <span className='text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]'>البديل</span>
+              <span className='sr-only'>
+                {' '}
+                للخدمات الحكومية - استخراج بطاقة رقم قومي، جواز سفر، وفيش جنائي
+              </span>
             </motion.h1>
 
             {/* Subtitle */}
-            <motion.p
+            <motion.h2
               variants={staggerItem}
               className='hero-subtitle text-lg sm:text-2xl md:text-3xl text-emerald-50 mb-4 font-medium'
             >
               شباك واحد لجميع
-            </motion.p>
-            <motion.p
+            </motion.h2>
+            <motion.h2
               variants={staggerItem}
               className='hero-subtitle text-3xl sm:text-4xl md:text-5xl font-black mb-12'
             >
               <span className='bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-300 bg-clip-text text-transparent'>
                 الخدمات الحكومية
               </span>
-            </motion.p>
+            </motion.h2>
 
             {/* CTA Buttons */}
             <motion.div
@@ -309,7 +313,7 @@ export default function HomeClient({
           <div className='absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none'></div>
 
           <motion.div
-            className='flex w-max'
+            className='flex w-max will-change-transform'
             initial={{ x: '0%' }}
             animate={{ x: '-50%' }}
             transition={{
@@ -318,7 +322,6 @@ export default function HomeClient({
               duration: Math.max(40, marqueeServices.length * 2),
               repeatType: 'loop',
             }}
-            style={{ willChange: 'transform' }}
             whileHover={{ animationPlayState: 'paused' }}
           >
             {[...marqueeServices, ...marqueeServices].map((service, i) => (

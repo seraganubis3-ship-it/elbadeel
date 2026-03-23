@@ -5,3 +5,22 @@ Disallow: /auth/
 Allow: /
 
 Sitemap: https://albadel.com.eg/sitemap.xml
+
+# AI Crawlers
+User-agent: GPTBot
+Allow: /llms.txt
+
+User-agent: ChatGPT-User
+Allow: /llms.txt
+
+User-agent: Anthropic-ai
+Allow: /llms.txt
+
+User-agent: Claude-Web
+Allow: /llms.txt
+
+User-agent: PerplexityBot
+Allow: /llms.txt
+
+# LLM Context File Link
+Host: https://albadel.com.eg/llms.txt

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import Providers from '@/components/Providers';
 import AdminLayoutWrapper from '@/components/AdminLayoutWrapper';
@@ -8,11 +9,11 @@ import AIChatWidget from '@/components/AIChatWidget';
 export const metadata: Metadata = {
   metadataBase: new URL('https://albadel.com.eg'),
   title: {
-    default: 'البديل للخدمات الحكومية | استخراج بطاقة رقم قومي وخدمات الحكومية في مصر',
-    template: '%s | البديل للخدمات الحكومية',
+    default: 'البديل لاستخراج الاوراق الحكومية',
+    template: '%s | البديل',
   },
   description:
-    'مكتب البديل للخدمات الحكومية في مصر - استخراج بطاقة رقم قومي، جواز سفر، فيش جنائي، قيد عائلي وتصديق المستندات بسرعة وأمان. خدمة موثوقة وأسعار تنافسية مع فريق متخصص.',
+    'مكتب البديل بمصر - استخراج بطاقة رقم قومي، جواز سفر، فيش وقيد عائلي. بسرعة وأمان.',
   keywords: [
     'البديل للخدمات الحكومية',
     'مكتب البديل',
@@ -70,9 +71,9 @@ export const metadata: Metadata = {
     locale: 'ar_EG',
     url: 'https://albadel.com.eg',
     siteName: 'البديل للخدمات الحكومية',
-    title: 'البديل للخدمات الحكومية | استخراج بطاقة رقم قومي وخدمات الحكومية في مصر',
+    title: 'البديل للخدمات | بطاقة وحكوميات',
     description:
-      'مكتب البديل للخدمات الحكومية في مصر - استخراج بطاقة رقم قومي، جواز سفر، فيش جنائي، قيد عائلي وتصديق المستندات بسرعة وأمان. خدمة موثوقة وأسعار تنافسية.',
+      'مكتب البديل بمصر - استخراج بطاقة رقم قومي، جواز سفر، فيش وقيد عائلي. بسرعة وأمان.',
     images: [
       {
         url: '/og-image.jpg',
@@ -84,9 +85,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'البديل للخدمات الحكومية | استخراج بطاقة رقم قومي وخدمات الحكومية في مصر',
+    title: 'البديل للخدمات | بطاقة وحكوميات',
     description:
-      'مكتب البديل للخدمات الحكومية في مصر - استخراج بطاقة رقم قومي، جواز سفر، فيش جنائي، قيد عائلي وتصديق المستندات بسرعة وأمان.',
+      'مكتب البديل بمصر - استخراج بطاقة رقم قومي، جواز سفر، فيش وقيد عائلي. بسرعة وأمان.',
     images: ['/og-image.jpg'],
   },
   robots: {
@@ -152,7 +153,7 @@ export default async function RootLayout({
   return (
     <html lang='ar' dir='rtl' suppressHydrationWarning>
       <head>
-        <link rel='canonical' href='https://albadel.com.eg' />
+
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -171,6 +172,35 @@ export default async function RootLayout({
             `,
           }}
         />
+        {/* Placeholder: Google Analytics - Replace G-XXXXXXXXXX with your Tracking ID */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=G-V3JP54J3FG`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-V3JP54J3FG');
+          `}
+        </Script>
+
+        {/* Placeholder: Facebook Pixel - Replace YOUR_PIXEL_ID */}
+        <Script id="facebook-pixel" strategy="afterInteractive">
+          {`
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', 'YOUR_PIXEL_ID');
+            fbq('track', 'PageView');
+          `}
+        </Script>
         <script
           type='application/ld+json'
           dangerouslySetInnerHTML={{
@@ -200,7 +230,12 @@ export default async function RootLayout({
                 contactType: 'customer service',
                 availableLanguage: ['Arabic'],
               },
-              sameAs: [],
+              sameAs: [
+                'https://x.com/YourXProfile',
+                'https://instagram.com/YourInstagram',
+                'https://youtube.com/YourYouTube',
+                'https://linkedin.com/company/YourLinkedIn'
+              ],
               priceRange: '$$',
               openingHoursSpecification: {
                 '@type': 'OpeningHoursSpecification',
