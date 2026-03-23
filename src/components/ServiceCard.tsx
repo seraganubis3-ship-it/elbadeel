@@ -150,7 +150,7 @@ export function ServiceCard({
             <div
               className={`w-full py-4 rounded-2xl font-black transition-all duration-500 flex items-center justify-center gap-3 overflow-hidden group/btn relative ${
                 isValidImage(service.icon)
-                  ? 'bg-emerald-500 text-white hover:bg-emerald-400 shadow-xl shadow-emerald-900/40'
+                  ? 'bg-emerald-700 text-white hover:bg-emerald-600 shadow-xl shadow-emerald-900/40'
                   : 'bg-emerald-900 text-white hover:bg-emerald-800'
               }`}
             >
