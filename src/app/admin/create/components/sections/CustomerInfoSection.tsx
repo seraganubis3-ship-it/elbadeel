@@ -356,20 +356,25 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                   رقم الهاتف مسجَّل مسبقاً
                 </div>
                 <div className='text-amber-800 font-bold text-xs leading-relaxed'>
-                  هذا الرقم مرتبط بحساب{' '}
+                  هذا الرقم مسجل بالفعل باسم{' '}
                   <span className='bg-amber-100 px-1.5 py-0.5 rounded text-amber-950 underline decoration-amber-500/50 underline-offset-2'>
                     &quot;{phoneConflict.name}&quot;
                   </span>
-                  . يمكنك استخدامه لهذا الطلب، وسيتم تسجيل الطلب بالاسم الجديد الذي تدخلـه دون تعديل
-                  اسم صاحب الحساب الأصلي.
+                  . <br />
+                  <span className='text-rose-700 font-black'>
+                    إذا كان هذا العميل فرداً جديداً (يوزر جديد)، تجاهل هذه الرسالة وأكمل إدخال
+                    بياناته بالأسفل وسيتم إنشاء ملف حساب منفصل له بنفس الرقم القديم.
+                  </span>
+                  <br />
+                  أما إذا كان هو نفس الشخص، اضغط على الزر لجلب بياناته المحفوظة:
                 </div>
-                <div className='mt-2 flex gap-2'>
+                <div className='mt-3 flex gap-2'>
                   <button
                     type='button'
                     onClick={() => phoneConflict && selectCustomer(phoneConflict)}
-                    className='text-[10px] bg-amber-600 text-white px-3 py-1 rounded-lg font-black hover:bg-amber-700 transition-colors'
+                    className='text-xs bg-amber-600 text-white px-4 py-2 rounded-lg font-black hover:bg-amber-700 transition-colors shadow-sm'
                   >
-                    استخدام هذا الحساب
+                    جلب بيانات &quot;{phoneConflict.name}&quot;
                   </button>
                 </div>
               </div>

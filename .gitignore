@@ -17,7 +17,7 @@ node_modules/
 
 # Production
 /build
-
+scripts/form_types_output.json
 # Misc
 .DS_Store
 *.pem

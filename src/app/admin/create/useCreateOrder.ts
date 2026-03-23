@@ -1173,6 +1173,7 @@ export function useCreateOrder() {
       finesList,
       showWarning,
       showError,
+      formSerialProvider,
     ]
   );
 
@@ -1286,6 +1287,26 @@ export function useCreateOrder() {
       setCustomer(null);
       setSuggestion('');
       setSuggestedUser(null);
+      setFormData(prev => ({
+        ...prev,
+        additionalPhone: '',
+        customerEmail: '',
+        address: '',
+        governorate: '',
+        city: '',
+        district: '',
+        street: '',
+        buildingNumber: '',
+        apartmentNumber: '',
+        landmark: '',
+        birthDate: '',
+        idNumber: '',
+        fatherName: '',
+        motherName: '',
+        gender: '',
+        wifeName: '',
+        age: '',
+      }));
     },
   };
 }

@@ -563,9 +563,6 @@ export async function POST(request: NextRequest) {
     if (customerEmail && customerEmail.trim() !== '') {
       orConditions.push({ email: { equals: customerEmail, mode: 'insensitive' } });
     }
-    if (normalizedPhone) {
-      orConditions.push({ phone: normalizedPhone });
-    }
     if (idNumber) {
       orConditions.push({ idNumber: { equals: idNumber, mode: 'insensitive' } });
     }
@@ -602,14 +599,33 @@ export async function POST(request: NextRequest) {
 
     let isNewUserCreated = false;
 
-    // Double check if user exists by phone to prevent race conditions or logical errors
+    // To allow multiple unique users with the SAME phone number:
+    // We strictly link by phone ONLY if their exact name matches too.
     if (!existingUser && (normalizedPhone || customerPhone)) {
       const phoneToCheck = normalizedPhone || customerPhone;
-      const userByPhone = await prisma.user.findFirst({
+      const usersByPhone = await prisma.user.findMany({
         where: { phone: phoneToCheck },
       });
-      if (userByPhone) {
-        existingUser = userByPhone;
+
+      if (usersByPhone.length > 0) {
+        const normalizedInputName = customerName?.trim().replace(/\s+/g, ' ') || '';
+
+        const exactMatch = usersByPhone.find(u => {
+          if (!u.name) return false;
+          const normalizedExistingName = u.name.trim().replace(/\s+/g, ' ');
+          return normalizedExistingName === normalizedInputName;
+        });
+
+        if (exactMatch) {
+          existingUser = exactMatch as any;
+        } else {
+          // If no existing name matches exactly, try to claim an "empty" profile (null/empty name).
+          // Otherwise, existingUser stays null, which creates a BRAND NEW user for this phone number!
+          const emptyNameMatch = usersByPhone.find(u => !u.name || (u.name as string).trim() === '');
+          if (emptyNameMatch) {
+             existingUser = emptyNameMatch as any;
+          }
+        }
       }
     }
 
@@ -660,19 +676,18 @@ export async function POST(request: NextRequest) {
     } else {
       const u = existingUser;
       const updates: Record<string, unknown> = {};
-      const assignIfMissing = (key: string, value?: any) => {
-        const current = (u as any)[key];
-        const isEmpty = current === null || current === undefined || current === '';
-        if (isEmpty && value !== undefined && value !== '') updates[key] = value;
+      const assignValue = (key: string, value?: any) => {
+        if (value !== undefined && value !== '') {
+          updates[key] = value;
+        }
       };
-      // Update name only if it's missing or empty, to avoid overwriting account holder with dependent names
-      if (!(u as any).name && customerName) updates.name = customerName;
-      if (!(u as any).email && customerEmail) updates.email = customerEmail;
 
-      assignIfMissing('phone', normalizedPhone || customerPhone);
-      assignIfMissing('additionalPhone', additionalPhone);
+      if (customerName) updates.name = customerName;
+      if (customerEmail && customerEmail.trim() !== '') updates.email = customerEmail;
 
-      // Upsert address fields if provided
+      assignValue('phone', normalizedPhone || customerPhone);
+      assignValue('additionalPhone', additionalPhone);
+
       if (address) updates.address = address;
       if (governorate) updates.governorate = governorate;
       if (city) updates.city = city;
@@ -682,18 +697,18 @@ export async function POST(request: NextRequest) {
       if (apartmentNumber) updates.apartmentNumber = apartmentNumber;
       if (landmark) updates.landmark = landmark;
 
-      if ((u as any).birthDate == null && birthDate && birthDate !== '') {
+      if (birthDate && birthDate !== '') {
         const parsed = safeParseDate(birthDate);
         if (parsed) updates.birthDate = parsed;
       }
 
-      assignIfMissing('fatherName', fatherName);
-      assignIfMissing('idNumber', idNumber);
-      assignIfMissing('motherName', motherName);
-      assignIfMissing('nationality', nationality);
-      assignIfMissing('gender', gender);
-      assignIfMissing('wifeName', wifeName);
-      assignIfMissing('wifeMotherName', wifeMotherName);
+      assignValue('fatherName', fatherName);
+      assignValue('idNumber', idNumber);
+      assignValue('motherName', motherName);
+      assignValue('nationality', nationality);
+      assignValue('gender', gender);
+      assignValue('wifeName', wifeName);
+      assignValue('wifeMotherName', wifeMotherName);
 
       if (Object.keys(updates).length > 0) {
         await prisma.user.update({ where: { id: u.id }, data: updates as Prisma.UserUpdateInput });
