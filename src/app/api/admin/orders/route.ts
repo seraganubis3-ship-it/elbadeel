@@ -621,9 +621,11 @@ export async function POST(request: NextRequest) {
         } else {
           // If no existing name matches exactly, try to claim an "empty" profile (null/empty name).
           // Otherwise, existingUser stays null, which creates a BRAND NEW user for this phone number!
-          const emptyNameMatch = usersByPhone.find(u => !u.name || (u.name as string).trim() === '');
+          const emptyNameMatch = usersByPhone.find(
+            u => !u.name || (u.name as string).trim() === ''
+          );
           if (emptyNameMatch) {
-             existingUser = emptyNameMatch as any;
+            existingUser = emptyNameMatch as any;
           }
         }
       }

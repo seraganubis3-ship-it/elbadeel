@@ -429,7 +429,7 @@ export default function HomeClient({
         animate={{ scale: 1 }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        aria-label="تواصل معنا"
+        aria-label='تواصل معنا'
         className='fixed bottom-6 right-6 z-[9000] flex items-center gap-3 px-6 py-4 bg-slate-900 text-white rounded-full shadow-2xl shadow-slate-900/40 border border-slate-700 hover:bg-slate-800 transition-colors group'
       >
         <span className='font-black text-sm hidden sm:inline-block'>تواصل معنا</span>

@@ -12,8 +12,7 @@ export const metadata: Metadata = {
     default: 'البديل لاستخراج الاوراق الحكومية',
     template: '%s | البديل',
   },
-  description:
-    'مكتب البديل بمصر - استخراج بطاقة رقم قومي، جواز سفر، فيش وقيد عائلي. بسرعة وأمان.',
+  description: 'مكتب البديل بمصر - استخراج بطاقة رقم قومي، جواز سفر، فيش وقيد عائلي. بسرعة وأمان.',
   keywords: [
     'البديل للخدمات الحكومية',
     'مكتب البديل',
@@ -156,8 +155,8 @@ export default async function RootLayout({
         {/* Google AdSense Verification */}
         <script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3824774678944117"
-          crossOrigin="anonymous"
+          src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3824774678944117'
+          crossOrigin='anonymous'
         ></script>
 
         <script
@@ -181,9 +180,9 @@ export default async function RootLayout({
         {/* Placeholder: Google Analytics - Replace G-XXXXXXXXXX with your Tracking ID */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=G-V3JP54J3FG`}
-          strategy="afterInteractive"
+          strategy='afterInteractive'
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id='google-analytics' strategy='afterInteractive'>
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){window.dataLayer.push(arguments);}
@@ -193,7 +192,7 @@ export default async function RootLayout({
         </Script>
 
         {/* Placeholder: Facebook Pixel - Replace YOUR_PIXEL_ID */}
-        <Script id="facebook-pixel" strategy="afterInteractive">
+        <Script id='facebook-pixel' strategy='afterInteractive'>
           {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -240,7 +239,7 @@ export default async function RootLayout({
                 'https://x.com/YourXProfile',
                 'https://instagram.com/YourInstagram',
                 'https://youtube.com/YourYouTube',
-                'https://linkedin.com/company/YourLinkedIn'
+                'https://linkedin.com/company/YourLinkedIn',
               ],
               priceRange: '$$',
               openingHoursSpecification: {

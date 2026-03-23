@@ -142,7 +142,7 @@ export default function AdminFooterWrapper({ children, settings }: AdminFooterWr
               </div>
 
               {/* Contact */}
-              <div id="contact-section">
+              <div id='contact-section'>
                 <h4 className='text-lg font-semibold mb-4'>معلومات التواصل</h4>
                 <div className='space-y-3 text-slate-200'>
                   {/* Phone */}
