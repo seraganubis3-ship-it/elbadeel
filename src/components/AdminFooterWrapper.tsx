@@ -134,15 +134,15 @@ export default function AdminFooterWrapper({ children, settings }: AdminFooterWr
                     </Link>
                   </li>
                   <li>
-                    <Link href='/contact' className='hover:text-emerald-300 transition-colors'>
+                    <a href='#contact-section' className='hover:text-emerald-300 transition-colors'>
                       اتصل بنا
-                    </Link>
+                    </a>
                   </li>
                 </ul>
               </div>
 
               {/* Contact */}
-              <div>
+              <div id="contact-section">
                 <h4 className='text-lg font-semibold mb-4'>معلومات التواصل</h4>
                 <div className='space-y-3 text-slate-200'>
                   {/* Phone */}

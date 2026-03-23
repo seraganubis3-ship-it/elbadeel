@@ -3,22 +3,22 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'من نحن | البديل للخدمات الحكومية',
+  title: 'من نحن - خبرة 15 عاماً | البديل للخدمات الحكومية',
   description:
-    'تعرف على البديل للخدمات الحكومية، المنصة الرائدة في مصر لاستخراج جميع أنواع الأوراق الرسمية بسرعة وأمان. خبرة أكثر من 24 سنة في الخدمات الحكومية.',
+    'تعرف على البديل للخدمات الحكومية، المنصة الرائدة في مصر لاستخراج جميع أنواع الأوراق الرسمية بسرعة وأمان. خبرة أكثر من 15 سنة في الخدمات الحكومية.',
   keywords: [
     'البديل للخدمات الحكومية',
     'عن البديل',
     'منصة البديل',
     'خدمات حكومية مصر',
     'استخراج أوراق رسمية',
-    'خبرة 24 سنة',
+    'خبرة 15 سنة',
   ],
   alternates: {
     canonical: 'https://albadel.com.eg/about',
   },
   openGraph: {
-    title: 'من نحن | البديل للخدمات الحكومية',
+    title: 'من نحن - خبرة 15 عاماً | البديل للخدمات الحكومية',
     description:
       'تعرف على البديل للخدمات الحكومية، المنصة الرائدة في مصر لاستخراج جميع أنواع الأوراق الرسمية.',
     url: 'https://albadel.com.eg/about',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   const stats = [
-    { value: '+24', label: 'سنة خبرة', icon: '🏆' },
+    { value: '+15', label: 'سنة خبرة', icon: '🏆' },
     { value: '+100K', label: 'عميل سعيد', icon: '😊' },
     { value: '+50', label: 'خدمة متاحة', icon: '📋' },
     { value: '24/7', label: 'دعم متواصل', icon: '💬' },
@@ -52,7 +52,7 @@ export default function AboutPage() {
     {
       icon: '💼',
       title: 'خبرة واحترافية',
-      description: 'فريق متخصص بخبرة تتجاوز 24 عاماً في مجال الخدمات الحكومية',
+      description: 'فريق متخصص بخبرة تتجاوز 15 عاماً في مجال الخدمات الحكومية',
       color: 'from-amber-500 to-orange-500',
     },
     {

@@ -153,6 +153,13 @@ export default async function RootLayout({
   return (
     <html lang='ar' dir='rtl' suppressHydrationWarning>
       <head>
+        {/* Google AdSense */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3824774678944117"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
 
         <script
           dangerouslySetInnerHTML={{
