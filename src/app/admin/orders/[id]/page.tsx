@@ -255,7 +255,7 @@ export default function OrderDetailsPage() {
             <div className='rounded-2xl p-4 border bg-white/5 border-white/10'>
               <p className='text-xs font-bold text-white/60 mb-1'>المدفوع</p>
               <p className='text-2xl font-black text-emerald-300'>
-                {(order.paidAmount || 0).toFixed(0)}
+                {((order.paidAmount || 0) / 100).toFixed(0)}
                 <span className='text-sm font-bold mr-1'>ج.م</span>
               </p>
               <p className='text-[10px] text-white/40 mt-0.5'>✅ تم دفعه</p>
