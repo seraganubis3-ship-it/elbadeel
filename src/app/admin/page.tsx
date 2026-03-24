@@ -243,7 +243,7 @@ function AdminContent({
                                   ? 'bg-purple-100 text-purple-800'
                                   : order.status === 'supply'
                                     ? 'bg-indigo-100 text-indigo-800'
-                                    : order.status === 'delivery'
+                                    : order.status === 'delivered'
                                       ? 'bg-teal-100 text-teal-800'
                                       : order.status === 'returned'
                                         ? 'bg-red-100 text-red-800'
@@ -264,7 +264,7 @@ function AdminContent({
                                 ? 'استيفاء'
                                 : order.status === 'supply'
                                   ? 'توريد'
-                                  : order.status === 'delivery'
+                                  : order.status === 'delivered'
                                     ? 'تسليم'
                                     : order.status === 'returned'
                                       ? 'مرتجع'
@@ -503,7 +503,14 @@ export default async function AdminPage() {
   const pendingOrdersCount = await prisma.order.count({
     where: {
       status: {
-        in: ['pending', 'payment_pending', 'reviewing', 'processing'],
+        in: [
+          'waiting_confirmation',
+          'waiting_payment',
+          'processing',
+          'settlement',
+          'supply',
+          'fulfillment',
+        ],
       },
     },
   });
@@ -512,7 +519,7 @@ export default async function AdminPage() {
 
   const completedOrdersCount = await prisma.order.count({
     where: {
-      status: 'completed',
+      status: 'delivered',
     },
   });
 

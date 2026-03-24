@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       updateData.statusReason = statusReason;
     }
 
-    if (status === 'delivery') {
+    if (status === 'delivered') {
       updateData.completedAt = workDate;
     }
 
