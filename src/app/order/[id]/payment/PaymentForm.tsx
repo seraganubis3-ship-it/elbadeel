@@ -20,8 +20,8 @@ export default function PaymentForm({ orderId, totalAmount }: PaymentFormProps) 
   const router = useRouter();
 
   const PAYMENT_NUMBERS = {
-    VODAFONE_CASH: '01021484439',
-    INSTA_PAY: '01021484439@instapay',
+    VODAFONE_CASH: '01001544258',
+    INSTA_PAY: '01001544258',
   };
 
   const copyToClipboard = (text: string) => {
