@@ -91,6 +91,7 @@ model User {
   addedFormSerials        FormSerial[] @relation("FormSerialAddedBy")
   consumedFormSerials     FormSerial[] @relation("FormSerialConsumedBy")
   createdDependents       Dependent[]  @relation("DependentCreatedBy")
+  blogPosts               BlogPost[]   @relation("UserBlogPosts")
 
   @@index([email])
   @@index([role])
@@ -572,4 +573,40 @@ model WhatsAppTemplate {
 
   @@index([active])
   @@index([orderIndex])
+}
+
+// ==========================================
+// Blog Models
+// ==========================================
+
+model BlogTag {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  posts     BlogPost[] @relation("BlogPostTags")
+}
+
+model BlogPost {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  content     String        @db.Text
+  excerpt     String?       @db.Text
+  coverImage  String?
+  published   Boolean       @default(false)
+  views       Int           @default(0)
+  seoTitle    String?
+  seoDesc     String?
+  
+  authorId    String
+  author      User          @relation("UserBlogPosts", fields: [authorId], references: [id])
+  
+  tags        BlogTag[]     @relation("BlogPostTags")
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([slug])
+  @@index([published])
+  @@index([authorId])
 }

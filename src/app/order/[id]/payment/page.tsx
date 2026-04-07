@@ -25,8 +25,9 @@ export default async function PaymentPage({ params }: { params: Promise<{ id: st
     redirect('/orders');
   }
 
-  // Check if order is pending
-  if (order.status !== 'PENDING') {
+  // Check if order is in a payable state
+  const payableStatuses = ['PENDING', 'waiting_confirmation', 'pending'];
+  if (!payableStatuses.includes(order.status)) {
     redirect(`/orders/${id}`);
   }
 

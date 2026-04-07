@@ -55,6 +55,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       where: { id },
       select: {
         id: true,
+        status: true,
         adminNotes: true,
         payment: { select: { id: true, notes: true } },
         variant: { select: { etaDays: true } },
@@ -73,7 +74,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       updatedAt: new Date(),
     };
 
-    if (workOrderNumber) updateData.workOrderNumber = workOrderNumber;
+    if (order.status === 'settlement' && status === 'processing') {
+      updateData.workOrderNumber = null;
+    } else if (workOrderNumber) {
+      updateData.workOrderNumber = workOrderNumber;
+    }
 
     if (['fulfillment', 'returned', 'settlement'].includes(status) && statusReason !== undefined) {
       updateData.statusReason = statusReason;

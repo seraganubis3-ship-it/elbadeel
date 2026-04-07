@@ -559,52 +559,51 @@ export default function InventoryPage() {
                                 : '-'}
                             </td>
                             <td className='px-6 py-4'>
-                              {s.consumed && s.orderId ? (
-                                <Link
-                                  href={`/admin/orders/${s.orderId}`}
-                                  className='text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100 transition-all hover:shadow-sm w-fit'
-                                  title='فتح تفاصيل الطلب'
-                                >
-                                  <svg
-                                    className='w-4 h-4'
-                                    fill='none'
-                                    stroke='currentColor'
-                                    viewBox='0 0 24 24'
-                                  >
-                                    <path
-                                      strokeLinecap='round'
-                                      strokeLinejoin='round'
-                                      strokeWidth={2}
-                                      d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14'
-                                    />
-                                  </svg>
-                                  <span>
-                                    طلب: {s.orderId.substring(s.orderId.length - 8).toUpperCase()}
-                                  </span>
-                                </Link>
-                              ) : (
-                                !s.consumed && (
-                                  <button
-                                    onClick={() => deleteSerial(s.id)}
-                                    className='text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors'
-                                    title='حذف'
+                              <div className='flex items-center justify-end gap-2'>
+                                {s.consumed && s.orderId && (
+                                  <Link
+                                    href={`/admin/orders/${s.orderId}`}
+                                    className='text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100 transition-all hover:shadow-sm w-fit'
+                                    title='فتح تفاصيل الطلب'
                                   >
                                     <svg
-                                      className='w-5 h-5'
+                                      className='w-4 h-4'
                                       fill='none'
-                                      viewBox='0 0 24 24'
                                       stroke='currentColor'
+                                      viewBox='0 0 24 24'
                                     >
                                       <path
                                         strokeLinecap='round'
                                         strokeLinejoin='round'
                                         strokeWidth={2}
-                                        d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                                        d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14'
                                       />
                                     </svg>
-                                  </button>
-                                )
-                              )}
+                                    <span>
+                                      طلب: {s.orderId.substring(s.orderId.length - 8).toUpperCase()}
+                                    </span>
+                                  </Link>
+                                )}
+                                <button
+                                  onClick={() => deleteSerial(s.id)}
+                                  className='text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors'
+                                  title='حذف'
+                                >
+                                  <svg
+                                    className='w-5 h-5'
+                                    fill='none'
+                                    viewBox='0 0 24 24'
+                                    stroke='currentColor'
+                                  >
+                                    <path
+                                      strokeLinecap='round'
+                                      strokeLinejoin='round'
+                                      strokeWidth={2}
+                                      d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))

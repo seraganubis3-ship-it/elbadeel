@@ -61,6 +61,9 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
             formType: true,
           },
         },
+        statusHistory: {
+          orderBy: { changedAt: 'desc' },
+        },
       },
     });
 
@@ -74,6 +77,26 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
         return { ...doc, filePath: signedUrl };
       })
     );
+
+    // Fetch user details for status history
+    const historyUserIds = [...new Set(order.statusHistory.map(h => h.changedBy).filter(Boolean))] as string[];
+    const historyUsers = await prisma.user.findMany({
+      where: { id: { in: historyUserIds } },
+      select: { id: true, name: true, role: true },
+    });
+    const historyUserMap = new Map(historyUsers.map(u => [u.id, u]));
+
+    const mappedStatusHistory = order.statusHistory.map((h: any) => ({
+      ...h,
+      admin: h.changedBy ? historyUserMap.get(h.changedBy) || null : null,
+    }));
+
+    // Fetch audit logs manually because there's no Prisma relation
+    const auditLogs = await prisma.auditLog.findMany({
+      where: { entityType: 'ORDER', entityId: id },
+      orderBy: { createdAt: 'desc' },
+      include: { user: { select: { id: true, name: true, role: true } } }
+    });
 
     return NextResponse.json({
       success: true,
@@ -148,6 +171,8 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
           consumed: fs.consumed,
           consumedAt: fs.consumedAt,
         })),
+        statusHistory: mappedStatusHistory,
+        auditLogs: auditLogs,
         // New fields for receipt
         paidAmount: order.payment?.amount || 0,
         remainingAmount: order.totalCents - (order.payment?.amount || 0),
@@ -196,7 +221,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 }
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await requireAdminOrStaff();
+    const session = await requireAdminOrStaff();
 
     const { id } = params;
     const data = await request.json();
@@ -257,6 +282,34 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       }
     }
 
+    // 1. Fetch current order to detect changes
+    const currentOrder = await prisma.order.findUnique({ where: { id } });
+    if (!currentOrder) {
+      return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 });
+    }
+
+    // 2. Identify changed fields
+    const changedFields: any = {};
+    const oldValues: any = {};
+    const loggedFields = ['quantity', 'deliveryType', 'deliveryFee', 'otherFees', 'discount', 'statusReason', 'customerName', 'customerPhone', 'customerEmail', 'address', 'policeStation', 'pickupLocation', 'photographyLocation', 'notes', 'adminNotes', 'idNumber'];
+
+    for (const key of Object.keys(processedUpdateData)) {
+      if (processedUpdateData[key] !== undefined && currentOrder[key as keyof typeof currentOrder] !== processedUpdateData[key]) {
+        // Only log meaningful fields, or if we want everything, we can skip specific ones like 'updatedAt'
+        if (key !== 'updatedAt' && key !== 'totalCents') {
+           changedFields[key] = processedUpdateData[key];
+           oldValues[key] = currentOrder[key as keyof typeof currentOrder];
+        }
+      }
+    }
+
+    // Capture fines explicitly by comparing old selectedFines and servicesDetails text with incoming text
+    if (processedUpdateData.selectedFines && processedUpdateData.selectedFines !== currentOrder.selectedFines) {
+      changedFields['selectedFines'] = processedUpdateData.selectedFines;
+      oldValues['selectedFines'] = currentOrder.selectedFines;
+    }
+
+    // 3. Update the order
     const updatedOrder = await prisma.order.update({
       where: { id },
       data: processedUpdateData,
@@ -296,9 +349,34 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       },
     });
 
+    // 4. Create Audit Log if there are changes
+    if (Object.keys(changedFields).length > 0) {
+      await prisma.auditLog.create({
+        data: {
+          action: 'UPDATE',
+          entityType: 'ORDER',
+          entityId: id,
+          userId: session.user.id,
+          oldValues: JSON.stringify(oldValues),
+          newValues: JSON.stringify(changedFields),
+        }
+      });
+    }
+
+    // Fetch the audit logs to return them to the frontend
+    const newAuditLogs = await prisma.auditLog.findMany({
+      where: { entityType: 'ORDER', entityId: id },
+      orderBy: { createdAt: 'desc' },
+      include: { user: { select: { id: true, name: true, role: true } } }
+    });
+
     return NextResponse.json({
       success: true,
-      order: updatedOrder,
+      order: {
+        ...updatedOrder,
+        auditLogs: newAuditLogs
+      },
+      message: 'تم تحديث تفاصيل الطلب بنجاح',
     });
   } catch (error) {
     // console.error('Order Update Error:', error);

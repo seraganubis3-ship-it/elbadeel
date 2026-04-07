@@ -92,9 +92,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       );
     }
 
+    /* We allow deleting even if consumed, as per user request
     if (serial.consumed) {
       return NextResponse.json({ error: 'لا يمكن حذف رقم تم استهلاكه بالفعل' }, { status: 400 });
     }
+    */
 
     await (prisma as any).formSerial.delete({
       where: { id: serialId },

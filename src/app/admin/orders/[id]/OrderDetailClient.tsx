@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { hasPermission } from '@/lib/permissions';
@@ -23,8 +23,53 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
   const { data: session } = useSession();
   const [currentOrder, setCurrentOrder] = useState(order);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const fieldTranslations: Record<string, string> = {
+    quantity: 'الكمية',
+    deliveryType: 'طريقة التوصيل',
+    deliveryFee: 'رسوم التوصيل',
+    otherFees: 'رسوم أخرى',
+    discount: 'الخصم',
+    statusReason: 'السبب / التفاصيل',
+    customerName: 'الاسم',
+    customerPhone: 'الهاتف',
+    customerEmail: 'البريد الإلكتروني',
+    address: 'العنوان',
+    policeStation: 'قسم الشرطة',
+    pickupLocation: 'مكان الاستلام',
+    photographyLocation: 'مكان التصوير',
+    notes: 'الملاحظات',
+    adminNotes: 'ملاحظات الإدارة',
+    idNumber: 'الرقم القومي',
+    selectedFines: 'الغرامات والخدمات (كود)',
+    title: 'الصفة',
+    photographyDate: 'تاريخ التصوير',
+  };
+
+  const timelineEvents = useMemo(() => {
+    if (!currentOrder) return [];
+    
+    const statusEvents = (currentOrder.statusHistory || []).map((h: any) => ({
+      type: 'STATUS',
+      id: `status_${h.id}`,
+      date: new Date(h.changedAt),
+      user: h.admin?.name || 'غير معروف',
+      data: h
+    }));
+
+    const auditEvents = (currentOrder.auditLogs || []).map((a: any) => ({
+      type: 'AUDIT',
+      id: `audit_${a.id}`,
+      date: new Date(a.createdAt),
+      user: a.user?.name || 'غير معروف',
+      data: a
+    }));
+
+    return [...statusEvents, ...auditEvents].sort((a, b) => b.date.getTime() - a.date.getTime());
+  }, [currentOrder]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
 
   // Status reason modal
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -310,6 +355,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
             ...prev,
             [editingField]: finalValue,
             totalCents: body.totalCents !== undefined ? body.totalCents : prev.totalCents,
+            auditLogs: result.order?.auditLogs || prev.auditLogs,
           }));
           setEditingField(null);
           setSuccessMessage('تم التحديث بنجاح');
@@ -518,6 +564,7 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
             finesDetails: JSON.stringify(finesDetails),
             servicesDetails: JSON.stringify(servicesDetails),
             totalCents: newTotalCents,
+            auditLogs: result.order?.auditLogs || prev.auditLogs,
           }));
           setIsEditingFines(false);
           setSuccessMessage('تم تحديث الغرامات والحسابات بنجاح');
@@ -1794,34 +1841,28 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                     autoFocus
                     value={tempValue}
                     onChange={e => setTempValue(e.target.value)}
-                    placeholder='أضف ملاحظاتك هنا...'
-                    className='w-full bg-amber-50/50 border-2 border-amber-200 rounded-2xl p-4 text-slate-800 font-medium focus:ring-0 focus:border-amber-500 transition-all min-h-[120px]'
+                    className='w-full bg-white border-2 border-amber-200 rounded-lg px-4 py-3 text-sm font-bold resize-none'
+                    rows={4}
                   />
-                  <div className='flex justify-end gap-2'>
-                    <button
-                      onClick={() => setEditingField(null)}
-                      className='px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all'
-                    >
-                      إلغاء
-                    </button>
+                  <div className='flex gap-2'>
                     <button
                       onClick={handleSaveField}
-                      className='px-6 py-2 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-all shadow-md shadow-amber-100'
+                      className='bg-green-500 text-white px-6 py-2 rounded-lg font-bold'
                     >
-                      حفظ الملاحظات
+                      حفظ
+                    </button>
+                    <button
+                      onClick={() => setEditingField(null)}
+                      className='bg-slate-200 text-slate-600 px-6 py-2 rounded-lg font-bold'
+                    >
+                      إلغاء
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className='bg-amber-50/50 rounded-2xl p-6 border border-amber-100 transition-all'>
-                  {currentOrder.notes ? (
-                    <p className='text-slate-800 font-medium leading-relaxed whitespace-pre-wrap'>
-                      {currentOrder.notes}
-                    </p>
-                  ) : (
-                    <p className='text-slate-400 italic'>لا توجد ملاحظات</p>
-                  )}
-                </div>
+                <p className='text-slate-600 whitespace-pre-wrap leading-relaxed'>
+                  {currentOrder.notes || 'لا توجد ملاحظات'}
+                </p>
               )}
             </div>
 
@@ -1829,46 +1870,27 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
             {currentOrder.documents && currentOrder.documents.length > 0 && (
               <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-8'>
                 <h2 className='text-xl font-bold text-slate-900 mb-6 flex items-center gap-2'>
-                  <span className='w-2 h-8 bg-slate-500 rounded-full'></span>
-                  المرفقات
+                  <span className='w-2 h-8 bg-blue-500 rounded-full'></span>
+                  المستندات
                 </h2>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                  {order.documents.map((doc: any) => (
+                  {currentOrder.documents.map((doc: any) => (
                     <div
                       key={doc.id}
                       className='flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-blue-200 hover:shadow-sm transition-all'
                     >
                       <div className='flex items-center'>
                         <div className='w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center ml-4'>
-                          <svg
-                            className='w-6 h-6'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-                            />
+                          <svg className='w-6 h-6' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' />
                           </svg>
                         </div>
                         <div>
-                          <p className='font-bold text-slate-900 text-sm line-clamp-1'>
-                            {doc.fileName}
-                          </p>
-                          <p className='text-xs text-slate-500'>
-                            {(doc.fileSize / 1024 / 1024).toFixed(2)} MB
-                          </p>
+                          <p className='font-bold text-slate-900 text-sm line-clamp-1'>{doc.fileName}</p>
+                          <p className='text-xs text-slate-500'>{(doc.fileSize / 1024 / 1024).toFixed(2)} MB</p>
                         </div>
                       </div>
-                      <a
-                        href={doc.filePath}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-xs font-bold px-3 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors'
-                      >
+                      <a href={doc.filePath} target='_blank' rel='noopener noreferrer' className='text-xs font-bold px-3 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors'>
                         تحميل
                       </a>
                     </div>
@@ -1894,21 +1916,15 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
                   مراسلة العميل
                 </button>
                 <button
-                  onClick={exportOrder}
-                  className='w-full py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2'
+                  onClick={() => setShowTimelineModal(true)}
+                  className='w-full py-4 bg-indigo-50 border-2 border-indigo-100 text-indigo-700 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 hover:bg-indigo-100 hover:border-indigo-200'
                 >
-                  <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'
-                    />
-                  </svg>
-                  تصدير نصي
+                  <span className='text-xl'>📋</span>
+                  سجل التغييرات
                 </button>
               </div>
             </div>
+
 
             {/* Summary Card */}
             <div className='bg-white rounded-3xl shadow-sm border border-slate-100 p-6'>

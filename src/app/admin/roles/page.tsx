@@ -18,6 +18,7 @@ const AVAILABLE_PERMISSIONS = [
   { id: 'MANAGE_DELEGATES', label: 'المندوبين' },
   { id: 'MANAGE_WORKORDERS', label: 'أوامر الشغل' },
   { id: 'MANAGE_SETTINGS', label: 'الإعدادات' },
+  { id: 'MANAGE_BLOGS', label: 'إدارة المدونة' },
 ];
 
 export default function RolesManagementPage() {

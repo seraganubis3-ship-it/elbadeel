@@ -444,7 +444,8 @@ export async function POST(request: NextRequest) {
       message: 'تم إنشاء الطلب بنجاح',
       redirectUrl: `/order-success?orderId=${order.id}&filesUploaded=${uploadedFiles.length}`,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Order creation error:', error);
     return NextResponse.json({ error: 'حدث خطأ أثناء إنشاء الطلب' }, { status: 500 });
   }
 }

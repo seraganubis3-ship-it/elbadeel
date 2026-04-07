@@ -33,14 +33,26 @@ export function OrderCard({
       ? order.customerPhone
       : order.user?.phone || 'غير محدد';
 
-  return (
-    <div
-      className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-r-4 overflow-hidden ${
+  const isDelivered = order.status === 'delivered';
+  
+  const isSuccessStatus = isDelivered;
+
+  const cardClasses = isSuccessStatus
+    ? `bg-green-100/80 rounded-2xl shadow-md hover:shadow-xl hover:shadow-green-900/10 transition-all duration-300 border border-green-300 border-r-4 overflow-hidden ${
+        isSelected ? 'ring-2 ring-green-600 border-r-green-600' : 'border-r-green-500'
+      }`
+    : `bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-r-4 overflow-hidden ${
         isSelected ? 'ring-2 ring-blue-500 border-r-blue-500' : 'border-r-gray-200'
-      }`}
-    >
+      }`;
+
+  const headerClasses = isSuccessStatus
+    ? 'p-4 bg-green-200/50 border-b border-green-300/80'
+    : 'p-4 bg-gradient-to-l from-gray-50 to-white border-b border-gray-100';
+
+  return (
+    <div className={cardClasses}>
       {/* Card Header */}
-      <div className='p-4 bg-gradient-to-l from-gray-50 to-white border-b border-gray-100'>
+      <div className={headerClasses}>
         <div className='flex flex-wrap items-center justify-between gap-2'>
           <div className='flex items-center gap-3'>
             {/* Checkbox */}
