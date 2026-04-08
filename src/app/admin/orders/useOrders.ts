@@ -500,6 +500,10 @@ export function useOrders(
         setSelectedOrdersData(prev =>
           prev.map(order => (order.id === orderId ? { ...order, status: newStatus } : order))
         );
+        // Dispatch CustomEvent for independent components (like QuickSearchModal)
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('orderUpdated', { detail: { orderId, newStatus } }));
+        }
         const statusText = getStatusText(newStatus);
         showSuccess('تم تحديث حالة الطلب بنجاح! 🎉', `تم تغيير حالة الطلب إلى "${statusText}"`);
       } else {

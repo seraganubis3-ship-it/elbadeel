@@ -657,7 +657,7 @@ export function printOrdersReport({
           .join('');
       }
 
-      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">${serviceName}</div><div class="header-order-num-container"><span class="order-label">رقم امر شغل :</span><span class="order-line"></span></div></div><table class="data-table"><thead>${thead}</thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="6" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
+      contentHtml += `<div class="group-section"><div class="group-header"><div class="header-title">${serviceName}</div></div><table class="data-table"><thead>${thead}</thead><tbody>${rows}<tr class="count-row"><td colspan="2" style="text-align: left; padding-left: 20px; font-weight: bold;">العدد المطلوب : </td><td colspan="6" style="text-align: right; padding-right: 20px; font-weight: bold;">${groupTotalQuantity}</td></tr></tbody></table></div>`;
     });
   }
 

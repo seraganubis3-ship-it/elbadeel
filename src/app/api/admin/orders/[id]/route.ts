@@ -3,6 +3,7 @@ import { requireAuth, requireAdminOrStaff } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { hasPermission } from '@/lib/permissions';
 import { generatePresignedUrl } from '@/lib/presignedUrl';
+import { queryCache } from '@/lib/cache/query-cache';
 
 export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -361,6 +362,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           newValues: JSON.stringify(changedFields),
         }
       });
+      // Invalidate orders cache so list/reports show updated data
+      queryCache.clear('orders');
     }
 
     // Fetch the audit logs to return them to the frontend

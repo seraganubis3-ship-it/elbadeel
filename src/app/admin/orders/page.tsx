@@ -17,6 +17,7 @@ import {
   SelectDelegateModal,
   EditReportDataModal,
   LastOrderAlert, // Add this
+  QuickOrderStatusModal,
 } from './components';
 import { printOrdersReport } from './utils/printReport';
 import { printCollectionReport } from './utils/printCollectionReport';
@@ -67,6 +68,7 @@ export default function AdminOrdersPage() {
     updateOrderStatus,
     deleteOrder,
     hasFilter,
+    refetch,
   } = useOrders(showSuccess, showError);
 
   // Last Order Alert Logic
@@ -78,6 +80,9 @@ export default function AdminOrdersPage() {
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [whatsappOrder, setWhatsappOrder] = useState<Order | null>(null);
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+
+  // Quick Search Modal State
+  const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
 
   // Payment Alert State
   const [showPaymentAlert, setShowPaymentAlert] = useState(false);
@@ -929,8 +934,9 @@ export default function AdminOrdersPage() {
     );
   };
 
-  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
-    const order = orders.find(o => o.id === orderId);
+  const handleStatusUpdate = async (orderId: string, newStatus: string, modalOrder?: Order) => {
+    // order search sequence: modalOrder -> current orders -> selected persistent orders
+    const order = modalOrder || orders.find(o => o.id === orderId) || selectedOrdersData.find(o => o.id === orderId);
 
     // Check for outstanding balance ONLY when delivering
     if (newStatus === 'delivered' && order && (order.remainingAmount || 0) > 0) {
@@ -1093,6 +1099,7 @@ export default function AdminOrdersPage() {
           filteredOrdersCount={totalOrders}
           activeOrdersCount={activeOrdersCount}
           completedOrdersCount={completedOrdersCount}
+          onOpenQuickSearch={() => setIsQuickSearchOpen(true)}
         />
 
         {/* Main Content */}
@@ -1275,7 +1282,7 @@ export default function AdminOrdersPage() {
 
       {/* Payment Alert Modal */}
       {showPaymentAlert && paymentAlertOrder && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
+        <div className='fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4'>
           <div className='bg-white rounded-3xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200 overflow-hidden'>
             <div className='p-8 border-b bg-amber-50 relative'>
               <div className='absolute top-4 right-4 text-4xl opacity-20'>⚠️</div>
@@ -1367,7 +1374,7 @@ export default function AdminOrdersPage() {
 
       {/* Status Reason Modal */}
       {showStatusReasonModal && pendingStatusReason && (
-        <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
+        <div className='fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4'>
           <div className='bg-white rounded-2xl shadow-2xl w-full max-w-md p-6'>
             <h3 className='text-xl font-black text-slate-900 mb-2'>
               {pendingStatusReason.newStatus === 'fulfillment'
@@ -1418,6 +1425,14 @@ export default function AdminOrdersPage() {
           </div>
         </div>
       )}
+
+      {/* Quick Search & Update Modal */}
+      <QuickOrderStatusModal
+        isOpen={isQuickSearchOpen}
+        onClose={() => setIsQuickSearchOpen(false)}
+        onStatusChange={(order, newStatus) => handleStatusUpdate(order.id, newStatus, order)}
+        updatingId={updatingStatus}
+      />
     </>
   );
 }
