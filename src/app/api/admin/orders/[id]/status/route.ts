@@ -125,6 +125,22 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         },
       });
 
+      // 3. Create Audit Log for status change
+      await tx.auditLog.create({
+        data: {
+          action: 'STATUS_CHANGE',
+          entityType: 'ORDER',
+          entityId: id,
+          userId: session.user.id,
+          oldValues: JSON.stringify({ status: order.status }),
+          newValues: JSON.stringify({
+            status,
+            ...(workOrderNumber ? { workOrderNumber } : {}),
+            ...(statusReason ? { statusReason } : {}),
+          }),
+        },
+      });
+
       // 3. Update Order
       return await tx.order.update({
         where: { id },

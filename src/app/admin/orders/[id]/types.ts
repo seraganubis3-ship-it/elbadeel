@@ -120,6 +120,25 @@ export interface Order {
     fileSize: number;
     uploadedAt: string | Date;
   }[];
+
+  statusHistory?: {
+    id: string;
+    status: string;
+    changedAt: string | Date;
+    changedBy?: string;
+    admin?: { id: string; name: string; role: string } | null;
+  }[];
+
+  auditLogs?: {
+    id: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    oldValues?: string;
+    newValues?: string;
+    createdAt: string | Date;
+    user?: { id: string; name: string; role: string } | null;
+  }[];
 }
 
 export interface OrderPayment {

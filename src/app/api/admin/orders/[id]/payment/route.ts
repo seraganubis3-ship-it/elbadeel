@@ -105,6 +105,28 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       });
     }
 
+    // Create Audit Log for payment change
+    await prisma.auditLog.create({
+      data: {
+        action: 'PAYMENT_UPDATE',
+        entityType: 'ORDER',
+        entityId: id,
+        userId: session.user.id,
+        oldValues: JSON.stringify({
+          paymentAmount: order.payment?.amount || 0,
+          paymentMethod: order.payment?.method || 'لا يوجد',
+          paymentStatus: order.payment?.status || 'لا يوجد',
+        }),
+        newValues: JSON.stringify({
+          paymentAmount: amount,
+          paymentMethod: method,
+          paymentStatus: amount > 0 ? 'CONFIRMED' : 'PENDING',
+          ...(senderPhone ? { senderPhone } : {}),
+          ...(notes ? { paymentNotes: notes } : {}),
+        }),
+      },
+    });
+
     return NextResponse.json({
       success: true,
       message: 'تم تحديث معلومات الدفع بنجاح',

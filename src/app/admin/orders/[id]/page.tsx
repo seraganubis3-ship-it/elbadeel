@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -19,6 +19,7 @@ import OrderActionsSidebar from './components/OrderActionsSidebar';
 import OrderSummary from './components/OrderSummary';
 import OrderStatusMetrics from './components/OrderStatusMetrics';
 import WhatsAppModal from './components/WhatsAppModal';
+import AuditLogModal from './components/AuditLogModal';
 import { printReceipt } from '../utils/printReceipt';
 import { ORDER_STATUS_CONFIG } from '@/constants/orderStatus';
 import { safeLocaleDate } from '@/lib/date-utils';
@@ -70,6 +71,8 @@ export default function OrderDetailsPage() {
     removeFormSerial,
     removeAttachedDocument,
   } = useOrderDetail(orderId);
+
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
 
   if (loading) {
     return (
@@ -185,6 +188,14 @@ export default function OrderDetailsPage() {
                 />
               </svg>
               <span className='hidden md:inline'>إيصال</span>
+            </button>
+            <button
+              onClick={() => setShowTimelineModal(true)}
+              className='flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors font-bold text-sm'
+              title='سجل التغييرات'
+            >
+              <span className='text-lg'>📋</span>
+              <span className='hidden md:inline'>السجل</span>
             </button>
           </div>
         </div>
@@ -528,6 +539,12 @@ export default function OrderDetailsPage() {
           sending={sendingWhatsApp}
           selectedTemplate={selectedTemplate}
           setSelectedTemplate={setSelectedTemplate}
+        />
+
+        <AuditLogModal
+          isOpen={showTimelineModal}
+          onClose={() => setShowTimelineModal(false)}
+          order={order}
         />
 
         {/* Payment Alert Modal */}
