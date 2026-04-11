@@ -848,27 +848,37 @@ export default function AdminOrdersPage() {
     const reportData = (selectedOrders.length > 0 ? selectedOrdersData : currentOrders)
       .filter(o => o)
       .map(order => {
-        // ID logic
-        let idNumber = order?.idNumber;
-        if (!idNumber && order?.birthDate) {
-          const date = new Date(order.birthDate);
-          if (!isNaN(date.getTime())) {
-            idNumber = date.toLocaleDateString('en-GB');
-          } else {
-            idNumber = order.birthDate;
-          }
-        }
-        idNumber = idNumber || '';
-
         // Source Logic
         const serviceName = order?.service?.name || '';
         let source = serviceName;
         if (serviceName.includes('ميلاد')) source = 'ميلاد';
         else if (serviceName.includes('زواج')) source = 'زواج';
         else if (serviceName.includes('طلاق')) source = 'طلاق';
-        else if (serviceName.includes('الوفاة ')) source = 'وفاة';
+        else if (serviceName.includes('وفاة') || serviceName.includes('الوفاة')) source = 'وفاة';
         else if (serviceName.includes('قيد فردي')) source = 'قيد فردي';
         else if (serviceName.includes('قيد عائلي')) source = 'قيد عائلي';
+
+        // ID & Date logic
+        let idNumber = order?.idNumber;
+        if (!idNumber) {
+          const isDeath = source === 'وفاة';
+          if (isDeath && order?.deathDate) {
+            const date = new Date(order.deathDate);
+            if (!isNaN(date.getTime())) {
+              idNumber = date.toLocaleDateString('en-GB');
+            } else {
+              idNumber = order.deathDate;
+            }
+          } else if (order?.birthDate) {
+            const date = new Date(order.birthDate);
+            if (!isNaN(date.getTime())) {
+              idNumber = date.toLocaleDateString('en-GB');
+            } else {
+              idNumber = order.birthDate;
+            }
+          }
+        }
+        idNumber = idNumber || '';
 
         return {
           name: order?.customerName || '',
