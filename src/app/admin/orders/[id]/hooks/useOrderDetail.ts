@@ -449,10 +449,11 @@ export function useOrderDetail(orderId: string) {
     try {
       // 1. Record payment for full remaining amount
       const remainingAmount = order.remainingAmount || 0;
+      const currentPaidAmount = order.payment?.amount || order.paidAmount || 0;
       const paymentRequestData = {
         method,
-        amount: remainingAmount,
-        discount: 0,
+        amount: currentPaidAmount + remainingAmount,
+        discount: order.discount || 0,
         notes: 'دفع سريع عند التسليم',
         workDate: getCurrentWorkDate(),
       };

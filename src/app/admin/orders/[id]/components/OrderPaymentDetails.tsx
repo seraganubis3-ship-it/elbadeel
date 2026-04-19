@@ -20,7 +20,10 @@ export default function OrderPaymentDetails({
   setPaymentData,
   onUpdatePayment,
 }: OrderPaymentDetailsProps) {
-  const remainingAmount = (order.totalCents - (order.payment?.amount || 0)) / 100;
+  const manualDiscount = order.discount || 0;
+  const promoDiscount = order.discountAmount || 0;
+  const payableTotal = Math.max(0, order.totalCents - manualDiscount - promoDiscount);
+  const remainingAmount = Math.max(0, payableTotal - (order.payment?.amount || 0)) / 100;
 
   return (
     <div className='bg-white rounded-xl sm:rounded-2xl border border-slate-200 overflow-hidden'>
@@ -73,7 +76,7 @@ export default function OrderPaymentDetails({
               المطلوب
             </p>
             <p className='text-lg sm:text-xl font-black text-slate-800 tracking-tight'>
-              {(order.totalCents / 100).toFixed(2)}
+              {(payableTotal / 100).toFixed(2)}
             </p>
           </div>
           <div className='bg-emerald-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-emerald-100 text-center'>

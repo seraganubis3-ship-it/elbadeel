@@ -113,7 +113,20 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         });
       }
 
-      // 2. Create Status History Log
+      // 2. Release any consumed form serials when the order is finally cancelled.
+      if (status === 'cancelled') {
+        await tx.formSerial.updateMany({
+          where: { orderId: id },
+          data: {
+            orderId: null,
+            consumed: false,
+            consumedAt: null,
+            consumedByAdminId: null,
+          },
+        });
+      }
+
+      // 3. Create Status History Log
       // We log the change regardless of whether the status value is different,
       // as it might involve note updates or re-confirmation of status.
       await tx.orderStatusHistory.create({
@@ -125,7 +138,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         },
       });
 
-      // 3. Create Audit Log for status change
+      // 4. Create Audit Log for status change
       await tx.auditLog.create({
         data: {
           action: 'STATUS_CHANGE',
@@ -141,7 +154,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         },
       });
 
-      // 3. Update Order
+      // 5. Update Order
       return await tx.order.update({
         where: { id },
         data: updateData,

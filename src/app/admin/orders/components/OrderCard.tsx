@@ -12,6 +12,7 @@ interface OrderCardProps {
   onStatusChange: (orderId: string, status: string) => void;
   onWhatsAppClick: (order: Order) => void;
   onDelete: (orderId: string) => void;
+  onQuickPaymentClick?: (order: Order) => void;
   onPrintAuthorization?: (order: Order) => void;
 }
 
@@ -23,6 +24,7 @@ export function OrderCard({
   onStatusChange,
   onWhatsAppClick,
   onDelete,
+  onQuickPaymentClick,
   onPrintAuthorization,
 }: OrderCardProps) {
   const statusConfig =
@@ -34,6 +36,13 @@ export function OrderCard({
       : order.user?.phone || 'غير محدد';
 
   const isDelivered = order.status === 'delivered';
+  const totalCents = order.totalCents || 0;
+  const discountCents = (order.discount || 0) + (order.discountAmount || 0);
+  const paidCents = order.payment?.amount || order.paidAmount || 0;
+  const remainingCents = Math.max(
+    0,
+    order.remainingAmount ?? totalCents - discountCents - paidCents
+  );
   
   const isSuccessStatus = isDelivered;
 
@@ -191,6 +200,28 @@ export function OrderCard({
           <span>{deliveryInfo.fee}</span>
         </div>
 
+        {/* Payment Summary */}
+        <div className='mb-4 grid grid-cols-3 gap-2 rounded-xl border border-slate-100 bg-slate-50 p-2'>
+          <div className='rounded-lg bg-white px-2 py-2 text-center'>
+            <p className='text-[10px] font-bold text-slate-400'>الإجمالي</p>
+            <p className='mt-1 text-sm font-black text-slate-800'>
+              {(totalCents / 100).toFixed(2)}
+            </p>
+          </div>
+          <div className='rounded-lg bg-white px-2 py-2 text-center'>
+            <p className='text-[10px] font-bold text-emerald-500'>المدفوع</p>
+            <p className='mt-1 text-sm font-black text-emerald-700'>
+              {(paidCents / 100).toFixed(2)}
+            </p>
+          </div>
+          <div className='rounded-lg bg-white px-2 py-2 text-center'>
+            <p className='text-[10px] font-bold text-amber-500'>المتبقي</p>
+            <p className='mt-1 text-sm font-black text-amber-700'>
+              {(remainingCents / 100).toFixed(2)}
+            </p>
+          </div>
+        </div>
+
         {/* Quick Status Change */}
         <div className='mb-4'>
           <select
@@ -227,7 +258,23 @@ export function OrderCard({
         </div>
 
         {/* Action Buttons */}
-        <div className='flex gap-2'>
+        <div className='flex flex-wrap gap-2'>
+          {remainingCents > 0 && onQuickPaymentClick && (
+            <button
+              onClick={() => onQuickPaymentClick(order)}
+              className='flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 py-2.5 text-sm font-black text-white shadow-md shadow-emerald-100 transition-colors hover:bg-emerald-700'
+            >
+              <svg className='h-4 w-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'
+                />
+              </svg>
+              سداد باقي مستحقات
+            </button>
+          )}
           <Link
             href={`/admin/orders/${order.id}`}
             className='flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors text-sm font-medium'

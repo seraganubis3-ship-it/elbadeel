@@ -70,6 +70,7 @@ export interface Order {
   };
   payment?: {
     id: string;
+    amount: number;
     method: string;
     status: string;
     senderPhone: string;
@@ -97,6 +98,8 @@ export interface Order {
     uploadedAt: Date;
   }>;
   createdByAdmin?: { id: string; name: string; email: string } | null;
+  discount?: number;
+  discountAmount?: number;
   paidAmount?: number;
   remainingAmount?: number;
 }

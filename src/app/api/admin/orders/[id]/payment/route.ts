@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, requireAdminOrStaff, getWorkDate } from '@/lib/auth';
+import { requireAdminOrStaff, getWorkDate } from '@/lib/auth';
 import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const paymentUpdateSchema = z.object({
   amount: z.number().min(0),
+  discount: z.number().min(0).optional(),
   method: z.string(),
   senderPhone: z.string().optional(),
   notes: z.string().optional(),
@@ -14,24 +15,21 @@ const paymentUpdateSchema = z.object({
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // Check authentication and staff permissions
     const session = await requireAdminOrStaff();
-
     const { id } = params;
     const body = await request.json();
     const {
       amount,
+      discount,
       method,
       senderPhone,
       notes,
       workDate: clientWorkDate,
     } = paymentUpdateSchema.parse(body);
 
-    // معالجة تاريخ العمل
     let workDate = getWorkDate(session);
     if (clientWorkDate && hasPermission(session.user, 'MANAGE_ORDERS')) {
       try {
-        // تحويل من DD/MM/YYYY إلى Date
         if (clientWorkDate.includes('/')) {
           const dateParts = clientWorkDate.split('/');
           if (dateParts.length === 3) {
@@ -40,18 +38,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             const year = dateParts[2]!;
             const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
-            // التحقق من صحة التاريخ
             if (!isNaN(parsedDate.getTime())) {
               workDate = parsedDate;
             }
           }
         }
       } catch (error) {
-        // استخدم workDate الافتراضي في حالة الخطأ
+        // Keep the session work date if the client value is malformed.
       }
     }
 
-    // Get order
     const order = await prisma.order.findUnique({
       where: { id },
       include: { payment: true },
@@ -61,76 +57,96 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 });
     }
 
-    let payment;
+    const nextDiscount = discount ?? order.discount ?? 0;
+    const promoDiscount = order.discountAmount ?? 0;
+    const payableTotal = Math.max(0, order.totalCents - nextDiscount - promoDiscount);
 
-    if (order.payment) {
-      // Update existing payment
-      payment = await prisma.payment.update({
-        where: { id: order.payment.id },
-        data: {
-          amount,
-          method,
-          senderPhone: senderPhone || null,
-          notes: notes || null,
-          status: amount > 0 ? 'CONFIRMED' : 'PENDING',
-        },
-      });
-    } else {
-      // Create new payment
-      payment = await prisma.payment.create({
-        data: {
-          orderId: order.id,
-          amount,
-          method,
-          senderPhone: senderPhone || null,
-          notes: notes || null,
-          status: amount > 0 ? 'CONFIRMED' : 'PENDING',
-          createdAt: workDate,
-        },
-      });
-    }
-
-    // Update order status based on payment
     let newOrderStatus = order.status;
-    if (amount >= order.totalCents) {
+    if (amount >= payableTotal) {
       newOrderStatus = 'paid';
     } else if (amount > 0) {
       newOrderStatus = 'waiting_payment';
     }
 
-    if (newOrderStatus !== order.status) {
-      await prisma.order.update({
-        where: { id },
-        data: { status: newOrderStatus },
-      });
-    }
+    const result = await prisma.$transaction(async tx => {
+      const payment = order.payment
+        ? await tx.payment.update({
+            where: { id: order.payment.id },
+            data: {
+              amount,
+              method,
+              senderPhone: senderPhone || null,
+              notes: notes || null,
+              status: amount > 0 ? 'CONFIRMED' : 'PENDING',
+            },
+          })
+        : await tx.payment.create({
+            data: {
+              orderId: order.id,
+              amount,
+              method,
+              senderPhone: senderPhone || null,
+              notes: notes || null,
+              status: amount > 0 ? 'CONFIRMED' : 'PENDING',
+              createdAt: workDate,
+            },
+          });
 
-    // Create Audit Log for payment change
-    await prisma.auditLog.create({
-      data: {
-        action: 'PAYMENT_UPDATE',
-        entityType: 'ORDER',
-        entityId: id,
-        userId: session.user.id,
-        oldValues: JSON.stringify({
-          paymentAmount: order.payment?.amount || 0,
-          paymentMethod: order.payment?.method || 'لا يوجد',
-          paymentStatus: order.payment?.status || 'لا يوجد',
-        }),
-        newValues: JSON.stringify({
-          paymentAmount: amount,
-          paymentMethod: method,
-          paymentStatus: amount > 0 ? 'CONFIRMED' : 'PENDING',
-          ...(senderPhone ? { senderPhone } : {}),
-          ...(notes ? { paymentNotes: notes } : {}),
-        }),
-      },
+      const updatedOrder = await tx.order.update({
+        where: { id },
+        data: {
+          discount: nextDiscount,
+          ...(newOrderStatus !== order.status ? { status: newOrderStatus } : {}),
+        },
+        select: {
+          status: true,
+          discount: true,
+          discountAmount: true,
+          totalCents: true,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          action: 'PAYMENT_UPDATE',
+          entityType: 'ORDER',
+          entityId: id,
+          userId: session.user.id,
+          oldValues: JSON.stringify({
+            paymentAmount: order.payment?.amount || 0,
+            paymentMethod: order.payment?.method || 'لا يوجد',
+            paymentStatus: order.payment?.status || 'لا يوجد',
+            discount: order.discount || 0,
+          }),
+          newValues: JSON.stringify({
+            paymentAmount: amount,
+            paymentMethod: method,
+            paymentStatus: amount > 0 ? 'CONFIRMED' : 'PENDING',
+            discount: nextDiscount,
+            ...(senderPhone ? { senderPhone } : {}),
+            ...(notes ? { paymentNotes: notes } : {}),
+          }),
+        },
+      });
+
+      return { payment, order: updatedOrder };
     });
 
     return NextResponse.json({
       success: true,
       message: 'تم تحديث معلومات الدفع بنجاح',
-      payment,
+      payment: result.payment,
+      order: {
+        ...result.order,
+        paidAmount: result.payment.amount,
+        remainingAmount: Math.max(
+          0,
+          result.order.totalCents -
+            (result.order.discount || 0) -
+            (result.order.discountAmount || 0) -
+            result.payment.amount
+        ),
+      },
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -141,6 +157,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       );
     }
 
-    return NextResponse.json({ error: 'حدث خطأ أثناء تحديث معلومات الدفع' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'حدث خطأ أثناء تحديث معلومات الدفع' },
+      { status: 500 }
+    );
   }
 }

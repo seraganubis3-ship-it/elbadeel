@@ -320,7 +320,13 @@ export async function GET(request: NextRequest) {
       title: order.title,
       workOrderNumber: order.workOrderNumber,
       paidAmount: order.payment?.amount || 0,
-      remainingAmount: order.totalCents - (order.payment?.amount || 0),
+      remainingAmount: Math.max(
+        0,
+        order.totalCents -
+          (order.discount || 0) -
+          (order.discountAmount || 0) -
+          (order.payment?.amount || 0)
+      ),
     })) as OrderResponseType[];
 
     // Cache the result

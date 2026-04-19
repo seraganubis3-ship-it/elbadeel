@@ -18,6 +18,20 @@ import { useToast } from '@/components/Toast';
 import { Service, ServiceVariant, Category, Customer, initialFormData } from './types';
 import { offlineManager } from '@/lib/offline-manager';
 
+const normalizeSearchValue = (value = '') =>
+  value
+    .trim()
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي');
+
+const compareServiceOrder = (a: Service, b: Service) =>
+  (a.orderIndex ?? Number.MAX_SAFE_INTEGER) - (b.orderIndex ?? Number.MAX_SAFE_INTEGER) ||
+  a.name.localeCompare(b.name, 'ar');
+
 export function useCreateOrder() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -111,16 +125,31 @@ export function useCreateOrder() {
     return selectedService.documents.filter(doc => doc.required).map(doc => doc.title);
   }, [selectedService]);
 
-  // Filter services based on search term
+  const orderedServices = useMemo(() => {
+    return [...services].sort(compareServiceOrder);
+  }, [services]);
+
+  // Filter services based on search term while keeping the admin services order.
   const filteredServices = useMemo(() => {
-    if (!serviceSearchTerm.trim()) return services;
-    const searchLower = serviceSearchTerm.toLowerCase();
-    return services.filter(
-      service =>
-        service.name.toLowerCase().includes(searchLower) ||
-        service.slug.toLowerCase().includes(searchLower)
-    );
-  }, [services, serviceSearchTerm]);
+    const searchTerm = normalizeSearchValue(serviceSearchTerm);
+    if (!searchTerm) return orderedServices;
+
+    return orderedServices
+      .map(service => {
+        const name = normalizeSearchValue(service.name);
+        const slug = normalizeSearchValue(service.slug);
+
+        if (name.startsWith(searchTerm)) return { service, rank: 0 };
+        if (slug.startsWith(searchTerm)) return { service, rank: 1 };
+        if (name.includes(searchTerm)) return { service, rank: 2 };
+        if (slug.includes(searchTerm)) return { service, rank: 3 };
+
+        return null;
+      })
+      .filter((item): item is { service: Service; rank: number } => item !== null)
+      .sort((a, b) => a.rank - b.rank || compareServiceOrder(a.service, b.service))
+      .map(item => item.service);
+  }, [orderedServices, serviceSearchTerm]);
 
   // Reset serial when variant changes
   useEffect(() => {

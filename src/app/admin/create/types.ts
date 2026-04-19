@@ -3,6 +3,7 @@ export interface Service {
   id: string;
   name: string;
   slug: string;
+  orderIndex?: number;
   variants: ServiceVariant[];
   fields: ServiceField[];
   documents: ServiceDocument[];

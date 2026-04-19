@@ -100,21 +100,21 @@ export default function CreateOrderPage() {
   if (loading) return <LoadingState />;
 
   return (
-    <div className='enlarge-text min-h-screen bg-slate-50 text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-emerald-500/30'>
+    <div className='enlarge-text min-h-screen bg-slate-100 text-slate-800 font-sans antialiased overflow-x-hidden selection:bg-emerald-500/25'>
       {/* Static Background Decoration - No Animations for Performance */}
-      <div className='fixed inset-0 pointer-events-none overflow-hidden'>
-        <div className='absolute top-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-gradient-to-bl from-emerald-400/15 to-green-500/15 rounded-full' />
-        <div className='absolute bottom-[-20%] left-[-10%] w-[900px] h-[900px] bg-gradient-to-tr from-emerald-600/10 to-teal-500/10 rounded-full' />
+      <div className='fixed inset-0 pointer-events-none overflow-hidden bg-[linear-gradient(180deg,#ecfdf5_0%,#f8fafc_34%,#f1f5f9_100%)]'>
+        <div className='absolute inset-0 opacity-[0.38] [background-image:linear-gradient(to_right,rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:32px_32px]' />
+        <div className='absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-emerald-200/45 via-cyan-100/30 to-transparent' />
       </div>
 
-      <div className='relative z-10 max-w-[1700px] mx-auto px-4 py-4'>
+      <div className='relative z-10 max-w-[1500px] mx-auto px-3 py-4 sm:px-5 lg:px-8'>
         {/* Header - Optimized Arabic */}
         {/* Header - Green Theme */}
-        <div className='flex items-center justify-between mb-6 px-2'>
+        <div className='mb-5 flex items-center justify-between rounded-2xl border border-white/70 bg-white/85 px-4 py-4 shadow-sm shadow-slate-200/80 backdrop-blur sm:px-6'>
           <div className='flex items-center gap-4'>
             <Link
               href='/admin/orders'
-              className='w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-slate-100 hover:bg-slate-50 transition-all active:scale-95 group'
+              className='w-11 h-11 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 transition-all active:scale-95 group'
             >
               <svg
                 className='w-6 h-6 text-slate-700 group-hover:-translate-x-1 transition-transform'
@@ -132,14 +132,14 @@ export default function CreateOrderPage() {
             </Link>
 
             <div className='flex items-center gap-4'>
-              <div className='w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-200'>
+              <div className='w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-100 ring-1 ring-emerald-500/20'>
                 📝
               </div>
               <div>
                 <h1 className='text-2xl font-black text-slate-900 tracking-tight'>
                   إنشاء طلب جديد
                 </h1>
-                <p className='text-slate-500 text-[10px] font-bold mt-1'>
+                <p className='text-slate-500 text-xs font-bold mt-1'>
                   اللوحة الإدارية / الطلبات
                 </p>
               </div>
@@ -161,7 +161,7 @@ export default function CreateOrderPage() {
 
         <form onSubmit={handleSubmit}>
           {/* Tab Content Container */}
-          <div className='bg-white/50 backdrop-blur-sm rounded-3xl p-1'>
+          <div className='rounded-2xl border border-white/70 bg-white/70 p-2 shadow-sm shadow-slate-200/80 backdrop-blur'>
             {/* Tab 1: Service Selection */}
             {activeTab === 'service' && (
               <div className='space-y-4 animate-fadeIn'>
@@ -188,7 +188,7 @@ export default function CreateOrderPage() {
                   <button
                     type='button'
                     onClick={() => setActiveTab('customer')}
-                    className='px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all font-bold flex items-center gap-2'
+                    className='px-8 py-3 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all font-bold flex items-center gap-2 active:scale-[0.98]'
                   >
                     <span>التالي: بيانات العميل</span>
                     <svg
@@ -254,7 +254,7 @@ export default function CreateOrderPage() {
                   <button
                     type='button'
                     onClick={() => setActiveTab('details')}
-                    className='px-8 py-3 bg-cyan-600 text-white rounded-xl shadow-lg hover:bg-cyan-700 transition-all font-bold flex items-center gap-2'
+                    className='px-8 py-3 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all font-bold flex items-center gap-2 active:scale-[0.98]'
                   >
                     <span>التالي: تفاصيل الطلب</span>
                     <svg
@@ -298,7 +298,7 @@ export default function CreateOrderPage() {
                   <button
                     type='button'
                     onClick={() => setActiveTab('financials')}
-                    className='px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all font-bold flex items-center gap-2'
+                    className='px-8 py-3 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all font-bold flex items-center gap-2 active:scale-[0.98]'
                   >
                     <span>التالي: الحسابات</span>
                     <svg
@@ -353,7 +353,7 @@ export default function CreateOrderPage() {
                   <button
                     type='button'
                     onClick={() => setActiveTab('review')}
-                    className='px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all font-bold flex items-center gap-2'
+                    className='px-8 py-3 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all font-bold flex items-center gap-2 active:scale-[0.98]'
                   >
                     <span>التالي: المراجعة</span>
                     <svg

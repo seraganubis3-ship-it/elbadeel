@@ -14,8 +14,8 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
   return (
-    <div className='mb-6'>
-      <div className='flex space-x-2 space-x-reverse overflow-x-auto pb-2 scrollbar-hide'>
+    <div className='mb-5 rounded-2xl border border-white/70 bg-white/80 p-2 shadow-sm shadow-slate-200/70 backdrop-blur'>
+      <div className='flex gap-2 overflow-x-auto scrollbar-hide'>
         {tabs.map(tab => {
           const isActive = activeTab === tab.id;
           return (
@@ -23,20 +23,20 @@ export function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={`
-                flex items-center space-x-2 space-x-reverse px-4 py-3 rounded-xl transition-all duration-200 whitespace-nowrap
+                flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 whitespace-nowrap border
                 ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-lg transform scale-105'
-                    : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-transparent hover:border-gray-200'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-100 border-emerald-600'
+                    : 'bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 border-slate-200'
                 }
               `}
             >
               {tab.icon && (
-                <span className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-500'}`}>
+                <span className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-500'}`}>
                   {tab.icon}
                 </span>
               )}
-              <span className='font-medium text-sm sm:text-base'>{tab.label}</span>
+              <span className='font-black text-sm sm:text-base'>{tab.label}</span>
             </button>
           );
         })}

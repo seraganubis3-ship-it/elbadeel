@@ -18,6 +18,7 @@ import {
   EditReportDataModal,
   LastOrderAlert, // Add this
   QuickOrderStatusModal,
+  QuickPaymentModal,
 } from './components';
 import { printOrdersReport } from './utils/printReport';
 import { printCollectionReport } from './utils/printCollectionReport';
@@ -90,6 +91,13 @@ export default function AdminOrdersPage() {
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [quickPayMethod, setQuickPayMethod] = useState('CASH');
 
+  // Quick Payment Modal State
+  const [quickPaymentOrder, setQuickPaymentOrder] = useState<Order | null>(null);
+  const [quickPaymentMethod, setQuickPaymentMethod] = useState('CASH');
+  const [quickPaymentAmount, setQuickPaymentAmount] = useState(0);
+  const [quickPaymentNotes, setQuickPaymentNotes] = useState('سداد باقي مستحقات من الطلب');
+  const [isQuickPaymentSubmitting, setIsQuickPaymentSubmitting] = useState(false);
+
   // Status Reason Modal State
   const [showStatusReasonModal, setShowStatusReasonModal] = useState(false);
   const [statusReasonText, setStatusReasonText] = useState('');
@@ -154,6 +162,79 @@ export default function AdminOrdersPage() {
       showError('خطأ في الاتصال', 'تأكد من أن بوت الواتساب متصل ثم حاول مرة أخرى');
     } finally {
       setSendingWhatsApp(false);
+    }
+  };
+
+  const getRemainingCents = (order: Order) => {
+    const total = order.totalCents || 0;
+    const discount = (order.discount || 0) + (order.discountAmount || 0);
+    const paid = order.payment?.amount || order.paidAmount || 0;
+
+    return Math.max(0, order.remainingAmount ?? total - discount - paid);
+  };
+
+  const handleQuickPaymentClick = (order: Order) => {
+    const remainingCents = getRemainingCents(order);
+
+    setQuickPaymentOrder(order);
+    setQuickPaymentAmount(remainingCents / 100);
+    setQuickPaymentMethod('CASH');
+    setQuickPaymentNotes('سداد باقي مستحقات من الطلب');
+  };
+
+  const closeQuickPaymentModal = () => {
+    if (isQuickPaymentSubmitting) return;
+
+    setQuickPaymentOrder(null);
+    setQuickPaymentAmount(0);
+    setQuickPaymentMethod('CASH');
+    setQuickPaymentNotes('سداد باقي مستحقات من الطلب');
+  };
+
+  const submitQuickPayment = async () => {
+    if (!quickPaymentOrder || quickPaymentAmount <= 0) return;
+
+    const remainingCents = getRemainingCents(quickPaymentOrder);
+    const payNowCents = Math.round(quickPaymentAmount * 100);
+    const currentPaidCents = quickPaymentOrder.payment?.amount || quickPaymentOrder.paidAmount || 0;
+
+    if (payNowCents > remainingCents) {
+      showError('المبلغ أكبر من المتبقي', 'اكتب مبلغ أقل من أو يساوي باقي مستحقات الطلب');
+      return;
+    }
+
+    setIsQuickPaymentSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/admin/orders/${quickPaymentOrder.id}/payment`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: quickPaymentMethod,
+          amount: currentPaidCents + payNowCents,
+          discount: quickPaymentOrder.discount || 0,
+          notes: quickPaymentNotes.trim() || 'سداد باقي مستحقات من الطلب',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'فشل تسجيل الدفع');
+      }
+
+      await refetch();
+      showSuccess('تم تسجيل الدفع بنجاح', 'تم تحديث مستحقات الطلب في إدارة الطلبات');
+      setQuickPaymentOrder(null);
+      setQuickPaymentAmount(0);
+      setQuickPaymentMethod('CASH');
+      setQuickPaymentNotes('سداد باقي مستحقات من الطلب');
+    } catch (error) {
+      showError(
+        'فشل تسجيل الدفع',
+        error instanceof Error ? error.message : 'حدث خطأ أثناء تسجيل الدفع'
+      );
+    } finally {
+      setIsQuickPaymentSubmitting(false);
     }
   };
 
@@ -1202,6 +1283,7 @@ export default function AdminOrdersPage() {
                       onStatusChange={handleStatusUpdate}
                       onWhatsAppClick={handleWhatsAppClick}
                       onDelete={deleteOrder}
+                      onQuickPaymentClick={handleQuickPaymentClick}
                       onPrintAuthorization={handlePrintAuthorization}
                     />
                   ))}
@@ -1239,6 +1321,20 @@ export default function AdminOrdersPage() {
         onMessageChange={setWhatsappMessage}
         onTemplateSelect={setSelectedTemplate}
         onSend={sendWhatsApp}
+      />
+
+      <QuickPaymentModal
+        isOpen={!!quickPaymentOrder}
+        order={quickPaymentOrder}
+        amount={quickPaymentAmount}
+        method={quickPaymentMethod}
+        notes={quickPaymentNotes}
+        submitting={isQuickPaymentSubmitting}
+        onAmountChange={setQuickPaymentAmount}
+        onMethodChange={setQuickPaymentMethod}
+        onNotesChange={setQuickPaymentNotes}
+        onClose={closeQuickPaymentModal}
+        onSubmit={submitQuickPayment}
       />
 
       {/* Work Order Modal */}
@@ -1341,8 +1437,11 @@ export default function AdminOrdersPage() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                           method: quickPayMethod,
-                          amount: paymentAlertOrder.remainingAmount || 0,
-                          discount: 0,
+                          amount:
+                            (paymentAlertOrder.payment?.amount ||
+                              paymentAlertOrder.paidAmount ||
+                              0) + (paymentAlertOrder.remainingAmount || 0),
+                          discount: paymentAlertOrder.discount || 0,
                           notes: 'دفع سريع عند التسليم',
                           workDate: new Date().toLocaleDateString('en-GB').replace(/\//g, '-'), // Basic fallback
                         }),

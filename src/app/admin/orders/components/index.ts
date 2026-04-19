@@ -12,3 +12,4 @@ export { SelectDelegateModal } from './SelectDelegateModal';
 export { default as EditReportDataModal } from './EditReportDataModal';
 export { LastOrderAlert } from './LastOrderAlert';
 export { QuickOrderStatusModal } from './QuickOrderStatusModal';
+export { QuickPaymentModal } from './QuickPaymentModal';

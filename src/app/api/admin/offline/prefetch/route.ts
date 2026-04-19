@@ -13,13 +13,15 @@ export async function GET() {
     const services = await prisma.service.findMany({
       where: { active: true },
       include: {
-        variants: { where: { active: true } },
+        variants: { where: { active: true }, orderBy: { priceCents: 'asc' } },
         fields: {
           where: { active: true },
-          include: { options: true },
+          include: { options: { orderBy: { orderIndex: 'asc' } } },
           orderBy: { orderIndex: 'asc' },
         },
+        documents: { where: { active: true }, orderBy: { orderIndex: 'asc' } },
       },
+      orderBy: [{ orderIndex: 'asc' }, { createdAt: 'desc' }],
     });
 
     // Fetch all active fines

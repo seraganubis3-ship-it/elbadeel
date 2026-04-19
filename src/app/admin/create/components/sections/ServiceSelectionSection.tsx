@@ -159,6 +159,39 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
     );
   }, [languageSearch, currentLanguages]);
 
+  const isMultiSelectField = (field: { name: string; label: string; type: string }) => {
+    const label = field.label || '';
+    const name = field.name || '';
+    return (
+      field.type === 'multiselect' ||
+      label.includes('نوع الطلب') ||
+      name.toLowerCase().includes('order_type')
+    );
+  };
+
+  const getMultiFieldValues = (fieldName: string) => {
+    const value = formData.dynamicAnswers?.[fieldName] || '';
+    return value
+      .split(/,|،/)
+      .map(item => item.trim())
+      .filter(Boolean);
+  };
+
+  const toggleMultiFieldValue = (fieldName: string, optionValue: string) => {
+    const selectedValues = getMultiFieldValues(fieldName);
+    const nextValues = selectedValues.includes(optionValue)
+      ? selectedValues.filter(value => value !== optionValue)
+      : [...selectedValues, optionValue];
+
+    setFormData(prev => ({
+      ...prev,
+      dynamicAnswers: {
+        ...prev.dynamicAnswers,
+        [fieldName]: nextValues.join('، '),
+      },
+    }));
+  };
+
   // Calculate delivery date based on work days (Fri/Sat off)
   const calculateWorkDays = (days: number) => {
     const date = new Date();
@@ -187,14 +220,14 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
   }, [deliveryDate, setFormData, formData.deliveryDate]);
 
   return (
-    <div className='bg-white/60 backdrop-blur-md rounded-[2rem] border border-white/50 shadow-sm relative group transition-all duration-300 hover:shadow-md'>
+    <div className='relative overflow-visible rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-200/70 transition-all duration-300 hover:shadow-md'>
       {/* Visual Accent - Top */}
-      <div className='absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500/80 via-indigo-600/80 to-purple-600/80 opacity-90 rounded-t-[2rem]'></div>
+      <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-500 rounded-t-2xl'></div>
 
-      <div className='p-6 space-y-6'>
+      <div className='p-4 space-y-5 sm:p-6'>
         {/* Header */}
-        <div className='flex items-center gap-4 mb-4'>
-          <div className='w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-purple-100 text-purple-600'>
+        <div className='flex items-center gap-4 border-b border-slate-100 pb-5'>
+          <div className='w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-2xl shadow-sm border border-emerald-100 text-emerald-600'>
             <span>⚡</span>
           </div>
           <div>
@@ -203,10 +236,10 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
           </div>
         </div>
 
-        <div className='bg-slate-50/50 rounded-3xl p-6 border border-slate-200 space-y-6'>
+        <div className='rounded-2xl border border-slate-200 bg-slate-50/80 p-4 space-y-6 sm:p-6'>
           {/* Service Search */}
           <div className='relative space-y-3' ref={serviceDropdownRef}>
-            <label className='text-base font-black text-black uppercase tracking-widest mr-1'>
+            <label className='text-sm font-black text-slate-800 uppercase tracking-widest mr-1'>
               اختيار الخدمة
             </label>
             <div className='relative z-50'>
@@ -219,14 +252,14 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                 }}
                 onFocus={() => setShowServiceDropdown(true)}
                 placeholder='ابحث عن الخدمة...'
-                className='w-full bg-white border-2 border-slate-200 rounded-xl px-5 py-3 text-black font-black focus:border-cyan-600 focus:ring-4 focus:ring-cyan-500/10 transition-all outline-none text-lg placeholder:text-slate-500'
+                className='w-full bg-white border-2 border-slate-200 rounded-2xl px-5 py-4 pr-12 text-black font-black focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none text-lg placeholder:text-slate-400 shadow-sm'
               />
               <div className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-500'>▼</div>
             </div>
 
             {/* Dropdown */}
             {showServiceDropdown && (
-              <div className='absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto z-[100] custom-scrollbar'>
+              <div className='absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-900/10 overflow-hidden max-h-72 overflow-y-auto z-[100] custom-scrollbar'>
                 {filteredServices.length > 0 ? (
                   filteredServices.slice(0, 50).map(service => (
                     <div
@@ -236,12 +269,12 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                         selectService(service);
                         setShowServiceDropdown(false);
                       }}
-                      className='p-4 hover:bg-cyan-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors flex items-center justify-between group'
+                      className='p-4 hover:bg-emerald-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors flex items-center justify-between gap-3 group'
                     >
-                      <span className='text-base font-black text-slate-900 group-hover:text-cyan-800'>
+                      <span className='text-base font-black text-slate-900 group-hover:text-emerald-800'>
                         {service.name}
                       </span>
-                      <span className='text-sm text-slate-500 group-hover:text-cyan-700 bg-slate-100 group-hover:bg-cyan-100 px-3 py-1.5 rounded-lg font-bold'>
+                      <span className='text-sm text-slate-500 group-hover:text-emerald-700 bg-slate-100 group-hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-bold'>
                         اختيار
                       </span>
                     </div>
@@ -259,24 +292,24 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
           {selectedService && selectedService.variants.length > 0 && (
             <div className='space-y-3 animate-in slide-in-from-top-4 duration-300'>
               <div className='flex items-center justify-between'>
-                <label className='text-sm font-black text-black uppercase tracking-widest mr-1'>
+                <label className='text-sm font-black text-slate-800 uppercase tracking-widest mr-1'>
                   نوع الطلب
                 </label>
-                <span className='text-xs text-cyan-700 font-bold bg-cyan-50 px-2.5 py-1.5 rounded-lg border border-cyan-200'>
+                <span className='text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200'>
                   {selectedService.variants.length} خيارات
                 </span>
               </div>
-              <div className='grid grid-cols-2 gap-4'>
+              <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'>
                 {selectedService.variants.map(variant => {
                   const isSelected = selectedVariant?.id === variant.id;
                   return (
                     <div
                       key={variant.id}
                       onClick={() => handleVariantChange(variant.id)}
-                      className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 group overflow-hidden ${
+                      className={`relative min-h-[112px] p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 group overflow-hidden shadow-sm ${
                         isSelected
-                          ? 'bg-cyan-600 border-cyan-600 text-white shadow-lg shadow-cyan-600/20'
-                          : 'bg-white border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50'
+                          ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                          : 'bg-white border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 hover:-translate-y-0.5'
                       }`}
                     >
                       <div className='relative z-10 flex flex-col h-full justify-between gap-3'>
@@ -310,8 +343,8 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
 
           {/* Photography Date - Placed next to Order Type (Variants) */}
           {selectedService && isNationalId && (
-            <div className='space-y-1 animate-in slide-in-from-top-2 pt-2'>
-              <label className='text-[10px] font-black text-black uppercase tracking-widest mr-1'>
+            <div className='space-y-2 animate-in slide-in-from-top-2 pt-2'>
+              <label className='text-xs font-black text-slate-700 uppercase tracking-widest mr-1'>
                 ميعاد التصوير (يوم/شهر/سنة)
               </label>
               <input
@@ -320,14 +353,14 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                 onChange={e => handlePhotographyDateChange(e.target.value)}
                 placeholder='dd/mm/yyyy'
                 maxLength={10}
-                className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none text-right text-sm'
+                className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-bold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all outline-none text-right text-sm shadow-sm'
               />
             </div>
           )}
 
           {/* Secondary Inputs within Service Area (Quantity, Etc) */}
           {selectedService && (
-            <div className='grid grid-cols-2 gap-4 pt-4 border-t border-slate-200'>
+            <div className='grid grid-cols-1 gap-4 pt-4 border-t border-slate-200 sm:grid-cols-2'>
               {/* Quantity */}
               <div className='space-y-2'>
                 <label className='text-xs font-black text-slate-600 uppercase tracking-widest mr-1'>
@@ -341,7 +374,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                     onChange={e =>
                       setFormData(p => ({ ...p, quantity: parseInt(e.target.value) || 1 }))
                     }
-                    className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-black focus:border-cyan-600 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none text-center text-lg'
+                    className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-black focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all outline-none text-center text-lg shadow-sm'
                   />
                 </div>
               </div>
@@ -351,9 +384,9 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                 <label className='text-xs font-black text-slate-600 uppercase tracking-widest mr-1'>
                   الاستلام المتوقع
                 </label>
-                <div className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-center h-[54px]'>
+                <div className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center justify-center h-[54px] shadow-sm'>
                   {selectedVariant ? (
-                    <span className='text-lg font-black text-cyan-800'>
+                    <span className='text-lg font-black text-emerald-800'>
                       {deliveryDate?.toLocaleDateString('ar-EG', {
                         day: 'numeric',
                         month: 'short',
@@ -372,11 +405,11 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
           {(selectedService?.slug?.toLowerCase().includes('passport') ||
             selectedService?.name?.toLowerCase().includes('passport') ||
             selectedService?.name?.includes('جواز')) && (
-            <div className='grid grid-cols-2 gap-3 pt-2'>
+            <div className='grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2'>
               <div className='space-y-1'>
                 <label
                   htmlFor='policeStation'
-                  className='text-xs font-black text-black uppercase tracking-widest mr-1'
+                  className='text-xs font-black text-slate-700 uppercase tracking-widest mr-1'
                 >
                   قسم الجوازات
                 </label>
@@ -385,7 +418,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                     id='policeStation'
                     value={formData.policeStation}
                     onChange={e => setFormData(p => ({ ...p, policeStation: e.target.value }))}
-                    className='w-full bg-white border border-slate-200 rounded-lg px-3 py-3 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-base appearance-none'
+                    className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-bold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all outline-none text-right text-base appearance-none shadow-sm'
                   >
                     <option value=''>اختر القسم...</option>
                     <option value='الجيزة'>الجيزة</option>
@@ -403,7 +436,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
               <div className='space-y-1'>
                 <label
                   htmlFor='pickupLocation'
-                  className='text-xs font-black text-black uppercase tracking-widest mr-1'
+                  className='text-xs font-black text-slate-700 uppercase tracking-widest mr-1'
                 >
                   مكان الاستلام
                 </label>
@@ -413,7 +446,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                     type='text'
                     value={formData.pickupLocation}
                     onChange={e => setFormData(p => ({ ...p, pickupLocation: e.target.value }))}
-                    className='w-full bg-white border border-slate-200 rounded-lg px-3 py-3 text-black font-bold focus:border-cyan-500 transition-all outline-none text-right text-base'
+                    className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-bold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all outline-none text-right text-base shadow-sm'
                     placeholder='اكتب مكان الاستلام...'
                   />
                 </div>
@@ -431,12 +464,12 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
               ref={languageDropdownRef}
             >
               <div className='space-y-1'>
-                <label className='text-[10px] font-black text-black uppercase tracking-widest mr-1'>
+                <label className='text-xs font-black text-slate-700 uppercase tracking-widest mr-1'>
                   لغة الترجمة
                 </label>
 
                 <div
-                  className='w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 flex flex-wrap gap-2 focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all min-h-[42px]'
+                  className='w-full bg-white border border-slate-200 rounded-xl px-3 py-2 flex flex-wrap gap-2 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 transition-all min-h-[48px] shadow-sm'
                   onClick={() => {
                     setShowLanguageDropdown(true);
                   }}
@@ -445,7 +478,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                   {currentLanguages.map(lang => (
                     <span
                       key={lang}
-                      className='bg-cyan-50 text-cyan-700 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 border border-cyan-100'
+                      className='bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 border border-emerald-100'
                     >
                       {lang}
                       <button
@@ -504,7 +537,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                           e.preventDefault();
                           addLanguage(lang);
                         }}
-                        className='px-3 py-2 hover:bg-cyan-50 cursor-pointer text-xs font-bold text-slate-700 flex justify-between'
+                  className='px-3 py-2 hover:bg-emerald-50 cursor-pointer text-xs font-bold text-slate-700 flex justify-between'
                       >
                         {lang}
                       </div>
@@ -516,7 +549,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                           e.preventDefault();
                           addLanguage(languageSearch);
                         }}
-                        className='px-3 py-2 hover:bg-cyan-50 cursor-pointer text-xs font-bold text-cyan-600 border-t border-slate-50'
+                        className='px-3 py-2 hover:bg-emerald-50 cursor-pointer text-xs font-bold text-emerald-600 border-t border-slate-50'
                       >
                         إضافة &quot;
                         {languageSearch}
@@ -539,7 +572,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
           {isNationalId && (
             <div className='space-y-3 animate-in slide-in-from-top-2 pt-4 border-t border-slate-200'>
               {/* Provider Toggle */}
-              <div className='flex gap-2 p-1.5 bg-slate-100 rounded-2xl w-fit'>
+              <div className='flex gap-2 p-1.5 bg-white border border-slate-200 rounded-2xl w-fit shadow-sm'>
                 <button
                   type='button'
                   onClick={() => {
@@ -570,7 +603,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
 
               {/* Form Serial */}
               <div className='space-y-2'>
-                <label className='text-sm font-black text-black uppercase tracking-widest mr-1 flex items-center gap-2'>
+                <label className='text-sm font-black text-slate-800 uppercase tracking-widest mr-1 flex items-center gap-2'>
                   رقم الاستمارة
                   {serialValid?.ok && (
                     <span className='text-xs text-emerald-600 bg-emerald-50 px-2 rounded-full border border-emerald-200'>
@@ -593,7 +626,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                         ? 'border-emerald-400 focus:ring-4 focus:ring-emerald-400/10'
                         : serialValid?.ok === false
                           ? 'border-rose-400 focus:ring-4 focus:ring-rose-400/10'
-                          : 'border-slate-200 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10'
+                          : 'border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
                     }`}
                     placeholder='أدخل رقم الاستمارة المربوطة...'
                   />
@@ -609,7 +642,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
           {selectedService?.fields && selectedService.fields.length > 0 && (
             <div className='space-y-4 pt-6 border-t border-slate-200 animate-in slide-in-from-top-2'>
               <label className='text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2'>
-                <span className='w-2 h-2 rounded-full bg-indigo-600'></span>
+                <span className='w-2 h-2 rounded-full bg-emerald-600'></span>
                 بيانات إضافية مطلوبة
               </label>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -617,11 +650,45 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                   .slice() // Create a copy to sort
                   .sort((a, b) => a.orderIndex - b.orderIndex)
                   .map(field => (
-                    <div key={field.id} className='space-y-2'>
+                    <div key={field.id} className='space-y-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
                       <label className='text-sm font-black text-slate-900 uppercase tracking-widest'>
                         {field.label} {field.required && <span className='text-red-600'>*</span>}
                       </label>
-                      {field.type === 'select' || (field.options && field.options.length > 0) ? (
+                      {field.options && field.options.length > 0 && isMultiSelectField(field) ? (
+                        <div className='bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2'>
+                          <div className='flex items-center justify-between text-xs font-black text-slate-500 px-1'>
+                            <span>اختر أكثر من نوع</span>
+                            <span className='bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg border border-emerald-100'>
+                              {getMultiFieldValues(field.name).length} محدد
+                            </span>
+                          </div>
+                          <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                            {field.options.map(opt => {
+                              const selectedValues = getMultiFieldValues(field.name);
+                              const isChecked = selectedValues.includes(opt.value);
+
+                              return (
+                                <label
+                                  key={opt.id}
+                                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                                    isChecked
+                                      ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                                      : 'bg-white border-slate-200 text-slate-800 hover:border-emerald-200'
+                                  }`}
+                                >
+                                  <input
+                                    type='checkbox'
+                                    checked={isChecked}
+                                    onChange={() => toggleMultiFieldValue(field.name, opt.value)}
+                                    className='w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500'
+                                  />
+                                  <span className='font-bold text-sm'>{opt.label}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : field.type === 'select' || (field.options && field.options.length > 0) ? (
                         <div className='relative'>
                           <select
                             value={formData.dynamicAnswers?.[field.name] || ''}
@@ -634,7 +701,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                                 },
                               }))
                             }
-                            className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-bold focus:border-cyan-600 transition-all outline-none text-right text-base appearance-none'
+                            className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-bold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all outline-none text-right text-base appearance-none'
                           >
                             <option value=''>اختر...</option>
                             {field.options.map(opt => (
@@ -661,7 +728,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                             }))
                           }
                           placeholder={field.placeholder || ''}
-                          className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-bold focus:border-cyan-600 transition-all outline-none text-right text-base'
+                          className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-bold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all outline-none text-right text-base'
                         />
                       )}
                     </div>
@@ -672,14 +739,14 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
 
           {/* Service Details Textarea */}
           {selectedService && (
-            <div className='space-y-1 pt-2 animate-in slide-in-from-top-2'>
-              <label className='text-[10px] font-black text-slate-500 uppercase tracking-widest mr-1'>
+            <div className='space-y-2 pt-2 animate-in slide-in-from-top-2'>
+              <label className='text-xs font-black text-slate-600 uppercase tracking-widest mr-1'>
                 تفاصيل الخدمة
               </label>
               <textarea
                 value={formData.serviceDetails}
                 onChange={e => setFormData(p => ({ ...p, serviceDetails: e.target.value }))}
-                className='w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-black font-bold focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10 transition-all outline-none text-right text-sm min-h-[80px] resize-none'
+                className='w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-black font-bold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all outline-none text-right text-sm min-h-[96px] resize-none shadow-sm'
                 placeholder='اكتب أي تفاصيل إضافية عن الخدمة...'
               />
             </div>

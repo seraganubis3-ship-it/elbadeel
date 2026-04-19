@@ -176,7 +176,13 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
         auditLogs: auditLogs,
         // New fields for receipt
         paidAmount: order.payment?.amount || 0,
-        remainingAmount: order.totalCents - (order.payment?.amount || 0),
+        remainingAmount: Math.max(
+          0,
+          order.totalCents -
+            (order.discount || 0) -
+            (order.discountAmount || 0) -
+            (order.payment?.amount || 0)
+        ),
         deliveryDuration: order.variant?.etaDays ? `${order.variant.etaDays} يوم` : 'غير محدد',
       },
     });
@@ -202,9 +208,21 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 
     const { id } = params;
 
-    // Delete order and related data
-    await prisma.order.delete({
-      where: { id },
+    // Release form serials before deleting the order so they become available again.
+    await prisma.$transaction(async tx => {
+      await tx.formSerial.updateMany({
+        where: { orderId: id },
+        data: {
+          orderId: null,
+          consumed: false,
+          consumedAt: null,
+          consumedByAdminId: null,
+        },
+      });
+
+      await tx.order.delete({
+        where: { id },
+      });
     });
 
     return NextResponse.json({

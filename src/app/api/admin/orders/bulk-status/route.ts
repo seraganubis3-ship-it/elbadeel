@@ -96,6 +96,18 @@ export async function PUT(request: NextRequest) {
           });
         }
 
+        if (status === 'cancelled') {
+          await tx.formSerial.updateMany({
+            where: { orderId: order.id },
+            data: {
+              orderId: null,
+              consumed: false,
+              consumedAt: null,
+              consumedByAdminId: null,
+            },
+          });
+        }
+
         return await tx.order.update({
           where: { id: order.id },
           data: updateData,

@@ -76,6 +76,7 @@ export interface Order {
   quantity?: number;
   otherFees?: number;
   discount?: number;
+  discountAmount?: number;
   value?: number;
   paidAmount?: number;
   remainingAmount?: number;
