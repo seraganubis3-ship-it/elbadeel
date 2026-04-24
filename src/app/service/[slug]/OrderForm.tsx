@@ -28,6 +28,45 @@ const StepWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className='space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500'>{children}</div>
 );
 
+type OrderSubmitResult = {
+  success?: boolean;
+  orderId?: string;
+  error?: string;
+  message?: string;
+};
+
+const parseOrderResponse = async (response: Response): Promise<OrderSubmitResult> => {
+  const text = await response.text();
+
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {
+      success: false,
+      error:
+        response.status === 413
+          ? 'حجم الملفات كبير جداً. قلل حجم الصور أو ارفع ملفات أقل ثم حاول مرة أخرى.'
+          : 'تعذر قراءة رد الخادم. حاول مرة أخرى أو تواصل مع الدعم.',
+    };
+  }
+};
+
+const getOrderSubmitError = (response: Response, result: OrderSubmitResult) => {
+  if (result.error) return result.error;
+
+  if (response.status === 413) {
+    return 'حجم الملفات كبير جداً. قلل حجم الصور أو ارفع ملفات أقل ثم حاول مرة أخرى.';
+  }
+
+  if (response.status >= 500) {
+    return 'حدث خطأ في الخادم أثناء إنشاء الطلب. حاول مرة أخرى بعد لحظات.';
+  }
+
+  return result.message || 'حدث خطأ أثناء إنشاء الطلب';
+};
+
 export default function OrderForm({
   serviceId,
   serviceSlug,
@@ -248,24 +287,53 @@ export default function OrderForm({
 
     try {
       const response = await fetch('/api/orders', { method: 'POST', body: formDataToSubmit });
-      const result = await response.json();
+      const result = await parseOrderResponse(response);
 
       if (response.ok && result.success) {
-        // Auto-login for guests
-        if (!user && formData.password) {
-          await signIn('credentials', {
-            callbackUrl: `/order/${result.orderId}/payment`,
-            phone: formData.customerPhone,
-            password: formData.password,
-          });
-          return; // NextAuth handles redirection
+        if (!result.orderId) {
+          showError('فشل الطلب', 'تم إنشاء الطلب لكن لم يتم استلام رقم الطلب من الخادم');
+          return;
         }
-        window.location.href = `/order/${result.orderId}/payment`;
+
+        const paymentUrl = `/order/${result.orderId}/payment`;
+
+        // Auto-login for guests. If login fails, keep the successful order flow moving.
+        if (!user && formData.password) {
+          try {
+            const signInResult = await signIn('credentials', {
+              redirect: false,
+              phone: formData.customerPhone,
+              password: formData.password,
+            });
+
+            if (signInResult?.error) {
+              showWarning(
+                'تم إنشاء الطلب',
+                'لم نتمكن من تسجيل الدخول تلقائياً، وسيتم تحويلك لصفحة الدفع.'
+              );
+            }
+          } catch (signInError) {
+            console.error('Guest auto-login failed after order creation:', signInError);
+            showWarning(
+              'تم إنشاء الطلب',
+              'لم نتمكن من تسجيل الدخول تلقائياً، وسيتم تحويلك لصفحة الدفع.'
+            );
+          } finally {
+            window.location.href = paymentUrl;
+          }
+          return;
+        }
+
+        window.location.href = paymentUrl;
       } else {
-        showError('فشل الطلب', result.error || 'حدث خطأ ما');
+        showError('فشل الطلب', getOrderSubmitError(response, result));
       }
     } catch (e) {
-      showError('خطأ', 'فشل الاتصال بالخادم');
+      console.error('Order submit request failed:', e);
+      showError(
+        'خطأ في الاتصال',
+        'تعذر إرسال الطلب. تأكد من الاتصال بالإنترنت أو قلل حجم الملفات ثم حاول مرة أخرى.'
+      );
     } finally {
       setIsSubmitting(false);
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { generateOrderNumber } from '@/lib/orderNumbering';
 import {
   checkWhatsAppStatus,
@@ -15,6 +16,58 @@ import { s3Client } from '@/lib/s3';
 import { Upload } from '@aws-sdk/lib-storage';
 
 export const dynamic = 'force-dynamic';
+
+const MAX_TOTAL_UPLOAD_MB = 20;
+const MAX_TOTAL_UPLOAD_BYTES = MAX_TOTAL_UPLOAD_MB * 1024 * 1024;
+
+const getOrderCreationErrorResponse = (error: unknown, stage: string) => {
+  const isDev = process.env.NODE_ENV !== 'production';
+  const rawMessage = error instanceof Error ? error.message : String(error);
+
+  let status = 500;
+  let message = 'حدث خطأ أثناء إنشاء الطلب';
+
+  if (stage === 'reading_request' || /body|payload|formdata|request/i.test(rawMessage)) {
+    status = 413;
+    message = 'حجم بيانات الطلب أو الملفات كبير جداً. قلل حجم الملفات ثم حاول مرة أخرى.';
+  }
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === 'P2002') {
+      status = 409;
+      const targetValue = error.meta?.target;
+      const target = Array.isArray(targetValue) ? targetValue.join(', ') : '';
+      message = target.includes('email')
+        ? 'البريد الإلكتروني مستخدم بالفعل. سجل الدخول أو استخدم بيانات حسابك المسجل.'
+        : 'توجد بيانات مكررة بالفعل. راجع رقم الهاتف أو البيانات المدخلة ثم حاول مرة أخرى.';
+    } else if (error.code === 'P2003') {
+      status = 400;
+      message =
+        'بيانات الطلب غير مكتملة أو غير مرتبطة بخدمة صحيحة. أعد اختيار نوع الخدمة ثم حاول مرة أخرى.';
+    } else if (error.code === 'P2025') {
+      status = 404;
+      message = 'لم يتم العثور على أحد عناصر الطلب المطلوبة.';
+    }
+  }
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: message,
+      ...(isDev
+        ? {
+            debug: {
+              stage,
+              message: rawMessage,
+              code: error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined,
+              meta: error instanceof Prisma.PrismaClientKnownRequestError ? error.meta : undefined,
+            },
+          }
+        : {}),
+    },
+    { status }
+  );
+};
 
 // ================== GET ==================
 export async function GET() {
@@ -67,14 +120,35 @@ export async function GET() {
 
 // ================== POST ==================
 export async function POST(request: NextRequest) {
+  let stage = 'auth_session';
+
   try {
     const session = await getSession();
+    stage = 'reading_request';
     const formData = await request.formData();
 
     const customerPhone = formData.get('customerPhone')?.toString() || '';
     const customerName = formData.get('customerName')?.toString() || '';
     const customerEmail = formData.get('customerEmail')?.toString() || '';
     const password = formData.get('password')?.toString() || '';
+
+    stage = 'validate_files';
+    let totalUploadSize = 0;
+    for (const value of formData.values()) {
+      if (value instanceof File) {
+        totalUploadSize += value.size;
+      }
+    }
+
+    if (totalUploadSize > MAX_TOTAL_UPLOAD_BYTES) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `إجمالي حجم الملفات كبير. الحد الأقصى ${MAX_TOTAL_UPLOAD_MB}MB لكل طلب.`,
+        },
+        { status: 413 }
+      );
+    }
 
     let userId = session?.user?.id;
 
@@ -84,6 +158,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'رقم الهاتف مطلوب' }, { status: 400 });
       }
 
+      stage = 'guest_lookup';
       // Check if user already exists
       let user = await prisma.user.findFirst({
         where: { phone: customerPhone },
@@ -92,6 +167,7 @@ export async function POST(request: NextRequest) {
       if (!user) {
         // Create new user if password provided
         if (password && password.length >= 6) {
+          stage = 'guest_create';
           const hashedPassword = await hash(password, 12);
           user = await prisma.user.create({
             data: {
@@ -158,6 +234,7 @@ export async function POST(request: NextRequest) {
       try {
         const dynamicAnswers = JSON.parse(serviceDetailsRaw);
         if (typeof dynamicAnswers === 'object' && dynamicAnswers !== null) {
+          stage = 'service_details_lookup';
           // Get service fields to match labels
           const serviceObj = await prisma.service.findUnique({
             where: { id: serviceId },
@@ -207,6 +284,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    stage = 'service_lookup';
     const service = await prisma.service.findUnique({
       where: { id: serviceId },
       include: { variants: true },
@@ -228,6 +306,7 @@ export async function POST(request: NextRequest) {
 
     // Handle Promo Code
     if (promoCode) {
+      stage = 'promo_lookup';
       const promo = await prisma.promoCode.findUnique({
         where: { code: promoCode },
       });
@@ -262,6 +341,7 @@ export async function POST(request: NextRequest) {
           promoCodeId = promo.id;
 
           // Increment Usage
+          stage = 'promo_update';
           await prisma.promoCode.update({
             where: { id: promo.id },
             data: { currentUsage: { increment: 1 } },
@@ -319,6 +399,7 @@ export async function POST(request: NextRequest) {
 
         const orderDataWithId = { ...orderData, id: orderId };
 
+        stage = 'order_create';
         order = await prisma.order.create({ data: orderDataWithId });
         break; // Success
       } catch (error: any) {
@@ -352,6 +433,7 @@ export async function POST(request: NextRequest) {
       if (idNumber) userUpdateData.idNumber = idNumber;
 
       try {
+        stage = 'user_update';
         await prisma.user.update({
           where: { id: session.user.id },
           data: userUpdateData,
@@ -362,6 +444,7 @@ export async function POST(request: NextRequest) {
     }
 
     // رفع الملفات
+    stage = 'file_uploads';
     const uploadedFiles: any[] = [];
     for (const [key, value] of formData.entries()) {
       if (value instanceof File && value.size > 0) {
@@ -411,6 +494,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 📱 إرسال رسالة واتساب للعميل
+    stage = 'whatsapp_trigger';
     try {
       const whatsappStatus = await checkWhatsAppStatus();
       if (
@@ -446,6 +530,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Order creation error:', error);
-    return NextResponse.json({ error: 'حدث خطأ أثناء إنشاء الطلب' }, { status: 500 });
+    logger.error('POST Orders Error', error, { stage });
+    return getOrderCreationErrorResponse(error, stage);
   }
 }

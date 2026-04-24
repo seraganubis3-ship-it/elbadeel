@@ -16,6 +16,9 @@ interface DocumentUploaderProps {
   onFileSelect: (docId: string, file: File | null) => void;
 }
 
+const MAX_FILE_SIZE_MB = 8;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 export default function DocumentUploader({
   requiredDocuments,
   selectedFiles,
@@ -96,6 +99,7 @@ function DocumentItem({
   onFileSelect: (docId: string, file: File | null) => void;
 }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   useEffect(() => {
     if (file && file.type.startsWith('image/')) {
@@ -105,6 +109,23 @@ function DocumentItem({
     }
     setPreviewUrl(null);
   }, [file]);
+
+  const handleSelectedFile = (nextFile: File | null) => {
+    if (!nextFile) {
+      setFileError(null);
+      onFileSelect(doc.id, null);
+      return;
+    }
+
+    if (nextFile.size > MAX_FILE_SIZE_BYTES) {
+      setFileError(`حجم الملف كبير. الحد الأقصى ${MAX_FILE_SIZE_MB}MB لكل ملف.`);
+      onFileSelect(doc.id, null);
+      return;
+    }
+
+    setFileError(null);
+    onFileSelect(doc.id, nextFile);
+  };
 
   return (
     <motion.div
@@ -145,14 +166,20 @@ function DocumentItem({
           className='hidden'
           accept='image/*'
           capture='environment'
-          onChange={e => onFileSelect(doc.id, e.target.files?.[0] || null)}
+          onChange={e => {
+            handleSelectedFile(e.target.files?.[0] || null);
+            e.currentTarget.value = '';
+          }}
         />
         <input
           type='file'
           id={`file-gallery-${doc.id}`}
           className='hidden'
           accept='image/*,.pdf'
-          onChange={e => onFileSelect(doc.id, e.target.files?.[0] || null)}
+          onChange={e => {
+            handleSelectedFile(e.target.files?.[0] || null);
+            e.currentTarget.value = '';
+          }}
         />
 
         {!file ? (
@@ -166,6 +193,7 @@ function DocumentItem({
                 📸
               </div>
               <span className='font-bold text-slate-700 text-sm'>تصوير</span>
+              <span className='mt-1 text-[10px] text-slate-400'>حتى {MAX_FILE_SIZE_MB}MB</span>
             </label>
 
             {/* Gallery Option */}
@@ -177,6 +205,7 @@ function DocumentItem({
                 🖼️
               </div>
               <span className='font-bold text-slate-700 text-sm'>ملف</span>
+              <span className='mt-1 text-[10px] text-slate-400'>حتى {MAX_FILE_SIZE_MB}MB</span>
             </label>
           </div>
         ) : (
@@ -228,7 +257,7 @@ function DocumentItem({
             <button
               onClick={e => {
                 e.preventDefault();
-                onFileSelect(doc.id, null);
+                handleSelectedFile(null);
               }}
               className='absolute top-2 left-2 p-2 bg-white rounded-xl text-rose-500 shadow-md hover:bg-rose-50 border border-slate-200 transition-all z-10 hover:scale-105'
               title='حذف الملف'
@@ -245,6 +274,12 @@ function DocumentItem({
           </div>
         )}
       </div>
+
+      {fileError && (
+        <p className='mt-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600'>
+          {fileError}
+        </p>
+      )}
 
       {doc.description && (
         <p className='text-xs text-slate-500 mt-2 mr-1 flex items-start gap-1'>

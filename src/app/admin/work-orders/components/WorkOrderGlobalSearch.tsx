@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { Search, X } from 'lucide-react';
 import { searchWorkOrdersAction, SearchResult } from '../actions'; // Adjust import path if needed
 
 export function WorkOrderGlobalSearch() {
@@ -60,60 +61,49 @@ export function WorkOrderGlobalSearch() {
   };
 
   return (
-    <div ref={wrapperRef} className='relative w-full max-w-lg'>
+    <div ref={wrapperRef} className='relative w-full max-w-xl'>
       <div className='relative'>
         <input
           type='text'
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          placeholder='بحث عن أمر شغل (اسم العميل، رقم الهاتف، رقم الطلب)...'
-          className='w-full px-4 py-3 pl-10 pr-10 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-bold shadow-sm'
+          placeholder='ابحث برقم أمر الشغل، العميل، الحالة، أو التاريخ...'
+          className='w-full rounded-xl border border-slate-200 bg-white px-11 py-3 text-sm font-bold text-slate-800 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'
         />
+        <div className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400'>
+          <Search className='h-5 w-5' />
+        </div>
         <div className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400'>
           {loading ? (
             <div className='animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent'></div>
-          ) : (
-            <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-              />
-            </svg>
-          )}
+          ) : null}
         </div>
         {searchTerm && (
           <button
             onClick={() => setSearchTerm('')}
-            className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500'
+            className='absolute left-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-slate-100 hover:text-slate-500'
+            aria-label='مسح البحث'
           >
-            <svg className='w-4 h-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M6 18L18 6M6 6l12 12'
-              />
-            </svg>
+            <X className='h-4 w-4' />
           </button>
         )}
       </div>
 
       {isOpen && results.length > 0 && (
-        <div className='absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 max-h-96 overflow-y-auto'>
+        <div className='absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto rounded-xl border border-slate-100 bg-white shadow-xl shadow-slate-900/10'>
           {results.map((result, idx) => (
             <button
               key={`${result.type}-${result.key}-${idx}`}
               onClick={() => handleSelect(result)}
-              className='w-full text-right px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 flex items-center justify-between group'
+              className='group flex w-full items-center justify-between border-b border-slate-50 px-4 py-3 text-right transition-colors last:border-0 hover:bg-blue-50/50'
             >
               <div>
                 <div className='font-bold text-slate-800 text-sm'>{result.label}</div>
-                <div className='text-xs text-slate-500 mt-0.5'>
+                <div className='mt-0.5 text-xs text-slate-500'>
                   {result.type === 'WORK_ORDER' ? 'رقم أمر الشغل' : 'تاريخ العمل'} •{' '}
                   {result.matchingOrderCount} طلبات مطابقة
                 </div>
+                <div className='mt-1 text-xs font-bold text-blue-600'>{result.matchReason}</div>
               </div>
               <div className='flex flex-col items-end gap-1'>
                 <span className='text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full'>
