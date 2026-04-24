@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { checkWhatsAppStatus, sendWhatsAppByTrigger } from '@/lib/whatsapp';
 import { logger } from '@/lib/logger';
+import { awardSupervisorPoints } from '@/lib/incentives';
 
 const statusUpdateSchema = z.object({
   status: z.string(),
@@ -166,6 +167,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         },
       });
     });
+
+    // 🏆 منح نقاط المشرف عند تحديث الحالة
+    try {
+      await awardSupervisorPoints({
+        userId: session.user.id,
+        actionType: 'ORDER_COMPLETED',
+        orderId: id,
+        description: `تغيير حالة الطلب إلى (${status})`,
+      });
+    } catch {}
 
     // 📱 إرسال رسالة واتساب للعميل عند تغيير الحالة
     try {

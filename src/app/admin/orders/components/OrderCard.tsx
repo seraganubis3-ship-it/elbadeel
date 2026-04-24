@@ -43,7 +43,7 @@ export function OrderCard({
     0,
     order.remainingAmount ?? totalCents - discountCents - paidCents
   );
-  
+
   const isSuccessStatus = isDelivered;
 
   const cardClasses = isSuccessStatus

@@ -537,7 +537,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                           e.preventDefault();
                           addLanguage(lang);
                         }}
-                  className='px-3 py-2 hover:bg-emerald-50 cursor-pointer text-xs font-bold text-slate-700 flex justify-between'
+                        className='px-3 py-2 hover:bg-emerald-50 cursor-pointer text-xs font-bold text-slate-700 flex justify-between'
                       >
                         {lang}
                       </div>
@@ -650,7 +650,10 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                   .slice() // Create a copy to sort
                   .sort((a, b) => a.orderIndex - b.orderIndex)
                   .map(field => (
-                    <div key={field.id} className='space-y-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
+                    <div
+                      key={field.id}
+                      className='space-y-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'
+                    >
                       <label className='text-sm font-black text-slate-900 uppercase tracking-widest'>
                         {field.label} {field.required && <span className='text-red-600'>*</span>}
                       </label>

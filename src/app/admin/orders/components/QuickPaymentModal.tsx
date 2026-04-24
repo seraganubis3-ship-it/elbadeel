@@ -104,7 +104,9 @@ export function QuickPaymentModal({
           )}
 
           <div>
-            <label className='mb-2 block text-sm font-black text-slate-700'>المبلغ المدفوع الآن</label>
+            <label className='mb-2 block text-sm font-black text-slate-700'>
+              المبلغ المدفوع الآن
+            </label>
             <div className='relative'>
               <input
                 type='number'

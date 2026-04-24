@@ -118,3 +118,4 @@ baileys_auth_info/
 
 # Electron build
 electron-app/dist/
+.claude/

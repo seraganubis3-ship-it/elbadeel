@@ -6,16 +6,13 @@ export const metadata = {
   description: 'أحدث المقالات والأخبار المتعلقة باستخراج الأوراق الرسمية والخدمات الحكومية في مصر.',
   openGraph: {
     title: 'المدونة | منصة البديل',
-    description: 'أحدث المقالات والأخبار المتعلقة باستخراج الأوراق الرسمية والخدمات الحكومية في مصر.',
+    description:
+      'أحدث المقالات والأخبار المتعلقة باستخراج الأوراق الرسمية والخدمات الحكومية في مصر.',
     type: 'website',
-  }
+  },
 };
 
-export default async function BlogsPage({
-  searchParams,
-}: {
-  searchParams: { page?: string }
-}) {
+export default async function BlogsPage({ searchParams }: { searchParams: { page?: string } }) {
   const page = parseInt(searchParams.page || '1');
   const limit = 9;
   const skip = (page - 1) * limit;
@@ -26,20 +23,14 @@ export default async function BlogsPage({
     prisma.blogPost.findMany({
       where,
       include: {
-        tags: { select: { id: true, name: true, slug: true } }
+        tags: { select: { id: true, name: true, slug: true } },
       },
       orderBy: { createdAt: 'desc' },
       skip,
-      take: limit
+      take: limit,
     }),
-    prisma.blogPost.count({ where })
+    prisma.blogPost.count({ where }),
   ]);
 
-  return (
-    <BlogsClient 
-      initialPosts={posts} 
-      initialTotal={total} 
-      currentPage={page} 
-    />
-  );
+  return <BlogsClient initialPosts={posts} initialTotal={total} currentPage={page} />;
 }

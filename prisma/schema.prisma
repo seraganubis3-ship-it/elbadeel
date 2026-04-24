@@ -92,6 +92,7 @@ model User {
   consumedFormSerials     FormSerial[] @relation("FormSerialConsumedBy")
   createdDependents       Dependent[]  @relation("DependentCreatedBy")
   blogPosts               BlogPost[]   @relation("UserBlogPosts")
+  pointLogs               SupervisorPointLog[]
 
   @@index([email])
   @@index([role])
@@ -610,3 +611,34 @@ model BlogPost {
   @@index([published])
   @@index([authorId])
 }
+
+// ==========================================
+// Incentive System & Leaderboard Models
+// ==========================================
+
+model IncentiveConfig {
+  id               String   @id @default("default")
+  isEnabled        Boolean  @default(true)
+  pointsPerOrder   Int      @default(10)  // نقاط معالجة الطلب
+  pointsPerEdit    Int      @default(5)   // نقاط تعديل البيانات
+  pointsPerSerial  Int      @default(5)   // نقاط ربط السيريال
+  pointsPerPayment Int      @default(10)  // نقاط تأكيد الدفع
+  egpPerPoint      Float    @default(1.0) // قيمة النقطة بالجنيه المصري
+  updatedAt        DateTime @updatedAt
+}
+
+model SupervisorPointLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId     String?
+  actionType  String   // ORDER_COMPLETED, DATA_EDIT, SERIAL_BOUND, PAYMENT_SETTLED, MANUAL_ADJUSTMENT
+  points      Int
+  description String
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([createdAt])
+}
+

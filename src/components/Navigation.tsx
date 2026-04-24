@@ -86,8 +86,8 @@ export default function Navigation() {
       </NavLink>
 
       {/* Authentication Section - Hidden on Blog Pages */}
-      {!pathname.startsWith('/blogs') && (
-        session?.user ? (
+      {!pathname.startsWith('/blogs') &&
+        (session?.user ? (
           <>
             {/* Orders Link */}
             <NavLink
@@ -186,8 +186,7 @@ export default function Navigation() {
               دخول
             </Link>
           </>
-        )
-      )}
+        ))}
     </div>
   );
 }

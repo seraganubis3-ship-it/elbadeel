@@ -1027,7 +1027,10 @@ export default function AdminOrdersPage() {
 
   const handleStatusUpdate = async (orderId: string, newStatus: string, modalOrder?: Order) => {
     // order search sequence: modalOrder -> current orders -> selected persistent orders
-    const order = modalOrder || orders.find(o => o.id === orderId) || selectedOrdersData.find(o => o.id === orderId);
+    const order =
+      modalOrder ||
+      orders.find(o => o.id === orderId) ||
+      selectedOrdersData.find(o => o.id === orderId);
 
     // Check for outstanding balance ONLY when delivering
     if (newStatus === 'delivered' && order && (order.remainingAmount || 0) > 0) {

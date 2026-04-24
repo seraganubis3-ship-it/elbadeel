@@ -16,10 +16,10 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: {
         author: {
-          select: { name: true, image: true }
+          select: { name: true, image: true },
         },
-        tags: true
-      }
+        tags: true,
+      },
     });
 
     return NextResponse.json(posts);
@@ -52,11 +52,11 @@ export async function POST(request: Request) {
       .replace(/--+/g, '-') // Replace multiple - with single -
       .replace(/^-+/, '') // Trim - from start
       .replace(/-+$/, ''); // Trim - from end
-    
+
     if (!slug) {
       slug = `post-${Date.now()}`;
     }
-    
+
     // Check if slug exists and make unique if needed
     const existingPost = await prisma.blogPost.findUnique({ where: { slug } });
     if (existingPost) {
@@ -64,13 +64,18 @@ export async function POST(request: Request) {
     }
 
     // Handle tags creation/connection
-    const tagsConnectOrCreate = tags?.map((tag: string) => {
-      const tagSlug = tag.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u0600-\u06FF-]+/g, '');
-      return {
-        where: { slug: tagSlug },
-        create: { name: tag, slug: tagSlug }
-      };
-    }) || [];
+    const tagsConnectOrCreate =
+      tags?.map((tag: string) => {
+        const tagSlug = tag
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^\w\u0600-\u06FF-]+/g, '');
+        return {
+          where: { slug: tagSlug },
+          create: { name: tag, slug: tagSlug },
+        };
+      }) || [];
 
     const post = await prisma.blogPost.create({
       data: {
@@ -84,12 +89,12 @@ export async function POST(request: Request) {
         published: published || false,
         authorId: session.user.id,
         tags: {
-          connectOrCreate: tagsConnectOrCreate
-        }
+          connectOrCreate: tagsConnectOrCreate,
+        },
       },
       include: {
-        tags: true
-      }
+        tags: true,
+      },
     });
 
     return NextResponse.json(post);

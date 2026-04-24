@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrStaff } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { awardSupervisorPoints } from '@/lib/incentives';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -86,6 +87,16 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         consumedByAdminId: session.user.id,
       },
     });
+
+    // 🏆 منح نقاط للمشرف على ربط السيريال
+    try {
+      await awardSupervisorPoints({
+        userId: session.user.id,
+        actionType: 'SERIAL_BOUND',
+        orderId: order.id,
+        description: `ربط سيريال استمارة (${formSerial.serialNumber}) بالطلب`,
+      });
+    } catch {}
 
     return NextResponse.json({
       success: true,

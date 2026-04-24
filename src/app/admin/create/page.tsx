@@ -139,9 +139,7 @@ export default function CreateOrderPage() {
                 <h1 className='text-2xl font-black text-slate-900 tracking-tight'>
                   إنشاء طلب جديد
                 </h1>
-                <p className='text-slate-500 text-xs font-bold mt-1'>
-                  اللوحة الإدارية / الطلبات
-                </p>
+                <p className='text-slate-500 text-xs font-bold mt-1'>اللوحة الإدارية / الطلبات</p>
               </div>
             </div>
           </div>

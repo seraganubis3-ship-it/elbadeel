@@ -4,7 +4,7 @@ import PostClient from './PostClient';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const post = await prisma.blogPost.findUnique({
-    where: { slug: decodeURIComponent(params.slug) }
+    where: { slug: decodeURIComponent(params.slug) },
   });
 
   if (!post) return { title: 'مقال غير موجود' };
@@ -16,18 +16,18 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: post.seoTitle || post.title,
       description: post.seoDesc || post.excerpt || post.content.substring(0, 160),
       images: post.coverImage ? [post.coverImage] : [],
-    }
+    },
   };
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const decodedSlug = decodeURIComponent(params.slug);
-  
+
   const post = await prisma.blogPost.findUnique({
     where: { slug: decodedSlug, published: true },
     include: {
-      tags: true
-    }
+      tags: true,
+    },
   });
 
   if (!post) {
@@ -38,10 +38,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   const relatedPosts = await prisma.blogPost.findMany({
     where: {
       id: { not: post.id },
-      published: true
+      published: true,
     },
     take: 3,
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
   });
 
   return <PostClient post={post} relatedPosts={relatedPosts} />;

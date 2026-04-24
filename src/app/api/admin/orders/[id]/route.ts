@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { hasPermission } from '@/lib/permissions';
 import { generatePresignedUrl } from '@/lib/presignedUrl';
 import { queryCache } from '@/lib/cache/query-cache';
+import { awardSupervisorPoints } from '@/lib/incentives';
 
 export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -80,7 +81,9 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
     );
 
     // Fetch user details for status history
-    const historyUserIds = [...new Set(order.statusHistory.map(h => h.changedBy).filter(Boolean))] as string[];
+    const historyUserIds = [
+      ...new Set(order.statusHistory.map(h => h.changedBy).filter(Boolean)),
+    ] as string[];
     const historyUsers = await prisma.user.findMany({
       where: { id: { in: historyUserIds } },
       select: { id: true, name: true, role: true },
@@ -96,7 +99,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
     const auditLogs = await prisma.auditLog.findMany({
       where: { entityType: 'ORDER', entityId: id },
       orderBy: { createdAt: 'desc' },
-      include: { user: { select: { id: true, name: true, role: true } } }
+      include: { user: { select: { id: true, name: true, role: true } } },
     });
 
     return NextResponse.json({
@@ -310,20 +313,43 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     // 2. Identify changed fields
     const changedFields: any = {};
     const oldValues: any = {};
-    const loggedFields = ['quantity', 'deliveryType', 'deliveryFee', 'otherFees', 'discount', 'statusReason', 'customerName', 'customerPhone', 'customerEmail', 'address', 'policeStation', 'pickupLocation', 'photographyLocation', 'notes', 'adminNotes', 'idNumber'];
+    const loggedFields = [
+      'quantity',
+      'deliveryType',
+      'deliveryFee',
+      'otherFees',
+      'discount',
+      'statusReason',
+      'customerName',
+      'customerPhone',
+      'customerEmail',
+      'address',
+      'policeStation',
+      'pickupLocation',
+      'photographyLocation',
+      'notes',
+      'adminNotes',
+      'idNumber',
+    ];
 
     for (const key of Object.keys(processedUpdateData)) {
-      if (processedUpdateData[key] !== undefined && currentOrder[key as keyof typeof currentOrder] !== processedUpdateData[key]) {
+      if (
+        processedUpdateData[key] !== undefined &&
+        currentOrder[key as keyof typeof currentOrder] !== processedUpdateData[key]
+      ) {
         // Only log meaningful fields, or if we want everything, we can skip specific ones like 'updatedAt'
         if (key !== 'updatedAt' && key !== 'totalCents') {
-           changedFields[key] = processedUpdateData[key];
-           oldValues[key] = currentOrder[key as keyof typeof currentOrder];
+          changedFields[key] = processedUpdateData[key];
+          oldValues[key] = currentOrder[key as keyof typeof currentOrder];
         }
       }
     }
 
     // Capture fines explicitly by comparing old selectedFines and servicesDetails text with incoming text
-    if (processedUpdateData.selectedFines && processedUpdateData.selectedFines !== currentOrder.selectedFines) {
+    if (
+      processedUpdateData.selectedFines &&
+      processedUpdateData.selectedFines !== currentOrder.selectedFines
+    ) {
       changedFields['selectedFines'] = processedUpdateData.selectedFines;
       oldValues['selectedFines'] = currentOrder.selectedFines;
     }
@@ -378,24 +404,34 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           userId: session.user.id,
           oldValues: JSON.stringify(oldValues),
           newValues: JSON.stringify(changedFields),
-        }
+        },
       });
       // Invalidate orders cache so list/reports show updated data
       queryCache.clear('orders');
+
+      // 🏆 منح نقاط للمشرف على تعديل/تدقيق بيانات الطلب
+      try {
+        await awardSupervisorPoints({
+          userId: session.user.id,
+          actionType: 'DATA_EDIT',
+          orderId: id,
+          description: `تعديل وتدقيق بيانات الطلب (${Object.keys(changedFields).join(', ')})`,
+        });
+      } catch {}
     }
 
     // Fetch the audit logs to return them to the frontend
     const newAuditLogs = await prisma.auditLog.findMany({
       where: { entityType: 'ORDER', entityId: id },
       orderBy: { createdAt: 'desc' },
-      include: { user: { select: { id: true, name: true, role: true } } }
+      include: { user: { select: { id: true, name: true, role: true } } },
     });
 
     return NextResponse.json({
       success: true,
       order: {
         ...updatedOrder,
-        auditLogs: newAuditLogs
+        auditLogs: newAuditLogs,
       },
       message: 'تم تحديث تفاصيل الطلب بنجاح',
     });

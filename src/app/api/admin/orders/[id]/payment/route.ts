@@ -3,6 +3,7 @@ import { requireAdminOrStaff, getWorkDate } from '@/lib/auth';
 import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { awardSupervisorPoints } from '@/lib/incentives';
 
 const paymentUpdateSchema = z.object({
   amount: z.number().min(0),
@@ -132,6 +133,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return { payment, order: updatedOrder };
     });
 
+    // 🏆 منح نقاط المشرف عند تسديد الدفع
+    try {
+      await awardSupervisorPoints({
+        userId: session.user.id,
+        actionType: 'PAYMENT_SETTLED',
+        orderId: id,
+        description: `تأكيد وتسديد مبلغ مالى (${(amount / 100).toFixed(2)} ج.م)`,
+      });
+    } catch {}
+
     return NextResponse.json({
       success: true,
       message: 'تم تحديث معلومات الدفع بنجاح',
@@ -157,9 +168,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       );
     }
 
-    return NextResponse.json(
-      { error: 'حدث خطأ أثناء تحديث معلومات الدفع' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'حدث خطأ أثناء تحديث معلومات الدفع' }, { status: 500 });
   }
 }

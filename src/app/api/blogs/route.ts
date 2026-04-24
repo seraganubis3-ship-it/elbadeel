@@ -15,8 +15,8 @@ export async function GET(request: Request) {
       const post = await prisma.blogPost.findUnique({
         where: { slug: decodeURIComponent(slug), published: true },
         include: {
-          tags: true
-        }
+          tags: true,
+        },
       });
 
       if (!post) {
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
           published: true,
         },
         take: 3,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       });
 
       return NextResponse.json({ post, relatedPosts });
@@ -38,14 +38,14 @@ export async function GET(request: Request) {
 
     // Handle list fetch with search and pagination
     const where: any = {
-      published: true
+      published: true,
     };
 
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { content: { contains: search, mode: 'insensitive' } },
-        { excerpt: { contains: search, mode: 'insensitive' } }
+        { excerpt: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -54,14 +54,14 @@ export async function GET(request: Request) {
         where,
         include: {
           tags: {
-            select: { id: true, name: true, slug: true }
-          }
+            select: { id: true, name: true, slug: true },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip,
-        take: limit
+        take: limit,
       }),
-      prisma.blogPost.count({ where })
+      prisma.blogPost.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -71,8 +71,8 @@ export async function GET(request: Request) {
         total,
         pages: Math.ceil(total / limit),
         page,
-        limit
-      }
+        limit,
+      },
     });
   } catch (error) {
     console.error('Error fetching public blogs:', error);
