@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "concurrently --names \"NEXT,WHATSAPP\" --prefix-colors \"blue,green\" \"cross-env NODE_OPTIONS=\\\"--max-old-space-size=4096\\\" next dev\" \"npm run whatsapp\"",
     "dev:next": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" next dev",
+    "prebuild": "prisma generate",
     "build": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" next build",
     "start": "concurrently --names \"NEXT,WHATSAPP\" --prefix-colors \"blue,green\" \"npm run start:next\" \"npm run whatsapp\"",
     "start:next": "next start",
