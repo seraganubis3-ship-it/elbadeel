@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
+import { useKeyboardListNavigation } from '../../hooks/useKeyboardListNavigation';
 import { Customer, FormData, Service } from '../../types';
 import { LastOrderAlert } from '../../../orders/components/LastOrderAlert';
 
@@ -41,8 +42,8 @@ interface CustomerInfoSectionProps {
   suggestion?: string;
   dependentSuggestion?: string;
 
-  handleKeyDown?: (e: React.KeyboardEvent) => void;
   phoneConflict?: Customer | null;
+  dismissPhoneConflict: () => void;
   clearCustomer: () => void;
   // handleUpdateCustomerName?: () => void;
 }
@@ -75,9 +76,9 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
   // suggestion,
   dependentSuggestion,
 
-  handleKeyDown,
   selectedService,
   phoneConflict,
+  dismissPhoneConflict,
   clearCustomer,
 }) => {
   const isDeathCert = selectedService?.name?.includes('وفاة');
@@ -88,6 +89,42 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
   const isMotherNameRequired = isBirthCert && formData.idNumber.length < 14;
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const customerResults = useMemo(
+    () =>
+      suggestedUser
+        ? searchResults.filter(result => result.id !== suggestedUser.id)
+        : searchResults,
+    [searchResults, suggestedUser]
+  );
+  const customerOptions = useMemo(
+    () => (suggestedUser ? [suggestedUser, ...customerResults] : customerResults),
+    [customerResults, suggestedUser]
+  );
+
+  const customerKeyboard = useKeyboardListNavigation({
+    idPrefix: 'customer-option',
+    itemCount: customerOptions.length,
+    isOpen: showSearchDropdown,
+    onOpen: () => setShowSearchDropdown(true),
+    onClose: () => setShowSearchDropdown(false),
+    onSelect: index => {
+      const selectedCustomer = customerOptions[index];
+      if (selectedCustomer) selectCustomer(selectedCustomer);
+    },
+  });
+
+  const dependentKeyboard = useKeyboardListNavigation({
+    idPrefix: 'dependent-option',
+    itemCount: dependentSearchResults.length,
+    isOpen: showDependentDropdown,
+    onOpen: () => setShowDependentDropdown(true),
+    onClose: () => setShowDependentDropdown(false),
+    onSelect: index => {
+      const dependent = dependentSearchResults[index];
+      if (dependent) selectDependent(dependent);
+    },
+  });
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -212,7 +249,7 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
               className={`relative transition-all duration-300 ${searching ? 'scale-[1.02]' : ''}`}
             >
               <div className='absolute right-4 top-1/2 -translate-y-1/2 text-xl lg:text-lg transition-transform duration-300'>
-                {searching ? <span className='animate-spin block'>⏳</span> : '🔍'}
+                {searching ? <span className='animate-spin block'>⌛</span> : '🔍'}
               </div>
               <input
                 type='text'
@@ -222,12 +259,16 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                   searchCustomer(e.target.value);
                   if (!showSearchDropdown) setShowSearchDropdown(true);
                 }}
-                onKeyDown={handleKeyDown}
+                onKeyDown={customerKeyboard.handleKeyDown}
                 onFocus={() => setShowSearchDropdown(true)}
                 onBlur={() => {
-                  // Small delay to allow clicking on dropdown items before they vanish
                   setTimeout(() => setShowSearchDropdown(false), 200);
                 }}
+                role='combobox'
+                aria-autocomplete='list'
+                aria-expanded={showSearchDropdown}
+                aria-controls='customer-options-list'
+                aria-activedescendant={customerKeyboard.activeDescendantId}
                 placeholder='تسجيل عميل (الاسم، الهاتف، الرقم القومي)...'
                 className={`w-full bg-slate-50 border-2 ${
                   searching
@@ -237,14 +278,24 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
               />
             </div>
 
-            {/* Dropdown - Compact Item Padding on lg */}
-            {showSearchDropdown && (searchResults.length > 0 || suggestedUser) && (
-              <div className='absolute top-full left-0 right-0 mt-3 bg-white border border-slate-100 rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] overflow-hidden z-[100] animate-in slide-in-from-top-2'>
-                {/* Suggestion */}
+            {showSearchDropdown && customerOptions.length > 0 && (
+              <div
+                id='customer-options-list'
+                role='listbox'
+                className='absolute top-full left-0 right-0 mt-3 bg-white border border-slate-100 rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] overflow-hidden z-[100] animate-in slide-in-from-top-2'
+              >
                 {suggestedUser && (
                   <div
-                    onClick={() => selectCustomer(suggestedUser)}
-                    className='p-4 lg:p-3 bg-emerald-50/50 hover:bg-emerald-50 cursor-pointer border-b border-emerald-100 flex items-center justify-between group transition-colors'
+                    {...customerKeyboard.getOptionProps(0)}
+                    onMouseDown={event => {
+                      event.preventDefault();
+                      selectCustomer(suggestedUser);
+                    }}
+                    className={`p-4 lg:p-3 cursor-pointer border-b border-emerald-100 flex items-center justify-between group transition-colors ${
+                      customerKeyboard.activeIndex === 0
+                        ? 'bg-emerald-100 ring-1 ring-inset ring-emerald-300'
+                        : 'bg-emerald-50/50 hover:bg-emerald-50'
+                    }`}
                   >
                     <div className='flex items-center gap-4'>
                       <div className='w-10 h-10 lg:w-8 lg:h-8 rounded-full bg-emerald-100 flex items-center justify-center text-lg lg:text-sm'>
@@ -267,28 +318,40 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                   </div>
                 )}
                 <div className='max-h-[300px] overflow-y-auto custom-scrollbar p-2'>
-                  {searchResults.map(result => (
-                    <div
-                      key={result.id}
-                      onClick={() => selectCustomer(result)}
-                      className='p-3 lg:p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-all flex items-center gap-3 group'
-                    >
-                      <div className='w-10 h-10 lg:w-8 lg:h-8 rounded-full bg-slate-100 flex items-center justify-center text-lg lg:text-base group-hover:bg-white group-hover:shadow-md transition-all'>
-                        👤
-                      </div>
-                      <div className='flex-1'>
-                        <div className='font-bold text-slate-700 group-hover:text-emerald-700 transition-colors lg:text-sm text-right'>
-                          {result.name}
+                  {customerResults.map((result, resultIndex) => {
+                    const optionIndex = resultIndex + (suggestedUser ? 1 : 0);
+                    const isActive = customerKeyboard.activeIndex === optionIndex;
+                    return (
+                      <div
+                        key={result.id}
+                        {...customerKeyboard.getOptionProps(optionIndex)}
+                        onMouseDown={event => {
+                          event.preventDefault();
+                          selectCustomer(result);
+                        }}
+                        className={`p-3 lg:p-2 rounded-xl cursor-pointer transition-all flex items-center gap-3 group ${
+                          isActive
+                            ? 'bg-emerald-50 ring-1 ring-inset ring-emerald-200'
+                            : 'hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className='w-10 h-10 lg:w-8 lg:h-8 rounded-full bg-slate-100 flex items-center justify-center text-lg lg:text-base group-hover:bg-white group-hover:shadow-md transition-all'>
+                          👤
                         </div>
-                        <div className='text-xs text-slate-400 font-mono flex items-center gap-2 justify-end'>
-                          {result.idNumber && (
-                            <span className='bg-slate-100 px-1 rounded'>{result.idNumber}</span>
-                          )}
-                          <span>{result.phone}</span>
+                        <div className='flex-1'>
+                          <div className='font-bold text-slate-700 group-hover:text-emerald-700 transition-colors lg:text-sm text-right'>
+                            {result.name}
+                          </div>
+                          <div className='text-xs text-slate-400 font-mono flex items-center gap-2 justify-end'>
+                            {result.idNumber && (
+                              <span className='bg-slate-100 px-1 rounded'>{result.idNumber}</span>
+                            )}
+                            <span>{result.phone}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -347,7 +410,23 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
 
           {/* تحذير التكرار - يمتد على كل العرض */}
           {phoneConflict && (
-            <div className='md:col-span-12 flex items-start gap-4 bg-amber-50 border-2 border-amber-200 rounded-2xl px-5 py-4 shadow-sm'>
+            <div className='md:col-span-12 relative flex items-start gap-4 bg-amber-50 border-2 border-amber-200 rounded-2xl px-5 py-4 shadow-sm'>
+              <button
+                type='button'
+                onClick={dismissPhoneConflict}
+                className='absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-xl border border-amber-200 bg-white/80 text-amber-700 shadow-sm transition-all hover:bg-white hover:text-rose-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-400/40'
+                aria-label='إغلاق تنبيه رقم الهاتف المسجل'
+                title='إغلاق التنبيه'
+              >
+                <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2.5}
+                    d='M6 18 18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
               <div className='w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-xl flex-shrink-0'>
                 💡
               </div>
@@ -524,15 +603,31 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                   onChange={e => {
                     setFormData(prev => ({ ...prev, customerFollowUp: e.target.value }));
                     searchDependent(e.target.value);
+                    setShowDependentDropdown(true);
                   }}
-                  onKeyDown={e => {
-                    if ((e.key === 'Enter' || e.key === 'ArrowRight') && dependentSuggestion) {
-                      e.preventDefault();
-                      setFormData(prev => ({ ...prev, customerFollowUp: dependentSuggestion }));
+                  onKeyDown={event => {
+                    if (dependentKeyboard.handleKeyDown(event)) return;
+                    if (
+                      (event.key === 'Enter' || event.key === 'ArrowRight') &&
+                      dependentSuggestion
+                    ) {
+                      event.preventDefault();
+                      setFormData(prev => ({
+                        ...prev,
+                        customerFollowUp: dependentSuggestion,
+                      }));
                       setShowDependentDropdown(false);
                     }
                   }}
-                  className='relative z-10 w-full px-5 py-4 lg:px-4 lg:py-3 bg-transparent border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white/50 transition-all font-bold text-slate-700 placeholder-transparent lg:text-base'
+                  onFocus={() => {
+                    if (dependentSearchResults.length > 0) setShowDependentDropdown(true);
+                  }}
+                  role='combobox'
+                  aria-autocomplete='list'
+                  aria-expanded={showDependentDropdown}
+                  aria-controls='dependent-options-list'
+                  aria-activedescendant={dependentKeyboard.activeDescendantId}
+                  className='relative z-10 w-full px-5 py-4 lg:px-4 lg:py-3 bg-transparent border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white/50 transition-all font-bold text-slate-700 placeholder-transparent lg:text-base outline-none'
                   placeholder='ابحث بالاسم...'
                 />
                 <div
@@ -541,14 +636,26 @@ export const CustomerInfoSection: React.FC<CustomerInfoSectionProps> = ({
                   <span className='text-slate-400 font-bold'>ابحث بالاسم...</span>
                 </div>
                 {showDependentDropdown && dependentSearchResults.length > 0 && (
-                  <div className='absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 p-1'>
-                    {dependentSearchResults.map(d => (
+                  <div
+                    id='dependent-options-list'
+                    role='listbox'
+                    className='absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 p-1 max-h-64 overflow-y-auto'
+                  >
+                    {dependentSearchResults.map((dependent, index) => (
                       <div
-                        key={d.id}
-                        onClick={() => selectDependent(d)}
-                        className='p-3 hover:bg-slate-50 rounded-xl cursor-pointer text-sm font-bold text-slate-700'
+                        key={dependent.id}
+                        {...dependentKeyboard.getOptionProps(index)}
+                        onMouseDown={event => {
+                          event.preventDefault();
+                          selectDependent(dependent);
+                        }}
+                        className={`p-3 rounded-xl cursor-pointer text-sm font-bold text-slate-700 transition-colors ${
+                          dependentKeyboard.activeIndex === index
+                            ? 'bg-indigo-50 text-indigo-800 ring-1 ring-inset ring-indigo-200'
+                            : 'hover:bg-slate-50'
+                        }`}
                       >
-                        {d.name}
+                        {dependent.name}
                       </div>
                     ))}
                   </div>

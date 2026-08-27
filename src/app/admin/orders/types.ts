@@ -79,6 +79,12 @@ export interface Order {
     createdAt: Date;
     updatedAt: Date;
   };
+  formSerials?: Array<{
+    id: string;
+    serialNumber: string;
+    provider?: string;
+    consumed?: boolean;
+  }>;
   orderDocuments: Array<{
     id: string;
     fileName: string;

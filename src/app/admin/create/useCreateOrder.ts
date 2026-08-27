@@ -115,6 +115,7 @@ export function useCreateOrder() {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const hasFetchedRef = useRef(false);
+  const submissionLockRef = useRef(false);
 
   // Form data
   const [formData, setFormData] = useState(initialFormData);
@@ -414,6 +415,10 @@ export function useCreateOrder() {
     };
   }, [formData.customerPhone, customer, checkPhoneExists]);
 
+  const dismissPhoneConflict = useCallback(() => {
+    setPhoneConflict(null);
+  }, []);
+
   // Select customer
   const selectCustomer = useCallback((cust: Customer) => {
     setCustomer(cust);
@@ -463,23 +468,10 @@ export function useCreateOrder() {
           : '',
     }));
     setShowSearchDropdown(false);
+    setPhoneConflict(null);
     setSearchResults([]);
     setSuggestion('');
   }, []);
-
-  // Handle key down for suggestion
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if ((e.key === 'Enter' || e.key === 'ArrowRight') && suggestion) {
-        const topMatch = searchResults[0];
-        if (topMatch) {
-          e.preventDefault();
-          selectCustomer(topMatch);
-        }
-      }
-    },
-    [suggestion, searchResults, selectCustomer]
-  );
 
   // Select service
   const selectService = useCallback((service: Service) => {
@@ -913,11 +905,14 @@ export function useCreateOrder() {
     setDependentSuggestion('');
     setShowSuccessModal(false);
     setCreatedOrderId(null);
+    submissionLockRef.current = false;
   }, []);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      if (submissionLockRef.current) return;
+
       if (!selectedService || !selectedVariant) {
         showWarning('الخدمة مطلوبة', 'يرجى اختيار الخدمة ونوعها أولاً');
         return;
@@ -1035,9 +1030,13 @@ export function useCreateOrder() {
         }
       }
 
+      submissionLockRef.current = true;
+      const submissionId = offlineManager.generateOfflineId();
+      let orderCreated = false;
       setSubmitting(true);
       try {
         const orderData = {
+          offlineId: submissionId,
           userId: customer?.id,
           serviceId: selectedService?.id,
           variantId: selectedVariant?.id,
@@ -1130,12 +1129,12 @@ export function useCreateOrder() {
           });
         } catch (fetchErr) {
           // Network error - go to offline mode
-          const offlineId = offlineManager.generateOfflineId();
           await offlineManager.saveOfflineOrder({
             ...orderData,
-            offlineId,
             createdAt: new Date().toISOString(),
           });
+
+          orderCreated = true;
 
           // Index customer for immediate offline search
           await offlineManager.upsertCustomer({
@@ -1151,7 +1150,7 @@ export function useCreateOrder() {
             wifeName: orderData.wifeName,
           });
 
-          setCreatedOrderId(offlineId);
+          setCreatedOrderId(submissionId);
           setShowSuccessModal(true);
           showWarning(
             'تم الحفظ محلياً',
@@ -1163,6 +1162,7 @@ export function useCreateOrder() {
         if (response.ok) {
           const data = await response.json();
           const orderId = data.order.id;
+          orderCreated = true;
           setCreatedOrderId(orderId);
           setShowSuccessModal(true);
 
@@ -1185,6 +1185,7 @@ export function useCreateOrder() {
         }
       } catch {
       } finally {
+        if (!orderCreated) submissionLockRef.current = false;
         setSubmitting(false);
       }
     },
@@ -1252,7 +1253,6 @@ export function useCreateOrder() {
     selectDependent,
     saveNewDependent,
     suggestion,
-    handleKeyDown,
 
     // Loading
     loading,
@@ -1307,6 +1307,7 @@ export function useCreateOrder() {
     calculateTotal,
     dependentSuggestion, // Exported for UI
     phoneConflict,
+    dismissPhoneConflict,
     handleSubmit,
     handleReset,
     showSuccessModal,

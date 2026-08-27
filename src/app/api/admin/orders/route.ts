@@ -237,6 +237,9 @@ export async function GET(request: NextRequest) {
           payment: {
             select: { id: true, amount: true, method: true, status: true, senderPhone: true },
           },
+          formSerials: {
+            select: { id: true, serialNumber: true, provider: true, consumed: true },
+          },
           _count: { select: { orderDocuments: true } },
         },
         orderBy,
@@ -284,6 +287,7 @@ export async function GET(request: NextRequest) {
       user: order.user || { id: '', name: '', email: '', phone: '' },
       createdByAdmin: order.createdByAdmin || { id: '', name: '', email: '' },
       payment: order.payment,
+      formSerials: order.formSerials || [],
       _count: { orderDocuments: order._count?.orderDocuments || 0 },
       updatedAt: order.updatedAt,
       otherFees: order.otherFees,
@@ -372,6 +376,44 @@ export async function POST(request: NextRequest) {
     // Invalidate cache when creating new orders
     queryCache.clear('orders');
     const body = await request.json();
+    const submissionId = typeof body.offlineId === 'string' ? body.offlineId.trim() : '';
+
+    if (submissionId) {
+      const existingOrder = await prisma.order.findUnique({
+        where: { offlineId: submissionId },
+        include: {
+          service: { select: { name: true, slug: true } },
+          variant: { select: { name: true, priceCents: true, etaDays: true } },
+          user: { select: { id: true, name: true, email: true, phone: true, gender: true } },
+        },
+      });
+
+      if (existingOrder) {
+        return NextResponse.json({
+          success: true,
+          duplicate: true,
+          order: {
+            id: existingOrder.id,
+            service: existingOrder.service,
+            variant: existingOrder.variant,
+            status: existingOrder.status,
+            totalCents: existingOrder.totalCents,
+            estimatedCompletionDate: existingOrder.estimatedCompletionDate,
+            deliveryType: existingOrder.deliveryType,
+            deliveryFee: existingOrder.deliveryFee,
+            createdAt: existingOrder.createdAt,
+            customerName: existingOrder.customerName,
+            customerPhone: existingOrder.customerPhone,
+            customerEmail: existingOrder.customerEmail,
+            address: existingOrder.address,
+            notes: existingOrder.notes,
+            adminNotes: existingOrder.adminNotes,
+            user: existingOrder.user,
+            photographyLocation: existingOrder.photographyLocation,
+          },
+        });
+      }
+    }
     const {
       serviceId,
       variantId,
@@ -819,6 +861,7 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.create({
       data: {
         id: orderId,
+        offlineId: submissionId || null,
         userId: userId!,
         serviceId,
         variantId,

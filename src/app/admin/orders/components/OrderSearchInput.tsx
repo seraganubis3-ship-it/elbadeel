@@ -19,11 +19,24 @@ export function OrderSearchInput({ value, onChange }: OrderSearchInputProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController>();
+  const orderSearchTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Sync with prop
   useEffect(() => {
     setInputValue(value);
   }, [value]);
+
+  useEffect(() => {
+    if (orderSearchTimeoutRef.current) clearTimeout(orderSearchTimeoutRef.current);
+
+    orderSearchTimeoutRef.current = setTimeout(() => {
+      onChange(inputValue.trim());
+    }, 450);
+
+    return () => {
+      if (orderSearchTimeoutRef.current) clearTimeout(orderSearchTimeoutRef.current);
+    };
+  }, [inputValue, onChange]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -108,12 +121,6 @@ export function OrderSearchInput({ value, onChange }: OrderSearchInputProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVal = e.target.value;
     setInputValue(newVal);
-    // Also propagate to parent immediately for typing?
-    // Usually search filters wait for Enter or debounce.
-    // But here we want to show suggestions while typing.
-    // We DON'T propagate to parent onChange yet, to avoid filtering orders table on every keystroke if it's heavy.
-    // Parent expects 'value' which is the searchTerm.
-
     searchUsers(newVal);
   };
 
@@ -195,7 +202,7 @@ export function OrderSearchInput({ value, onChange }: OrderSearchInputProps) {
         onFocus={() => {
           if (inputValue.length >= 1 && searchResults.length > 0) setShowDropdown(true);
         }}
-        placeholder='ابحث بالاسم، الهاتف، الرقم القومي أو رقم الطلب...'
+        placeholder='ابحث بالاسم، الهاتف، الرقم القومي، رقم الطلب أو رقم الاستمارة...'
         className='w-full pr-11 pl-4 py-3 sm:py-4 bg-slate-50 hover:bg-slate-100 focus:bg-white border-2 border-slate-200 hover:border-slate-300 focus:border-blue-500 rounded-xl sm:rounded-2xl transition-all text-sm sm:text-base text-slate-900 placeholder-slate-400 font-medium shadow-sm focus:shadow-md outline-none relative z-10 bg-transparent'
       />
 

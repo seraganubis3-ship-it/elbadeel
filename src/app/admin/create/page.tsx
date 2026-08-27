@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useCreateOrder } from './useCreateOrder';
 import {
@@ -14,6 +14,8 @@ import {
   Tabs,
 } from './components';
 import { ServiceSelectionSection } from './components/sections/ServiceSelectionSection';
+
+const CREATE_ORDER_TAB_IDS = ['service', 'customer', 'details', 'financials', 'review'];
 
 export default function CreateOrderPage() {
   const {
@@ -76,8 +78,8 @@ export default function CreateOrderPage() {
     calculateTotal,
     suggestion,
     dependentSuggestion,
-    handleKeyDown,
     phoneConflict,
+    dismissPhoneConflict,
     handleSubmit,
     handleReset,
     showSuccessModal,
@@ -91,6 +93,109 @@ export default function CreateOrderPage() {
   const toggleFine = handleFineToggle;
 
   const [activeTab, setActiveTab] = useState('service');
+
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const focusFirstControl = useCallback(() => {
+    window.setTimeout(() => {
+      const firstControl = Array.from(
+        formRef.current?.querySelectorAll<HTMLElement>(
+          'input:not([type="hidden"]):not([disabled]):not([readonly]), select:not([disabled]), textarea:not([disabled]):not([readonly]), button:not([disabled])'
+        ) || []
+      ).find(control => control.offsetParent !== null && control.tabIndex !== -1);
+
+      firstControl?.focus();
+    }, 0);
+  }, []);
+
+  const moveBetweenTabs = useCallback(
+    (key: 'ArrowLeft' | 'ArrowRight') => {
+      const currentIndex = CREATE_ORDER_TAB_IDS.indexOf(activeTab);
+      const direction = key === 'ArrowLeft' ? 1 : -1;
+      const nextIndex =
+        (currentIndex + direction + CREATE_ORDER_TAB_IDS.length) % CREATE_ORDER_TAB_IDS.length;
+      const nextTab = CREATE_ORDER_TAB_IDS[nextIndex];
+      if (!nextTab) return;
+
+      setActiveTab(nextTab);
+      focusFirstControl();
+    },
+    [activeTab, focusFirstControl]
+  );
+
+  const handleFormKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLFormElement>) => {
+      if (event.defaultPrevented) return;
+
+      const target = event.target as HTMLElement;
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        if (event.shiftKey || event.ctrlKey || event.metaKey) return;
+
+        let shouldMoveTabs = event.altKey;
+        if (
+          !shouldMoveTabs &&
+          target instanceof HTMLInputElement &&
+          ['text', 'search', 'tel', 'email', 'url', 'password'].includes(target.type) &&
+          target.selectionStart === target.selectionEnd
+        ) {
+          const caretPosition = target.selectionStart ?? 0;
+          const isRtlInput = window.getComputedStyle(target).direction === 'rtl';
+          shouldMoveTabs = isRtlInput
+            ? (event.key === 'ArrowLeft' && caretPosition === target.value.length) ||
+              (event.key === 'ArrowRight' && caretPosition === 0)
+            : (event.key === 'ArrowLeft' && caretPosition === 0) ||
+              (event.key === 'ArrowRight' && caretPosition === target.value.length);
+        }
+
+        if (shouldMoveTabs) {
+          event.preventDefault();
+          moveBetweenTabs(event.key);
+        }
+        return;
+      }
+
+      if (
+        event.key !== 'Enter' ||
+        event.shiftKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.metaKey
+      ) {
+        return;
+      }
+
+      if (
+        !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement) ||
+        target.getAttribute('role') === 'combobox' ||
+        target.hasAttribute('readonly') ||
+        ['checkbox', 'radio', 'file', 'submit', 'button'].includes(
+          (target as HTMLInputElement).type
+        )
+      ) {
+        return;
+      }
+
+      const fields = Array.from(
+        formRef.current?.querySelectorAll<HTMLElement>(
+          'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([readonly]), select'
+        ) || []
+      ).filter(
+        field =>
+          field.offsetParent !== null &&
+          !field.hasAttribute('disabled') &&
+          field.tabIndex !== -1 &&
+          field.getAttribute('role') !== 'combobox'
+      );
+
+      const currentIndex = fields.indexOf(target);
+      const nextField = fields[currentIndex + 1];
+      if (!nextField) return;
+
+      event.preventDefault();
+      nextField.focus();
+    },
+    [moveBetweenTabs]
+  );
 
   // Auto-scroll to top when step changes
   useEffect(() => {
@@ -157,7 +262,7 @@ export default function CreateOrderPage() {
           ]}
         />
 
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit} onKeyDown={handleFormKeyDown}>
           {/* Tab Content Container */}
           <div className='rounded-2xl border border-white/70 bg-white/70 p-2 shadow-sm shadow-slate-200/80 backdrop-blur'>
             {/* Tab 1: Service Selection */}
@@ -223,6 +328,7 @@ export default function CreateOrderPage() {
                   selectCustomer={selectCustomer}
                   handleNationalIdChange={handleNationalIdChange}
                   phoneConflict={phoneConflict}
+                  dismissPhoneConflict={dismissPhoneConflict}
                   clearCustomer={clearCustomer}
                   // Dependent Props
                   searchingDependent={searchingDependent}
@@ -237,7 +343,6 @@ export default function CreateOrderPage() {
                   showAddressModal={showAddressModal}
                   setShowAddressModal={setShowAddressModal}
                   suggestion={suggestion}
-                  handleKeyDown={handleKeyDown}
                   selectedService={selectedService}
                 />
 

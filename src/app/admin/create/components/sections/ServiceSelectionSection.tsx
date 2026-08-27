@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { FormData, Service, ServiceVariant } from '../../types';
 import { LANGUAGES } from '@/constants/languages';
+import { useKeyboardListNavigation } from '../../hooks/useKeyboardListNavigation';
 
 interface ServiceSelectionSectionProps {
   formData: FormData;
@@ -159,6 +160,46 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
     );
   }, [languageSearch, currentLanguages]);
 
+  const visibleServices = useMemo(() => filteredServices.slice(0, 50), [filteredServices]);
+  const variantRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  const serviceKeyboard = useKeyboardListNavigation({
+    idPrefix: 'service-option',
+    itemCount: visibleServices.length,
+    isOpen: showServiceDropdown,
+    onOpen: () => setShowServiceDropdown(true),
+    onClose: () => setShowServiceDropdown(false),
+    onSelect: index => {
+      const service = visibleServices[index];
+      if (service) selectService(service);
+    },
+  });
+
+  const handleVariantKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+    const variants = selectedService?.variants || [];
+    if (variants.length === 0) return;
+
+    const nextIndex =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? variants.length - 1
+          : (index +
+              (event.key === 'ArrowRight' || event.key === 'ArrowUp' ? -1 : 1) +
+              variants.length) %
+            variants.length;
+    const nextVariant = variants[nextIndex];
+    if (!nextVariant) return;
+
+    handleVariantChange(nextVariant.id);
+    requestAnimationFrame(() => variantRefs.current[nextIndex]?.focus());
+  };
+
   const isMultiSelectField = (field: { name: string; label: string; type: string }) => {
     const label = field.label || '';
     const name = field.name || '';
@@ -251,34 +292,56 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                   if (!showServiceDropdown) setShowServiceDropdown(true);
                 }}
                 onFocus={() => setShowServiceDropdown(true)}
+                onKeyDown={serviceKeyboard.handleKeyDown}
+                role='combobox'
+                aria-autocomplete='list'
+                aria-expanded={showServiceDropdown}
+                aria-controls='service-options-list'
+                aria-activedescendant={serviceKeyboard.activeDescendantId}
                 placeholder='ابحث عن الخدمة...'
                 className='w-full bg-white border-2 border-slate-200 rounded-2xl px-5 py-4 pr-12 text-black font-black focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none text-lg placeholder:text-slate-400 shadow-sm'
               />
               <div className='absolute left-4 top-1/2 -translate-y-1/2 text-slate-500'>▼</div>
             </div>
 
-            {/* Dropdown */}
             {showServiceDropdown && (
-              <div className='absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-900/10 overflow-hidden max-h-72 overflow-y-auto z-[100] custom-scrollbar'>
-                {filteredServices.length > 0 ? (
-                  filteredServices.slice(0, 50).map(service => (
-                    <div
-                      key={service.id}
-                      onMouseDown={e => {
-                        e.preventDefault();
-                        selectService(service);
-                        setShowServiceDropdown(false);
-                      }}
-                      className='p-4 hover:bg-emerald-50 cursor-pointer border-b border-slate-100 last:border-0 transition-colors flex items-center justify-between gap-3 group'
-                    >
-                      <span className='text-base font-black text-slate-900 group-hover:text-emerald-800'>
-                        {service.name}
-                      </span>
-                      <span className='text-sm text-slate-500 group-hover:text-emerald-700 bg-slate-100 group-hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-bold'>
-                        اختيار
-                      </span>
-                    </div>
-                  ))
+              <div
+                id='service-options-list'
+                role='listbox'
+                className='absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-900/10 overflow-hidden max-h-72 overflow-y-auto z-[100] custom-scrollbar'
+              >
+                {visibleServices.length > 0 ? (
+                  visibleServices.map((service, index) => {
+                    const isActive = serviceKeyboard.activeIndex === index;
+                    return (
+                      <div
+                        key={service.id}
+                        {...serviceKeyboard.getOptionProps(index)}
+                        onMouseDown={e => {
+                          e.preventDefault();
+                          selectService(service);
+                        }}
+                        className={`p-4 cursor-pointer border-b border-slate-100 last:border-0 transition-colors flex items-center justify-between gap-3 group ${
+                          isActive
+                            ? 'bg-emerald-50 ring-1 ring-inset ring-emerald-200'
+                            : 'hover:bg-emerald-50'
+                        }`}
+                      >
+                        <span
+                          className={`text-base font-black ${
+                            isActive
+                              ? 'text-emerald-800'
+                              : 'text-slate-900 group-hover:text-emerald-800'
+                          }`}
+                        >
+                          {service.name}
+                        </span>
+                        <span className='text-sm text-slate-500 group-hover:text-emerald-700 bg-slate-100 group-hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-bold'>
+                          اختيار
+                        </span>
+                      </div>
+                    );
+                  })
                 ) : (
                   <div className='p-4 text-center text-slate-500 text-sm font-bold'>
                     لا توجد خدمات مطابقة
@@ -299,14 +362,27 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                   {selectedService.variants.length} خيارات
                 </span>
               </div>
-              <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'>
-                {selectedService.variants.map(variant => {
+              <div
+                className='grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'
+                role='radiogroup'
+                aria-label='نوع الطلب'
+              >
+                {selectedService.variants.map((variant, index) => {
                   const isSelected = selectedVariant?.id === variant.id;
+                  const isTabStop = isSelected || (!selectedVariant && index === 0);
                   return (
-                    <div
+                    <button
                       key={variant.id}
+                      ref={element => {
+                        variantRefs.current[index] = element;
+                      }}
+                      type='button'
+                      role='radio'
+                      aria-checked={isSelected}
+                      tabIndex={isTabStop ? 0 : -1}
                       onClick={() => handleVariantChange(variant.id)}
-                      className={`relative min-h-[112px] p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 group overflow-hidden shadow-sm ${
+                      onKeyDown={event => handleVariantKeyDown(event, index)}
+                      className={`relative min-h-[112px] p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 group overflow-hidden shadow-sm text-right outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20 ${
                         isSelected
                           ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20'
                           : 'bg-white border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 hover:-translate-y-0.5'
@@ -334,7 +410,7 @@ export const ServiceSelectionSection: React.FC<ServiceSelectionSectionProps> = (
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>

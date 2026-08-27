@@ -33,11 +33,44 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     const { id } = params;
     const body = await request.json();
-    const serials: string[] = Array.isArray(body.serials) ? body.serials : [];
+    const serials: string[] = Array.isArray(body.serials)
+      ? Array.from(
+          new Set(
+            body.serials.map((serial: unknown) => String(serial ?? '').trim()).filter(Boolean)
+          )
+        )
+      : [];
     const provider: string = body.provider || 'AL_BADEL';
 
     if (serials.length === 0) {
-      return NextResponse.json({ error: 'يجب إدخال أرقام واحدة على الأقل' }, { status: 400 });
+      return NextResponse.json({ error: 'يجب إدخال رقم استمارة واحد على الأقل' }, { status: 400 });
+    }
+
+    const existingSerials = await (prisma as any).formSerial.findMany({
+      where: { serialNumber: { in: serials } },
+      select: {
+        serialNumber: true,
+        provider: true,
+        formType: { select: { name: true } },
+      },
+    });
+
+    if (existingSerials.length > 0) {
+      const duplicates = existingSerials.map(
+        (item: any) =>
+          `${item.serialNumber} (${item.formType?.name || 'نوع غير محدد'} - ${
+            item.provider === 'AL_WAFI' ? 'الوافي' : 'البديل'
+          })`
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: `لا يمكن تسجيل رقم استمارة موجود مسبقاً في أي نوع. الأرقام الموجودة: ${duplicates.join(', ')}`,
+          duplicates: existingSerials.map((item: any) => item.serialNumber),
+        },
+        { status: 409 }
+      );
     }
 
     const data = serials.map(s => ({
