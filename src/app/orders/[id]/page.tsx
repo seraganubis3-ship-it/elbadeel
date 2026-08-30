@@ -183,9 +183,15 @@ export default function OrderDetailPage() {
 
               {/* Action Bar */}
               <div className='bg-slate-50 p-6 border-t border-slate-100 grid gap-3'>
+                {order.status === 'waiting_confirmation' && (
+                  <div className='w-full p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-center font-bold leading-relaxed'>
+                    طلبك قيد مراجعة الإدارة الآن. سيظهر زر دفع المستحقات بعد تأكيد الطلب.
+                  </div>
+                )}
+
                 {order.status === 'waiting_payment' && (
                   <Link
-                    href={`/orders/${order.id}/payment`}
+                    href={`/order/${order.id}/payment`}
                     className='w-full py-4 text-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-emerald-200 hover:shadow-emerald-300 transition-all transform hover:-translate-y-0.5'
                   >
                     💳 دفع المستحقات الآن

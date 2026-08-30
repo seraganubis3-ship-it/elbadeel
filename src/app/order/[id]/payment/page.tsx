@@ -25,12 +25,33 @@ export default async function PaymentPage({ params }: { params: Promise<{ id: st
     redirect('/orders');
   }
 
-  // Check if order is in a payable state
-  const payableStatuses = ['PENDING', 'waiting_confirmation', 'pending'];
-  if (!payableStatuses.includes(order.status)) {
-    redirect(`/orders/${id}`);
+  if (order.status === 'waiting_confirmation') {
+    return (
+      <div className='min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4' dir='rtl'>
+        <div className='max-w-lg w-full bg-white rounded-[2rem] shadow-xl border border-amber-100 p-8 text-center'>
+          <div className='w-16 h-16 mx-auto mb-5 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center'>
+            <svg className='w-8 h-8' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
+            </svg>
+          </div>
+          <h1 className='text-2xl font-black text-slate-900 mb-3'>الدفع غير متاح الآن</h1>
+          <p className='text-slate-600 leading-7 mb-6'>
+            طلبك قيد مراجعة الإدارة. سيظهر زر الدفع تلقائيًا بعد تأكيد الطلب وتحديد المستحقات المطلوبة.
+          </p>
+          <Link
+            href={`/orders/${id}`}
+            className='inline-flex items-center justify-center px-6 py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors'
+          >
+            متابعة حالة الطلب
+          </Link>
+        </div>
+      </div>
+    );
   }
 
+  if (order.status !== 'waiting_payment') {
+    redirect(`/orders/${id}`);
+  }
   return (
     <div className='min-h-screen bg-[#F8FAFC] relative overflow-hidden' dir='rtl'>
       {/* Dynamic Background Elements */}

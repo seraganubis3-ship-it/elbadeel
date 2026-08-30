@@ -1,6 +1,6 @@
 export interface AdminNotification {
   id: string;
-  type: 'delivery_due' | 'low_stock' | 'system';
+  type: 'new_order' | 'delivery_due' | 'low_stock' | 'system';
   title: string;
   message: string;
   priority: 'high' | 'medium' | 'low';

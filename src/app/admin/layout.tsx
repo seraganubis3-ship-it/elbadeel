@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import AdminWorkDateWrapper from '@/components/AdminWorkDateWrapper';
@@ -10,6 +10,7 @@ import { hasPermission } from '@/lib/permissions';
 import { OfflineSyncTrigger } from '@/components/OfflineSyncTrigger';
 import { OfflineSyncAction } from '@/components/OfflineSyncAction';
 import InactivityWrapper from '@/components/InactivityWrapper';
+import AdminNotificationCenter from '@/components/AdminNotificationCenter';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [workDate, setWorkDate] = useState<string | null>(null);
   const [showWorkDateModal, setShowWorkDateModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const notificationCountRef = useRef(0);
+  const notificationHydratedRef = useRef(false);
   const [tempWorkDate, setTempWorkDate] = useState('');
 
   // Get work date from session or localStorage
@@ -67,6 +72,65 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => clearTimeout(timer);
   }, [status]);
 
+  useEffect(() => {
+    if (!session?.user || !hasPermission(session.user as any, 'MANAGE_ORDERS')) return;
+
+    const playNotificationSound = () => {
+      try {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        const audioContext = new AudioContextClass();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(660, audioContext.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.001, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.22, audioContext.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.35);
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.38);
+      } catch {
+        // Some browsers block audio until the first user interaction.
+      }
+    };
+
+    const fetchNotificationCount = async () => {
+      try {
+        const response = await fetch('/api/admin/notifications', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        const nextCount = data.counts?.newOrders || data.counts?.total || data.notifications?.length || 0;
+        const previousCount = notificationCountRef.current;
+
+        setNotificationCount(nextCount);
+        notificationCountRef.current = nextCount;
+
+        if (notificationHydratedRef.current && nextCount > previousCount) {
+          playNotificationSound();
+          setShowNotifications(true);
+        }
+
+        notificationHydratedRef.current = true;
+      } catch {
+        // Keep the previous count if the network is temporarily unavailable.
+      }
+    };
+
+    fetchNotificationCount();
+    const interval = window.setInterval(fetchNotificationCount, 30_000);
+    window.addEventListener('focus', fetchNotificationCount);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', fetchNotificationCount);
+    };
+  }, [session]);
   // Check loading status
   if (status === 'loading') {
     return (
@@ -621,6 +685,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </button>
               )}
 
+            {hasPermission(session.user as any, 'MANAGE_ORDERS') && (
+              <button
+                onClick={() => setShowNotifications(true)}
+                className='relative inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 bg-white/15 text-white rounded-lg sm:rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg'
+                title='الإشعارات'
+                aria-label='الإشعارات'
+              >
+                <svg className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9'
+                  />
+                </svg>
+                {notificationCount > 0 && (
+                  <span className='absolute -top-1 -left-1 min-w-[1.25rem] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-sm'>
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </span>
+                )}
+              </button>
+            )}
+
             {/* Back to Website Button */}
             <Link
               href='/'
@@ -1032,6 +1119,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         )}
       </div>
+      <AdminNotificationCenter
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+      />
       <OfflineSyncTrigger />
     </div>
   );

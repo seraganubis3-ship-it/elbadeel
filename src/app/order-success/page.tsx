@@ -33,7 +33,7 @@ function OrderSuccessInner() {
         <p className='text-xl text-gray-600 mb-8'>
           {paymentSubmitted
             ? 'شكراً لك! تم إرسال بيانات الدفع بنجاح. سنقوم بمراجعة الدفع والبدء في تنفيذ طلبك.'
-            : 'شكراً لك على ثقتك بنا. يرجى إتمام عملية الدفع للمتابعة.'}
+            : 'شكراً لك على ثقتك بنا. تم استلام طلبك وسيتم مراجعته من الإدارة أولاً، وسيظهر لك زر الدفع بعد تأكيد الطلب.'}
         </p>
 
         {/* Order Details */}
@@ -98,37 +98,20 @@ function OrderSuccessInner() {
         </div>
         {/* Action Buttons */}
         <div className='flex flex-col sm:flex-row gap-4 justify-center'>
-          {!paymentSubmitted && orderId ? (
-            <Link
-              href={`/order/${orderId}/payment`}
-              className='flex items-center justify-center gap-2 px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-            >
-              <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6'
-                />
-              </svg>
-              إتمام الدفع
-            </Link>
-          ) : (
-            <Link
-              href='/orders'
-              className='flex items-center justify-center gap-2 px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-            >
-              <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-                />
-              </svg>
-              عرض طلباتي
-            </Link>
-          )}
+          <Link
+            href={orderId ? `/orders/${orderId}` : '/orders'}
+            className='flex items-center justify-center gap-2 px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+          >
+            <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+              />
+            </svg>
+            متابعة حالة الطلب
+          </Link>
 
           <Link
             href='/'

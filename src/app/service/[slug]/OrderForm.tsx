@@ -295,7 +295,7 @@ export default function OrderForm({
           return;
         }
 
-        const paymentUrl = `/order/${result.orderId}/payment`;
+        const reviewUrl = `/order-success?orderId=${result.orderId}&awaitingReview=true`;
 
         // Auto-login for guests. If login fails, keep the successful order flow moving.
         if (!user && formData.password) {
@@ -309,22 +309,22 @@ export default function OrderForm({
             if (signInResult?.error) {
               showWarning(
                 'تم إنشاء الطلب',
-                'لم نتمكن من تسجيل الدخول تلقائياً، وسيتم تحويلك لصفحة الدفع.'
+                'لم نتمكن من تسجيل الدخول تلقائياً، وسيتم تحويلك لصفحة متابعة الطلب.'
               );
             }
           } catch (signInError) {
             console.error('Guest auto-login failed after order creation:', signInError);
             showWarning(
               'تم إنشاء الطلب',
-              'لم نتمكن من تسجيل الدخول تلقائياً، وسيتم تحويلك لصفحة الدفع.'
+              'لم نتمكن من تسجيل الدخول تلقائياً، وسيتم تحويلك لصفحة متابعة الطلب.'
             );
           } finally {
-            window.location.href = paymentUrl;
+            window.location.href = reviewUrl;
           }
           return;
         }
 
-        window.location.href = paymentUrl;
+        window.location.href = reviewUrl;
       } else {
         showError('فشل الطلب', getOrderSubmitError(response, result));
       }

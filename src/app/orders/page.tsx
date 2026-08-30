@@ -467,9 +467,15 @@ function OrdersContent() {
                           </button>
                         )}
 
+                        {order.status === 'waiting_confirmation' && (
+                          <span className='px-3 sm:px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-xs sm:text-sm font-medium text-center'>
+                            قيد مراجعة الإدارة وسيظهر زر الدفع بعد التأكيد
+                          </span>
+                        )}
+
                         {order.status === 'waiting_payment' && (
                           <Link
-                            href={`/orders/${order.id}/payment`}
+                            href={`/order/${order.id}/payment`}
                             className='px-3 sm:px-4 py-2 bg-blue-600 text-white border border-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-xs sm:text-sm font-medium text-center shadow-lg shadow-blue-200 animate-pulse'
                           >
                             💳 ادفع الآن

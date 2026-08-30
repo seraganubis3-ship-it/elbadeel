@@ -3,7 +3,7 @@ import { requireAdminOrStaff, getWorkDate } from '@/lib/auth';
 import { hasPermission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { checkWhatsAppStatus, sendWhatsAppByTrigger } from '@/lib/whatsapp';
+import { checkWhatsAppStatus, sendWhatsAppByTrigger, sendWhatsAppMessage } from '@/lib/whatsapp';
 import { logger } from '@/lib/logger';
 import { awardSupervisorPoints } from '@/lib/incentives';
 
@@ -187,7 +187,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         updatedOrder.customerPhone !== 'Unknown'
       ) {
         // Trigger generic status template: STATUS_{status}
-        await sendWhatsAppByTrigger(`STATUS_${status}`, updatedOrder);
+        const triggerResult = await sendWhatsAppByTrigger(`STATUS_${status}`, updatedOrder);
+
+        if (status === 'waiting_payment' && !triggerResult.success) {
+          await sendWhatsAppMessage({
+            phone: updatedOrder.customerPhone,
+            message:
+              'تمت مراجعة طلبك من البديل وأصبح جاهزاً للدفع. يرجى تسجيل الدخول إلى حسابك ومتابعة طلباتك لسداد المستحقات.',
+          });
+        }
       }
     } catch (err) {
       // console.log('Updating order status', params.id, body.status)
