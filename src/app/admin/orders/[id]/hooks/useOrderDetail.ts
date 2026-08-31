@@ -206,7 +206,7 @@ export function useOrderDetail(orderId: string) {
         const userResponse = await fetch(`/api/admin/users/${userId}/update`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(userData),
+          body: JSON.stringify({ ...userData, orderId }),
         });
 
         if (!userResponse.ok) {

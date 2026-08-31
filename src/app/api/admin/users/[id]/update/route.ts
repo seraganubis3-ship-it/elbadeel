@@ -34,16 +34,13 @@ const userUpdateSchema = z.object({
   apartmentNumber: z.preprocess(emptyToNull, z.string().optional().nullable()),
   landmark: z.preprocess(emptyToNull, z.string().optional().nullable()),
   additionalPhone: z.preprocess(emptyToNull, z.string().optional().nullable()),
+  orderId: z.string().optional(),
   gender: z.preprocess(genderTransform, z.enum(['male', 'female']).optional().nullable()),
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await requireAuth();
-    if (session.user.role !== 'ADMIN' && !hasPermission(session.user as any, 'MANAGE_USERS')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
     const { id } = params;
     const body = await request.json();
 
@@ -64,6 +61,23 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     const data = validationResult.data;
+    const canManageUsers = hasPermission(session.user as any, 'MANAGE_USERS');
+    const canManageOrders = hasPermission(session.user as any, 'MANAGE_ORDERS');
+
+    if (session.user.role !== 'ADMIN' && !canManageUsers) {
+      if (!canManageOrders || !data.orderId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+
+      const linkedOrder = await prisma.order.findFirst({
+        where: { id: data.orderId, userId: id },
+        select: { id: true },
+      });
+
+      if (!linkedOrder) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+    }
 
     const updateData: any = {};
 
